@@ -73,6 +73,7 @@ import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
+import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -1977,6 +1978,20 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   currentEventId={event.id}
                   locale={locale as Locale}
                 />
+              )}
+
+              {/* Preorder from the venue's menu (only renders when the venue enables it) */}
+              {event.venues && (
+                <Suspense fallback={null}>
+                  <EventPreorderCard
+                    eventId={event.id}
+                    eventSlug={event.slug}
+                    venue={event.venues}
+                    startsAt={event.starts_at}
+                    endsAt={event.ends_at}
+                    locale={locale}
+                  />
+                </Suspense>
               )}
 
               {/* More events at this venue — internal linking for SEO */}

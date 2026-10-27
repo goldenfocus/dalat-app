@@ -19,6 +19,7 @@ const body = z.object({
     .object({ monday: day, tuesday: day, wednesday: day, thursday: day, friday: day, saturday: day, sunday: day })
     .partial()
     .nullable(),
+  preorder_enabled: z.boolean(),
 }).partial();
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {

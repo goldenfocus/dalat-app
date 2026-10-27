@@ -1,0 +1,830 @@
+{
+  "sections": {
+    "coffee": {
+      "title": {
+        "vi": "Cà phê",
+        "ko": "커피",
+        "zh": "咖啡",
+        "ru": "Кофе",
+        "fr": "Café",
+        "ja": "コーヒー",
+        "ms": "Kopi",
+        "th": "กาแฟ",
+        "de": "Kaffee",
+        "es": "Café",
+        "id": "Kopi"
+      },
+      "note": {
+        "vi": "Hạt cà phê từ Zanya, Lang Biang. Robusta lên men rượu vang +10,000 · Sữa yến mạch +5,000",
+        "ko": "Lang Biang의 Zanya 원두를 사용해요. 와인 발효 로부스타 +10,000 · 오트밀크 +5,000",
+        "zh": "咖啡豆来自 Lang Biang 的 Zanya。红酒发酵罗布斯塔 +10,000 · 燕麦奶 +5,000",
+        "ru": "Зёрна от Zanya, Lang Biang. Робуста винной ферментации +10,000 · Овсяное молоко +5,000",
+        "fr": "Grains de Zanya, Lang Biang. Robusta fermenté au vin +10,000 · Lait d'avoine +5,000",
+        "ja": "Lang BiangのZanyaの豆を使用。ワイン発酵ロブスタ +10,000 · オーツミルク +5,000",
+        "ms": "Biji kopi dari Zanya, Lang Biang. Robusta fermentasi wain +10,000 · Susu oat +5,000",
+        "th": "เมล็ดกาแฟจาก Zanya, Lang Biang โรบัสต้าหมักไวน์ +10,000 · นมข้าวโอ๊ต +5,000",
+        "de": "Bohnen von Zanya, Lang Biang. Weinfermentierter Robusta +10,000 · Hafermilch +5,000",
+        "es": "Granos de Zanya, Lang Biang. Robusta fermentado en vino +10,000 · Leche de avena +5,000",
+        "id": "Biji kopi dari Zanya, Lang Biang. Robusta fermentasi anggur +10,000 · Susu oat +5,000"
+      }
+    },
+    "cold-brew": {
+      "title": {
+        "vi": "Cold Brew",
+        "ko": "콜드브루",
+        "zh": "冷萃咖啡",
+        "ru": "Колд брю",
+        "fr": "Cold Brew",
+        "ja": "コールドブリュー",
+        "ms": "Cold Brew",
+        "th": "โคลด์บรูว์",
+        "de": "Cold Brew",
+        "es": "Cold Brew",
+        "id": "Cold Brew"
+      }
+    },
+    "matcha": {
+      "title": {
+        "vi": "Matcha",
+        "ko": "말차",
+        "zh": "抹茶",
+        "ru": "Маття",
+        "fr": "Matcha",
+        "ja": "抹茶",
+        "ms": "Matcha",
+        "th": "มัทฉะ",
+        "de": "Matcha",
+        "es": "Matcha",
+        "id": "Matcha"
+      },
+      "note": {
+        "vi": "Matcha từ Lạc Yên Trà, Thái Nguyên.",
+        "ko": "Thái Nguyên의 Lạc Yên Trà 말차를 써요.",
+        "zh": "抹茶来自太原的 Lạc Yên Trà（Thái Nguyên）。",
+        "ru": "Маття от Lạc Yên Trà, Thái Nguyên.",
+        "fr": "Matcha de Lạc Yên Trà, Thái Nguyên.",
+        "ja": "Thái NguyênのLạc Yên Trà産の抹茶を使用。",
+        "ms": "Matcha dari Lạc Yên Trà, Thái Nguyên.",
+        "th": "มัทฉะจาก Lạc Yên Trà, Thái Nguyên",
+        "de": "Matcha von Lạc Yên Trà, Thái Nguyên.",
+        "es": "Matcha de Lạc Yên Trà, Thái Nguyên.",
+        "id": "Matcha dari Lạc Yên Trà, Thái Nguyên."
+      }
+    },
+    "chocolate": {
+      "title": {
+        "vi": "Sô cô la",
+        "ko": "초콜릿",
+        "zh": "巧克力",
+        "ru": "Шоколад",
+        "fr": "Chocolat",
+        "ja": "チョコレート",
+        "ms": "Coklat",
+        "th": "ช็อกโกแลต",
+        "de": "Schokolade",
+        "es": "Chocolate",
+        "id": "Cokelat"
+      },
+      "note": {
+        "vi": "Làm tan chảy từ thanh sô cô la Zanya 70% – hạt cacao nguyên hạt trồng ở các trang trại Đắk Lắk, chế biến tại Lang Biang, Đà Lạt.",
+        "ko": "70% Zanya 초콜릿 바를 녹여 만들어요. 닥락(Đắk Lắk) 농장에서 자란 카카오 빈을 통째로 써서 달랏 Lang Biang에서 가공했어요.",
+        "zh": "选用 70% Zanya 巧克力块融化制成——整颗可可豆产自 Đắk Lắk 的农场，在大叻 Lang Biang 加工。",
+        "ru": "Растоплено из плитки шоколада Zanya 70% – цельные бобы какао с ферм Đắk Lắk, переработаны в Lang Biang, Đà Lạt.",
+        "fr": "Préparé à partir d'une tablette de chocolat Zanya à 70 % – fèves de cacao entières cultivées dans des fermes de Đắk Lắk, transformées à Lang Biang, Đà Lạt.",
+        "ja": "70%のZanyaチョコレートバーを溶かして作ります。Đắk Lắkの農園で育ったカカオ豆をまるごと使い、Đà LạtのLang Biangで加工しています。",
+        "ms": "Dicairkan daripada bar coklat Zanya 70% – biji koko penuh yang ditanam di ladang Đắk Lắk, diproses di Lang Biang, Đà Lạt.",
+        "th": "ทำจากช็อกโกแลตแท่ง Zanya 70% ละลาย – เมล็ดโกโก้ทั้งเมล็ดจากไร่ใน Đắk Lắk แปรรูปที่ Lang Biang, Đà Lạt",
+        "de": "Geschmolzen aus einer 70-%-Zanya-Schokoladentafel – ganze Kakaobohnen von Farmen in Đắk Lắk, verarbeitet in Lang Biang, Đà Lạt.",
+        "es": "Derretido de una tableta de chocolate Zanya al 70 % – granos de cacao enteros cultivados en fincas de Đắk Lắk y procesados en Lang Biang, Đà Lạt.",
+        "id": "Dilelehkan dari batang cokelat Zanya 70% – biji kakao utuh dari kebun di Đắk Lắk, diolah di Lang Biang, Đà Lạt."
+      }
+    },
+    "homemade-sweets": {
+      "title": {
+        "vi": "Bánh ngọt tự làm",
+        "ko": "수제 디저트",
+        "zh": "自制甜点",
+        "ru": "Домашние сладости",
+        "fr": "Douceurs maison",
+        "ja": "手作りスイーツ",
+        "ms": "Manisan buatan sendiri",
+        "th": "ขนมโฮมเมด",
+        "de": "Hausgemachte Süßigkeiten",
+        "es": "Dulces caseros",
+        "id": "Kue & manisan buatan sendiri"
+      },
+      "note": {
+        "vi": "Tất cả bánh đều tự làm. Hỏi tụi mình về muffin & bánh ngọt hôm nay – và Sachertorte kiểu Vienna vào mùa cao điểm nhé.",
+        "ko": "모든 페이스트리는 직접 구워요. 오늘의 머핀과 케이크가 궁금하면 물어보세요. 성수기에는 비엔나식 Sachertorte도 있어요.",
+        "zh": "所有糕点均为自制。想知道今天有哪些玛芬和蛋糕，欢迎来问——旺季还有维也纳 Sachertorte。",
+        "ru": "Вся выпечка домашняя. Спросите про сегодняшние маффины и торты – а в высокий сезон у нас есть венский Sachertorte.",
+        "fr": "Toutes les pâtisseries sont faites maison. Demandez-nous les muffins et gâteaux du jour – et notre Sachertorte viennoise en haute saison.",
+        "ja": "ペストリーはすべて手作りです。本日のマフィンやケーキはスタッフにお尋ねください。繁忙期にはウィーン風Sachertorteも登場します。",
+        "ms": "Semua pastri dibuat sendiri. Tanya tentang muffin & kek hari ini – dan Sachertorte gaya Vienna pada musim puncak.",
+        "th": "ขนมอบทั้งหมดทำเองที่ร้าน ถามพนักงานได้เลยว่าวันนี้มีมัฟฟินและเค้กอะไร – และมี Sachertorte สไตล์เวียนนาในช่วงไฮซีซัน",
+        "de": "Alles Gebäck ist hausgemacht. Frag nach den Muffins & Kuchen des Tages – und in der Hochsaison nach unserer Wiener Sachertorte.",
+        "es": "Toda la repostería es casera. Pregunta por los muffins y pasteles de hoy – y por nuestra Sachertorte vienesa en temporada alta.",
+        "id": "Semua kue dibuat sendiri. Tanyakan muffin & kue hari ini – dan Sachertorte ala Wina di musim ramai."
+      }
+    },
+    "burritos": {
+      "title": {
+        "vi": "Burrito Socialhouse",
+        "ko": "Socialhouse 부리또",
+        "zh": "Socialhouse 墨西哥卷饼",
+        "ru": "Буррито Socialhouse",
+        "fr": "Burrito Socialhouse",
+        "ja": "Socialhouse ブリトー",
+        "ms": "Burrito Socialhouse",
+        "th": "เบอร์ริโต Socialhouse",
+        "de": "Socialhouse Burrito",
+        "es": "Burrito Socialhouse",
+        "id": "Burrito Socialhouse"
+      },
+      "note": {
+        "vi": "Tortilla nguyên cám 50% tự làm, kèm sốt phô mai farmer tự làm. Dùng với kim chi nhà làm hoặc salad.",
+        "ko": "통밀 50% 수제 토르티야에 직접 만든 파머 치즈 소스를 곁들여요. 수제 김치 또는 샐러드와 함께 나가요.",
+        "zh": "50% 全麦自制饼皮，配自制农家奶酪酱。搭配自制泡菜或沙拉。",
+        "ru": "Домашняя лепёшка тортилья на 50% из цельнозерновой муки с домашним фермерским сырным соусом. Подаётся с домашним кимчи или салатом.",
+        "fr": "Tortilla maison à 50 % de blé complet avec sauce maison au fromage fermier. Servi avec du kimchi maison ou de la salade.",
+        "ja": "全粒粉50%の自家製トルティーヤに、自家製ファーマーチーズソース。自家製キムチまたはサラダ付き。",
+        "ms": "Tortilla gandum penuh 50% buatan sendiri dengan sos keju ladang buatan sendiri. Dihidang bersama kimchi buatan sendiri atau salad.",
+        "th": "แป้งตอร์ตียาโฮลวีต 50% ทำเองที่ร้าน ราดซอสชีสฟาร์เมอร์โฮมเมด เสิร์ฟพร้อมกิมจิโฮมเมดหรือสลัด",
+        "de": "Hausgemachte Tortilla mit 50 % Vollkorn und hausgemachter Farmerkäse-Sauce. Serviert mit hausgemachtem Kimchi oder Salat.",
+        "es": "Tortilla casera con 50 % de trigo integral y salsa casera de queso de granja. Se sirve con kimchi casero o ensalada.",
+        "id": "Tortilla gandum utuh 50% buatan sendiri dengan saus keju farmer buatan sendiri. Disajikan dengan kimchi buatan sendiri atau salad."
+      }
+    },
+    "mama-noodle-soup": {
+      "title": {
+        "vi": "Mì nước của Mẹ",
+        "ko": "엄마표 국수",
+        "zh": "妈妈的汤面",
+        "ru": "Мамин суп с лапшой",
+        "fr": "Soupe de nouilles de Maman",
+        "ja": "ママの麺スープ",
+        "ms": "Sup mi Mama",
+        "th": "ก๋วยเตี๋ยวน้ำฝีมือแม่",
+        "de": "Mamas Nudelsuppe",
+        "es": "Sopa de fideos de mamá",
+        "id": "Sup mi buatan Mama"
+      },
+      "note": {
+        "vi": "Những tô mì ấm áp, đậm đà do mẹ nấu – như ở nhà vậy.",
+        "ko": "엄마가 끓여 주는 따뜻하고 정성 가득한 한 그릇 – 집밥 같은 맛이에요.",
+        "zh": "妈妈亲手煮的暖心汤面，有家的味道。",
+        "ru": "Тёплые душевные тарелки, сваренные мамой – как дома.",
+        "fr": "Des bols chaleureux et réconfortants cuisinés par maman – comme à la maison.",
+        "ja": "ママが作る、あたたかくて心のこもった一杯。まるで我が家の味。",
+        "ms": "Mangkuk hangat penuh jiwa yang dimasak oleh mama – terasa seperti di rumah.",
+        "th": "ชามอุ่น ๆ เต็มไปด้วยความรัก ปรุงโดยแม่ – อบอุ่นเหมือนอยู่บ้าน",
+        "de": "Warme, herzhafte Schüsseln, von Mama gekocht – fühlt sich an wie zu Hause.",
+        "es": "Cuencos cálidos y con alma, cocinados por mamá – como en casa.",
+        "id": "Mangkuk hangat penuh rasa yang dimasak oleh mama – terasa seperti di rumah."
+      }
+    },
+    "family-dinner": {
+      "title": {
+        "vi": "Bữa tối gia đình",
+        "ko": "가족 저녁 식사",
+        "zh": "家庭晚餐",
+        "ru": "Семейный ужин",
+        "fr": "Dîner en famille",
+        "ja": "ファミリーディナー",
+        "ms": "Makan malam keluarga",
+        "th": "มื้อเย็นแบบครอบครัว",
+        "de": "Familienabendessen",
+        "es": "Cena familiar",
+        "id": "Makan malam keluarga"
+      }
+    },
+    "pancakes-french-toast": {
+      "title": {
+        "vi": "Pancake & bánh mì nướng kiểu Pháp",
+        "ko": "팬케이크 & 프렌치토스트",
+        "zh": "松饼与法式吐司",
+        "ru": "Панкейки и французские тосты",
+        "fr": "Pancakes & pain perdu",
+        "ja": "パンケーキ＆フレンチトースト",
+        "ms": "Pancake & roti Perancis",
+        "th": "แพนเค้กและเฟรนช์โทสต์",
+        "de": "Pancakes & French Toast",
+        "es": "Pancakes y tostadas francesas",
+        "id": "Pancake & french toast"
+      }
+    }
+  },
+  "items": {
+    "Black Coffee": {
+      "name": {
+        "vi": "Cà phê đen",
+        "ko": "블랙 커피",
+        "zh": "黑咖啡",
+        "ru": "Чёрный кофе",
+        "fr": "Café noir",
+        "ja": "ブラックコーヒー",
+        "ms": "Kopi O",
+        "th": "กาแฟดำ",
+        "de": "Schwarzer Kaffee",
+        "es": "Café solo",
+        "id": "Kopi hitam"
+      },
+      "description": {
+        "vi": "Nóng hoặc đá",
+        "ko": "따뜻하게 또는 아이스로",
+        "zh": "热饮或冰饮",
+        "ru": "Горячий или со льдом",
+        "fr": "Chaud ou glacé",
+        "ja": "ホットまたはアイス",
+        "ms": "Panas atau ais",
+        "th": "ร้อนหรือเย็น",
+        "de": "Heiß oder eisgekühlt",
+        "es": "Caliente o frío",
+        "id": "Panas atau dingin"
+      }
+    },
+    "Milk Coffee": {
+      "name": {
+        "vi": "Cà phê sữa",
+        "ko": "밀크 커피",
+        "zh": "牛奶咖啡",
+        "ru": "Кофе с молоком",
+        "fr": "Café au lait",
+        "ja": "ミルクコーヒー",
+        "ms": "Kopi susu",
+        "th": "กาแฟนม",
+        "de": "Milchkaffee",
+        "es": "Café con leche",
+        "id": "Kopi susu"
+      },
+      "description": {
+        "vi": "Nóng hoặc đá",
+        "ko": "따뜻하게 또는 아이스로",
+        "zh": "热饮或冰饮",
+        "ru": "Горячий или со льдом",
+        "fr": "Chaud ou glacé",
+        "ja": "ホットまたはアイス",
+        "ms": "Panas atau ais",
+        "th": "ร้อนหรือเย็น",
+        "de": "Heiß oder eisgekühlt",
+        "es": "Caliente o frío",
+        "id": "Panas atau dingin"
+      }
+    },
+    "White Coffee": {
+      "name": {
+        "vi": "Cà phê trắng",
+        "ko": "화이트 커피",
+        "zh": "白咖啡",
+        "ru": "Белый кофе",
+        "fr": "Café blanc",
+        "ja": "ホワイトコーヒー",
+        "ms": "Kopi putih",
+        "th": "ไวต์คอฟฟี่",
+        "de": "Weißer Kaffee",
+        "es": "Café blanco",
+        "id": "Kopi putih"
+      },
+      "description": {
+        "vi": "Nóng hoặc đá",
+        "ko": "따뜻하게 또는 아이스로",
+        "zh": "热饮或冰饮",
+        "ru": "Горячий или со льдом",
+        "fr": "Chaud ou glacé",
+        "ja": "ホットまたはアイス",
+        "ms": "Panas atau ais",
+        "th": "ร้อนหรือเย็น",
+        "de": "Heiß oder eisgekühlt",
+        "es": "Caliente o frío",
+        "id": "Panas atau dingin"
+      }
+    },
+    "Salted Cream Coffee": {
+      "name": {
+        "vi": "Cà phê kem muối",
+        "ko": "솔티드 크림 커피",
+        "zh": "海盐奶盖咖啡",
+        "ru": "Кофе с солёными сливками",
+        "fr": "Café à la crème salée",
+        "ja": "ソルテッドクリームコーヒー",
+        "ms": "Kopi krim masin",
+        "th": "กาแฟครีมเค็ม",
+        "de": "Kaffee mit Salzsahne",
+        "es": "Café con crema salada",
+        "id": "Kopi krim asin"
+      },
+      "description": {
+        "vi": "Uống đá, phủ kem phô mai farmer tự làm",
+        "ko": "아이스로, 수제 파머 치즈 크림을 올려요",
+        "zh": "冰饮，顶部是自制农家奶酪奶盖",
+        "ru": "Со льдом, с домашними сливками из фермерского сыра",
+        "fr": "Glacé, nappé de notre crème maison au fromage fermier",
+        "ja": "アイス。自家製ファーマーチーズクリームをトッピング",
+        "ms": "Ais, dengan krim keju ladang buatan sendiri di atasnya",
+        "th": "เสิร์ฟเย็น ท็อปด้วยครีมชีสฟาร์เมอร์โฮมเมด",
+        "de": "Eiskalt, gekrönt mit unserer hausgemachten Farmerkäse-Creme",
+        "es": "Frío, con nuestra crema casera de queso de granja por encima",
+        "id": "Dingin, dengan krim keju farmer buatan sendiri di atasnya"
+      }
+    },
+    "Egg Coffee": {
+      "name": {
+        "vi": "Cà phê trứng",
+        "ko": "에그 커피",
+        "zh": "蛋咖啡",
+        "ru": "Яичный кофе",
+        "fr": "Café à l'œuf",
+        "ja": "エッグコーヒー",
+        "ms": "Kopi telur",
+        "th": "กาแฟไข่",
+        "de": "Eierkaffee",
+        "es": "Café de huevo",
+        "id": "Kopi telur"
+      },
+      "description": {
+        "vi": "Nóng hoặc đá",
+        "ko": "따뜻하게 또는 아이스로",
+        "zh": "热饮或冰饮",
+        "ru": "Горячий или со льдом",
+        "fr": "Chaud ou glacé",
+        "ja": "ホットまたはアイス",
+        "ms": "Panas atau ais",
+        "th": "ร้อนหรือเย็น",
+        "de": "Heiß oder eisgekühlt",
+        "es": "Caliente o frío",
+        "id": "Panas atau dingin"
+      }
+    },
+    "Original Cold Brew": {
+      "name": {
+        "vi": "Cold Brew nguyên bản",
+        "ko": "오리지널 콜드브루",
+        "zh": "经典冷萃",
+        "ru": "Классический колд брю",
+        "fr": "Cold Brew nature",
+        "ja": "オリジナル コールドブリュー",
+        "ms": "Cold Brew asli",
+        "th": "โคลด์บรูว์ออริจินัล",
+        "de": "Original Cold Brew",
+        "es": "Cold Brew original",
+        "id": "Cold Brew original"
+      }
+    },
+    "Cold Brew Cold Foam": {
+      "name": {
+        "vi": "Cold Brew phủ Cold Foam",
+        "ko": "콜드브루 콜드폼",
+        "zh": "冷萃配冷泡",
+        "ru": "Колд брю с холодной пенкой",
+        "fr": "Cold Brew Cold Foam",
+        "ja": "コールドブリュー コールドフォーム",
+        "ms": "Cold Brew Cold Foam",
+        "th": "โคลด์บรูว์โคลด์โฟม",
+        "de": "Cold Brew Cold Foam",
+        "es": "Cold Brew con Cold Foam",
+        "id": "Cold Brew Cold Foam"
+      }
+    },
+    "Orange Cold Brew Tonic": {
+      "name": {
+        "vi": "Cold Brew Tonic cam",
+        "ko": "오렌지 콜드브루 토닉",
+        "zh": "橙香冷萃汤力水",
+        "ru": "Колд брю тоник с апельсином",
+        "fr": "Cold Brew Tonic à l'orange",
+        "ja": "オレンジ コールドブリュー トニック",
+        "ms": "Cold Brew Tonic oren",
+        "th": "ออเรนจ์โคลด์บรูว์โทนิก",
+        "de": "Orangen-Cold-Brew-Tonic",
+        "es": "Cold Brew Tonic de naranja",
+        "id": "Cold Brew Tonic jeruk"
+      }
+    },
+    "Orange Cold Brew Cold Foam": {
+      "name": {
+        "vi": "Cold Brew cam phủ Cold Foam",
+        "ko": "오렌지 콜드브루 콜드폼",
+        "zh": "橙香冷萃配冷泡",
+        "ru": "Колд брю с апельсином и холодной пенкой",
+        "fr": "Cold Brew Cold Foam à l'orange",
+        "ja": "オレンジ コールドブリュー コールドフォーム",
+        "ms": "Cold Brew Cold Foam oren",
+        "th": "ออเรนจ์โคลด์บรูว์โคลด์โฟม",
+        "de": "Orangen-Cold-Brew mit Cold Foam",
+        "es": "Cold Brew con Cold Foam de naranja",
+        "id": "Cold Brew Cold Foam jeruk"
+      }
+    },
+    "Seasonal Jam Cold Brew Cold Foam": {
+      "name": {
+        "vi": "Cold Brew mứt theo mùa phủ Cold Foam",
+        "ko": "시즌 잼 콜드브루 콜드폼",
+        "zh": "时令果酱冷萃配冷泡",
+        "ru": "Колд брю с сезонным джемом и холодной пенкой",
+        "fr": "Cold Brew Cold Foam à la confiture de saison",
+        "ja": "季節のジャム コールドブリュー コールドフォーム",
+        "ms": "Cold Brew Cold Foam jem bermusim",
+        "th": "โคลด์บรูว์แยมตามฤดูกาลโคลด์โฟม",
+        "de": "Cold Brew mit Saisonmarmelade und Cold Foam",
+        "es": "Cold Brew con mermelada de temporada y Cold Foam",
+        "id": "Cold Brew Cold Foam selai musiman"
+      },
+      "description": {
+        "vi": "Cold brew với mứt theo mùa tự làm và cold foam",
+        "ko": "수제 시즌 잼과 콜드폼을 더한 콜드브루",
+        "zh": "冷萃配自制时令果酱与冷泡",
+        "ru": "Колд брю с нашим домашним сезонным джемом и холодной пенкой",
+        "fr": "Cold brew avec notre confiture de saison maison et sa cold foam",
+        "ja": "自家製の季節のジャムとコールドフォームをのせたコールドブリュー",
+        "ms": "Cold brew dengan jem bermusim buatan sendiri dan cold foam",
+        "th": "โคลด์บรูว์กับแยมตามฤดูกาลโฮมเมดและโคลด์โฟม",
+        "de": "Cold Brew mit unserer hausgemachten Saisonmarmelade und Cold Foam",
+        "es": "Cold brew con nuestra mermelada casera de temporada y cold foam",
+        "id": "Cold brew dengan selai musiman buatan sendiri dan cold foam"
+      }
+    },
+    "Matcha Latte": {
+      "name": {
+        "vi": "Matcha latte",
+        "ko": "말차 라테",
+        "zh": "抹茶拿铁",
+        "ru": "Маття латте",
+        "fr": "Matcha latte",
+        "ja": "抹茶ラテ",
+        "ms": "Matcha latte",
+        "th": "มัทฉะลาเต้",
+        "de": "Matcha Latte",
+        "es": "Matcha latte",
+        "id": "Matcha latte"
+      }
+    },
+    "Matcha Cloud Latte": {
+      "name": {
+        "vi": "Matcha cloud latte",
+        "ko": "말차 클라우드 라테",
+        "zh": "抹茶云朵拿铁",
+        "ru": "Маття клауд латте",
+        "fr": "Matcha cloud latte",
+        "ja": "抹茶クラウドラテ",
+        "ms": "Matcha cloud latte",
+        "th": "มัทฉะคลาวด์ลาเต้",
+        "de": "Matcha Cloud Latte",
+        "es": "Matcha cloud latte",
+        "id": "Matcha cloud latte"
+      }
+    },
+    "Coconut Matcha Cloud": {
+      "name": {
+        "vi": "Matcha cloud dừa",
+        "ko": "코코넛 말차 클라우드",
+        "zh": "椰子抹茶云朵",
+        "ru": "Кокосовое маття клауд",
+        "fr": "Matcha cloud coco",
+        "ja": "ココナッツ抹茶クラウド",
+        "ms": "Matcha cloud kelapa",
+        "th": "โคโคนัทมัทฉะคลาวด์",
+        "de": "Kokos-Matcha-Cloud",
+        "es": "Matcha cloud de coco",
+        "id": "Matcha cloud kelapa"
+      }
+    },
+    "Strawberry Matcha": {
+      "name": {
+        "vi": "Matcha dâu",
+        "ko": "딸기 말차",
+        "zh": "草莓抹茶",
+        "ru": "Клубничное маття",
+        "fr": "Matcha fraise",
+        "ja": "いちご抹茶",
+        "ms": "Matcha strawberi",
+        "th": "สตรอว์เบอร์รีมัทฉะ",
+        "de": "Erdbeer-Matcha",
+        "es": "Matcha de fresa",
+        "id": "Matcha stroberi"
+      },
+      "description": {
+        "vi": "Với mứt tự làm và cold foam",
+        "ko": "수제 잼과 콜드폼을 곁들여요",
+        "zh": "配自制果酱与冷泡",
+        "ru": "С домашним джемом и холодной пенкой",
+        "fr": "Avec confiture maison et cold foam",
+        "ja": "自家製ジャムとコールドフォーム付き",
+        "ms": "Dengan jem buatan sendiri dan cold foam",
+        "th": "พร้อมแยมโฮมเมดและโคลด์โฟม",
+        "de": "Mit hausgemachter Marmelade und Cold Foam",
+        "es": "Con mermelada casera y cold foam",
+        "id": "Dengan selai buatan sendiri dan cold foam"
+      }
+    },
+    "Hot Chocolate": {
+      "name": {
+        "vi": "Sô cô la nóng",
+        "ko": "핫초코",
+        "zh": "热巧克力",
+        "ru": "Горячий шоколад",
+        "fr": "Chocolat chaud",
+        "ja": "ホットチョコレート",
+        "ms": "Coklat panas",
+        "th": "ช็อกโกแลตร้อน",
+        "de": "Heiße Schokolade",
+        "es": "Chocolate caliente",
+        "id": "Cokelat panas"
+      }
+    },
+    "Hot Chocolate with “heaven” whipped cream": {
+      "name": {
+        "vi": "Sô cô la nóng với kem tươi “thiên đường”",
+        "ko": "“천국” 휘핑크림을 올린 핫초코",
+        "zh": "热巧克力配“天堂”鲜奶油",
+        "ru": "Горячий шоколад со «райским» взбитым кремом",
+        "fr": "Chocolat chaud et sa chantilly « paradis »",
+        "ja": "「天国」ホイップクリーム入りホットチョコレート",
+        "ms": "Coklat panas dengan krim putar “syurga”",
+        "th": "ช็อกโกแลตร้อนวิปครีม “สวรรค์”",
+        "de": "Heiße Schokolade mit „Himmels“-Sahne",
+        "es": "Chocolate caliente con nata montada “celestial”",
+        "id": "Cokelat panas dengan krim kocok “surga”"
+      }
+    },
+    "Cookies": {
+      "name": {
+        "vi": "Cookie",
+        "ko": "쿠키",
+        "zh": "曲奇饼干",
+        "ru": "Печенье",
+        "fr": "Cookies",
+        "ja": "クッキー",
+        "ms": "Kuki",
+        "th": "คุกกี้",
+        "de": "Cookies",
+        "es": "Galletas",
+        "id": "Kukis"
+      },
+      "description": {
+        "vi": "Sô cô la hoặc matcha sô cô la",
+        "ko": "초콜릿 또는 말차 초콜릿",
+        "zh": "巧克力或抹茶巧克力",
+        "ru": "Шоколадное или маття-шоколадное",
+        "fr": "Chocolat ou matcha chocolat",
+        "ja": "チョコレートまたは抹茶チョコレート",
+        "ms": "Coklat atau matcha coklat",
+        "th": "ช็อกโกแลตหรือมัทฉะช็อกโกแลต",
+        "de": "Schokolade oder Matcha-Schokolade",
+        "es": "De chocolate o de matcha y chocolate",
+        "id": "Cokelat atau matcha cokelat"
+      }
+    },
+    "Chocolate Brownie": {
+      "name": {
+        "vi": "Brownie sô cô la",
+        "ko": "초콜릿 브라우니",
+        "zh": "巧克力布朗尼",
+        "ru": "Шоколадный брауни",
+        "fr": "Brownie au chocolat",
+        "ja": "チョコレートブラウニー",
+        "ms": "Brownie coklat",
+        "th": "บราวนี่ช็อกโกแลต",
+        "de": "Schokoladen-Brownie",
+        "es": "Brownie de chocolate",
+        "id": "Brownies cokelat"
+      },
+      "description": {
+        "vi": "Đặc quánh, béo ngậy đến tan chảy cả trái tim",
+        "ko": "너무 꾸덕해서 마음까지 녹아요",
+        "zh": "浓郁软糯，融化你的心",
+        "ru": "Такой плотный и тающий, что тает сердце",
+        "fr": "Si fondant qu'il fait fondre le cœur",
+        "ja": "とろけるほど濃厚で、心までとろけます",
+        "ms": "Begitu lembap dan pekat sampai cair hati",
+        "th": "เนื้อฟัดจ์ละมุนจนใจละลาย",
+        "de": "So schokoladig-weich, dass das Herz schmilzt",
+        "es": "Tan meloso que te derrite el corazón",
+        "id": "Begitu fudgy sampai meluluhkan hati"
+      }
+    },
+    "Chicken Burrito": {
+      "name": {
+        "vi": "Burrito gà",
+        "ko": "치킨 부리또",
+        "zh": "鸡肉墨西哥卷饼",
+        "ru": "Буррито с курицей",
+        "fr": "Burrito au poulet",
+        "ja": "チキンブリトー",
+        "ms": "Burrito ayam",
+        "th": "เบอร์ริโตไก่",
+        "de": "Hähnchen-Burrito",
+        "es": "Burrito de pollo",
+        "id": "Burrito ayam"
+      },
+      "description": {
+        "vi": "Gà nướng, trứng khuấy, bơ, rau củ muối chua",
+        "ko": "구운 닭고기, 스크램블 에그, 아보카도, 절임 채소",
+        "zh": "烤鸡肉、炒蛋、牛油果、腌渍蔬菜",
+        "ru": "Курица-гриль, омлет-болтунья, авокадо, маринованные овощи",
+        "fr": "Poulet grillé, œufs brouillés, avocat, légumes marinés",
+        "ja": "グリルチキン、スクランブルエッグ、アボカド、野菜のピクルス",
+        "ms": "Ayam bakar, telur hancur, alpukat, sayur jeruk",
+        "th": "ไก่ย่าง ไข่คน อะโวคาโด ผักดอง",
+        "de": "Gegrilltes Hähnchen, Rührei, Avocado, eingelegtes Gemüse",
+        "es": "Pollo a la parrilla, huevos revueltos, aguacate, verduras encurtidas",
+        "id": "Ayam panggang, telur orak-arik, alpukat, sayuran acar"
+      }
+    },
+    "Vegetable Burrito": {
+      "name": {
+        "vi": "Burrito rau củ",
+        "ko": "야채 부리또",
+        "zh": "蔬菜墨西哥卷饼",
+        "ru": "Овощной буррито",
+        "fr": "Burrito aux légumes",
+        "ja": "ベジタブルブリトー",
+        "ms": "Burrito sayur",
+        "th": "เบอร์ริโตผัก",
+        "de": "Gemüse-Burrito",
+        "es": "Burrito de verduras",
+        "id": "Burrito sayuran"
+      },
+      "description": {
+        "vi": "Đậu phụ sả nướng, nấm, trứng khuấy, bơ, rau củ muối chua",
+        "ko": "구운 레몬그라스 두부, 버섯, 스크램블 에그, 아보카도, 절임 채소",
+        "zh": "香茅烤豆腐、蘑菇、炒蛋、牛油果、腌渍蔬菜",
+        "ru": "Тофу-гриль с лемонграссом, грибы, омлет-болтунья, авокадо, маринованные овощи",
+        "fr": "Tofu grillé à la citronnelle, champignons, œufs brouillés, avocat, légumes marinés",
+        "ja": "レモングラスのグリル豆腐、きのこ、スクランブルエッグ、アボカド、野菜のピクルス",
+        "ms": "Tauhu bakar serai, cendawan, telur hancur, alpukat, sayur jeruk",
+        "th": "เต้าหู้ย่างตะไคร้ เห็ด ไข่คน อะโวคาโด ผักดอง",
+        "de": "Gegrillter Zitronengras-Tofu, Pilze, Rührei, Avocado, eingelegtes Gemüse",
+        "es": "Tofu a la parrilla con citronela, champiñones, huevos revueltos, aguacate, verduras encurtidas",
+        "id": "Tahu panggang serai, jamur, telur orak-arik, alpukat, sayuran acar"
+      }
+    },
+    "Chicken Soup": {
+      "name": {
+        "vi": "Súp gà",
+        "ko": "치킨 수프",
+        "zh": "鸡汤面",
+        "ru": "Куриный суп",
+        "fr": "Soupe de poulet",
+        "ja": "チキンスープ",
+        "ms": "Sup ayam",
+        "th": "ซุปไก่",
+        "de": "Hühnersuppe",
+        "es": "Sopa de pollo",
+        "id": "Sup ayam"
+      },
+      "description": {
+        "vi": "Nước dùng gà bổ dưỡng, gà xé, trứng ở trên",
+        "ko": "영양 가득한 닭 육수, 찢은 닭고기, 달걀 토핑",
+        "zh": "滋补鸡汤，撕碎的鸡肉，顶部加蛋",
+        "ru": "Наваристый куриный бульон, рваная курица, яйцо сверху",
+        "fr": "Bouillon de poulet réconfortant, poulet effiloché, œuf dessus",
+        "ja": "滋養たっぷりのチキンブロス、ほぐしチキン、上に卵",
+        "ms": "Kuah ayam berkhasiat, ayam carik, telur di atas",
+        "th": "น้ำซุปไก่บำรุงร่างกาย ไก่ฉีก ไข่ด้านบน",
+        "de": "Kräftige Hühnerbrühe, gezupftes Hähnchen, Ei obendrauf",
+        "es": "Caldo de pollo reconfortante, pollo deshebrado, huevo encima",
+        "id": "Kaldu ayam bergizi, ayam suwir, telur di atasnya"
+      }
+    },
+    "Mushroom Soup": {
+      "name": {
+        "vi": "Súp nấm",
+        "ko": "버섯 수프",
+        "zh": "蘑菇汤面",
+        "ru": "Грибной суп",
+        "fr": "Soupe de champignons",
+        "ja": "きのこスープ",
+        "ms": "Sup cendawan",
+        "th": "ซุปเห็ด",
+        "de": "Pilzsuppe",
+        "es": "Sopa de champiñones",
+        "id": "Sup jamur"
+      },
+      "description": {
+        "vi": "Nước dùng rau củ, nấm tươi, đậu phụ, trứng ở trên",
+        "ko": "채소 육수, 신선한 버섯, 두부, 달걀 토핑",
+        "zh": "蔬菜高汤，新鲜蘑菇，豆腐，顶部加蛋",
+        "ru": "Овощной бульон, свежие грибы, тофу, яйцо сверху",
+        "fr": "Bouillon de légumes, champignons frais, tofu, œuf dessus",
+        "ja": "野菜ブロス、新鮮なきのこ、豆腐、上に卵",
+        "ms": "Kuah sayuran, cendawan segar, tauhu, telur di atas",
+        "th": "น้ำซุปผัก เห็ดสด เต้าหู้ ไข่ด้านบน",
+        "de": "Gemüsebrühe, frische Pilze, Tofu, Ei obendrauf",
+        "es": "Caldo de verduras, champiñones frescos, tofu, huevo encima",
+        "id": "Kaldu sayuran, jamur segar, tahu, telur di atasnya"
+      }
+    },
+    "Family Dinner by Mom": {
+      "name": {
+        "vi": "Bữa tối gia đình do mẹ nấu",
+        "ko": "엄마표 가족 저녁 식사",
+        "zh": "妈妈的家庭晚餐",
+        "ru": "Семейный ужин от мамы",
+        "fr": "Dîner en famille par maman",
+        "ja": "ママの家庭料理ディナー",
+        "ms": "Makan malam keluarga masakan mama",
+        "th": "มื้อเย็นแบบครอบครัวฝีมือแม่",
+        "de": "Familienabendessen von Mama",
+        "es": "Cena familiar de mamá",
+        "id": "Makan malam keluarga masakan mama"
+      },
+      "description": {
+        "vi": "Bữa tối nấu tại nhà, tính theo người, đã gồm một thức uống",
+        "ko": "집밥 저녁 식사, 1인 기준, 음료 1잔 포함",
+        "zh": "家常晚餐，每人价，含一杯饮品",
+        "ru": "Домашний ужин, цена на человека, включая один напиток",
+        "fr": "Dîner fait maison, par personne, boisson comprise",
+        "ja": "家庭料理のディナー、お一人様、ドリンク1杯付き",
+        "ms": "Makan malam masakan rumah, seorang, termasuk satu minuman",
+        "th": "มื้อเย็นแบบทำเองที่บ้าน ราคาต่อท่าน รวมเครื่องดื่มหนึ่งแก้ว",
+        "de": "Hausgemachtes Abendessen, pro Person, inklusive eines Getränks",
+        "es": "Cena casera, por persona, con una bebida incluida",
+        "id": "Makan malam masakan rumah, per orang, termasuk satu minuman"
+      }
+    },
+    "Pancakes with homemade jam": {
+      "name": {
+        "vi": "Pancake mứt tự làm",
+        "ko": "수제 잼 팬케이크",
+        "zh": "自制果酱松饼",
+        "ru": "Панкейки с домашним джемом",
+        "fr": "Pancakes à la confiture maison",
+        "ja": "手作りジャムのパンケーキ",
+        "ms": "Pancake dengan jem buatan sendiri",
+        "th": "แพนเค้กแยมโฮมเมด",
+        "de": "Pancakes mit hausgemachter Marmelade",
+        "es": "Pancakes con mermelada casera",
+        "id": "Pancake dengan selai buatan sendiri"
+      },
+      "description": {
+        "vi": "Mứt theo mùa tự làm và trái cây tươi, phủ sô cô la, caramel muối và mật ong",
+        "ko": "수제 시즌 잼과 신선한 과일에 초콜릿, 솔티드 카라멜, 꿀을 마무리로",
+        "zh": "自制时令果酱与新鲜水果，淋上巧克力、海盐焦糖和蜂蜜",
+        "ru": "Домашний сезонный джем и свежие фрукты, сверху шоколад, солёная карамель и мёд",
+        "fr": "Confiture de saison maison et fruits frais, finis au chocolat, caramel salé et miel",
+        "ja": "自家製の季節のジャムと新鮮なフルーツ、仕上げにチョコレート、塩キャラメル、はちみつ",
+        "ms": "Jem bermusim buatan sendiri dan buah segar, dihiasi coklat, karamel masin dan madu",
+        "th": "แยมตามฤดูกาลโฮมเมดและผลไม้สด ราดช็อกโกแลต ซอลต์คาราเมล และน้ำผึ้ง",
+        "de": "Hausgemachte Saisonmarmelade und frisches Obst, dazu Schokolade, Salzkaramell und Honig",
+        "es": "Mermelada casera de temporada y fruta fresca, rematado con chocolate, caramelo salado y miel",
+        "id": "Selai musiman buatan sendiri dan buah segar, dilengkapi cokelat, karamel asin dan madu"
+      }
+    },
+    "French toast": {
+      "name": {
+        "vi": "Bánh mì nướng kiểu Pháp",
+        "ko": "프렌치토스트",
+        "zh": "法式吐司",
+        "ru": "Французский тост",
+        "fr": "Pain perdu",
+        "ja": "フレンチトースト",
+        "ms": "Roti Perancis",
+        "th": "เฟรนช์โทสต์",
+        "de": "French Toast",
+        "es": "Tostadas francesas",
+        "id": "French toast"
+      },
+      "description": {
+        "vi": "Kèm trứng khuấy béo mịn và mứt dâu tự làm",
+        "ko": "부드러운 스크램블 에그와 수제 딸기잼을 곁들여요",
+        "zh": "配奶香炒蛋与自制草莓果酱",
+        "ru": "С нежной яичницей-болтуньей и домашним клубничным джемом",
+        "fr": "Avec œufs brouillés crémeux et confiture de fraises maison",
+        "ja": "クリーミーなスクランブルエッグと自家製いちごジャム添え",
+        "ms": "Dengan telur hancur berkrim dan jem strawberi buatan sendiri",
+        "th": "พร้อมไข่คนนุ่มครีมมี่และแยมสตรอว์เบอร์รีโฮมเมด",
+        "de": "Mit cremigem Rührei und hausgemachter Erdbeermarmelade",
+        "es": "Con huevos revueltos cremosos y mermelada casera de fresa",
+        "id": "Dengan telur orak-arik creamy dan selai stroberi buatan sendiri"
+      }
+    },
+    "Pancake Tacos": {
+      "name": {
+        "vi": "Pancake Tacos",
+        "ko": "팬케이크 타코",
+        "zh": "松饼塔可",
+        "ru": "Панкейк-тако",
+        "fr": "Tacos de pancakes",
+        "ja": "パンケーキタコス",
+        "ms": "Taco pancake",
+        "th": "แพนเค้กทาโก้",
+        "de": "Pancake-Tacos",
+        "es": "Tacos de pancakes",
+        "id": "Taco pancake"
+      },
+      "description": {
+        "vi": "Dành cho hai người. Phủ trứng khuấy béo mịn và mứt dâu tự làm",
+        "ko": "2인용. 부드러운 스크램블 에그와 수제 딸기잼을 위에 올려요",
+        "zh": "双人份。上面是奶香炒蛋和自制草莓果酱",
+        "ru": "На двоих. Сверху нежная яичница-болтунья и домашний клубничный джем",
+        "fr": "Pour deux. Avec œufs brouillés crémeux et confiture de fraises maison dessus",
+        "ja": "2名様分。クリーミーなスクランブルエッグと自家製いちごジャムをのせて",
+        "ms": "Untuk dua orang. Dengan telur hancur berkrim dan jem strawberi buatan sendiri di atas",
+        "th": "สำหรับสองท่าน ท็อปด้วยไข่คนนุ่มครีมมี่และแยมสตรอว์เบอร์รีโฮมเมด",
+        "de": "Für zwei. Mit cremigem Rührei und hausgemachter Erdbeermarmelade obenauf",
+        "es": "Para dos. Con huevos revueltos cremosos y mermelada casera de fresa por encima",
+        "id": "Untuk berdua. Dengan telur orak-arik creamy dan selai stroberi buatan sendiri di atasnya"
+      }
+    }
+  }
+}

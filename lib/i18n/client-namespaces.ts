@@ -86,6 +86,7 @@ export const CLIENT_NAMESPACES = [
   "tribes",
   "userMenu",
   "venueClaim",
+  "venueMenu",
   "venues",
   "viewToggle",
 ];

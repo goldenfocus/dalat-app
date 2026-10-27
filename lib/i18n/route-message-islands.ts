@@ -72,7 +72,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   },
   {
     test: (p) => inSection(p, "venues"),
-    namespaces: ["venues", "mapPage", "categories"],
+    namespaces: ["venues", "venueMenu", "mapPage", "categories"],
   },
   {
     test: (p) => inSection(p, "loyalty"),
@@ -135,6 +135,8 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "people",
       // "How it went" recap card on past events
       "recap",
+      // Preorder-from-venue-menu card
+      "venueMenu",
     ],
   },
   {

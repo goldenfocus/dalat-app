@@ -39,6 +39,10 @@ import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { JsonLd } from "@/lib/structured-data";
 import { getVenuePastEventsPath } from "@/lib/venues/routes";
+import { localeUrl } from "@/lib/i18n/locale-url";
+import { getPublicMenu } from "@/lib/menu/queries";
+import { generateMenuSchema, venueMenuPath } from "@/lib/menu/schema";
+import { MenuSections } from "@/components/menu/menu-sections";
 
 interface VenueContentProps {
   venueId: string;
@@ -233,6 +237,10 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const translatedDescription = venueTranslations.description ?? venue.description;
   const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
+  const menu = await getPublicMenu(venue.id, locale);
+  const tMenu = await getTranslations("venueMenu");
+  const menuUrl = localeUrl(locale as Locale, venueMenuPath(venue.slug));
+
   // Own photos first, then Google Places photos (proxied, attributed, never stored).
   const placePhoto = (name: string, w: number) =>
     `/api/places/photo?w=${w}&name=${encodeURIComponent(name)}`;
@@ -327,6 +335,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     ...(venue.email && { email: venue.email }),
     sameAs: [venue.google_maps_url, venue.website_url, venue.facebook_url, venue.instagram_url].filter(Boolean),
     ...(venue.price_range && { priceRange: venue.price_range }),
+    ...(menu.length > 0 && { hasMenu: menuUrl }),
     ...(venue.is_verified && { isAccessibleForFree: venue.venue_type === "park" }),
   };
 
@@ -351,7 +360,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
   return (
     <>
-      <JsonLd data={localBusinessSchema} />
+      <JsonLd data={menu.length > 0 ? [localBusinessSchema, generateMenuSchema(venue, menu, locale)] : localBusinessSchema} />
 
       {/* Hero Section with Cover Photo */}
       {heroImage ? (
@@ -599,6 +608,35 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
             <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
+          </section>
+        )}
+
+        {/* Menu — full text on the page so crawlers + AI answer engines can quote dishes and prices */}
+        {menu.length > 0 && (
+          <section id="menu" className="mb-8 scroll-mt-20">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-xl font-semibold">{tMenu("menuTitle")}</h2>
+              <div className="flex flex-wrap items-center gap-2">
+                {canManageVenue && (
+                  <Link
+                    href={`/venues/${venue.slug}/edit/menu`}
+                    className="inline-flex min-h-11 items-center rounded-lg border px-3 text-sm font-medium transition-colors hover:bg-muted active:scale-95"
+                  >
+                    {tMenu("manageMenu")}
+                  </Link>
+                )}
+                <Link
+                  href={`/venues/${venue.slug}/menu`}
+                  className="inline-flex min-h-11 items-center text-sm underline underline-offset-2"
+                >
+                  {tMenu("viewFullMenu")}
+                </Link>
+              </div>
+            </div>
+            {venue.preorder_enabled && (
+              <p className="mb-4 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">{tMenu("preorderBanner")}</p>
+            )}
+            <MenuSections sections={menu} locale={locale} showNav={false} />
           </section>
         )}
 

@@ -318,6 +318,8 @@ export interface Venue {
   google_photos?: GooglePlacePhoto[] | null;
   google_reviews?: GooglePlaceReview[] | null;
   google_synced_at?: string | null;
+  /** Guests can preorder from the venue menu on events held here. */
+  preorder_enabled?: boolean;
 
   // Media
   logo_url: string | null;

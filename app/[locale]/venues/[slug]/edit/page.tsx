@@ -21,11 +21,15 @@ export default async function EditVenueProfilePage({ params }: Props) {
   const editor = await venueEditor(venue.id);
   if (!editor) redirect(`/${locale}/venues/${slug}/claim`);
   const t = await getTranslations("venueClaim");
+  const tMenu = await getTranslations("venueMenu");
   return (
     <main className="mx-auto max-w-lg space-y-6 px-4 py-8">
       <Link href={`/${venue.slug}`} className="text-sm text-muted-foreground">← {venue.name}</Link>
       <h1 className="text-2xl font-semibold">{t("editTitle", { name: venue.name })}</h1>
       <p className="text-sm text-muted-foreground">{t("photosHint")}</p>
+      <Link href={`/venues/${venue.slug}/edit/menu`} className="inline-flex min-h-11 items-center rounded-lg border px-4 text-sm font-medium hover:bg-muted">
+        {tMenu("manageMenu")}
+      </Link>
       <VenueProfileForm venue={venue} />
     </main>
   );
