@@ -22,7 +22,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Venue, Locale } from "@/lib/types";
 import { generateVenueMetadata } from "@/lib/metadata";
-import { JsonLd, generateLocalBusinessSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateLocalBusinessSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/structured-data";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
 import { PhoneActionButton } from "@/components/venues/phone-action-button";
@@ -34,6 +38,9 @@ import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { getVenuePastEventsPath } from "@/lib/venues/routes";
+
+import { VenueShareButton } from "@/components/venues/venue-share-button";
+import { OriginalText } from "@/components/ui/original-text";
 
 interface PageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -127,7 +134,9 @@ async function isUserLoggedIn(): Promise<boolean> {
   return !!user;
 }
 
-async function canUserManageVenue(venueOwnerId: string | null): Promise<boolean> {
+async function canUserManageVenue(
+  venueOwnerId: string | null,
+): Promise<boolean> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -152,7 +161,9 @@ async function canUserManageVenue(venueOwnerId: string | null): Promise<boolean>
   return false;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   // Use static client for metadata (no cookies) so OG tags appear in initial <head>
   const supabase = createStaticClient();
@@ -160,7 +171,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const { data: venue } = await supabase
     .from("venues")
-    .select("id, slug, name, description, logo_url, cover_photo_url, venue_type, address")
+    .select(
+      "id, slug, name, description, logo_url, cover_photo_url, venue_type, address",
+    )
     .eq("slug", slug)
     .single();
 
@@ -180,7 +193,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     "venue",
     venue.id,
     locale as Locale,
-    { description: venue.description }
+    { description: venue.description },
   );
 
   return generateVenueMetadata(
@@ -189,15 +202,16 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: venueTranslations.description ?? venue.description,
     },
     locale as Locale,
-    count ?? 0
+    count ?? 0,
   );
 }
 
 export default async function VenuePage({ params }: PageProps) {
   const { slug, locale: urlLocale } = await params;
   // Use URL locale as source of truth - getLocale() can fail if middleware context isn't set
-  const locale = urlLocale || await getLocale();
+  const locale = urlLocale || (await getLocale());
   const t = await getTranslations("venues");
+  const common = await getTranslations("common");
 
   const venueData = await getVenueData(slug);
 
@@ -205,7 +219,14 @@ export default async function VenuePage({ params }: PageProps) {
     notFound();
   }
 
-  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity } = venueData;
+  const {
+    venue,
+    organizer,
+    upcoming_events,
+    happening_now,
+    past_events_count,
+    recent_activity,
+  } = venueData;
   const [isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),
@@ -217,29 +238,44 @@ export default async function VenuePage({ params }: PageProps) {
     "venue",
     venue.id,
     locale as Locale,
-    { description: venue.description }
+    { description: venue.description },
   );
-  const translatedDescription = venueTranslations.description ?? venue.description;
+  const translatedDescription =
+    venueTranslations.description ?? venue.description;
 
   const isUnclaimed = !venue.owner_id;
   const showClaimBanner = isUnclaimed && isLoggedIn && !venue.is_verified;
 
-  const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
+  const typeConfig = venue.venue_type
+    ? getVenueTypeConfig(venue.venue_type)
+    : null;
   const TypeIcon = typeConfig?.icon;
 
   // Use translated description for structured data
   const venueWithTranslation = { ...venue, description: translatedDescription };
-  const localBusinessSchema = generateLocalBusinessSchema(venueWithTranslation, locale, upcoming_events.length);
+  const localBusinessSchema = generateLocalBusinessSchema(
+    venueWithTranslation,
+    locale,
+    upcoming_events.length,
+  );
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
       { name: t("title"), url: "/venues" },
       { name: venue.name, url: `/venues/${venue.slug}` },
     ],
-    locale
+    locale,
   );
 
-  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
+  const daysOfWeek = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ] as const;
   const dayLabels: Record<string, string> = {
     monday: "Mon",
     tuesday: "Tue",
@@ -251,11 +287,36 @@ export default async function VenuePage({ params }: PageProps) {
   };
 
   const amenities = [
-    { key: "wifi", icon: Wifi, has: venue.has_wifi, label: t("amenities.wifi") },
-    { key: "parking", icon: Car, has: venue.has_parking, label: t("amenities.parking") },
-    { key: "outdoor", icon: Sun, has: venue.has_outdoor_seating, label: t("amenities.outdoorSeating") },
-    { key: "pet", icon: Dog, has: venue.is_pet_friendly, label: t("amenities.petFriendly") },
-    { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
+    {
+      key: "wifi",
+      icon: Wifi,
+      has: venue.has_wifi,
+      label: t("amenities.wifi"),
+    },
+    {
+      key: "parking",
+      icon: Car,
+      has: venue.has_parking,
+      label: t("amenities.parking"),
+    },
+    {
+      key: "outdoor",
+      icon: Sun,
+      has: venue.has_outdoor_seating,
+      label: t("amenities.outdoorSeating"),
+    },
+    {
+      key: "pet",
+      icon: Dog,
+      has: venue.is_pet_friendly,
+      label: t("amenities.petFriendly"),
+    },
+    {
+      key: "wheelchair",
+      icon: Accessibility,
+      has: venue.is_wheelchair_accessible,
+      label: t("amenities.wheelchair"),
+    },
   ].filter((a) => a.has);
 
   return (
@@ -372,9 +433,7 @@ export default async function VenuePage({ params }: PageProps) {
               )}
 
               {/* Name */}
-              <h1 className="text-2xl sm:text-3xl font-bold">
-                {venue.name}
-              </h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{venue.name}</h1>
 
               {/* Type and open status */}
               <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -423,6 +482,12 @@ export default async function VenuePage({ params }: PageProps) {
 
         {/* Action buttons - icon-only, min-h-11 ensures 44px touch targets */}
         <div className="flex flex-wrap gap-2 mb-6">
+          <VenueShareButton
+            name={venue.name}
+            shareText={venue.name}
+            url={`https://dalat.app${locale === "en" ? "" : `/${locale}`}/venues/${venue.slug}`}
+            label={common("share")}
+          />
           {venue.phone && (
             <PhoneActionButton
               phone={venue.phone}
@@ -462,7 +527,7 @@ export default async function VenuePage({ params }: PageProps) {
               aria-label="Facebook"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </a>
           )}
@@ -476,7 +541,7 @@ export default async function VenuePage({ params }: PageProps) {
               aria-label="Instagram"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
               </svg>
             </a>
           )}
@@ -488,7 +553,16 @@ export default async function VenuePage({ params }: PageProps) {
           {translatedDescription && (
             <div className="mb-8">
               <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
-              <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {translatedDescription}
+              </p>
+              {translatedDescription !== venue.description &&
+                venue.description && (
+                  <OriginalText
+                    text={venue.description}
+                    sourceLocale={venue.source_locale || undefined}
+                  />
+                )}
             </div>
           )}
 
@@ -514,12 +588,16 @@ export default async function VenuePage({ params }: PageProps) {
                     )}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold truncate">{organizer.name}</span>
+                        <span className="font-semibold truncate">
+                          {organizer.name}
+                        </span>
                         {organizer.is_verified && (
                           <BadgeCheck className="w-4 h-4 text-primary flex-shrink-0" />
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground">{t("viewOrganizerProfile")}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {t("viewOrganizerProfile")}
+                      </p>
                     </div>
                   </CardContent>
                 </Card>
@@ -548,86 +626,92 @@ export default async function VenuePage({ params }: PageProps) {
         {/* Events Section */}
         <section id="events" className="pt-2">
           {/* Happening now */}
-        {happening_now.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              {t("happeningNow")}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {happening_now.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden">
-                    <CardContent className="p-0">
-                      {event.image_url && (
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-full aspect-[2/1] object-cover"
-                        />
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold mb-1">{event.title}</h3>
-                        <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                          {t("liveNow")}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
+          {happening_now.length > 0 && (
+            <section className="mb-8">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                </span>
+                {t("happeningNow")}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {happening_now.map((event) => (
+                  <Link key={event.id} href={`/events/${event.slug}`}>
+                    <Card className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden">
+                      <CardContent className="p-0">
+                        {event.image_url && (
+                          <img
+                            src={event.image_url}
+                            alt=""
+                            className="w-full aspect-[2/1] object-cover"
+                          />
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold mb-1">{event.title}</h3>
+                          <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                            {t("liveNow")}
+                          </p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Upcoming events */}
+          {upcoming_events.length > 0 && (
+            <section className="mb-8">
+              <h2 className="text-xl font-semibold mb-4">
+                {t("upcomingEvents")}
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {upcoming_events.map((event) => (
+                  <Link key={event.id} href={`/events/${event.slug}`}>
+                    <Card className="hover:border-primary/50 transition-colors overflow-hidden">
+                      <CardContent className="p-0">
+                        {event.image_url && (
+                          <img
+                            src={event.image_url}
+                            alt=""
+                            className="w-full aspect-[2/1] object-cover"
+                          />
+                        )}
+                        <div className="p-4">
+                          <h3 className="font-semibold mb-2">{event.title}</h3>
+                          <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                            <Calendar className="w-4 h-4" />
+                            {formatInDaLat(
+                              event.starts_at,
+                              "EEE, MMM d 'at' h:mm a",
+                              locale as Locale,
+                            )}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* No events state */}
+          {upcoming_events.length === 0 && happening_now.length === 0 && (
+            <div className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
+              <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
+              <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
             </div>
-          </section>
-        )}
+          )}
 
-        {/* Upcoming events */}
-        {upcoming_events.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t("upcomingEvents")}</h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {upcoming_events.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-primary/50 transition-colors overflow-hidden">
-                    <CardContent className="p-0">
-                      {event.image_url && (
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-full aspect-[2/1] object-cover"
-                        />
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold mb-2">{event.title}</h3>
-                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="w-4 h-4" />
-                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a", locale as Locale)}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* No events state */}
-        {upcoming_events.length === 0 && happening_now.length === 0 && (
-          <div className="mb-8 text-center py-8 bg-muted/30 rounded-lg">
-            <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-3" />
-            <p className="text-muted-foreground">{t("noUpcomingEvents")}</p>
-          </div>
-        )}
-
-        {/* Past Events */}
-        <PastEventsSection
-          events={pastEvents}
-          locale={locale as Locale}
-          label={t("pastEvents")}
-        />
+          {/* Past Events */}
+          <PastEventsSection
+            events={pastEvents}
+            locale={locale as Locale}
+            label={t("pastEvents")}
+          />
         </section>
 
         {/* Gallery Section */}
@@ -643,9 +727,8 @@ export default async function VenuePage({ params }: PageProps) {
                 photos={venue.photos || []}
               />
             ) : (
-              venue.photos && venue.photos.length > 0 && (
-                <PhotoGallery photos={venue.photos} />
-              )
+              venue.photos &&
+              venue.photos.length > 0 && <PhotoGallery photos={venue.photos} />
             )}
           </section>
         ) : null}
@@ -666,8 +749,18 @@ export default async function VenuePage({ params }: PageProps) {
                 {daysOfWeek.map((day) => {
                   const hours = venue.operating_hours?.[day];
                   const today = new Date();
-                  const daLatTime = new Date(today.getTime() + 7 * 60 * 60 * 1000);
-                  const currentDay = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][daLatTime.getUTCDay()];
+                  const daLatTime = new Date(
+                    today.getTime() + 7 * 60 * 60 * 1000,
+                  );
+                  const currentDay = [
+                    "sunday",
+                    "monday",
+                    "tuesday",
+                    "wednesday",
+                    "thursday",
+                    "friday",
+                    "saturday",
+                  ][daLatTime.getUTCDay()];
                   const isToday = currentDay === day;
 
                   return (
@@ -677,11 +770,21 @@ export default async function VenuePage({ params }: PageProps) {
                         isToday ? "bg-primary/10 font-medium" : ""
                       }`}
                     >
-                      <span className={isToday ? "text-primary" : "text-muted-foreground"}>
+                      <span
+                        className={
+                          isToday ? "text-primary" : "text-muted-foreground"
+                        }
+                      >
                         {dayLabels[day]}
                         {isToday && " (Today)"}
                       </span>
-                      <span className={hours === "closed" || !hours ? "text-muted-foreground" : ""}>
+                      <span
+                        className={
+                          hours === "closed" || !hours
+                            ? "text-muted-foreground"
+                            : ""
+                        }
+                      >
                         {hours === "closed" || !hours
                           ? "Closed"
                           : `${hours.open} - ${hours.close}`}
@@ -727,7 +830,9 @@ export default async function VenuePage({ params }: PageProps) {
               )}
               {recent_activity.total_visitors > 0 && (
                 <span>
-                  {t("recentActivity", { count: recent_activity.total_visitors })}
+                  {t("recentActivity", {
+                    count: recent_activity.total_visitors,
+                  })}
                 </span>
               )}
             </div>

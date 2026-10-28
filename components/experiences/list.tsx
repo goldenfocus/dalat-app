@@ -1,10 +1,12 @@
+import { translatedRecords } from "@/lib/translations/public-content";
+import { OriginalText } from "@/components/ui/original-text";
 import { TopicLinks } from "./topic-links";
 import { topicTerms, topicHref } from "@/lib/experiences/topics";
 import { suggestsEventDiscovery } from "@/lib/experiences/actions";
 import { AttributedText } from "./attributed-text";
 import { createClient } from "@/lib/supabase/server";
 import { Link } from "@/lib/i18n/routing";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 type ExperienceCard = {
   id: string;
   title: string;
@@ -64,7 +66,22 @@ export async function ExperienceList({
     : null;
   if (error) throw new Error("Experience discovery unavailable");
   const more = !!tag && !!rows && rows.length > 24 && page < 417;
-  const data = rows?.slice(0, 24);
+  const locale = await getLocale();
+  const translations = await translatedRecords(
+    "experience",
+    (rows?.slice(0, 24) || []).map((row) => row.id),
+    locale,
+  );
+  const data = (rows?.slice(0, 24) || []).map((source) => {
+    const translated = translations.get(source.id) || new Map();
+    return {
+      ...source,
+      originalTitle: source.title,
+      originalSummary: source.summary,
+      title: translated.get("title") || source.title,
+      summary: translated.get("summary") || source.summary,
+    };
+  });
   if (!data?.length)
     return showEmpty ? (
       <section className="rounded-2xl border border-dashed p-8 text-center">
@@ -101,6 +118,12 @@ export async function ExperienceList({
               <h3 className="text-lg font-medium group-hover:underline">
                 <Link href={`/experiences/${e.id}`}>{e.title}</Link>
               </h3>
+              {(e.title !== e.originalTitle ||
+                e.summary !== e.originalSummary) && (
+                <OriginalText
+                  text={`${e.originalTitle}\n\n${e.originalSummary}`}
+                />
+              )}
               <TopicLinks tags={e.tags} observations={e.observations} />
               <p className="line-clamp-3 text-sm text-muted-foreground">
                 <AttributedText

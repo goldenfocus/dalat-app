@@ -1,9 +1,25 @@
 "use client";
 
+import { TranslatedContent } from "@/components/ui/translated-content";
+
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { X, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, MessageCircle, Share2, ExternalLink, Grid3X3, Loader2, RotateCcw, Camera, Sparkles } from "lucide-react";
+import {
+  X,
+  ChevronUp,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  MessageCircle,
+  Share2,
+  ExternalLink,
+  Grid3X3,
+  Loader2,
+  RotateCcw,
+  Camera,
+  Sparkles,
+} from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -18,28 +34,70 @@ import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentActionsMenu } from "@/components/moments/moment-actions-menu";
-import { MomentDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
+import {
+  MomentDownloadButton,
+  InAppBrowserDownloadHint,
+} from "@/components/moments/moment-download-button";
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
 
 // Hilariously random end-of-album phrases
 const END_PHRASES = [
-  { main: "That's all folks!", sub: "You've officially seen everything. Achievement unlocked." },
-  { main: "The End... or is it?", sub: "Plot twist: you can add more moments!" },
-  { main: "You speedran this album!", sub: "New world record? Probably not. But still impressive." },
-  { main: "Congratulations, you reached the edge of the internet!", sub: "Just kidding, there's more out there. But not here." },
-  { main: "Album complete!", sub: "Your prize? The memories. And maybe some FOMO." },
-  { main: "You've seen things...", sub: "Things other people might have also seen. You're not special. But you're here!" },
+  {
+    main: "That's all folks!",
+    sub: "You've officially seen everything. Achievement unlocked.",
+  },
+  {
+    main: "The End... or is it?",
+    sub: "Plot twist: you can add more moments!",
+  },
+  {
+    main: "You speedran this album!",
+    sub: "New world record? Probably not. But still impressive.",
+  },
+  {
+    main: "Congratulations, you reached the edge of the internet!",
+    sub: "Just kidding, there's more out there. But not here.",
+  },
+  {
+    main: "Album complete!",
+    sub: "Your prize? The memories. And maybe some FOMO.",
+  },
+  {
+    main: "You've seen things...",
+    sub: "Things other people might have also seen. You're not special. But you're here!",
+  },
   { main: "No more moments!", sub: "Unless... you make one? *wink wink*" },
-  { main: "EOF: End of Fun", sub: "Just kidding, the fun never ends. Loop it!" },
-  { main: "You made it!", sub: "Through all the photos. Some were blurry. That's okay." },
-  { main: "Achievement: Album Completionist", sub: "Your reward: the satisfaction of a job well scrolled." },
-  { main: "This is where the credits would roll", sub: "But we're too lazy for that. Here are the stars instead." },
+  {
+    main: "EOF: End of Fun",
+    sub: "Just kidding, the fun never ends. Loop it!",
+  },
+  {
+    main: "You made it!",
+    sub: "Through all the photos. Some were blurry. That's okay.",
+  },
+  {
+    main: "Achievement: Album Completionist",
+    sub: "Your reward: the satisfaction of a job well scrolled.",
+  },
+  {
+    main: "This is where the credits would roll",
+    sub: "But we're too lazy for that. Here are the stars instead.",
+  },
   { main: "Fin.", sub: "That's French for 'add your own moment already!'" },
-  { main: "You've reached enlightenment!", sub: "Or at least the end of this album. Same thing, basically." },
-  { main: "The algorithm has nothing left for you", sub: "Time to create your own content. No pressure." },
-  { main: "End of transmission", sub: "Beep boop. Add moments to extend transmission." },
+  {
+    main: "You've reached enlightenment!",
+    sub: "Or at least the end of this album. Same thing, basically.",
+  },
+  {
+    main: "The algorithm has nothing left for you",
+    sub: "Time to create your own content. No pressure.",
+  },
+  {
+    main: "End of transmission",
+    sub: "Beep boop. Add moments to extend transmission.",
+  },
 ];
 
 interface ImmersiveMomentViewProps {
@@ -75,7 +133,9 @@ export function ImmersiveMomentView({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showComments, setShowComments] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | undefined>();
-  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(new Map());
+  const [commentCounts, setCommentCounts] = useState<Map<string, number>>(
+    new Map(),
+  );
   const [showEndScreen, setShowEndScreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -119,7 +179,9 @@ export function ImmersiveMomentView({
   useEffect(() => {
     async function fetchUser() {
       const supabase = createClient();
-      const { data: { user } }: { data: { user: User | null } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      }: { data: { user: User | null } } = await supabase.auth.getUser();
       setCurrentUserId(user?.id);
     }
     fetchUser();
@@ -133,7 +195,9 @@ export function ImmersiveMomentView({
       .then((res) => res.json())
       .then((data) => {
         if (typeof data.total_count === "number") {
-          setCommentCounts((prev) => new Map(prev).set(moment.id, data.total_count));
+          setCommentCounts((prev) =>
+            new Map(prev).set(moment.id, data.total_count),
+          );
         }
       })
       .catch(console.error);
@@ -282,9 +346,11 @@ export function ImmersiveMomentView({
   }
 
   // Get optimized image URL
-  const imageUrl = moment.content_type === "photo" && moment.media_url
-    ? optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url
-    : null;
+  const imageUrl =
+    moment.content_type === "photo" && moment.media_url
+      ? optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) ||
+        moment.media_url
+      : null;
 
   return (
     <div
@@ -312,33 +378,50 @@ export function ImmersiveMomentView({
         <div className="flex-1 relative flex items-center justify-center overflow-hidden px-4 py-16 lg:py-20">
           {/* Photo */}
           {moment.content_type === "photo" && imageUrl && (
-            <div className="relative max-w-full max-h-full" style={{ maxHeight: 'calc(100vh - 200px)' }}>
+            <div
+              className="relative max-w-full max-h-full"
+              style={{ maxHeight: "calc(100vh - 200px)" }}
+            >
               <img
                 src={imageUrl}
                 alt={moment.text_content || "Photo"}
                 className="max-w-full max-h-full object-contain"
-                style={{ maxHeight: 'calc(100vh - 200px)' }}
+                style={{ maxHeight: "calc(100vh - 200px)" }}
               />
-              <MomentWatermark displayName={moment.display_name || moment.username} />
+              <MomentWatermark
+                displayName={moment.display_name || moment.username}
+              />
             </div>
           )}
 
           {/* Video */}
-          {moment.content_type === "video" && (moment.media_url || moment.cf_video_uid) && (
-            <div className="w-full h-full flex items-center justify-center">
-              <MomentVideoPlayer
-                src={moment.media_url || ""}
-                hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined}
-                poster={moment.thumbnail_url || undefined}
-              />
-            </div>
-          )}
+          {moment.content_type === "video" &&
+            (moment.media_url || moment.cf_video_uid) && (
+              <div className="w-full h-full flex items-center justify-center">
+                <MomentVideoPlayer
+                  src={moment.media_url || ""}
+                  hlsSrc={
+                    moment.cf_playback_url ||
+                    getCfStreamPlaybackUrl(moment.cf_video_uid) ||
+                    undefined
+                  }
+                  poster={moment.thumbnail_url || undefined}
+                />
+              </div>
+            )}
 
           {/* Text-only */}
           {moment.content_type === "text" && moment.text_content && (
             <div className="max-w-lg p-8">
               <p className="text-2xl text-white text-center whitespace-pre-wrap leading-relaxed">
-                {moment.text_content}
+                {
+                  <TranslatedContent
+                    type="moment"
+                    id={moment.id}
+                    field="text_content"
+                    original={moment.text_content}
+                  />
+                }
               </p>
             </div>
           )}
@@ -351,7 +434,7 @@ export function ImmersiveMomentView({
               disabled={!hasPrev}
               className={cn(
                 "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
-                hasPrev ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+                hasPrev ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed",
               )}
               aria-label={t("lightbox.previous")}
             >
@@ -362,7 +445,9 @@ export function ImmersiveMomentView({
               disabled={!hasNext && !hasMore}
               className={cn(
                 "w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white transition-all",
-                (hasNext || hasMore) ? "hover:bg-white/20" : "opacity-30 cursor-not-allowed"
+                hasNext || hasMore
+                  ? "hover:bg-white/20"
+                  : "opacity-30 cursor-not-allowed",
               )}
               aria-label={t("lightbox.next")}
             >
@@ -380,7 +465,9 @@ export function ImmersiveMomentView({
             disabled={!hasPrev}
             className={cn(
               "hidden lg:flex absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
-              hasPrev ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
+              hasPrev
+                ? "hover:bg-white/20 hover:scale-105"
+                : "opacity-30 cursor-not-allowed",
             )}
             aria-label={t("lightbox.previous")}
           >
@@ -391,7 +478,9 @@ export function ImmersiveMomentView({
             disabled={!hasNext && !hasMore}
             className={cn(
               "hidden lg:flex absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm items-center justify-center text-white transition-all",
-              (hasNext || hasMore) ? "hover:bg-white/20 hover:scale-105" : "opacity-30 cursor-not-allowed"
+              hasNext || hasMore
+                ? "hover:bg-white/20 hover:scale-105"
+                : "opacity-30 cursor-not-allowed",
             )}
             aria-label={t("lightbox.next")}
           >
@@ -485,7 +574,9 @@ export function ImmersiveMomentView({
                   {moment.display_name || moment.username || "Anonymous"}
                 </p>
                 <p className="text-white/60 text-xs">
-                  {formatDistanceToNow(new Date(moment.created_at), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(moment.created_at), {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
             </div>
@@ -493,7 +584,14 @@ export function ImmersiveMomentView({
             {/* Caption */}
             {moment.text_content && moment.content_type !== "text" && (
               <p className="text-white text-sm leading-relaxed line-clamp-3 lg:line-clamp-none lg:max-h-24 lg:overflow-y-auto">
-                {moment.text_content}
+                {
+                  <TranslatedContent
+                    type="moment"
+                    id={moment.id}
+                    field="text_content"
+                    original={moment.text_content}
+                  />
+                }
               </p>
             )}
 
@@ -579,7 +677,9 @@ export function ImmersiveMomentView({
             {contributors.length > 0 && (
               <div className="mb-6 animate-in slide-in-from-bottom-4 duration-500 delay-200">
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-3">
-                  {contributors.length === 1 ? "The star of the show" : `${contributors.length} contributors made this happen`}
+                  {contributors.length === 1
+                    ? "The star of the show"
+                    : `${contributors.length} contributors made this happen`}
                 </p>
                 <div className="flex justify-center -space-x-2">
                   {contributors.map((c, i) => (
@@ -642,7 +742,8 @@ export function ImmersiveMomentView({
 
             {/* Stats */}
             <p className="mt-6 text-white/30 text-xs animate-in slide-in-from-bottom-4 duration-500 delay-500">
-              {moments.length} moment{moments.length !== 1 ? "s" : ""} in this album
+              {moments.length} moment{moments.length !== 1 ? "s" : ""} in this
+              album
             </p>
           </div>
 

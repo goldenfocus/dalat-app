@@ -1,5 +1,6 @@
 "use client";
 
+import { OriginalText } from "@/components/ui/original-text";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -11,6 +12,7 @@ interface EventRecapCardProps {
   story: string | null;
   eventSlug: string;
   storyLanguage?: string;
+  originalStory?: string;
   wentCount: number;
   momentsCount: number;
   positivePercent: number | null;
@@ -21,6 +23,7 @@ export function EventRecapCard({
   story,
   eventSlug,
   storyLanguage = "en",
+  originalStory,
   wentCount,
   momentsCount,
   positivePercent,
@@ -78,6 +81,9 @@ export function EventRecapCard({
           >
             <MarkdownRenderer content={story} />
           </div>
+          {originalStory && originalStory !== story && (
+            <OriginalText text={originalStory} />
+          )}
           <Link
             href={`/events/${eventSlug}/moments`}
             className="inline-flex items-center gap-2 text-sm font-medium text-primary"

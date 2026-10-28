@@ -2,6 +2,7 @@
 
 import { Bot, CheckCircle2, Languages } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { OriginalText } from "./original-text";
 import { cn } from "@/lib/utils";
 import {
   LOCALE_FLAGS,
@@ -38,7 +39,7 @@ export function TranslationBadge({
       <span
         className={cn(
           "inline-flex items-center gap-1 text-xs text-muted-foreground",
-          className
+          className,
         )}
         title={langName}
       >
@@ -58,7 +59,7 @@ export function TranslationBadge({
         "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs",
         "bg-muted/50 text-muted-foreground",
         "border border-border/50",
-        className
+        className,
       )}
       title={langName}
     >
@@ -101,14 +102,7 @@ export function TranslatedFrom({
         </span>
       </span>
       {originalText && (
-        <details className="mt-1">
-          <summary className="cursor-pointer text-xs hover:text-foreground transition-colors">
-            {t("showOriginal")}
-          </summary>
-          <p className="mt-1 pl-5 italic text-xs border-l-2 border-muted">
-            {originalText}
-          </p>
-        </details>
+        <OriginalText text={originalText} sourceLocale={sourceLocale} />
       )}
     </div>
   );

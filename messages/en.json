@@ -220,7 +220,8 @@
     "goToPage": "Go to page {page}",
     "enhanceWithAI": "Enhance with AI",
     "enhancePromptPlaceholder": "Click a chip or describe what you want...",
-    "refinePromptPlaceholder": "e.g., Add more purple tones, make it more abstract..."
+    "refinePromptPlaceholder": "e.g., Add more purple tones, make it more abstract...",
+    "copyLink": "Copy link"
   },
   "nav": {
     "people": "People",

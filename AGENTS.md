@@ -26,3 +26,9 @@ Publish official Lâm Viên Square notices with a verified future date even when
 ## Scout / Review ingest (separate from Activity Graph)
 
 Community and WhatsApp discoveries land as drafts through `POST /api/import/scout` or `whatsapp-ingest/`, then Dalat Review publishes via `POST /api/import/review`. Do not mix those submissions into the Activity Graph auto-publish lane. Pipeline, env vars, and bot call shapes: `docs/handover/scout-review-ingest.md`.
+
+## Translation is a release requirement
+
+All public-facing UI and submitted prose must support the 12 locales in `CONTENT_LOCALES`. Before adding or changing any text-bearing feature (including games, admin/organizer inputs, comments, venue menus, Experiences, generated captions): read `scripts/translation-worker/README.md`, add its fields and visibility rules to `lib/translations/registry.ts`, install transactional invalidation, localize both the visible route and SEO metadata, and provide original access using the shared `Languages` icon (`OriginalText` / `TranslatedContent`). Preserve official names and source text. Never present AI review as human review.
+
+Run `node scripts/check-translation-catalogs.mjs`, the relevant tests, and the local worker's `--audit`. A queue, an English fallback, a running worker or an old log is not translation completion. Report actual remaining coverage; verify a non-English production route and its original-text control before claiming it works. Use the local subscription worker and independent CLI reviewer; do not silently fall back to an expired or lower-quality API. Keep private drafts and private profiles out of public translation storage.

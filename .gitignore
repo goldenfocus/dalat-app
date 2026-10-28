@@ -66,3 +66,6 @@ supabase/.temp/
 # Cloudflare Workers build artifacts
 .open-next/
 .wrangler/
+
+# Local subscription translation audit receipts (contain source text)
+.translation-worker/

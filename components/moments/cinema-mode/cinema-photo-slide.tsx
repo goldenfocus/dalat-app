@@ -21,7 +21,9 @@ interface CinemaPhotoSlideProps {
   isActive: boolean;
   isTransitioning: boolean;
   effectSchedulerState?: ReturnType<typeof createEffectScheduler>;
-  onEffectSelected?: (newState: ReturnType<typeof createEffectScheduler>) => void;
+  onEffectSelected?: (
+    newState: ReturnType<typeof createEffectScheduler>,
+  ) => void;
 }
 
 export function CinemaPhotoSlide({
@@ -72,7 +74,10 @@ export function CinemaPhotoSlide({
     }
 
     const state = schedulerStateRef.current || createEffectScheduler();
-    const { effect: selectedEffect, newState } = selectNextEffect(state, isVertical);
+    const { effect: selectedEffect, newState } = selectNextEffect(
+      state,
+      isVertical,
+    );
     setEffect(selectedEffect);
 
     onEffectSelectedRef.current?.(newState);
@@ -91,7 +96,7 @@ export function CinemaPhotoSlide({
     <div
       className={cn(
         "absolute inset-0 flex items-center justify-center overflow-hidden",
-        isTransitioning && "animate-cinema-crossfade-in"
+        isTransitioning && "animate-cinema-crossfade-in",
       )}
     >
       {/* Blurred background for vertical photos */}
@@ -113,7 +118,7 @@ export function CinemaPhotoSlide({
       <div
         className={cn(
           "relative z-10 flex items-center justify-center",
-          isVertical ? "w-[70vw] h-full" : "w-full h-full"
+          isVertical ? "w-[70vw] h-full" : "w-full h-full",
         )}
       >
         <Image
@@ -125,7 +130,7 @@ export function CinemaPhotoSlide({
             "object-contain transition-opacity duration-300",
             imageReady ? "opacity-100" : "opacity-0",
             imageReady && "cinema-ken-burns",
-            effect && isActive && !isTransitioning && "cinema-kb-active"
+            effect && isActive && !isTransitioning && "cinema-kb-active",
           )}
           style={
             effect
@@ -159,7 +164,11 @@ export function CinemaPhotoSlide({
 
       {/* Caption — film-subtitle style, crossfades with the slide */}
       {imageReady && moment.text_content && (
-        <MomentCaptionOverlay variant="subtitle" text={moment.text_content} />
+        <MomentCaptionOverlay
+          variant="subtitle"
+          text={moment.text_content}
+          contentId={moment.id}
+        />
       )}
     </div>
   );

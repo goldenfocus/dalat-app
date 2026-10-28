@@ -49,8 +49,9 @@ export function useShare() {
           textarea.style.left = "-9999px";
           document.body.appendChild(textarea);
           textarea.select();
-          document.execCommand("copy");
+          const copiedSuccessfully = document.execCommand("copy");
           document.body.removeChild(textarea);
+          if (!copiedSuccessfully) throw new Error("Clipboard unavailable");
           showCopied();
         } catch {
           console.error("Copy failed");

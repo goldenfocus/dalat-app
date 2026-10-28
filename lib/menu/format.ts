@@ -2,9 +2,13 @@
 export function formatVnd(amount: number, locale: string): string {
   let grouped: string;
   try {
-    grouped = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(amount);
+    grouped = new Intl.NumberFormat(locale, {
+      maximumFractionDigits: 0,
+    }).format(amount);
   } catch {
-    grouped = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(amount);
+    grouped = new Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 0,
+    }).format(amount);
   }
   return `${grouped} ₫`;
 }
@@ -27,4 +31,17 @@ export function pickLocalized(
 ): string | null {
   const hit = overrides?.[locale]?.trim();
   return hit ? hit : fallback;
+}
+
+/** Source edits retain human overrides for recovery, but hide them until re-reviewed. */
+export function currentOverrides(
+  overrides: Record<string, string> | null | undefined,
+  source: string | null,
+  boundSources: Record<string, string | null> | null | undefined,
+) {
+  return Object.fromEntries(
+    Object.entries(overrides || {}).filter(
+      ([locale]) => boundSources?.[locale] === source,
+    ),
+  );
 }

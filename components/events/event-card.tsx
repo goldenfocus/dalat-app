@@ -1,5 +1,6 @@
 "use client";
 
+import { OriginalText } from "@/components/ui/original-text";
 import { eventImageAlt } from "@/lib/events/image-alt";
 
 import { memo } from "react";
@@ -333,6 +334,7 @@ export const EventCard = memo(function EventCard({
           </div>
         </div>
       </div>
+      {displayTitle !== event.title && <OriginalText text={event.title} />}
     </div>
   );
 });

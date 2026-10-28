@@ -1,4 +1,6 @@
 export type MenuItem = {
+  originalName?: string;
+  originalDescription?: string | null;
   id: string;
   name: string;
   description: string | null;
@@ -9,6 +11,8 @@ export type MenuItem = {
 };
 
 export type MenuSection = {
+  originalTitle?: string;
+  originalNote?: string | null;
   id: string;
   slug: string;
   title: string;
@@ -22,8 +26,10 @@ export type MenuItemRow = {
   section_id: string;
   name: string;
   name_i18n: Record<string, string>;
+  name_i18n_sources?: Record<string, string | null>;
   description: string | null;
   description_i18n: Record<string, string>;
+  description_i18n_sources?: Record<string, string | null>;
   price_vnd: number;
   tags: string[];
   image_url: string | null;
@@ -37,8 +43,10 @@ export type MenuSectionRow = {
   slug: string;
   title: string;
   title_i18n: Record<string, string>;
+  title_i18n_sources?: Record<string, string | null>;
   note: string | null;
   note_i18n: Record<string, string>;
+  note_i18n_sources?: Record<string, string | null>;
   sort: number;
   is_visible: boolean;
   items: MenuItemRow[];

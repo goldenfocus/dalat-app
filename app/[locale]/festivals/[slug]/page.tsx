@@ -1,3 +1,5 @@
+import { translatedFields } from "@/lib/translations/public-content";
+import { OriginalText } from "@/components/ui/original-text";
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import Image from "next/image";
@@ -13,10 +15,20 @@ import {
 } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
-import type { Festival, FestivalOrganizer, FestivalEvent, FestivalUpdate, Locale } from "@/lib/types";
+import type {
+  Festival,
+  FestivalOrganizer,
+  FestivalEvent,
+  FestivalUpdate,
+  Locale,
+} from "@/lib/types";
 import { FestivalTabs } from "@/components/festivals/festival-tabs";
 import { generateFestivalMetadata } from "@/lib/metadata";
-import { JsonLd, generateFestivalSchema, generateBreadcrumbSchema } from "@/lib/structured-data";
+import {
+  JsonLd,
+  generateFestivalSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/structured-data";
 
 interface FestivalPageProps {
   params: Promise<{ slug: string; locale: string }>;
@@ -35,7 +47,7 @@ async function getFestival(slug: string) {
         *,
         organizers (*)
       )
-    `
+    `,
     )
     .eq("slug", slug)
     .eq("status", "published")
@@ -64,7 +76,7 @@ async function getFestivalEvents(festivalId: string) {
         *,
         organizers (*)
       )
-    `
+    `,
     )
     .eq("festival_id", festivalId)
     .order("sort_order", { ascending: true });
@@ -87,7 +99,9 @@ async function getFestivalUpdates(festivalId: string) {
 }
 
 // Generate SEO metadata for festival pages
-export async function generateMetadata({ params }: FestivalPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: FestivalPageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   // Use static client for metadata (no cookies) so OG tags appear in initial <head>
   const supabase = createStaticClient();
@@ -109,7 +123,16 @@ export async function generateMetadata({ params }: FestivalPageProps): Promise<M
     .select("*", { count: "exact", head: true })
     .eq("festival_id", festival.id);
 
-  return generateFestivalMetadata(festival as Festival, locale as Locale, count ?? 0);
+  const translated = await translatedFields("festival", festival.id, locale);
+  return generateFestivalMetadata(
+    {
+      ...festival,
+      title: translated.get("title") || festival.title,
+      description: translated.get("description") || festival.description,
+    } as Festival,
+    locale as Locale,
+    count ?? 0,
+  );
 }
 
 export default async function FestivalPage({ params }: FestivalPageProps) {
@@ -118,7 +141,19 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
     getTranslations("common"),
     getTranslations("events"),
   ]);
-  const festival = await getFestival(slug);
+  const sourceFestival = await getFestival(slug);
+  const translated = sourceFestival
+    ? await translatedFields("festival", sourceFestival.id, locale)
+    : new Map();
+  const festival = sourceFestival
+    ? {
+        ...sourceFestival,
+        title: translated.get("title") || sourceFestival.title,
+        subtitle: translated.get("subtitle") || sourceFestival.subtitle,
+        description:
+          translated.get("description") || sourceFestival.description,
+      }
+    : null;
 
   if (!festival) {
     notFound();
@@ -143,26 +178,30 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
 
   // Get lead organizer
   const _leadOrganizer = festival.festival_organizers?.find(
-    (fo) => fo.role === "lead"
+    (fo) => fo.role === "lead",
   );
 
   // Separate official and community events
   const officialEvents = events.filter(
-    (e) => e.event_type === "official_program"
+    (e) => e.event_type === "official_program",
   );
   const communityEvents = events.filter(
-    (e) => e.event_type === "community_side_event"
+    (e) => e.event_type === "community_side_event",
   );
 
   // Generate structured data for SEO and AEO
-  const festivalSchema = generateFestivalSchema(festival, locale, events.length);
+  const festivalSchema = generateFestivalSchema(
+    festival,
+    locale,
+    events.length,
+  );
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
       { name: "Festivals", url: "/festivals" },
       { name: festival.title, url: `/festivals/${festival.slug}` },
     ],
-    locale
+    locale,
   );
 
   return (
@@ -229,6 +268,19 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
         </div>
       </div>
 
+      {sourceFestival && translated.size > 0 && (
+        <div className="container max-w-4xl mx-auto px-4">
+          <OriginalText
+            text={[
+              sourceFestival.title,
+              sourceFestival.subtitle,
+              sourceFestival.description,
+            ]
+              .filter(Boolean)
+              .join("\n\n")}
+          />
+        </div>
+      )}
       {/* Main Content */}
       <div className="container max-w-4xl mx-auto px-4 py-8">
         {/* Organizers Row */}
@@ -239,36 +291,43 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
                 {tEvents("organizedBy")}
               </p>
               <div className="flex flex-wrap gap-4">
-                {festival.festival_organizers.filter((fo) => fo.organizers).map((fo) => (
-                  <div key={fo.organizer_id} className="flex items-center gap-3">
-                    {fo.organizers?.logo_url ? (
-                      <Image
-                        src={fo.organizers.logo_url}
-                        alt={fo.organizers.name}
-                        width={40}
-                        height={40}
-                        className="rounded-lg object-cover"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <span className="text-lg font-bold text-primary">
-                          {fo.organizers?.name[0]}
+                {festival.festival_organizers
+                  .filter((fo) => fo.organizers)
+                  .map((fo) => (
+                    <div
+                      key={fo.organizer_id}
+                      className="flex items-center gap-3"
+                    >
+                      {fo.organizers?.logo_url ? (
+                        <Image
+                          src={fo.organizers.logo_url}
+                          alt={fo.organizers.name}
+                          width={40}
+                          height={40}
+                          className="rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <span className="text-lg font-bold text-primary">
+                            {fo.organizers?.name[0]}
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-1">
+                          <span className="font-medium">
+                            {fo.organizers?.name}
+                          </span>
+                          {fo.organizers?.is_verified && (
+                            <BadgeCheck className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                        <span className="text-xs text-muted-foreground capitalize">
+                          {fo.role}
                         </span>
                       </div>
-                    )}
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <span className="font-medium">{fo.organizers?.name}</span>
-                        {fo.organizers?.is_verified && (
-                          <BadgeCheck className="h-4 w-4 text-primary" />
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground capitalize">
-                        {fo.role}
-                      </span>
                     </div>
-                  </div>
-                ))}
+                  ))}
               </div>
             </div>
           )}

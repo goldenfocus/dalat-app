@@ -1,3 +1,5 @@
+import { translatedExperience } from "@/lib/translations/public-content";
+import { OriginalText } from "@/components/ui/original-text";
 import {
   TopicLinks,
   ObservationText,
@@ -49,15 +51,16 @@ function venueImage(v: VenueRow | null, fallback: string | null) {
   return fallback;
 }
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { id } = await params;
-  const e = await getExperience(id);
+  const { id, locale } = await params;
+  const original = await getExperience(id);
+  const e = original ? await translatedExperience(original, locale) : null;
   if (!e)
     return {
       title: "Experience not found",
       robots: { index: false },
       alternates: { canonical: "https://dalat.app/experiences" },
     };
-  const url = canonicalExperience(id, e.original_language);
+  const url = canonicalExperience(id, locale);
   const image = e.selected_media[0]
     ? `https://dalat.app/experience-media/${id}/${e.selected_media[0]}`
     : undefined;
@@ -93,9 +96,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 export default async function ExperiencePage({ params }: Props) {
   const { id, locale } = await params;
-  const e = await getExperience(id);
+  const original = await getExperience(id);
+  const e = original ? await translatedExperience(original, locale) : null;
   if (!e) notFound();
-  const story = saveSchema.parse(e);
+  const originalStory = saveSchema.parse(original);
+  const story = { ...originalStory, ...e } as typeof originalStory;
   const db = await createClient();
   const t = await getTranslations("experiences");
   const [
@@ -134,10 +139,12 @@ export default async function ExperiencePage({ params }: Props) {
   )}${venue?.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
   const venueThumb = venueImage(
     venue,
-    story.selected_media[0] ? `/experience-media/${id}/${story.selected_media[0]}` : null,
+    story.selected_media[0]
+      ? `/experience-media/${id}/${story.selected_media[0]}`
+      : null,
   );
   const bioLine = (author?.bio || "").split(/\n+/).slice(0, 2).join(" ").trim();
-  const url = canonicalExperience(id, e.original_language);
+  const url = canonicalExperience(id, locale);
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -203,7 +210,8 @@ export default async function ExperiencePage({ params }: Props) {
           )}
           <span className="min-w-0 flex-1">
             <span className="block font-medium">
-              {author?.display_name || (author?.username ? `@${author.username}` : t("by"))}
+              {author?.display_name ||
+                (author?.username ? `@${author.username}` : t("by"))}
               {author?.display_name && author?.username && (
                 <span className="ml-1.5 text-sm font-normal text-muted-foreground">
                   @{author.username}
@@ -211,42 +219,61 @@ export default async function ExperiencePage({ params }: Props) {
               )}
             </span>
             {bioLine && (
-              <span className="line-clamp-2 text-sm text-muted-foreground">{bioLine}</span>
+              <span className="line-clamp-2 text-sm text-muted-foreground">
+                {bioLine}
+              </span>
             )}
           </span>
           <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
         </Link>
         <p className="text-sm text-muted-foreground">
-          <time dateTime={e.visit_date}>{t("visitedFreshness", { date: visited })}</time>
+          <time dateTime={e.visit_date}>
+            {t("visitedFreshness", { date: visited })}
+          </time>
         </p>
       </header>
       {!!placeName && (
-        <section aria-label={placeName} className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+        <section
+          aria-label={placeName}
+          className="overflow-hidden rounded-2xl border bg-card shadow-sm"
+        >
           <Link
             href={venue?.slug ? `/${venue.slug}` : `/experiences/${id}`}
             className="flex items-center gap-4 p-4 transition-colors hover:bg-muted/40"
           >
             {venueThumb ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={venueThumb} alt="" className="h-20 w-20 shrink-0 rounded-xl object-cover" />
+              <img
+                src={venueThumb}
+                alt=""
+                className="h-20 w-20 shrink-0 rounded-xl object-cover"
+              />
             ) : (
               <span className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-muted">
                 <MapPin className="h-7 w-7 text-muted-foreground" />
               </span>
             )}
             <span className="min-w-0 flex-1 space-y-1">
-              <span className="block text-lg font-semibold leading-tight">{placeName}</span>
+              <span className="block text-lg font-semibold leading-tight">
+                {placeName}
+              </span>
               {venue?.google_rating != null && (
                 <span className="flex items-center gap-1 text-sm">
                   <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                  <span className="font-medium">{venue.google_rating.toFixed(1)}</span>
+                  <span className="font-medium">
+                    {venue.google_rating.toFixed(1)}
+                  </span>
                   <span className="text-muted-foreground">
-                    {t("googleReviews", { count: venue.google_user_rating_count || 0 })}
+                    {t("googleReviews", {
+                      count: venue.google_user_rating_count || 0,
+                    })}
                   </span>
                 </span>
               )}
               {placeAddress && (
-                <span className="line-clamp-2 text-sm text-muted-foreground">{placeAddress}</span>
+                <span className="line-clamp-2 text-sm text-muted-foreground">
+                  {placeAddress}
+                </span>
               )}
               {venue?.slug && (
                 <span className="inline-flex items-center gap-1 text-sm font-medium text-primary">
@@ -274,16 +301,25 @@ export default async function ExperiencePage({ params }: Props) {
         >
           <span className="text-muted-foreground">{t("canDoToo")}</span>
           {!venue?.slug &&
-            suggestsEventDiscovery(e.category, `${e.title} ${e.summary} ${e.narrative}`) && (
+            suggestsEventDiscovery(
+              e.category,
+              `${e.title} ${e.summary} ${e.narrative}`,
+            ) && (
               <Link className="min-h-11 py-3 underline" href="/events/upcoming">
                 {t("upcomingActions")}
               </Link>
             )}
-          <Link className="min-h-11 py-3 underline" href={`/experiences/new?from=${id}`}>
+          <Link
+            className="min-h-11 py-3 underline"
+            href={`/experiences/new?from=${id}`}
+          >
             {e.venue_id ? t("experiencedToo") : t("newExperience")}
           </Link>
           {author?.username && (
-            <Link className="min-h-11 py-3 underline" href={`/${author.username}`}>
+            <Link
+              className="min-h-11 py-3 underline"
+              href={`/${author.username}`}
+            >
               {t("moreCreator")}
             </Link>
           )}
@@ -296,15 +332,37 @@ export default async function ExperiencePage({ params }: Props) {
         userId={user?.id}
         photos={story.selected_media.map((m) => {
           const photo = story.photos.find((p) => p.id === m);
-          return { id: m, alt: photo?.alt || t("originalPhoto"), caption: photo?.caption || null };
+          return {
+            id: m,
+            alt: photo?.alt || t("originalPhoto"),
+            caption: photo?.caption || null,
+          };
         })}
       />
       <article
-        lang={e.original_language}
+        lang={locale}
         className="whitespace-pre-wrap text-lg leading-relaxed"
       >
         <AttributedText text={e.narrative} username={author?.username} />
       </article>
+      {original && JSON.stringify(e) !== JSON.stringify(original) && (
+        <OriginalText
+          text={[
+            original.title,
+            original.summary,
+            original.narrative,
+            original.sponsorship,
+            ...original.observations.map(
+              (o: { subject: string; value: string; context: string }) =>
+                `${o.subject}: ${o.value} ${o.context}`,
+            ),
+            ...original.photos.map(
+              (p: { alt: string; caption: string }) => `${p.alt} ${p.caption}`,
+            ),
+          ].join("\n\n")}
+          sourceLocale={original.original_language}
+        />
+      )}
       {!!story.observations.length && (
         <section className="space-y-3">
           <h2 className="text-lg font-medium">{t("observations")}</h2>

@@ -1,13 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { TranslatedContent } from "@/components/ui/translated-content";
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { useTranslations } from "next-intl";
 import { Play, MessageCircle, FileText, Music, File, X } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
-import { getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
+import {
+  getCfStreamThumbnailUrl,
+  getCfStreamPlaybackUrl,
+} from "@/lib/media-utils";
 import { getYouTubeThumbnail } from "@/components/shared/material-renderers";
 import type { MomentContentType } from "@/lib/types";
 
@@ -72,7 +76,19 @@ function extractVideoId(url: string | null | undefined): string | null {
   return null;
 }
 
-export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOpen, selectMode, isSelected, isSelectable, onSelectionToggle, canDelete, onDelete }: MomentCardProps) {
+export function MomentCard({
+  moment,
+  eventSlug,
+  from,
+  commentCount,
+  onLightboxOpen,
+  selectMode,
+  isSelected,
+  isSelectable,
+  onSelectionToggle,
+  canDelete,
+  onDelete,
+}: MomentCardProps) {
   const t = useTranslations("moments");
   const [thumbnailError, setThumbnailError] = useState(false);
 
@@ -83,12 +99,15 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   const href = from ? `${basePath}?from=${from}` : basePath;
 
   // Get YouTube video ID (from stored field or extracted from URL)
-  const youtubeVideoId = moment.youtube_video_id || extractVideoId((moment as { youtube_url?: string }).youtube_url);
+  const youtubeVideoId =
+    moment.youtube_video_id ||
+    extractVideoId((moment as { youtube_url?: string }).youtube_url);
 
   // Get thumbnail for YouTube moments
-  const youtubeThumb = moment.content_type === "youtube" && youtubeVideoId
-    ? getYouTubeThumbnail(youtubeVideoId, "high")
-    : null;
+  const youtubeThumb =
+    moment.content_type === "youtube" && youtubeVideoId
+      ? getYouTubeThumbnail(youtubeVideoId, "high")
+      : null;
 
   // Direct YouTube URL for opening in new tab
   const youtubeDirectUrl = youtubeVideoId
@@ -96,7 +115,11 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
     : null;
 
   // Derive video thumbnail: use stored thumbnail_url, or derive from CF Stream playback URL
-  const derivedThumbnailUrl = moment.thumbnail_url || getCfStreamThumbnailUrl(moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid));
+  const derivedThumbnailUrl =
+    moment.thumbnail_url ||
+    getCfStreamThumbnailUrl(
+      moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid),
+    );
 
   // Show thumbnail only if available and not errored
   const showThumbnail = derivedThumbnailUrl && !thumbnailError;
@@ -110,106 +133,118 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   };
 
   const cardContent = (
-    <article className={`group relative aspect-square overflow-hidden rounded-lg bg-muted transition-all ${
-      selectMode && isSelected
-        ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-background scale-[0.95]"
-        : selectMode && !isSelectable
-          ? "opacity-40"
-          : "active:scale-[0.98]"
-    }`}>
-        {/* YouTube moments */}
-        {moment.content_type === "youtube" && youtubeThumb && (
-          <>
-            <Image
-              src={youtubeThumb}
-              alt={moment.text_content || "YouTube video"}
-              fill
-              className="object-cover transition-transform group-hover:scale-105"
-              sizes="(max-width: 640px) 50vw, 200px"
-              unoptimized
-            />
-            {/* YouTube play button overlay */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div className="w-14 h-10 rounded-lg bg-red-600 flex items-center justify-center">
-                <Play className="w-6 h-6 text-white fill-white ml-0.5" />
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Audio moments */}
-        {moment.content_type === "audio" && (
-          <div className="w-full h-full flex flex-col items-center justify-center p-3 bg-gradient-to-br from-purple-500/20 to-purple-600/30">
-            {moment.audio_thumbnail_url ? (
-              <Image
-                src={moment.audio_thumbnail_url}
-                alt={moment.title || "Album art"}
-                fill
-                className="object-cover opacity-80"
-                sizes="(max-width: 640px) 50vw, 200px"
-                unoptimized
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-purple-500/30 flex items-center justify-center">
-                <Music className="w-8 h-8 text-purple-600" />
-              </div>
-            )}
-            <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
-              <p className="text-white text-xs font-medium truncate">
-                {moment.title || moment.original_filename || "Audio"}
-              </p>
-              {moment.artist && (
-                <p className="text-white/70 text-xs truncate">{moment.artist}</p>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* PDF moments */}
-        {moment.content_type === "pdf" && (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-red-500/10 to-red-600/20">
-            <div className="w-16 h-16 rounded-xl bg-red-500/20 flex items-center justify-center mb-2">
-              <FileText className="w-8 h-8 text-red-600" />
-            </div>
-            <p className="text-center text-xs font-medium text-muted-foreground truncate max-w-full px-2">
-              {moment.title || moment.original_filename || "PDF"}
-            </p>
-          </div>
-        )}
-
-        {/* Document moments */}
-        {moment.content_type === "document" && (
-          <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/20">
-            <div className="w-16 h-16 rounded-xl bg-blue-500/20 flex items-center justify-center mb-2">
-              <File className="w-8 h-8 text-blue-600" />
-            </div>
-            <p className="text-center text-xs font-medium text-muted-foreground truncate max-w-full px-2">
-              {moment.title || moment.original_filename || "Document"}
-            </p>
-          </div>
-        )}
-
-        {/* Image moments (material type, not photo) */}
-        {moment.content_type === "image" && moment.file_url && (
+    <article
+      className={`group relative aspect-square overflow-hidden rounded-lg bg-muted transition-all ${
+        selectMode && isSelected
+          ? "ring-2 ring-blue-500 ring-offset-2 ring-offset-background scale-[0.95]"
+          : selectMode && !isSelectable
+            ? "opacity-40"
+            : "active:scale-[0.98]"
+      }`}
+    >
+      {/* YouTube moments */}
+      {moment.content_type === "youtube" && youtubeThumb && (
+        <>
           <Image
-            src={moment.file_url}
-            alt={moment.ai_description || moment.text_content || moment.title || "Image"}
+            src={youtubeThumb}
+            alt={moment.text_content || "YouTube video"}
             fill
             className="object-cover transition-transform group-hover:scale-105"
             sizes="(max-width: 640px) 50vw, 200px"
             unoptimized
           />
-        )}
+          {/* YouTube play button overlay */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-14 h-10 rounded-lg bg-red-600 flex items-center justify-center">
+              <Play className="w-6 h-6 text-white fill-white ml-0.5" />
+            </div>
+          </div>
+        </>
+      )}
 
-        {/* Video moments */}
-        {moment.content_type === "video" && (moment.media_url || moment.cf_video_uid) && (
+      {/* Audio moments */}
+      {moment.content_type === "audio" && (
+        <div className="w-full h-full flex flex-col items-center justify-center p-3 bg-gradient-to-br from-purple-500/20 to-purple-600/30">
+          {moment.audio_thumbnail_url ? (
+            <Image
+              src={moment.audio_thumbnail_url}
+              alt={moment.title || "Album art"}
+              fill
+              className="object-cover opacity-80"
+              sizes="(max-width: 640px) 50vw, 200px"
+              unoptimized
+            />
+          ) : (
+            <div className="w-16 h-16 rounded-full bg-purple-500/30 flex items-center justify-center">
+              <Music className="w-8 h-8 text-purple-600" />
+            </div>
+          )}
+          <div className="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/60 to-transparent">
+            <p className="text-white text-xs font-medium truncate">
+              {moment.title || moment.original_filename || "Audio"}
+            </p>
+            {moment.artist && (
+              <p className="text-white/70 text-xs truncate">{moment.artist}</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* PDF moments */}
+      {moment.content_type === "pdf" && (
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-red-500/10 to-red-600/20">
+          <div className="w-16 h-16 rounded-xl bg-red-500/20 flex items-center justify-center mb-2">
+            <FileText className="w-8 h-8 text-red-600" />
+          </div>
+          <p className="text-center text-xs font-medium text-muted-foreground truncate max-w-full px-2">
+            {moment.title || moment.original_filename || "PDF"}
+          </p>
+        </div>
+      )}
+
+      {/* Document moments */}
+      {moment.content_type === "document" && (
+        <div className="w-full h-full flex flex-col items-center justify-center p-4 bg-gradient-to-br from-blue-500/10 to-blue-600/20">
+          <div className="w-16 h-16 rounded-xl bg-blue-500/20 flex items-center justify-center mb-2">
+            <File className="w-8 h-8 text-blue-600" />
+          </div>
+          <p className="text-center text-xs font-medium text-muted-foreground truncate max-w-full px-2">
+            {moment.title || moment.original_filename || "Document"}
+          </p>
+        </div>
+      )}
+
+      {/* Image moments (material type, not photo) */}
+      {moment.content_type === "image" && moment.file_url && (
+        <Image
+          src={moment.file_url}
+          alt={
+            moment.ai_description ||
+            moment.text_content ||
+            moment.title ||
+            "Image"
+          }
+          fill
+          className="object-cover transition-transform group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, 200px"
+          unoptimized
+        />
+      )}
+
+      {/* Video moments */}
+      {moment.content_type === "video" &&
+        (moment.media_url || moment.cf_video_uid) && (
           <>
             {showThumbnail ? (
-              derivedThumbnailUrl.includes('cloudflarestream.com') ? (
+              derivedThumbnailUrl.includes("cloudflarestream.com") ? (
                 // CF Stream thumbnails should not use cloudflareLoader
                 <Image
                   src={derivedThumbnailUrl}
-                  alt={moment.ai_description || moment.text_content || "Video thumbnail"}
+                  alt={
+                    moment.ai_description ||
+                    moment.text_content ||
+                    "Video thumbnail"
+                  }
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, 200px"
@@ -220,7 +255,11 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
                 <Image
                   loader={cloudflareLoader}
                   src={derivedThumbnailUrl}
-                  alt={moment.ai_description || moment.text_content || "Video thumbnail"}
+                  alt={
+                    moment.ai_description ||
+                    moment.text_content ||
+                    "Video thumbnail"
+                  }
                   fill
                   className="object-cover transition-transform group-hover:scale-105"
                   sizes="(max-width: 640px) 50vw, 200px"
@@ -239,89 +278,117 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
           </>
         )}
 
-        {/* Photo moments (original behavior) */}
-        {moment.content_type === "photo" && moment.media_url && (
-          <Image
-            loader={cloudflareLoader}
-            src={moment.media_url}
-            alt={moment.ai_description || moment.text_content || "Moment photo"}
-            fill
-            className="object-cover transition-transform group-hover:scale-105"
-            sizes="(max-width: 640px) 50vw, 200px"
-          />
-        )}
+      {/* Photo moments (original behavior) */}
+      {moment.content_type === "photo" && moment.media_url && (
+        <Image
+          loader={cloudflareLoader}
+          src={moment.media_url}
+          alt={moment.ai_description || moment.text_content || "Moment photo"}
+          fill
+          className="object-cover transition-transform group-hover:scale-105"
+          sizes="(max-width: 640px) 50vw, 200px"
+        />
+      )}
 
-        {/* Text-only moments */}
-        {moment.content_type === "text" && moment.text_content && (
-          <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/5">
-            <p className="text-center line-clamp-4 text-sm">
-              {moment.text_content}
-            </p>
-          </div>
-        )}
+      {/* Text-only moments */}
+      {moment.content_type === "text" && moment.text_content && (
+        <div className="w-full h-full flex items-center justify-center p-4 bg-gradient-to-br from-primary/20 to-primary/5">
+          {/* Text and its original control are siblings of the interactive card below. */}
+        </div>
+      )}
 
-        {/* Comment count badge */}
-        {commentCount != null && commentCount > 0 && (
-          <div
-            className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs pointer-events-none"
-            aria-label={`${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
-            role="status"
-          >
-            <MessageCircle className="w-3 h-3" />
-            <span>{commentCount}</span>
-          </div>
-        )}
+      {/* Comment count badge */}
+      {commentCount != null && commentCount > 0 && (
+        <div
+          className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs pointer-events-none"
+          aria-label={`${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
+          role="status"
+        >
+          <MessageCircle className="w-3 h-3" />
+          <span>{commentCount}</span>
+        </div>
+      )}
 
-        {/* Selection checkbox */}
-        {selectMode && isSelectable && (
-          <div className={`absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+      {/* Selection checkbox */}
+      {selectMode && isSelectable && (
+        <div
+          className={`absolute top-2 left-2 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
             isSelected
               ? "bg-blue-500 border-blue-500"
               : "bg-black/30 border-white/80 backdrop-blur-sm"
-          }`}>
-            {isSelected && (
-              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            )}
-          </div>
-        )}
-      </article>
+          }`}
+        >
+          {isSelected && (
+            <svg
+              className="w-4 h-4 text-white"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={3}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M5 13l4 4L19 7"
+              />
+            </svg>
+          )}
+        </div>
+      )}
+    </article>
   );
 
   // Delete affordance lives OUTSIDE the card wrapper — the wrapper is a <button> in
   // lightbox/select mode, and nesting a button inside a button is invalid HTML.
   const withDeleteOverlay = (child: React.ReactElement): React.ReactElement => {
-    if (!canDelete || !onDelete || selectMode) return child;
+    const hasText = moment.content_type === "text" && !!moment.text_content;
+    const showDelete = canDelete && onDelete && !selectMode;
+    if (!hasText && !showDelete) return child;
     return (
       <div className="relative group/tile">
         {child}
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            triggerHaptic("warning");
-            onDelete();
-          }}
-          aria-label={t("delete")}
-          // Always visible on touch (no hover there); hover-revealed on desktop.
-          // min-w/h-11 = 44px touch target, icon stays visually small.
-          className="absolute top-0 right-0 min-w-11 min-h-11 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/tile:opacity-100 md:focus-visible:opacity-100 transition-opacity touch-manipulation"
-        >
-          <span className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white active:scale-90 transition-transform">
-            <X className="w-3.5 h-3.5" />
-          </span>
-        </button>
+        {hasText && (
+          <div className="pointer-events-none absolute inset-4 flex items-center justify-center">
+            <div className="pointer-events-auto max-h-full w-full overflow-y-auto text-center text-sm">
+              <TranslatedContent
+                type="moment"
+                id={moment.id}
+                field="text_content"
+                original={moment.text_content!}
+                textClassName="line-clamp-4"
+              />
+            </div>
+          </div>
+        )}
+        {showDelete && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              triggerHaptic("warning");
+              onDelete?.();
+            }}
+            aria-label={t("delete")}
+            // Always visible on touch (no hover there); hover-revealed on desktop.
+            // min-w/h-11 = 44px touch target, icon stays visually small.
+            className="absolute top-0 right-0 min-w-11 min-h-11 flex items-center justify-center opacity-100 md:opacity-0 md:group-hover/tile:opacity-100 md:focus-visible:opacity-100 transition-opacity touch-manipulation"
+          >
+            <span className="p-1.5 rounded-full bg-black/60 backdrop-blur-sm text-white active:scale-90 transition-transform">
+              <X className="w-3.5 h-3.5" />
+            </span>
+          </button>
+        )}
       </div>
     );
   };
 
   // Selection mode: clicking toggles selection
   if (selectMode) {
-    return (
+    return withDeleteOverlay(
       <button
         type="button"
+        aria-label={moment.text_content || moment.title || t("moments")}
         className="block w-full text-left touch-manipulation"
         onClick={() => {
           if (isSelectable && onSelectionToggle) {
@@ -332,7 +399,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         disabled={!isSelectable}
       >
         {cardContent}
-      </button>
+      </button>,
     );
   }
 
@@ -347,7 +414,7 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
         onClick={() => triggerHaptic("selection")}
       >
         {cardContent}
-      </a>
+      </a>,
     );
   }
 
@@ -356,11 +423,12 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
     return withDeleteOverlay(
       <button
         type="button"
+        aria-label={moment.text_content || moment.title || t("moments")}
         className="block w-full text-left touch-manipulation"
         onClick={handleClick}
       >
         {cardContent}
-      </button>
+      </button>,
     );
   }
 
@@ -368,10 +436,11 @@ export function MomentCard({ moment, eventSlug, from, commentCount, onLightboxOp
   return withDeleteOverlay(
     <Link
       href={href}
+      aria-label={moment.text_content || moment.title || t("moments")}
       className="block touch-manipulation"
       onClick={handleClick}
     >
       {cardContent}
-    </Link>
+    </Link>,
   );
 }

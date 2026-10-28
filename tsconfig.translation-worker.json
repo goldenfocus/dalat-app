@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": { "incremental": false },
+  "include": ["scripts/translation-worker/**/*.ts", "next-env.d.ts"],
+  "exclude": ["node_modules"]
+}

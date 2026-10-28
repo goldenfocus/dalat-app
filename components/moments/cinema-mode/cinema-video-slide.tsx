@@ -98,7 +98,14 @@ export function CinemaVideoSlide({
       video.removeEventListener("pause", handlePause);
       video.removeEventListener("canplay", handleCanPlay);
     };
-  }, [isActive, isPaused, moment.id, moment.video_status, onTimeUpdate, soundOn]);
+  }, [
+    isActive,
+    isPaused,
+    moment.id,
+    moment.video_status,
+    onTimeUpdate,
+    soundOn,
+  ]);
 
   const handleManualPlay = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -112,26 +119,36 @@ export function CinemaVideoSlide({
   };
 
   // Show video processing state
-  if (moment.video_status === "processing" || moment.video_status === "uploading" || moment.video_status === "error") {
-    const statusLabel = moment.video_status === "uploading"
-      ? t("videoUploading")
-      : moment.video_status === "error"
-        ? t("videoProcessingFailed")
-        : t("videoProcessing");
+  if (
+    moment.video_status === "processing" ||
+    moment.video_status === "uploading" ||
+    moment.video_status === "error"
+  ) {
+    const statusLabel =
+      moment.video_status === "uploading"
+        ? t("videoUploading")
+        : moment.video_status === "error"
+          ? t("videoProcessingFailed")
+          : t("videoProcessing");
 
     return (
       <div className="absolute inset-0 flex items-center justify-center bg-black">
         <div className="flex flex-col items-center gap-3">
-          {moment.video_status === "error" ? <AlertCircle className="w-8 h-8 text-white/50" /> : <Loader2 className="w-8 h-8 text-white/50 animate-spin" />}
-          <p className="text-white/50 text-sm">
-            {statusLabel}
-          </p>
+          {moment.video_status === "error" ? (
+            <AlertCircle className="w-8 h-8 text-white/50" />
+          ) : (
+            <Loader2 className="w-8 h-8 text-white/50 animate-spin" />
+          )}
+          <p className="text-white/50 text-sm">{statusLabel}</p>
         </div>
       </div>
     );
   }
 
-  const hlsSrc = moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined;
+  const hlsSrc =
+    moment.cf_playback_url ||
+    getCfStreamPlaybackUrl(moment.cf_video_uid) ||
+    undefined;
   const videoSrc = moment.media_url || "";
   if (!videoSrc && !hlsSrc) return null;
 
@@ -139,7 +156,7 @@ export function CinemaVideoSlide({
     <div
       className={cn(
         "absolute inset-0 flex items-center justify-center bg-black",
-        isTransitioning && "animate-in fade-in zoom-in-95 duration-500"
+        isTransitioning && "animate-in fade-in zoom-in-95 duration-500",
       )}
     >
       <MomentVideoPlayer
@@ -170,23 +187,28 @@ export function CinemaVideoSlide({
       )}
 
       {/* A real media control: only hide it after the video confirms playback. */}
-      {(isPaused || playbackFailed || (!isMediaPlaying && isMediaReady)) && !isBuffering && (
-        <button
-          type="button"
-          onClick={handleManualPlay}
-          onTouchStart={(event) => event.stopPropagation()}
-          className="absolute inset-0 z-30 flex items-center justify-center bg-transparent"
-          aria-label="Play video"
-        >
-          <span className="rounded-full bg-black/55 p-5 text-white shadow-xl backdrop-blur-sm transition-transform active:scale-95">
-            <Play className="h-10 w-10 translate-x-0.5 fill-current" />
-          </span>
-        </button>
-      )}
+      {(isPaused || playbackFailed || (!isMediaPlaying && isMediaReady)) &&
+        !isBuffering && (
+          <button
+            type="button"
+            onClick={handleManualPlay}
+            onTouchStart={(event) => event.stopPropagation()}
+            className="absolute inset-0 z-30 flex items-center justify-center bg-transparent"
+            aria-label="Play video"
+          >
+            <span className="rounded-full bg-black/55 p-5 text-white shadow-xl backdrop-blur-sm transition-transform active:scale-95">
+              <Play className="h-10 w-10 translate-x-0.5 fill-current" />
+            </span>
+          </button>
+        )}
 
       {/* Caption — film-subtitle style */}
       {moment.text_content && (
-        <MomentCaptionOverlay variant="subtitle" text={moment.text_content} />
+        <MomentCaptionOverlay
+          variant="subtitle"
+          text={moment.text_content}
+          contentId={moment.id}
+        />
       )}
     </div>
   );

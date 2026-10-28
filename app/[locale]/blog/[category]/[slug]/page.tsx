@@ -1,7 +1,14 @@
+import { OriginalText } from "@/components/ui/original-text";
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Calendar, Languages, RefreshCw, ShieldAlert } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Languages,
+  RefreshCw,
+  ShieldAlert,
+} from "lucide-react";
 import { BlogCoverImage } from "@/components/blog/blog-cover-image";
 import { GeneratedCover } from "@/components/blog/generated-cover";
 import { createStaticClient } from "@/lib/supabase/server";
@@ -56,25 +63,41 @@ type BlogPostWithNewsExtras = BlogPostFull & {
 function normalizeNewsSources(value: unknown): NewsSourceUrl[] {
   if (!Array.isArray(value)) return [];
   return value.flatMap((source) => {
-    const record = typeof source === "string"
-      ? { url: source }
-      : typeof source === "object" && source !== null && !Array.isArray(source)
-        ? source as Record<string, unknown>
-        : null;
+    const record =
+      typeof source === "string"
+        ? { url: source }
+        : typeof source === "object" &&
+            source !== null &&
+            !Array.isArray(source)
+          ? (source as Record<string, unknown>)
+          : null;
     if (!record || typeof record.url !== "string") return [];
     try {
       const parsed = new URL(record.url);
       if (!/^https?:$/u.test(parsed.protocol)) return [];
-      return [{
-        url: parsed.toString(),
-        title: typeof record.title === "string" ? record.title : parsed.hostname,
-        publisher: typeof record.publisher === "string" ? record.publisher : parsed.hostname,
-        published_at: typeof record.published_at === "string" ? record.published_at : null,
-        retrieved_at: typeof record.retrieved_at === "string" ? record.retrieved_at : undefined,
-        content_updated_at: typeof record.content_updated_at === "string"
-          ? record.content_updated_at
-          : undefined,
-      }];
+      return [
+        {
+          url: parsed.toString(),
+          title:
+            typeof record.title === "string" ? record.title : parsed.hostname,
+          publisher:
+            typeof record.publisher === "string"
+              ? record.publisher
+              : parsed.hostname,
+          published_at:
+            typeof record.published_at === "string"
+              ? record.published_at
+              : null,
+          retrieved_at:
+            typeof record.retrieved_at === "string"
+              ? record.retrieved_at
+              : undefined,
+          content_updated_at:
+            typeof record.content_updated_at === "string"
+              ? record.content_updated_at
+              : undefined,
+        },
+      ];
     } catch {
       return [];
     }
@@ -96,11 +119,12 @@ const getCachedBlogPost = unstable_cache(
 
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceClient = serviceRoleKey && supabaseUrl
-      ? createSupabaseClient(supabaseUrl, serviceRoleKey, {
-          auth: { persistSession: false, autoRefreshToken: false },
-        })
-      : null;
+    const serviceClient =
+      serviceRoleKey && supabaseUrl
+        ? createSupabaseClient(supabaseUrl, serviceRoleKey, {
+            auth: { persistSession: false, autoRefreshToken: false },
+          })
+        : null;
 
     const { data, error } = await supabase.rpc("get_blog_post_by_slug", {
       p_slug: slug,
@@ -120,7 +144,8 @@ const getCachedBlogPost = unstable_cache(
     if (!post && serviceClient) {
       const { data: fallback, error: fallbackError } = await serviceClient
         .from("blog_posts")
-        .select(`
+        .select(
+          `
           id, slug, title, story_content, technical_content,
           cover_image_url, cover_image_alt, cover_image_description,
           cover_image_keywords, cover_image_colors,
@@ -129,14 +154,18 @@ const getCachedBlogPost = unstable_cache(
           related_feature_slugs, version, source, published_at, created_at,
           source_urls, source_images, updated_at,
           blog_categories(slug, name)
-        `)
+        `,
+        )
         .eq("slug", slug)
         .eq("source", "news_scrape")
         .eq("status", "experimental")
         .maybeSingle();
 
       if (fallbackError) {
-        console.error("[blog-post] Experimental automation fallback failed:", fallbackError);
+        console.error(
+          "[blog-post] Experimental automation fallback failed:",
+          fallbackError,
+        );
       } else if (fallback) {
         const categories = fallback.blog_categories;
         const category = Array.isArray(categories) ? categories[0] : categories;
@@ -184,10 +213,12 @@ const getCachedBlogPost = unstable_cache(
   {
     revalidate: 300, // 5 minutes
     tags: [CACHE_TAGS.blog],
-  }
+  },
 );
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const post = await getCachedBlogPost(slug);
 
@@ -196,9 +227,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const freshAfter = getBlogTranslationCutoff(post);
-  const pageModifiedAt = post.source === "news_scrape"
-    ? getNewsPageModifiedAt(post)
-    : post.updated_at;
+  const pageModifiedAt =
+    post.source === "news_scrape"
+      ? getNewsPageModifiedAt(post)
+      : post.updated_at;
   const translations = await getBlogTranslations(
     post.id,
     locale as ContentLocale,
@@ -207,17 +239,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       story_content: post.story_content,
       technical_content: post.technical_content,
       meta_description: post.meta_description,
-      source_locale: (post as BlogPostFull & { source_locale?: string }).source_locale,
+      source_locale: (post as BlogPostFull & { source_locale?: string })
+        .source_locale,
       fresh_after: freshAfter,
-    }
+    },
   );
 
   return generateLocalizedMetadata({
     locale,
     path: `/blog/${post.category_slug || "changelog"}/${slug}`,
     title: translations.translated_title,
-    description: translations.translated_meta_description
-      || translations.translated_story_content.slice(0, 160),
+    description:
+      translations.translated_meta_description ||
+      translations.translated_story_content.slice(0, 160),
     keywords: post.seo_keywords || [],
     type: "article",
     image: post.cover_image_url || undefined,
@@ -243,9 +277,10 @@ export default async function BlogPostPage({ params }: PageProps) {
 
   const t = await getTranslations("blog");
   const newsContentFreshAfter = getBlogTranslationCutoff(post);
-  const pageModifiedAt = post.source === "news_scrape"
-    ? getNewsPageModifiedAt(post)
-    : post.updated_at;
+  const pageModifiedAt =
+    post.source === "news_scrape"
+      ? getNewsPageModifiedAt(post)
+      : post.updated_at;
 
   // Fetch translations for this blog post
   const translations = await getBlogTranslations(
@@ -256,9 +291,10 @@ export default async function BlogPostPage({ params }: PageProps) {
       story_content: post.story_content,
       technical_content: post.technical_content,
       meta_description: post.meta_description,
-      source_locale: (post as BlogPostFull & { source_locale?: string }).source_locale,
+      source_locale: (post as BlogPostFull & { source_locale?: string })
+        .source_locale,
       fresh_after: newsContentFreshAfter,
-    }
+    },
   );
 
   const publishedDate = post.published_at
@@ -272,18 +308,22 @@ export default async function BlogPostPage({ params }: PageProps) {
     day: "numeric",
     timeZone: "Asia/Ho_Chi_Minh",
   });
-  const formattedUpdatedDate = updatedDate
-    && Number.isFinite(updatedDate.getTime())
-    && updatedDate.getTime() - publishedDate.getTime() >= 60_000
+  const formattedUpdatedDate =
+    updatedDate &&
+    Number.isFinite(updatedDate.getTime()) &&
+    updatedDate.getTime() - publishedDate.getTime() >= 60_000
       ? dateFormatter.format(updatedDate)
       : null;
   const visibleSources = (post.source_urls ?? []).map((source) => {
-    const retrievedDate = source.retrieved_at ? new Date(source.retrieved_at) : null;
+    const retrievedDate = source.retrieved_at
+      ? new Date(source.retrieved_at)
+      : null;
     return {
       ...source,
-      checkedLabel: retrievedDate && Number.isFinite(retrievedDate.getTime())
-        ? t("sourceChecked", { date: dateFormatter.format(retrievedDate) })
-        : undefined,
+      checkedLabel:
+        retrievedDate && Number.isFinite(retrievedDate.getTime())
+          ? t("sourceChecked", { date: dateFormatter.format(retrievedDate) })
+          : undefined,
     };
   });
 
@@ -291,10 +331,16 @@ export default async function BlogPostPage({ params }: PageProps) {
     [
       { name: "Home", url: "/" },
       { name: "Blog", url: "/blog" },
-      { name: post.category_name || "Changelog", url: `/blog?category=${actualCategory}` },
-      { name: translations.translated_title, url: `/blog/${actualCategory}/${slug}` },
+      {
+        name: post.category_name || "Changelog",
+        url: `/blog?category=${actualCategory}`,
+      },
+      {
+        name: translations.translated_title,
+        url: `/blog/${actualCategory}/${slug}`,
+      },
     ],
-    locale
+    locale,
   );
 
   const localizedPost = {
@@ -305,22 +351,21 @@ export default async function BlogPostPage({ params }: PageProps) {
     meta_description: translations.translated_meta_description,
     updated_at: pageModifiedAt || factualUpdatedAt || undefined,
   };
-  const articleSchema = (post.category_slug === 'news' || hasAutomatedNewsProvenance(post))
-    ? generateNewsArticleSchema(
-        {
-          ...localizedPost,
-          source_urls: post.source_urls ?? [],
-          news_tags: [],
-        },
-        locale
-      )
-    : generateBlogArticleSchema(localizedPost, locale);
+  const articleSchema =
+    post.category_slug === "news" || hasAutomatedNewsProvenance(post)
+      ? generateNewsArticleSchema(
+          {
+            ...localizedPost,
+            source_urls: post.source_urls ?? [],
+            news_tags: [],
+          },
+          locale,
+        )
+      : generateBlogArticleSchema(localizedPost, locale);
 
   // Source images woven into the article body (skip the cover, max 2)
   const inlineImages = (post.source_images ?? [])
-    .filter(
-      (img) => img?.stored_url && img.stored_url !== post.cover_image_url
-    )
+    .filter((img) => img?.stored_url && img.stored_url !== post.cover_image_url)
     .slice(0, 2)
     .map((img) => ({
       url: img.stored_url,
@@ -393,6 +438,15 @@ export default async function BlogPostPage({ params }: PageProps) {
             {translations.translated_title}
           </h1>
 
+          {translations.is_translated && (
+            <OriginalText
+              text={[post.title, post.story_content, post.technical_content]
+                .filter(Boolean)
+                .join("\n\n")}
+              className="mb-4"
+            />
+          )}
+
           {/* Story Content (Human-readable) */}
           <div className="prose prose-lg dark:prose-invert max-w-none mb-8">
             <MarkdownRenderer
@@ -403,10 +457,7 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Put evidence next to the reporting, before promotional/share UI. */}
           {visibleSources.length > 0 && (
-            <NewsSourcesSection
-              label={t("sources")}
-              sources={visibleSources}
-            />
+            <NewsSourcesSection label={t("sources")} sources={visibleSources} />
           )}
           {post.source === "news_scrape" && visibleSources.length === 0 && (
             <div className="mt-8 flex items-start gap-2 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-muted-foreground">
@@ -437,7 +488,9 @@ export default async function BlogPostPage({ params }: PageProps) {
 
           {/* Optional supporting detail. The complete guide belongs above. */}
           {translations.translated_technical_content.trim() && (
-            <TechnicalAccordion content={translations.translated_technical_content} />
+            <TechnicalAccordion
+              content={translations.translated_technical_content}
+            />
           )}
 
           {/* Related Posts (future) */}

@@ -1,12 +1,17 @@
 "use client";
 
 import Image from "next/image";
+import { TranslatedContent } from "@/components/ui/translated-content";
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
 import { Camera, ChevronRight, Play, Video } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { isVideoUrl, getCfStreamThumbnailUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
+import {
+  isVideoUrl,
+  getCfStreamThumbnailUrl,
+  getCfStreamPlaybackUrl,
+} from "@/lib/media-utils";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import type { MomentWithProfile, MomentCounts } from "@/lib/types";
 
@@ -17,7 +22,12 @@ interface MomentsPreviewProps {
   canPost: boolean;
 }
 
-export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsPreviewProps) {
+export function MomentsPreview({
+  eventSlug,
+  moments,
+  counts,
+  canPost,
+}: MomentsPreviewProps) {
   const t = useTranslations("moments");
 
   const totalCount = counts?.published_count ?? moments.length;
@@ -32,24 +42,30 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
   return (
     <Card>
       <CardContent className="p-4">
-        <Link
-          href={`/events/${eventSlug}/moments`}
-          className="block -m-4 p-4 hover:bg-muted/50 transition-colors rounded-lg"
-        >
-          <div className="flex items-center justify-between mb-3">
+        <div className="block -m-4 p-4 rounded-lg">
+          <Link
+            href={`/events/${eventSlug}/moments`}
+            className="flex items-center justify-between mb-3 hover:text-primary"
+          >
             <div className="flex items-center gap-2">
               <Camera className="w-5 h-5 text-muted-foreground" />
               <h3 className="font-medium">{t("moments")}</h3>
               {totalCount > 0 && (
                 <div className="flex items-center gap-1.5">
                   {photoCount > 0 && (
-                    <Badge variant="secondary" className="text-xs flex items-center gap-1 px-1.5">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs flex items-center gap-1 px-1.5"
+                    >
                       <Camera className="w-3 h-3" />
                       {photoCount}
                     </Badge>
                   )}
                   {videoCount > 0 && (
-                    <Badge variant="secondary" className="text-xs flex items-center gap-1 px-1.5">
+                    <Badge
+                      variant="secondary"
+                      className="text-xs flex items-center gap-1 px-1.5"
+                    >
                       <Video className="w-3 h-3" />
                       {videoCount}
                     </Badge>
@@ -64,7 +80,7 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
               )}
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </div>
+          </Link>
 
           {/* Preview thumbnails */}
           {moments.length > 0 ? (
@@ -74,15 +90,39 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                   key={moment.id}
                   className="relative w-16 h-16 rounded-md overflow-hidden bg-muted flex-shrink-0"
                 >
+                  <Link
+                    href={`/events/${eventSlug}/moments`}
+                    aria-label={t("viewAll")}
+                    className="absolute inset-0 z-10"
+                  />
                   {(() => {
-                    const isVideo = moment.content_type === "video" || (moment.media_url && isVideoUrl(moment.media_url));
-                    const thumbUrl = moment.thumbnail_url
-                      || getCfStreamThumbnailUrl(moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid));
+                    const isVideo =
+                      moment.content_type === "video" ||
+                      (moment.media_url && isVideoUrl(moment.media_url));
+                    const thumbUrl =
+                      moment.thumbnail_url ||
+                      getCfStreamThumbnailUrl(
+                        moment.cf_playback_url ||
+                          getCfStreamPlaybackUrl(moment.cf_video_uid),
+                      );
 
-                    if (moment.content_type === "text" || (!moment.media_url && !moment.cf_video_uid && !moment.file_url)) {
+                    if (
+                      moment.content_type === "text" ||
+                      (!moment.media_url &&
+                        !moment.cf_video_uid &&
+                        !moment.file_url)
+                    ) {
                       return (
-                        <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground p-1">
-                          <span className="line-clamp-3">{moment.text_content}</span>
+                        <div className="pointer-events-none relative z-20 h-full w-full p-1 text-center text-xs text-muted-foreground">
+                          <div className="pointer-events-auto h-full overflow-y-auto">
+                            <TranslatedContent
+                              type="moment"
+                              id={moment.id}
+                              field="text_content"
+                              original={moment.text_content || ""}
+                              textClassName="line-clamp-1"
+                            />
+                          </div>
                         </div>
                       );
                     }
@@ -92,13 +132,23 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                       return displayUrl ? (
                         <>
                           <Image
-                            loader={displayUrl.includes('cloudflarestream.com') ? undefined : cloudflareLoader}
+                            loader={
+                              displayUrl.includes("cloudflarestream.com")
+                                ? undefined
+                                : cloudflareLoader
+                            }
                             src={displayUrl}
-                            alt={moment.ai_description || moment.text_content || "Video thumbnail"}
+                            alt={
+                              moment.ai_description ||
+                              moment.text_content ||
+                              "Video thumbnail"
+                            }
                             fill
                             className="object-cover"
                             sizes="64px"
-                            unoptimized={displayUrl.includes('cloudflarestream.com')}
+                            unoptimized={displayUrl.includes(
+                              "cloudflarestream.com",
+                            )}
                           />
                           <div className="absolute inset-0 flex items-center justify-center">
                             <div className="w-6 h-6 rounded-full bg-black/50 flex items-center justify-center">
@@ -119,7 +169,11 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
                       <Image
                         loader={cloudflareLoader}
                         src={moment.media_url!}
-                        alt={moment.ai_description || moment.text_content || "Moment thumbnail"}
+                        alt={
+                          moment.ai_description ||
+                          moment.text_content ||
+                          "Moment thumbnail"
+                        }
                         fill
                         className="object-cover"
                         sizes="64px"
@@ -137,11 +191,9 @@ export function MomentsPreview({ eventSlug, moments, counts, canPost }: MomentsP
               )}
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              {t("beFirst")}
-            </p>
+            <p className="text-sm text-muted-foreground">{t("beFirst")}</p>
           )}
-        </Link>
+        </div>
       </CardContent>
     </Card>
   );

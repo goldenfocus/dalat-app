@@ -23,6 +23,7 @@ export const CORE_CLIENT_NAMESPACES = [
   "translations",
   "tribes",
   "userMenu",
+  "venues", // Venue headers and share controls must not flash untranslated keys.
   "venueClaim",
   "viewToggle",
 ] as const;

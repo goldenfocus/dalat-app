@@ -575,6 +575,7 @@ async function getMomentsPreview(
 type EventRecap = {
   blogPostId: string;
   story: string;
+  originalStory: string;
   recapPublishedAt: string | null;
   metaDescription: string | null;
   updatedAt: string;
@@ -623,6 +624,7 @@ const getEventRecap = cache(async function getEventRecap(
     return {
       blogPostId: post.id,
       story,
+      originalStory: post.story_content,
       recapPublishedAt: post.recap_published_at,
       metaDescription,
       updatedAt: post.updated_at,
@@ -1361,6 +1363,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       eventSlug={event.slug}
                       story={recap?.story ?? null}
                       storyLanguage={recap?.language ?? "en"}
+                      originalStory={recap?.originalStory}
                       wentCount={counts?.going_spots ?? 0}
                       momentsCount={momentCounts?.published_count ?? 0}
                       positivePercent={
@@ -1529,6 +1532,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       eventSlug={event.slug}
                       story={recap?.story ?? null}
                       storyLanguage={recap?.language ?? "en"}
+                      originalStory={recap?.originalStory}
                       wentCount={counts?.going_spots ?? 0}
                       momentsCount={momentCounts?.published_count ?? 0}
                       positivePercent={

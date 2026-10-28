@@ -1,10 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { TranslatedContent } from "@/components/ui/translated-content";
 import { ChevronDown, Eye, Sparkles, Tag, Palette, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MomentAiInsightsProps {
+  momentId: string;
   aiDescription: string | null;
   sceneDescription: string | null;
   aiTags: string[] | null;
@@ -26,6 +28,7 @@ interface MomentAiInsightsProps {
  * remains crawlable while unobtrusive for human visitors.
  */
 export function MomentAiInsights({
+  momentId,
   aiDescription,
   sceneDescription,
   aiTags,
@@ -43,9 +46,20 @@ export function MomentAiInsights({
 
   // Determine what summary to show based on content type
   const summary = videoSummary || audioSummary || pdfSummary || aiDescription;
+  const summaryField = videoSummary
+    ? "video_summary"
+    : audioSummary
+      ? "audio_summary"
+      : pdfSummary
+        ? "pdf_summary"
+        : "ai_description";
 
   // Only render if we have at least some metadata
-  const hasContent = summary || aiTags?.length || detectedObjects?.length || detectedText?.length;
+  const hasContent =
+    summary ||
+    aiTags?.length ||
+    detectedObjects?.length ||
+    detectedText?.length;
   if (!hasContent) return null;
 
   const pills = [
@@ -68,7 +82,12 @@ export function MomentAiInsights({
       {summary && (
         <p className="flex gap-2 text-sm text-muted-foreground leading-relaxed">
           <Sparkles className="w-4 h-4 mt-0.5 shrink-0 text-primary/60" />
-          <span>{summary}</span>
+          <TranslatedContent
+            type="moment"
+            id={momentId}
+            field={summaryField}
+            original={summary}
+          />
         </p>
       )}
 
@@ -84,7 +103,7 @@ export function MomentAiInsights({
             <ChevronDown
               className={cn(
                 "w-4 h-4 ml-auto transition-transform",
-                isOpen && "rotate-180"
+                isOpen && "rotate-180",
               )}
             />
           </summary>
@@ -94,7 +113,12 @@ export function MomentAiInsights({
             {/* Scene description (if different from summary) */}
             {sceneDescription && sceneDescription !== summary && (
               <p className="text-muted-foreground/80 leading-relaxed italic">
-                {sceneDescription}
+                <TranslatedContent
+                  type="moment"
+                  id={momentId}
+                  field="scene_description"
+                  original={sceneDescription}
+                />
               </p>
             )}
 
@@ -135,9 +159,7 @@ export function MomentAiInsights({
             {/* Mood + Colors row */}
             {(mood || (dominantColors && dominantColors.length > 0)) && (
               <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-                {mood && (
-                  <span className="capitalize">{mood}</span>
-                )}
+                {mood && <span className="capitalize">{mood}</span>}
                 {dominantColors && dominantColors.length > 0 && (
                   <div className="flex items-center gap-1">
                     <Palette className="w-3 h-3" />

@@ -1,3 +1,6 @@
+import { translatedFields } from "@/lib/translations/public-content";
+import { OriginalText } from "@/components/ui/original-text";
+import { getEventTranslationsBatch } from "@/lib/translations";
 import { ExperienceList } from "@/components/experiences/list";
 import { Link } from "@/lib/i18n/routing";
 import {
@@ -22,7 +25,6 @@ import {
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatInDaLat } from "@/lib/timezone";
 import type { Venue, Locale } from "@/lib/types";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { VenueHoursBadge } from "@/components/venues/venue-hours-badge";
@@ -31,7 +33,10 @@ import { getTranslationsWithFallback } from "@/lib/translations";
 import { PhotoGallery } from "@/components/ui/photo-gallery";
 import { PastEventsSection } from "@/components/venues/past-events-section";
 import { VenueMap } from "@/components/venues/venue-map";
-import { VenueGallery, type VenueGalleryPhoto } from "@/components/venues/venue-gallery";
+import {
+  VenueGallery,
+  type VenueGalleryPhoto,
+} from "@/components/venues/venue-gallery";
 import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
@@ -115,7 +120,9 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
   if (venue.organizer_id) {
     const { data: orgData } = await supabase
       .from("organizers")
-      .select("id, slug, name, logo_url, is_verified, website_url, facebook_url, instagram_url")
+      .select(
+        "id, slug, name, logo_url, is_verified, website_url, facebook_url, instagram_url",
+      )
       .eq("id", venue.organizer_id)
       .single();
     organizer = orgData;
@@ -135,14 +142,18 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
   // Events with ends_at in the future, OR events with no ends_at that started within the last 4 hours
   const now = new Date();
   const nowISO = now.toISOString();
-  const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000).toISOString();
+  const fourHoursAgo = new Date(
+    now.getTime() - 4 * 60 * 60 * 1000,
+  ).toISOString();
   const { data: happeningNow } = await supabase
     .from("events")
     .select("id, slug, title, image_url, starts_at, ends_at")
     .eq("venue_id", venueId)
     .eq("status", "published")
     .lte("starts_at", nowISO)
-    .or(`ends_at.gte.${nowISO},and(ends_at.is.null,starts_at.gte.${fourHoursAgo})`)
+    .or(
+      `ends_at.gte.${nowISO},and(ends_at.is.null,starts_at.gte.${fourHoursAgo})`,
+    )
     .order("starts_at", { ascending: true })
     .limit(3);
 
@@ -189,7 +200,9 @@ async function isUserLoggedIn(): Promise<boolean> {
   return !!user;
 }
 
-async function canUserManageVenue(venueOwnerId: string | null): Promise<boolean> {
+async function canUserManageVenue(
+  venueOwnerId: string | null,
+): Promise<boolean> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -220,7 +233,14 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     return null;
   }
 
-  const { venue, organizer, upcoming_events, happening_now, past_events_count, recent_activity: _recent_activity } = venueData;
+  const {
+    venue,
+    organizer,
+    upcoming_events,
+    happening_now,
+    past_events_count,
+    recent_activity: _recent_activity,
+  } = venueData;
   const [_isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
     isUserLoggedIn(),
     getPastEvents(venue.id),
@@ -232,10 +252,39 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     "venue",
     venue.id,
     locale as Locale,
-    { description: venue.description }
+    { description: venue.description },
   );
-  const translatedDescription = venueTranslations.description ?? venue.description;
-  const translatedAddress = venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
+  const extraTranslations = await translatedFields("venue", venue.id, locale);
+  let localizedPhotos = venue.photos || [];
+  let localizedTags = venue.tags || [];
+  try {
+    const photos = JSON.parse(extraTranslations.get("photos") || "null");
+    if (Array.isArray(photos) && photos.length === localizedPhotos.length)
+      localizedPhotos = localizedPhotos.map((photo, index) => ({
+        ...photo,
+        caption:
+          typeof photos[index]?.caption === "string"
+            ? photos[index].caption
+            : photo.caption,
+      }));
+    const tags = JSON.parse(extraTranslations.get("tags") || "null");
+    if (
+      Array.isArray(tags) &&
+      tags.length === localizedTags.length &&
+      tags.every((tag) => typeof tag === "string")
+    )
+      localizedTags = tags;
+  } catch {
+    /* Keep source data when a translation is malformed. */
+  }
+  const translatedDescription =
+    venueTranslations.description ?? venue.description;
+  const eventTitles = await getEventTranslationsBatch(
+    [...upcoming_events, ...happening_now].map((event) => event.id),
+    locale as Locale,
+  );
+  const translatedAddress =
+    venue.address?.replace(/\bWard\b/g, t("ward")) ?? null;
 
   const menu = await getPublicMenu(venue.id, locale);
   const tMenu = await getTranslations("venueMenu");
@@ -246,11 +295,26 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     `/api/places/photo?w=${w}&name=${encodeURIComponent(name)}`;
   const gallery: VenueGalleryPhoto[] = [
     ...(venue.cover_photo_url
-      ? [{ id: "cover", src: venue.cover_photo_url, thumb: venue.cover_photo_url, alt: venue.name }]
+      ? [
+          {
+            id: "cover",
+            src: venue.cover_photo_url,
+            thumb: venue.cover_photo_url,
+            alt: venue.name,
+          },
+        ]
       : []),
-    ...(venue.photos || [])
+    ...localizedPhotos
       .filter((p) => p.url && p.url !== venue.cover_photo_url)
-      .map((p, i) => ({ id: `own-${i}`, src: p.url, thumb: p.url, alt: p.caption || venue.name, caption: p.caption || null })),
+      .map((p, i) => ({
+        id: `own-${i}`,
+        src: p.url,
+        thumb: p.url,
+        alt: p.caption || venue.name,
+        caption: p.caption || null,
+        originalCaption:
+          venue.photos?.find((photo) => photo.url === p.url)?.caption || null,
+      })),
     ...(venue.google_photos || []).slice(0, 8).map((p, i) => ({
       id: `g-${i}`,
       src: placePhoto(p.name, 1600),
@@ -259,7 +323,11 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       googleAuthors: p.attributions || [],
     })),
   ];
-  const heroImage = gallery[0]?.thumb ? (gallery[0].googleAuthors ? placePhoto(venue.google_photos![0].name, 1600) : gallery[0].src) : null;
+  const heroImage = gallery[0]?.thumb
+    ? gallery[0].googleAuthors
+      ? placePhoto(venue.google_photos![0].name, 1600)
+      : gallery[0].src
+    : null;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
     [venue.name, venue.address].filter(Boolean).join(", "),
   )}${venue.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
@@ -277,7 +345,9 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
         <span className="font-semibold">{venue.google_rating.toFixed(1)}</span>
         <span className="opacity-80">
-          {t("googleReviewCount", { count: venue.google_user_rating_count || 0 })}
+          {t("googleReviewCount", {
+            count: venue.google_user_rating_count || 0,
+          })}
         </span>
       </a>
     ) : null;
@@ -295,25 +365,33 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
   const isUnclaimed = !venue.owner_id;
 
-  const typeConfig = venue.venue_type ? getVenueTypeConfig(venue.venue_type) : null;
+  const typeConfig = venue.venue_type
+    ? getVenueTypeConfig(venue.venue_type)
+    : null;
   const TypeIcon = typeConfig?.icon;
 
   // Build LocalBusiness structured data for rich SEO
   const localBusinessSchema: Record<string, unknown> = {
     "@context": "https://schema.org",
-    "@type": venue.venue_type === "restaurant" || venue.venue_type === "vegetarian" || venue.venue_type === "vegan"
-      ? "Restaurant"
-      : venue.venue_type === "cafe"
-        ? "CafeOrCoffeeShop"
-        : venue.venue_type === "bar"
-          ? "BarOrPub"
-          : venue.venue_type === "hotel"
-            ? "Hotel"
-            : venue.venue_type === "park"
-              ? "Park"
-              : "LocalBusiness",
+    "@type":
+      venue.venue_type === "restaurant" ||
+      venue.venue_type === "vegetarian" ||
+      venue.venue_type === "vegan"
+        ? "Restaurant"
+        : venue.venue_type === "cafe"
+          ? "CafeOrCoffeeShop"
+          : venue.venue_type === "bar"
+            ? "BarOrPub"
+            : venue.venue_type === "hotel"
+              ? "Hotel"
+              : venue.venue_type === "park"
+                ? "Park"
+                : "LocalBusiness",
     name: venue.name,
-    description: translatedDescription || venue.description || `${venue.name} in Da Lat, Vietnam`,
+    description:
+      translatedDescription ||
+      venue.description ||
+      `${venue.name} in Da Lat, Vietnam`,
     url: `https://dalat.app/${venue.slug}`,
     address: {
       "@type": "PostalAddress",
@@ -333,34 +411,89 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     hasMap: mapsUrl,
     ...(venue.phone && { telephone: venue.phone }),
     ...(venue.email && { email: venue.email }),
-    sameAs: [venue.google_maps_url, venue.website_url, venue.facebook_url, venue.instagram_url].filter(Boolean),
+    sameAs: [
+      venue.google_maps_url,
+      venue.website_url,
+      venue.facebook_url,
+      venue.instagram_url,
+    ].filter(Boolean),
     ...(venue.price_range && { priceRange: venue.price_range }),
     ...(menu.length > 0 && { hasMenu: menuUrl }),
-    ...(venue.is_verified && { isAccessibleForFree: venue.venue_type === "park" }),
+    ...(venue.is_verified && {
+      isAccessibleForFree: venue.venue_type === "park",
+    }),
   };
 
-  const daysOfWeek = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
-  const dayLabels: Record<string, string> = {
-    monday: "Mon",
-    tuesday: "Tue",
-    wednesday: "Wed",
-    thursday: "Thu",
-    friday: "Fri",
-    saturday: "Sat",
-    sunday: "Sun",
-  };
+  const formatEventDate = (iso: string) =>
+    new Intl.DateTimeFormat(locale, {
+      timeZone: "Asia/Ho_Chi_Minh",
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(new Date(iso));
+  const daysOfWeek = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ] as const;
+  const dayLabels = Object.fromEntries(
+    daysOfWeek.map((day, index) => [
+      day,
+      new Intl.DateTimeFormat(locale, {
+        weekday: "short",
+        timeZone: "UTC",
+      }).format(new Date(Date.UTC(2026, 0, 5 + index))),
+    ]),
+  );
 
   const amenities = [
-    { key: "wifi", icon: Wifi, has: venue.has_wifi, label: t("amenities.wifi") },
-    { key: "parking", icon: Car, has: venue.has_parking, label: t("amenities.parking") },
-    { key: "outdoor", icon: Sun, has: venue.has_outdoor_seating, label: t("amenities.outdoorSeating") },
-    { key: "pet", icon: Dog, has: venue.is_pet_friendly, label: t("amenities.petFriendly") },
-    { key: "wheelchair", icon: Accessibility, has: venue.is_wheelchair_accessible, label: t("amenities.wheelchair") },
+    {
+      key: "wifi",
+      icon: Wifi,
+      has: venue.has_wifi,
+      label: t("amenities.wifi"),
+    },
+    {
+      key: "parking",
+      icon: Car,
+      has: venue.has_parking,
+      label: t("amenities.parking"),
+    },
+    {
+      key: "outdoor",
+      icon: Sun,
+      has: venue.has_outdoor_seating,
+      label: t("amenities.outdoorSeating"),
+    },
+    {
+      key: "pet",
+      icon: Dog,
+      has: venue.is_pet_friendly,
+      label: t("amenities.petFriendly"),
+    },
+    {
+      key: "wheelchair",
+      icon: Accessibility,
+      has: venue.is_wheelchair_accessible,
+      label: t("amenities.wheelchair"),
+    },
   ].filter((a) => a.has);
 
   return (
     <>
-      <JsonLd data={menu.length > 0 ? [localBusinessSchema, generateMenuSchema(venue, menu, locale)] : localBusinessSchema} />
+      <JsonLd
+        data={
+          menu.length > 0
+            ? [localBusinessSchema, generateMenuSchema(venue, menu, locale)]
+            : localBusinessSchema
+        }
+      />
 
       {/* Hero Section with Cover Photo */}
       {heroImage ? (
@@ -404,7 +537,9 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
                     {venue.name}
                   </h1>
-                  {rating && <div className="mt-1 text-white drop-shadow">{rating}</div>}
+                  {rating && (
+                    <div className="mt-1 text-white drop-shadow">{rating}</div>
+                  )}
 
                   <div className="flex items-center gap-3 mt-2 flex-wrap">
                     {typeConfig && TypeIcon && venue.venue_type && (
@@ -461,9 +596,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 </span>
               )}
 
-              <h1 className="text-2xl sm:text-3xl font-bold">
-                {venue.name}
-              </h1>
+              <h1 className="text-2xl sm:text-3xl font-bold">{venue.name}</h1>
               {rating && <div className="mt-1">{rating}</div>}
 
               <div className="flex items-center gap-3 mt-2 flex-wrap">
@@ -504,8 +637,12 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30"
           >
             <span>
-              <span className="block font-medium text-amber-900 dark:text-amber-100">{t("claimVenue")}</span>
-              <span className="block text-sm text-amber-800/80 dark:text-amber-200/80">{t("claimDescription")}</span>
+              <span className="block font-medium text-amber-900 dark:text-amber-100">
+                {t("claimVenue")}
+              </span>
+              <span className="block text-sm text-amber-800/80 dark:text-amber-200/80">
+                {t("claimDescription")}
+              </span>
             </span>
             <BadgeCheck className="h-5 w-5 shrink-0 text-amber-700" />
           </Link>
@@ -517,6 +654,15 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             {t("editVenuePage")}
           </Link>
         ) : null}
+
+        <div className="mb-4">
+          <VenueShareButton
+            name={venue.name}
+            shareText={venue.name}
+            url={`https://dalat.app${localeUrl(locale as Locale, `/${venue.slug}`)}`}
+            label={t("shareVenue")}
+          />
+        </div>
 
         {/* Action buttons */}
         <div className="flex flex-wrap gap-2 mb-6">
@@ -559,7 +705,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               aria-label="Facebook"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
             </a>
           )}
@@ -573,7 +719,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               aria-label="Instagram"
             >
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
-                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z"/>
+                <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
               </svg>
             </a>
           )}
@@ -607,7 +753,16 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         {translatedDescription && (
           <section className="mb-8">
             <h2 className="text-xl font-semibold mb-3">{t("about")}</h2>
-            <p className="text-muted-foreground whitespace-pre-wrap">{translatedDescription}</p>
+            <p className="text-muted-foreground whitespace-pre-wrap">
+              {translatedDescription}
+            </p>
+            {translatedDescription !== venue.description &&
+              venue.description && (
+                <OriginalText
+                  text={venue.description}
+                  sourceLocale={venue.source_locale || undefined}
+                />
+              )}
           </section>
         )}
 
@@ -634,26 +789,42 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               </div>
             </div>
             {venue.preorder_enabled && (
-              <p className="mb-4 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">{tMenu("preorderBanner")}</p>
+              <p className="mb-4 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
+                {tMenu("preorderBanner")}
+              </p>
             )}
             <MenuSections sections={menu} locale={locale} showNav={false} />
           </section>
         )}
 
         {/* From Google (attributed, cached; not our own reviews) */}
-        {(venue.google_editorial_summary || (venue.google_reviews?.length ?? 0) > 0) && (
+        {(venue.google_editorial_summary ||
+          (venue.google_reviews?.length ?? 0) > 0) && (
           <section className="mb-8 space-y-3">
             <h2 className="text-xl font-semibold">{t("fromGoogle")}</h2>
             {venue.google_editorial_summary && (
-              <p className="text-muted-foreground">{venue.google_editorial_summary}</p>
+              <p className="text-muted-foreground">
+                {venue.google_editorial_summary}
+              </p>
             )}
             {(venue.google_reviews || []).slice(0, 3).map((r, i) => (
               <figure key={i} className="rounded-xl border p-4">
-                <blockquote className="line-clamp-4 text-sm">{r.text}</blockquote>
+                <blockquote className="line-clamp-4 text-sm">
+                  {r.text}
+                </blockquote>
                 <figcaption className="mt-2 flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
-                  {r.rating != null && <span>{"★".repeat(Math.round(r.rating))}</span>}
+                  {r.rating != null && (
+                    <span>{"★".repeat(Math.round(r.rating))}</span>
+                  )}
                   {r.authorUri ? (
-                    <a href={r.authorUri} target="_blank" rel="noopener noreferrer" className="underline">{r.author}</a>
+                    <a
+                      href={r.authorUri}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline"
+                    >
+                      {r.author}
+                    </a>
                   ) : (
                     <span>{r.author}</span>
                   )}
@@ -661,10 +832,17 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 </figcaption>
               </figure>
             ))}
-            <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center text-sm underline">
+            <a
+              href={mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-11 items-center text-sm underline"
+            >
               {t("readReviewsOnGoogle")}
             </a>
-            <p className="text-xs text-muted-foreground">{t("googleAttribution")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("googleAttribution")}
+            </p>
           </section>
         )}
 
@@ -690,12 +868,16 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold truncate">{organizer.name}</span>
+                      <span className="font-semibold truncate">
+                        {organizer.name}
+                      </span>
                       {organizer.is_verified && (
                         <BadgeCheck className="w-4 h-4 text-primary flex-shrink-0" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground">{t("viewOrganizerProfile")}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {t("viewOrganizerProfile")}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -724,17 +906,25 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         {venue.tags && venue.tags.length > 0 && (
           <section className="mb-8">
             <div className="flex flex-wrap gap-2">
-              {venue.tags.map((tag: string) => (
+              {venue.tags.map((tag: string, index: number) => (
                 <span
                   key={tag}
                   className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5 text-sm text-primary border border-primary/10"
                 >
                   <Tag className="w-3 h-3" />
-                  {t.has(`tagLabels.${tag}`) ? t(`tagLabels.${tag}`) : tag.replace(/-/g, " ")}
+                  {localizedTags[index] !== tag
+                    ? localizedTags[index]
+                    : t.has(`tagLabels.${tag}`)
+                      ? t(`tagLabels.${tag}`)
+                      : tag.replace(/-/g, " ")}
                 </span>
               ))}
             </div>
           </section>
+        )}
+
+        {JSON.stringify(localizedTags) !== JSON.stringify(venue.tags || []) && (
+          <OriginalText text={(venue.tags || []).join(", ")} />
         )}
 
         {/* Happening now */}
@@ -760,7 +950,9 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                         />
                       )}
                       <div className="p-4">
-                        <h3 className="font-semibold mb-1">{event.title}</h3>
+                        <h3 className="font-semibold mb-1">
+                          {eventTitles.get(event.id)?.title || event.title}
+                        </h3>
                         <p className="text-sm text-emerald-600 dark:text-emerald-400">
                           {t("liveNow")}
                         </p>
@@ -776,7 +968,9 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         {/* Upcoming events */}
         {upcoming_events.length > 0 && (
           <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">{t("upcomingEvents")}</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {t("upcomingEvents")}
+            </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {upcoming_events.map((event) => (
                 <Link key={event.id} href={`/events/${event.slug}`}>
@@ -790,10 +984,12 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                         />
                       )}
                       <div className="p-4">
-                        <h3 className="font-semibold mb-2">{event.title}</h3>
+                        <h3 className="font-semibold mb-2">
+                          {eventTitles.get(event.id)?.title || event.title}
+                        </h3>
                         <span className="flex items-center gap-1 text-sm text-muted-foreground">
                           <Calendar className="w-4 h-4" />
-                          {formatInDaLat(event.starts_at, "EEE, MMM d 'at' h:mm a", locale as Locale)}
+                          {formatEventDate(event.starts_at)}
                         </span>
                       </div>
                     </CardContent>
@@ -824,9 +1020,8 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 photos={venue.photos || []}
               />
             ) : (
-              venue.photos && venue.photos.length > 0 && (
-                <PhotoGallery photos={venue.photos} />
-              )
+              venue.photos &&
+              venue.photos.length > 0 && <PhotoGallery photos={venue.photos} />
             )}
           </section>
         ) : null}
@@ -847,8 +1042,18 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                 {daysOfWeek.map((day) => {
                   const hours = venue.operating_hours?.[day];
                   const today = new Date();
-                  const daLatTime = new Date(today.getTime() + 7 * 60 * 60 * 1000);
-                  const currentDay = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"][daLatTime.getUTCDay()];
+                  const daLatTime = new Date(
+                    today.getTime() + 7 * 60 * 60 * 1000,
+                  );
+                  const currentDay = [
+                    "sunday",
+                    "monday",
+                    "tuesday",
+                    "wednesday",
+                    "thursday",
+                    "friday",
+                    "saturday",
+                  ][daLatTime.getUTCDay()];
                   const isToday = currentDay === day;
 
                   return (
@@ -858,11 +1063,21 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                         isToday ? "bg-primary/10 font-medium" : ""
                       }`}
                     >
-                      <span className={isToday ? "text-primary" : "text-muted-foreground"}>
+                      <span
+                        className={
+                          isToday ? "text-primary" : "text-muted-foreground"
+                        }
+                      >
                         {dayLabels[day]}
                         {isToday && ` (${t("hoursToday")})`}
                       </span>
-                      <span className={hours === "closed" || !hours ? "text-muted-foreground" : ""}>
+                      <span
+                        className={
+                          hours === "closed" || !hours
+                            ? "text-muted-foreground"
+                            : ""
+                        }
+                      >
                         {hours === "closed" || !hours
                           ? t("closedNow")
                           : `${hours.open} - ${hours.close}`}
@@ -931,7 +1146,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     name: venue.name,
                     address: translatedAddress || venue.address || "",
                   })}
-                  url={`https://dalat.app/${venue.slug}`}
+                  url={`https://dalat.app${localeUrl(locale as Locale, `/${venue.slug}`)}`}
                   label={t("shareVenue")}
                 />
                 {venue.website_url && (
@@ -952,7 +1167,10 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
         {/* Explore more venues of the same type */}
         {venue.venue_type && (
-          <nav className="mb-8 pt-4 border-t" aria-label="Explore similar venues">
+          <nav
+            className="mb-8 pt-4 border-t"
+            aria-label="Explore similar venues"
+          >
             <h3 className="text-sm font-medium text-muted-foreground mb-3">
               {t("exploreMore")}
             </h3>
@@ -963,10 +1181,16 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               >
                 {t("allOfType", { type: typeConfig?.label || "" })}
               </Link>
-              <Link href="/discover" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+              <Link
+                href="/discover"
+                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors"
+              >
                 {t("discoverDaLat")}
               </Link>
-              <Link href="/blog/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors inline-flex items-center gap-1">
+              <Link
+                href="/blog/venues"
+                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors inline-flex items-center gap-1"
+              >
                 <BookOpen className="w-3 h-3" />
                 {t("venueGuides")}
               </Link>

@@ -1,16 +1,21 @@
+import { translatedFields } from "@/lib/translations/public-content";
 import { notFound, redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { ProfileContent } from "./profile-content";
 import { OrganizerContent } from "./organizer-content";
 import { VenueContent } from "./venue-content";
-import { generateProfileMetadata, generateOrganizerMetadata, generateVenueMetadata } from "@/lib/metadata";
+import {
+  generateProfileMetadata,
+  generateOrganizerMetadata,
+  generateVenueMetadata,
+} from "@/lib/metadata";
 import type { Profile, Organizer, Locale } from "@/lib/types";
 import { getTranslationsWithFallback } from "@/lib/translations";
 import { isUnroutableUnifiedSlug, isUuid } from "@/lib/slug-guard";
 
 interface PageProps {
-  searchParams?: Promise<Record<string,string|string[]|undefined>>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
   params: Promise<{ slug: string; locale: string }>;
 }
 
@@ -112,7 +117,9 @@ async function fallbackResolveSlug(slug: string): Promise<SlugResolution> {
 }
 
 // Metadata generation
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { slug: rawSlug, locale } = await params;
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
   if (isUnroutableUnifiedSlug(locale, slug)) return { title: "Not found" };
@@ -122,21 +129,47 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!supabase) return { title: "Not found" };
 
   // Try unified resolution first, fall back to direct lookup
-  const { data: rpcResult } = await supabase.rpc("resolve_unified_slug", { p_slug: slug });
+  const { data: rpcResult } = await supabase.rpc("resolve_unified_slug", {
+    p_slug: slug,
+  });
   let resolution = (rpcResult as SlugResolution) || { found: false };
   if (!resolution.found) {
     // Fallback: try profile, then organizer, then venue
-    const { data: profile } = await supabase.from("profiles").select("id").eq("username", slug).single();
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("username", slug)
+      .single();
     if (profile) {
-      resolution = { found: true, entity_type: "profile", entity_id: profile.id };
+      resolution = {
+        found: true,
+        entity_type: "profile",
+        entity_id: profile.id,
+      };
     } else {
-      const { data: org } = await supabase.from("organizers").select("id").eq("slug", slug).single();
+      const { data: org } = await supabase
+        .from("organizers")
+        .select("id")
+        .eq("slug", slug)
+        .single();
       if (org) {
-        resolution = { found: true, entity_type: "organizer", entity_id: org.id };
+        resolution = {
+          found: true,
+          entity_type: "organizer",
+          entity_id: org.id,
+        };
       } else {
-        const { data: venue } = await supabase.from("venues").select("id").eq("slug", slug).single();
+        const { data: venue } = await supabase
+          .from("venues")
+          .select("id")
+          .eq("slug", slug)
+          .single();
         if (venue) {
-          resolution = { found: true, entity_type: "venue", entity_id: venue.id };
+          resolution = {
+            found: true,
+            entity_type: "venue",
+            entity_id: venue.id,
+          };
         }
       }
     }
@@ -148,10 +181,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   switch (resolution.entity_type) {
     case "community": {
-      const { data: community } = await supabase.from("tribes").select("slug").eq("id", resolution.entity_id).maybeSingle();
+      const { data: community } = await supabase
+        .from("tribes")
+        .select("slug")
+        .eq("id", resolution.entity_id)
+        .maybeSingle();
       if (!community) return { title: "Community not found" };
       const { generateMetadata } = await import("../tribes/[slug]/page");
-      return generateMetadata({ params: Promise.resolve({ slug: community.slug, locale }), searchParams: Promise.resolve({}) });
+      return generateMetadata({
+        params: Promise.resolve({ slug: community.slug, locale }),
+        searchParams: Promise.resolve({}),
+      });
     }
     case "profile": {
       const { data: profile } = await supabase
@@ -161,13 +201,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .single();
 
       if (!profile) return { title: "Profile not found" };
-      if (profile.is_private) return {
-        title: "Private profile | DaLat.app",
-        description: "This profile is private.",
-        robots: { index: false, follow: false },
-        openGraph: { title: "Private profile", description: "This profile is private.", images: [] },
-        twitter: { card: "summary", title: "Private profile", description: "This profile is private.", images: [] },
-      };
+      if (profile.is_private)
+        return {
+          title: "Private profile | DaLat.app",
+          description: "This profile is private.",
+          robots: { index: false, follow: false },
+          openGraph: {
+            title: "Private profile",
+            description: "This profile is private.",
+            images: [],
+          },
+          twitter: {
+            card: "summary",
+            title: "Private profile",
+            description: "This profile is private.",
+            images: [],
+          },
+        };
 
       const { data: events } = await supabase
         .from("events")
@@ -175,7 +225,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .eq("created_by", profile.id)
         .eq("status", "published");
 
-      return generateProfileMetadata(profile as Profile, locale as Locale, events?.length ?? 0);
+      return generateProfileMetadata(
+        profile as Profile,
+        locale as Locale,
+        events?.length ?? 0,
+      );
     }
 
     case "organizer": {
@@ -193,7 +247,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .eq("organizer_id", organizer.id)
         .eq("status", "published");
 
-      return generateOrganizerMetadata(organizer as Organizer, locale as Locale, events?.length ?? 0);
+      const translated = await translatedFields(
+        "organizer",
+        organizer.id,
+        locale,
+      );
+      return generateOrganizerMetadata(
+        {
+          ...organizer,
+          description: translated.get("description") || organizer.description,
+        } as Organizer,
+        locale as Locale,
+        events?.length ?? 0,
+      );
     }
 
     case "venue": {
@@ -210,7 +276,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         "venue",
         venue.id,
         locale as Locale,
-        { description: venue.description }
+        { description: venue.description },
       );
 
       const { data: events } = await supabase
@@ -221,9 +287,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .gte("starts_at", new Date().toISOString());
 
       return generateVenueMetadata(
-        { ...venue, description: venueTranslations.description ?? venue.description },
+        {
+          ...venue,
+          description: venueTranslations.description ?? venue.description,
+        },
         locale as Locale,
-        events?.length ?? 0
+        events?.length ?? 0,
       );
     }
 
@@ -232,7 +301,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-export default async function UnifiedSlugPage({ params, searchParams }: PageProps) {
+export default async function UnifiedSlugPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { slug: rawSlug, locale } = await params;
   // Handle @ prefix (for profile URLs like /@username)
   const slug = decodeURIComponent(rawSlug).replace(/^@/, "").toLowerCase();
@@ -251,28 +323,44 @@ export default async function UnifiedSlugPage({ params, searchParams }: PageProp
 
   if (resolution.entity_type === "community") {
     const db = await createClient();
-    const { data: community } = await db.from("tribes").select("slug").eq("id", resolution.entity_id).maybeSingle();
+    const { data: community } = await db
+      .from("tribes")
+      .select("slug")
+      .eq("id", resolution.entity_id)
+      .maybeSingle();
     if (!community) notFound();
     const incoming = await searchParams;
     const tags = new URLSearchParams();
-    for (const key of ["utm_source", "utm_campaign"]) if (typeof incoming?.[key] === "string") tags.set(key, incoming[key]);
-    redirect(`/${locale}/communities/${community.slug}${tags.size ? `?${tags}` : ""}`);
+    for (const key of ["utm_source", "utm_campaign"])
+      if (typeof incoming?.[key] === "string") tags.set(key, incoming[key]);
+    redirect(
+      `/${locale}/communities/${community.slug}${tags.size ? `?${tags}` : ""}`,
+    );
   }
 
   // Handle redirects (non-primary slugs that should redirect to canonical)
-  if (resolution.is_redirect && resolution.canonical_slug && resolution.canonical_slug !== slug) {
+  if (
+    resolution.is_redirect &&
+    resolution.canonical_slug &&
+    resolution.canonical_slug !== slug
+  ) {
     redirect(`/${locale}/${resolution.canonical_slug}`);
   }
 
   // Render appropriate content based on entity type
   switch (resolution.entity_type) {
     case "profile":
-      return <ProfileContent profileId={resolution.entity_id} locale={locale} />;
+      return (
+        <ProfileContent profileId={resolution.entity_id} locale={locale} />
+      );
 
     case "organizer":
       return (
         <main className="min-h-screen">
-          <OrganizerContent organizerId={resolution.entity_id} locale={locale} />
+          <OrganizerContent
+            organizerId={resolution.entity_id}
+            locale={locale}
+          />
         </main>
       );
 

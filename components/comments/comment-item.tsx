@@ -1,7 +1,20 @@
 "use client";
 
+import { Languages } from "lucide-react";
+
 import { useState, useEffect, useRef } from "react";
-import { MessageCircle, MoreHorizontal, Trash2, Pencil, BellOff, ChevronDown, ChevronUp, X, Send, Loader2 } from "lucide-react";
+import {
+  MessageCircle,
+  MoreHorizontal,
+  Trash2,
+  Pencil,
+  BellOff,
+  ChevronDown,
+  ChevronUp,
+  X,
+  Send,
+  Loader2,
+} from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -97,12 +110,14 @@ export function CommentItem({
 
   // Translation logic
   const hasTranslation = comment.is_translated && comment.translated_content;
-  const sourceLocale = (comment as { source_locale?: string }).source_locale || "en";
+  const sourceLocale =
+    (comment as { source_locale?: string }).source_locale || "en";
   const needsTranslation = sourceLocale !== userLocale && !comment.is_deleted;
   const isTranslating = needsTranslation && !hasTranslation && !isPending;
-  const displayContent = hasTranslation && !showOriginal
-    ? comment.translated_content
-    : comment.content;
+  const displayContent =
+    hasTranslation && !showOriginal
+      ? comment.translated_content
+      : comment.content;
 
   const isOwnComment = currentUserId === comment.user_id;
   const canModerate = isContentOwner && !isOwnComment;
@@ -116,7 +131,9 @@ export function CommentItem({
   const [relativeTime, setRelativeTime] = useState<string>("");
 
   useEffect(() => {
-    setRelativeTime(formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }));
+    setRelativeTime(
+      formatDistanceToNow(new Date(comment.created_at), { addSuffix: true }),
+    );
   }, [comment.created_at]);
 
   // Focus reply input when replying starts
@@ -134,7 +151,13 @@ export function CommentItem({
         onLoadReplies?.();
       }
     }
-  }, [isReplying, comment.reply_count, showReplies, replies?.length, onLoadReplies]);
+  }, [
+    isReplying,
+    comment.reply_count,
+    showReplies,
+    replies?.length,
+    onLoadReplies,
+  ]);
 
   const handleReply = () => {
     triggerHaptic("selection");
@@ -180,11 +203,16 @@ export function CommentItem({
   };
 
   return (
-    <div className={`${isReply ? "pl-10" : ""} ${isPending ? "opacity-60" : ""}`}>
+    <div
+      className={`${isReply ? "pl-10" : ""} ${isPending ? "opacity-60" : ""}`}
+    >
       <div className="flex gap-3">
         {/* Avatar */}
         <Avatar className="w-8 h-8 flex-shrink-0">
-          <AvatarImage src={comment.avatar_url || undefined} alt={displayName} />
+          <AvatarImage
+            src={comment.avatar_url || undefined}
+            alt={displayName}
+          />
           <AvatarFallback className="text-xs">{initials}</AvatarFallback>
         </Avatar>
 
@@ -194,7 +222,9 @@ export function CommentItem({
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-medium text-sm">{displayName}</span>
-              <span className="text-xs text-muted-foreground">{relativeTime}</span>
+              <span className="text-xs text-muted-foreground">
+                {relativeTime}
+              </span>
               {comment.is_edited && (
                 <span className="text-xs text-muted-foreground italic">
                   ({t("edited")})
@@ -227,7 +257,9 @@ export function CommentItem({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {isOwnComment && onEdit && (
-                    <DropdownMenuItem onClick={() => onEdit(comment.id, comment.content)}>
+                    <DropdownMenuItem
+                      onClick={() => onEdit(comment.id, comment.content)}
+                    >
                       <Pencil className="w-4 h-4 mr-2" />
                       {t("edit")}
                     </DropdownMenuItem>
@@ -256,7 +288,9 @@ export function CommentItem({
           <div className="mt-1">
             <p className="text-sm whitespace-pre-wrap break-words">
               {comment.is_deleted ? (
-                <span className="text-muted-foreground italic">{t("deleted")}</span>
+                <span className="text-muted-foreground italic">
+                  {t("deleted")}
+                </span>
               ) : (
                 displayContent
               )}
@@ -265,8 +299,10 @@ export function CommentItem({
             {hasTranslation && !comment.is_deleted && (
               <button
                 onClick={() => setShowOriginal(!showOriginal)}
-                className="text-xs text-muted-foreground hover:text-foreground mt-1 transition-colors"
+                aria-pressed={showOriginal}
+                className="inline-flex min-h-11 items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mt-1 transition-colors"
               >
+                <Languages className="h-4 w-4" aria-hidden="true" />
                 {showOriginal ? t("seeTranslation") : t("seeOriginal")}
               </button>
             )}
@@ -369,29 +405,30 @@ export function CommentItem({
       </div>
 
       {/* Nested replies */}
-      {(showReplies || isReplying) && (comment.reply_count > 0 || replies?.length) && (
-        <div className="mt-3 space-y-3">
-          {repliesLoading ? (
-            <div className="pl-10 text-sm text-muted-foreground">
-              Loading replies...
-            </div>
-          ) : (
-            replies?.map((reply) => (
-              <CommentItem
-                key={reply.id}
-                comment={reply}
-                currentUserId={currentUserId}
-                isContentOwner={isContentOwner}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                isReply
-                isPending={reply.id.startsWith("temp-")}
-                userLocale={userLocale}
-              />
-            ))
-          )}
-        </div>
-      )}
+      {(showReplies || isReplying) &&
+        (comment.reply_count > 0 || replies?.length) && (
+          <div className="mt-3 space-y-3">
+            {repliesLoading ? (
+              <div className="pl-10 text-sm text-muted-foreground">
+                Loading replies...
+              </div>
+            ) : (
+              replies?.map((reply) => (
+                <CommentItem
+                  key={reply.id}
+                  comment={reply}
+                  currentUserId={currentUserId}
+                  isContentOwner={isContentOwner}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  isReply
+                  isPending={reply.id.startsWith("temp-")}
+                  userLocale={userLocale}
+                />
+              ))
+            )}
+          </div>
+        )}
     </div>
   );
 }

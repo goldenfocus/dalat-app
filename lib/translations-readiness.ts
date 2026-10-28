@@ -413,6 +413,7 @@ export async function getEventsIndexingReadiness(
     .from("content_translations")
     .select("content_id, target_locale, field_name, translated_text, updated_at")
     .eq("content_type", "event")
+    .eq("is_stale", false)
     .in("content_id", events.map((event) => event.id))
     .in("field_name", [...EVENT_INDEXABLE_TRANSLATION_FIELDS]);
 

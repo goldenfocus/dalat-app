@@ -23,6 +23,9 @@ export interface PeopleIdentity {
 }
 
 export interface PeopleCard extends PeopleProfile {
+  original_help_offered?: string;
+  original_help_wanted?: string;
+  original_bio?: string | null;
   profile: PeopleIdentity;
 }
 
@@ -36,5 +39,8 @@ export interface PeopleFilters {
 
 export interface PeopleBlock {
   blocked_id: string;
-  profile: Pick<PeopleIdentity, "id" | "display_name" | "username" | "avatar_url">;
+  profile: Pick<
+    PeopleIdentity,
+    "id" | "display_name" | "username" | "avatar_url"
+  >;
 }

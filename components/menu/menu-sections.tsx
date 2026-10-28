@@ -1,3 +1,4 @@
+import { OriginalText } from "@/components/ui/original-text";
 import { getTranslations } from "next-intl/server";
 import { formatVnd } from "@/lib/menu/format";
 import type { MenuSection } from "@/lib/menu/types";
@@ -22,7 +23,10 @@ export async function MenuSections({
   return (
     <div className="space-y-10">
       {showNav && sections.length > 1 && (
-        <nav aria-label={t("menuTitle")} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+        <nav
+          aria-label={t("menuTitle")}
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1"
+        >
           {sections.map((s) => (
             <a
               key={s.id}
@@ -36,9 +40,24 @@ export async function MenuSections({
       )}
 
       {sections.map((section) => (
-        <section key={section.id} id={`menu-${section.slug}`} className="scroll-mt-24">
+        <section
+          key={section.id}
+          id={`menu-${section.slug}`}
+          className="scroll-mt-24"
+        >
           <h2 className="text-xl font-semibold">{section.title}</h2>
-          {section.note && <p className="mt-1 text-sm text-muted-foreground">{section.note}</p>}
+          {section.originalTitle &&
+            (section.title !== section.originalTitle ||
+              section.note !== section.originalNote) && (
+              <OriginalText
+                text={[section.originalTitle, section.originalNote]
+                  .filter(Boolean)
+                  .join("\n")}
+              />
+            )}
+          {section.note && (
+            <p className="mt-1 text-sm text-muted-foreground">{section.note}</p>
+          )}
           <ul className="mt-4 divide-y rounded-xl border">
             {section.items.map((item) => {
               const tags = TAG_ORDER.filter((tag) => item.tags.includes(tag));
@@ -55,13 +74,28 @@ export async function MenuSections({
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-3">
-                      <h3 className={`font-medium ${item.is_sold_out ? "text-muted-foreground line-through" : ""}`}>
+                      <h3
+                        className={`font-medium ${item.is_sold_out ? "text-muted-foreground line-through" : ""}`}
+                      >
                         {item.name}
                       </h3>
-                      <span className="shrink-0 font-semibold tabular-nums">{formatVnd(item.price_vnd, locale)}</span>
+                      <span className="shrink-0 font-semibold tabular-nums">
+                        {formatVnd(item.price_vnd, locale)}
+                      </span>
                     </div>
+                    {item.originalName &&
+                      (item.name !== item.originalName ||
+                        item.description !== item.originalDescription) && (
+                        <OriginalText
+                          text={[item.originalName, item.originalDescription]
+                            .filter(Boolean)
+                            .join("\n")}
+                        />
+                      )}
                     {item.description && (
-                      <p className="mt-0.5 text-sm text-muted-foreground">{item.description}</p>
+                      <p className="mt-0.5 text-sm text-muted-foreground">
+                        {item.description}
+                      </p>
                     )}
                     {(tags.length > 0 || item.is_sold_out) && (
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -71,8 +105,13 @@ export async function MenuSections({
                           </span>
                         )}
                         {tags.map((tag) => (
-                          <span key={tag} className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-                            {tag === "favourite" ? `★ ${t("favourite")}` : t(tag)}
+                          <span
+                            key={tag}
+                            className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
+                          >
+                            {tag === "favourite"
+                              ? `★ ${t("favourite")}`
+                              : t(tag)}
                           </span>
                         ))}
                       </div>

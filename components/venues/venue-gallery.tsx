@@ -1,5 +1,6 @@
 "use client";
 
+import { OriginalText } from "@/components/ui/original-text";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { PhotoViewer, type ViewerPhoto } from "@/components/ui/photo-viewer";
@@ -10,6 +11,7 @@ export type VenueGalleryPhoto = {
   thumb: string;
   alt: string;
   caption?: string | null;
+  originalCaption?: string | null;
   /** Present only for Google Places photos (required attribution). */
   googleAuthors?: { name: string; uri?: string }[];
 };
@@ -43,7 +45,7 @@ export function VenueGallery({ photos, venueName }: { photos: VenueGalleryPhoto[
     src: p.src,
     alt: p.alt,
     caption: p.caption,
-    credit: credit(p),
+    credit: <>{credit(p)}{p.originalCaption && p.originalCaption!==p.caption && <OriginalText text={p.originalCaption} />}</>,
     downloadable: !p.googleAuthors,
   }));
   return (

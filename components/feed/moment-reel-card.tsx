@@ -1,5 +1,7 @@
 "use client";
 
+import { TranslatedContent } from "@/components/ui/translated-content";
+
 import { useState, useCallback, useEffect } from "react";
 import { Link } from "@/lib/i18n/routing";
 import { UserAvatar } from "@/components/ui/user-avatar";
@@ -61,11 +63,14 @@ export function MomentReelCard({
     >
       {/* Media area - fills viewport */}
       <div className="absolute inset-0 overflow-hidden">
-        {(moment.media_url || moment.cf_video_uid) ? (
+        {moment.media_url || moment.cf_video_uid ? (
           isVideo ? (
             <VideoPlayer
               src={moment.media_url || ""}
-              hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid)}
+              hlsSrc={
+                moment.cf_playback_url ||
+                getCfStreamPlaybackUrl(moment.cf_video_uid)
+              }
               isActive={isActive}
               poster={moment.event_image_url || undefined}
               isMuted={isMuted}
@@ -119,8 +124,16 @@ export function MomentReelCard({
 
           {/* Caption */}
           {moment.text_content && (
-            <p className="text-white text-sm mb-4 line-clamp-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[75%]">
-              {moment.text_content}
+            <p className="text-white text-sm mb-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] max-w-[75%]">
+              {
+                <TranslatedContent
+                  type="moment"
+                  id={moment.id}
+                  field="text_content"
+                  original={moment.text_content}
+                  textClassName="line-clamp-3"
+                />
+              }
             </p>
           )}
 

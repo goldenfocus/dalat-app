@@ -1,10 +1,20 @@
 "use client";
+
+import { TranslatedContent } from "@/components/ui/translated-content";
 import { useVideoStatus } from "@/lib/hooks/use-video-status";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { X, ChevronLeft, ChevronRight, ExternalLink, Play, Share2, Check } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ExternalLink,
+  Play,
+  Share2,
+  Check,
+} from "lucide-react";
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { CommentsButton } from "@/components/comments";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -195,12 +205,15 @@ export function MomentLightbox({
   };
 
   // Image aspect ratio detection
-  const handleImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const img = e.currentTarget;
-    if (img.naturalWidth && img.naturalHeight) {
-      setIsLandscape(img.naturalWidth > img.naturalHeight);
-    }
-  }, []);
+  const handleImageLoad = useCallback(
+    (e: React.SyntheticEvent<HTMLImageElement>) => {
+      const img = e.currentTarget;
+      if (img.naturalWidth && img.naturalHeight) {
+        setIsLandscape(img.naturalWidth > img.naturalHeight);
+      }
+    },
+    [],
+  );
 
   // Open full page for SEO/sharing
   // Use moment's event_slug if available (for mixed-event search results),
@@ -230,21 +243,26 @@ export function MomentLightbox({
     }
   }, [moment?.id, moments.length, currentIndex, onMomentDeleted, onClose]);
 
-  const handleShare = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    const slug = moment.event_slug || eventSlug;
-    const shareUrl = slug
-      ? `${window.location.origin}/events/${slug}/moments/${moment.id}`
-      : `${window.location.origin}/moments/${moment.id}`;
-    nativeShare({ title: moment.text_content || "Moment", url: shareUrl });
-  }, [moment, eventSlug, nativeShare]);
+  const handleShare = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      const slug = moment.event_slug || eventSlug;
+      const shareUrl = slug
+        ? `${window.location.origin}/events/${slug}/moments/${moment.id}`
+        : `${window.location.origin}/moments/${moment.id}`;
+      nativeShare({ title: moment.text_content || "Moment", url: shareUrl });
+    },
+    [moment, eventSlug, nativeShare],
+  );
 
   if (!isOpen || !moment) return null;
 
   // Get optimized image URL for photos
-  const imageUrl = moment.content_type === "photo" && moment.media_url
-    ? optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) || moment.media_url
-    : null;
+  const imageUrl =
+    moment.content_type === "photo" && moment.media_url
+      ? optimizedImageUrl(moment.media_url, imagePresets.momentFullscreen) ||
+        moment.media_url
+      : null;
 
   return (
     <div
@@ -377,28 +395,45 @@ export function MomentLightbox({
                 key={moment.id}
                 variant="scrim"
                 text={moment.text_content}
+                contentId={moment.id}
                 className="rounded-b-lg"
               />
             )}
             {/* z-30 keeps the watermark above the caption scrim */}
-            <MomentWatermark displayName={moment.display_name || moment.username} className="z-30" />
+            <MomentWatermark
+              displayName={moment.display_name || moment.username}
+              className="z-30"
+            />
           </div>
         )}
 
         {/* Video */}
         {moment.content_type === "video" && (
           <div className="w-full h-full max-h-[90vh] flex items-center justify-center">
-            {(moment.video_status === "ready" || !moment.cf_video_uid) && (moment.media_url || moment.cf_video_uid) ? (
+            {(moment.video_status === "ready" || !moment.cf_video_uid) &&
+            (moment.media_url || moment.cf_video_uid) ? (
               <MomentVideoPlayer
                 src={moment.media_url || ""}
-                hlsSrc={moment.cf_playback_url || getCfStreamPlaybackUrl(moment.cf_video_uid) || undefined}
+                hlsSrc={
+                  moment.cf_playback_url ||
+                  getCfStreamPlaybackUrl(moment.cf_video_uid) ||
+                  undefined
+                }
                 poster={moment.thumbnail_url || undefined}
               />
             ) : moment.cf_video_uid ? (
               <div className="aspect-video flex items-center justify-center bg-muted/20 rounded-lg">
                 <div className="text-white/70 text-center">
-                  {moment.video_status !== "error" && <div className="w-12 h-12 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-3" />}
-                  <p>{videoText(moment.video_status === "error" ? "videoProcessingFailed" : "videoProcessing")}</p>
+                  {moment.video_status !== "error" && (
+                    <div className="w-12 h-12 border-2 border-white/50 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                  )}
+                  <p>
+                    {videoText(
+                      moment.video_status === "error"
+                        ? "videoProcessingFailed"
+                        : "videoProcessing",
+                    )}
+                  </p>
                 </div>
               </div>
             ) : null}
@@ -406,43 +441,46 @@ export function MomentLightbox({
         )}
 
         {/* YouTube - show thumbnail with direct link (embedding often blocked) */}
-        {moment.content_type === "youtube" && (() => {
-          // Get video ID from stored field or extract from URL
-          const videoId = moment.youtube_video_id || extractYouTubeVideoId(moment.youtube_url);
-          if (!videoId) return null;
+        {moment.content_type === "youtube" &&
+          (() => {
+            // Get video ID from stored field or extract from URL
+            const videoId =
+              moment.youtube_video_id ||
+              extractYouTubeVideoId(moment.youtube_url);
+            if (!videoId) return null;
 
-          return (
-            <div className="w-full max-w-4xl">
-              <a
-                href={`https://www.youtube.com/watch?v=${videoId}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block relative aspect-video rounded-lg overflow-hidden group"
-              >
-                {/* Thumbnail */}
-                <img
-                  src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
-                  alt={moment.text_content || "YouTube video"}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-                  }}
-                />
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-4">
-                  {/* YouTube play button */}
-                  <div className="w-20 h-14 rounded-2xl bg-red-600 group-hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
-                    <Play className="w-9 h-9 text-white fill-white ml-1" />
+            return (
+              <div className="w-full max-w-4xl">
+                <a
+                  href={`https://www.youtube.com/watch?v=${videoId}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block relative aspect-video rounded-lg overflow-hidden group"
+                >
+                  {/* Thumbnail */}
+                  <img
+                    src={`https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`}
+                    alt={moment.text_content || "YouTube video"}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+                    }}
+                  />
+                  {/* Overlay */}
+                  <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex flex-col items-center justify-center gap-4">
+                    {/* YouTube play button */}
+                    <div className="w-20 h-14 rounded-2xl bg-red-600 group-hover:bg-red-700 flex items-center justify-center transition-colors shadow-lg">
+                      <Play className="w-9 h-9 text-white fill-white ml-1" />
+                    </div>
+                    {/* Label */}
+                    <span className="text-white font-medium text-lg">
+                      Watch on YouTube
+                    </span>
                   </div>
-                  {/* Label */}
-                  <span className="text-white font-medium text-lg">
-                    Watch on YouTube
-                  </span>
-                </div>
-              </a>
-            </div>
-          );
-        })()}
+                </a>
+              </div>
+            );
+          })()}
 
         {/* Audio */}
         {moment.content_type === "audio" && moment.file_url && (
@@ -471,7 +509,12 @@ export function MomentLightbox({
           <div className="relative">
             <img
               src={moment.file_url}
-              alt={moment.ai_description || moment.text_content || moment.title || "Image"}
+              alt={
+                moment.ai_description ||
+                moment.text_content ||
+                moment.title ||
+                "Image"
+              }
               onLoad={handleImageLoad}
               className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl"
             />
@@ -480,11 +523,15 @@ export function MomentLightbox({
                 key={moment.id}
                 variant="scrim"
                 text={moment.text_content}
+                contentId={moment.id}
                 className="rounded-b-lg"
               />
             )}
             {/* z-30 keeps the watermark above the caption scrim */}
-            <MomentWatermark displayName={moment.display_name || moment.username} className="z-30" />
+            <MomentWatermark
+              displayName={moment.display_name || moment.username}
+              className="z-30"
+            />
           </div>
         )}
 
@@ -492,7 +539,14 @@ export function MomentLightbox({
         {moment.content_type === "text" && moment.text_content && (
           <div className="max-w-2xl p-8 bg-gradient-to-br from-primary/20 to-primary/5 rounded-xl">
             <p className="text-xl text-white text-center whitespace-pre-wrap">
-              {moment.text_content}
+              {
+                <TranslatedContent
+                  type="moment"
+                  id={moment.id}
+                  field="text_content"
+                  original={moment.text_content}
+                />
+              }
             </p>
           </div>
         )}
@@ -503,10 +557,17 @@ export function MomentLightbox({
         {/* Photo/image captions render as an overlay on the media itself */}
         {moment.text_content &&
           !["text", "photo", "image"].includes(moment.content_type) && (
-          <p className="text-white text-center max-w-2xl mx-auto line-clamp-3 mb-3">
-            {moment.text_content}
-          </p>
-        )}
+            <p className="text-white text-center max-w-2xl mx-auto line-clamp-3 mb-3">
+              {
+                <TranslatedContent
+                  type="moment"
+                  id={moment.id}
+                  field="text_content"
+                  original={moment.text_content}
+                />
+              }
+            </p>
+          )}
 
         <div className="flex items-center justify-center gap-2 flex-wrap">
           <ReactionBar

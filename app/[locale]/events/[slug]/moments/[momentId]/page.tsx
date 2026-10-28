@@ -456,6 +456,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               {/* AI Insights — crawlable metadata for SEO/AEO */}
               {moment.moment_metadata && (
                 <MomentAiInsights
+                  momentId={moment.id}
                   aiDescription={moment.moment_metadata.ai_description}
                   sceneDescription={moment.moment_metadata.scene_description}
                   aiTags={moment.moment_metadata.ai_tags}
