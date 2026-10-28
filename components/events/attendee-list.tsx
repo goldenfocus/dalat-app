@@ -69,7 +69,7 @@ export function AttendeeList({ attendees, waitlist, interested = [], isPast = fa
     : attendees;
 
   return (
-    <Card className="overflow-hidden">
+    <Card id="attendees" className="overflow-hidden scroll-mt-20">
       <CardContent className="p-4">
         <h3 className="font-semibold mb-3">
           {isPast ? t("whoWent", { count: attendees.length }) : t("whosGoing", { count: attendees.length })}

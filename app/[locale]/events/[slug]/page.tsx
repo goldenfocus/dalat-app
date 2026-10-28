@@ -1332,7 +1332,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           <div className="flex items-center gap-3">
             <Users className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="font-medium">
+              <a
+                href="#attendees"
+                className="block font-medium hover:underline underline-offset-2"
+              >
                 {spotsText} {isPast ? t("went") : t("going")}
                 {(counts?.interested_count ?? 0) > 0 && (
                   <span className="text-muted-foreground font-normal">
@@ -1340,7 +1343,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     · {counts?.interested_count} {t("interested")}
                   </span>
                 )}
-              </p>
+              </a>
               {(counts?.waitlist_count ?? 0) > 0 && (
                 <p className="text-sm text-muted-foreground">
                   {counts?.waitlist_count} {t("onWaitlist")}
