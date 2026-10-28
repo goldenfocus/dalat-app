@@ -27,7 +27,8 @@ Optional environment controls:
 
 - `TRANSLATION_TYPES=venue,organizer,...`: restrict a repair/audit.
 - `TRANSLATION_CONTENT_ID=<uuid>`: one-content repair.
-- `TRANSLATION_REVIEW_EXISTING=1`: intentionally review existing automatic rows too; preserves human edits.
+- `TRANSLATION_REQUIRE_REVIEW=1` (default): review legacy automatic rows too when `ai_reviewed_at` is missing. Reviewed rows become ready and leave the queue; human rows are preserved. Set `0` only for a coverage-only diagnostic, never as proof of quality completion.
+- `TRANSLATION_REVIEW_EXISTING=1`: force a fresh single-pass or targeted review, including already reviewed automatic rows. Loop mode rejects this option to avoid repeatedly redoing the newest rows and starving older content.
 - `TRANSLATION_REVIEW_AFTER=<ISO timestamp>`: also review newly written rows from other providers. Set when installing the worker so the Vercel event fast path receives independent review.
 - `TRANSLATION_ITEMS_PER_TYPE=20`: fair per-round processing, preventing long transcripts from starving new content. Full coverage is audited even when writes are bounded.
 - `TRANSLATION_MAX_ITEMS=4`: bounded smoke test.
@@ -53,4 +54,4 @@ Use the `Languages` icon everywhere:
 
 Every new text field, game, feature, or content type must include: a registry entry and public visibility rule, valid DB content/field constraints, source-change invalidation, localized server metadata and page content, original access, complete UI catalogs, and a production coverage check. Preserve official venue/community/organizer names. Do not rely on a browser callback to queue translations.
 
-The existing Vercel event translation path remains available for fast event publication; the subscription worker reviews new output after `TRANSLATION_REVIEW_AFTER`. The local worker never sends Telegram progress messages. Provider outages back off for 15 minutes; they never silently downgrade to an unreviewed model. For a deliberate human re-review, verify the current source and update the reviewed row with `is_stale=false`; do not unhide an old review without checking its source.
+The existing Vercel event translation path remains available for fast event publication; the subscription worker requires independent review of all automatic output, including historical rows. `TRANSLATION_REVIEW_AFTER` remains available for narrower diagnostics. The local worker never sends Telegram progress messages. Provider outages back off for 15 minutes; they never silently downgrade to an unreviewed model. For a deliberate human re-review, verify the current source and update the reviewed row with `is_stale=false`; do not unhide an old review without checking its source.

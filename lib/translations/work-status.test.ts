@@ -46,3 +46,13 @@ describe("translation queue ownership", () => {
     ).toBe("ready");
   });
 });
+
+
+it("drains the legacy review backlog without continually redoing completed work", () => {
+  const options = { requireReview: true };
+  const old = { translated_text: "Legacy text", translation_status: "auto", updated_at: "2025-01-01T00:00:00Z" };
+  expect(translationWorkState(old, options)).toBe("pending");
+  expect(translationWorkState({ ...old, ai_reviewed_at: "2026-10-28T00:00:00Z" }, options)).toBe("ready");
+  expect(translationWorkState({ ...old, translation_status: "edited" }, options)).toBe("ready");
+  expect(translationWorkState({ ...old, translation_status: "reviewed", is_stale: true }, options)).toBe("blocked");
+});

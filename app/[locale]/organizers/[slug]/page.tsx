@@ -7,10 +7,9 @@ import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import { Calendar, MapPin, BadgeCheck, Globe } from "lucide-react";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getLocale, getTranslations, getFormatter } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatInDaLat } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Organizer, Event, Locale } from "@/lib/types";
 import { generateOrganizerMetadata } from "@/lib/metadata";
@@ -98,6 +97,7 @@ export default async function OrganizerPage({ params }: PageProps) {
   const locale = await getLocale();
   const t = await getTranslations("organizer");
   const common = await getTranslations("common");
+  const format = await getFormatter({ locale });
   const organizer = await getOrganizer(slug);
 
   if (!organizer) {
@@ -251,7 +251,8 @@ export default async function OrganizerPage({ params }: PageProps) {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {upcomingEvents.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
+                <div key={event.id}>
+                <Link href={`/events/${event.slug}`}>
                   <Card className="hover:border-primary/50 transition-colors">
                     <CardContent className="p-4">
                       {event.image_url && (
@@ -265,11 +266,10 @@ export default async function OrganizerPage({ params }: PageProps) {
                       <div className="flex flex-col gap-1 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-4 h-4" />
-                          {formatInDaLat(
-                            event.starts_at,
-                            "EEE, MMM d 'at' h:mm a",
-                            locale as Locale,
-                          )}
+                          {format.dateTime(new Date(event.starts_at), {
+                            weekday: "short", month: "short", day: "numeric",
+                            hour: "numeric", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh",
+                          })}
                         </span>
                         {event.location_name && (
                           <span className="flex items-center gap-1">
@@ -281,6 +281,10 @@ export default async function OrganizerPage({ params }: PageProps) {
                     </CardContent>
                   </Card>
                 </Link>
+                {eventTitles.get(event.id)?.title && eventTitles.get(event.id)?.title !== event.title && (
+                  <OriginalText text={event.title} />
+                )}
+                </div>
               ))}
             </div>
           </section>
@@ -294,8 +298,8 @@ export default async function OrganizerPage({ params }: PageProps) {
             </h2>
             <div className="space-y-2">
               {pastEvents.map((event) => (
+                <div key={event.id}>
                 <Link
-                  key={event.id}
                   href={`/events/${event.slug}`}
                   className="flex items-center gap-4 p-3 rounded-lg hover:bg-muted transition-colors"
                 >
@@ -309,14 +313,16 @@ export default async function OrganizerPage({ params }: PageProps) {
                   <div>
                     <p className="font-medium">{eventTitles.get(event.id)?.title || event.title}</p>
                     <p className="text-sm text-muted-foreground">
-                      {formatInDaLat(
-                        event.starts_at,
-                        "MMM d, yyyy",
-                        locale as Locale,
-                      )}
+                      {format.dateTime(new Date(event.starts_at), {
+                        month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Ho_Chi_Minh",
+                      })}
                     </p>
                   </div>
                 </Link>
+                {eventTitles.get(event.id)?.title && eventTitles.get(event.id)?.title !== event.title && (
+                  <OriginalText text={event.title} />
+                )}
+                </div>
               ))}
             </div>
           </section>

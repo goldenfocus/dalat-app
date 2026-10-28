@@ -50,6 +50,7 @@ const PAGE = 500;
 const workOptions = {
   reviewAfter: process.env.TRANSLATION_REVIEW_AFTER,
   force: process.env.TRANSLATION_REVIEW_EXISTING === "1",
+  requireReview: process.env.TRANSLATION_REQUIRE_REVIEW !== "0",
 };
 let stop = false;
 let retryAfter = 0;
@@ -670,6 +671,8 @@ async function sweep() {
   return report;
 }
 async function main() {
+  if (loop && workOptions.force)
+    throw new Error("Force review is single-pass only; loop mode uses requireReview to avoid repeatedly translating completed work.");
   await mkdir(stateDir, { recursive: true });
   do {
     if (Date.now() >= retryAfter) await sweep();

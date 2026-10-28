@@ -7,17 +7,16 @@ import { memo } from "react";
 import Image from "next/image";
 import { useRouter } from "@/lib/i18n/routing";
 import { Calendar, MapPin, Users, Clock } from "lucide-react";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations, useFormatter } from "next-intl";
 import { EventDefaultImage } from "@/components/events/event-default-image";
 import { SeriesBadge } from "@/components/events/series-badge";
-import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl, isDefaultImageUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { usePrefetch } from "@/lib/prefetch";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
-import type { Event, EventCounts, FriendsAttending, Locale } from "@/lib/types";
+import type { Event, EventCounts, FriendsAttending } from "@/lib/types";
 import { FriendsAttendingDisplay } from "@/components/events/friends-attending";
 
 // Tiny gradient placeholder for perceived instant loading
@@ -61,7 +60,7 @@ export const EventCard = memo(function EventCard({
   showFullImage = false,
 }: EventCardProps) {
   const t = useTranslations("events");
-  const locale = useLocale() as Locale;
+  const format = useFormatter();
   const router = useRouter();
   const { prefetchEvent, prefetchEventCounts } = usePrefetch();
 
@@ -283,7 +282,12 @@ export const EventCard = memo(function EventCard({
               <div className="flex items-center gap-2.5">
                 <Calendar className="w-4 h-4 flex-shrink-0 text-white/70" />
                 <span>
-                  {formatInDaLat(event.starts_at, "EEE, MMM d", locale)}
+                  {format.dateTime(new Date(event.starts_at), {
+                    weekday: "long",
+                    month: "short",
+                    day: "numeric",
+                    timeZone: "Asia/Ho_Chi_Minh",
+                  })}
                 </span>
               </div>
 
@@ -292,7 +296,11 @@ export const EventCard = memo(function EventCard({
                 <span>
                   {timeTbd
                     ? "TBD"
-                    : formatInDaLat(event.starts_at, "h:mm a", locale)}
+                    : format.dateTime(new Date(event.starts_at), {
+                        hour: "numeric",
+                        minute: "2-digit",
+                        timeZone: "Asia/Ho_Chi_Minh",
+                      })}
                 </span>
               </div>
 

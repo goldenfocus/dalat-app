@@ -7,13 +7,14 @@ export type TranslationRowState = {
 };
 export function translationWorkState(
   row: TranslationRowState | undefined,
-  options: { reviewAfter?: string; force?: boolean } = {},
+  options: { reviewAfter?: string; force?: boolean; requireReview?: boolean } = {},
 ): "ready" | "pending" | "blocked" {
   if (!row) return "pending";
   if (row.translation_status !== "auto")
     return row.is_stale || !row.translated_text?.trim() ? "blocked" : "ready";
   if (row.is_stale || !row.translated_text?.trim() || options.force)
     return "pending";
+  if (options.requireReview && !row.ai_reviewed_at) return "pending";
   if (options.reviewAfter && !row.ai_reviewed_at) {
     const timestamp = Date.parse(row.updated_at || "");
     if (
