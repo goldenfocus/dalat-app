@@ -1090,6 +1090,7 @@
     "testHint": "Dihantar ke peranti berdaftar. Pada iPhone: Seting → Fokus → App → benarkan Dalat.app. Mod senyap masih berkuat kuasa."
   },
   "userMenu": {
+    "myVenues": "Tempat saya",
     "staffDesk": "Ruang petugas",
     "experiences": "Pengalaman",
     "editProfile": "Edit profil",
@@ -3979,6 +3980,10 @@
     "open": "Buka foto: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Edit tajuk, penerangan, jadual dan kapasiti.",
+    "singleOccurrence": "Hanya sesi ini bagi acara berulang akan diubah.",
+    "eventConflict": "Acara ini berubah semasa anda mengedit. Muat semula sebelum menyimpan.",
+    "backToManagement": "Kembali ke tempat saya",
     "title": "Tuntut {name}",
     "intro": "Anda pemilik atau pengurus tempat ini? Beritahu kami cara mengesahkan anda. Selepas diluluskan, anda boleh menyunting penerangan, foto, waktu operasi, pautan dan logo.",
     "businessEmail": "E-mel perniagaan",

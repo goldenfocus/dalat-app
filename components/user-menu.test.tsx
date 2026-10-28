@@ -13,12 +13,14 @@ vi.mock("@/components/ui/dropdown-menu", () => {
     DropdownMenuSeparator: () => <hr />, DropdownMenuTrigger: Wrapper };
 });
 const props = { avatarUrl: null, displayName: "Vi", username: "vivian", role: "user" as const };
+let venues: { id: string }[];
 let events: { slug: string }[];
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   events = [];
+  venues = [];
   fetchMock = vi.fn().mockImplementation(async (url: string) => ({
-    ok: true, json: async () => url === "/api/arrival/staff" ? { events } : {},
+    ok: true, json: async () => url === "/api/arrival/staff" ? { events, venues } : {},
   }));
   vi.stubGlobal("fetch", fetchMock);
 });
@@ -50,5 +52,30 @@ describe("user menu staff discovery", () => {
     expect(screen.queryByRole("link", { name: "staffDesk" })).toBeNull();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
     expect(screen.queryByRole("link", { name: "staffDesk" })).toBeNull();
+  });
+});
+
+
+describe("venue management discovery", () => {
+  it("shows owners a management link even with no upcoming check-in events", async () => {
+    venues = [{ id: "social-house" }];
+    render(<UserMenu {...props} />);
+    expect(await screen.findByRole("link", { name: "myVenues" })).toHaveAttribute("href", "/venues/manage");
+    expect(screen.queryByRole("link", { name: "staffDesk" })).toBeNull();
+  });
+  it("does not grant venue editing to check-in staff", async () => {
+    events = [{ slug: "language-exchange" }];
+    render(<UserMenu {...props} />);
+    await screen.findByRole("link", { name: "staffDesk" });
+    expect(screen.queryByRole("link", { name: "myVenues" })).toBeNull();
+  });
+  it("clears management access immediately when the viewer changes", async () => {
+    venues = [{ id: "social-house" }];
+    const view = render(<UserMenu {...props} isGodMode />);
+    await screen.findByRole("link", { name: "myVenues" });
+    venues = [];
+    view.rerender(<UserMenu {...props} username="visitor" isGodMode />);
+    expect(screen.queryByRole("link", { name: "myVenues" })).toBeNull();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
   });
 });

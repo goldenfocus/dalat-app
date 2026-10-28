@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { createClient } from "@/lib/supabase/server";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLatAsync } from "@/lib/timezone";
 import { formatVnd } from "@/lib/menu/format";
 import type { Locale } from "@/lib/types";
 import { PreorderStatusButtons } from "./preorder-status-buttons";
@@ -25,7 +25,7 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
   const { data, error } = await db
     .from("event_preorders")
     .select(
-      "id,status,total_vnd,note,phone,created_at,events!inner(slug,title,starts_at),profiles(display_name,username),event_preorder_items(name_snapshot,qty)",
+      "id,status,total_vnd,note,phone,created_at,events!inner(slug,title,starts_at),profiles!event_preorders_user_id_fkey(display_name,username),event_preorder_items(name_snapshot,qty)",
     )
     .eq("venue_id", venueId)
     .gte("events.starts_at", since)
@@ -41,6 +41,9 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
     g.rows.push(r);
     byEvent.set(r.events.slug, g);
   }
+
+  const eventDates = new Map(await Promise.all([...byEvent.entries()].map(async ([slug, g]) =>
+    [slug, await formatInDaLatAsync(g.startsAt, "EEE, MMM d · HH:mm", locale as Locale)] as const)));
 
   return (
     <section>
@@ -58,7 +61,7 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
                 <div className="border-b p-4">
                   <h3 className="font-semibold">{g.title}</h3>
                   <p className="text-sm text-muted-foreground">
-                    {formatInDaLat(g.startsAt, "EEE, MMM d · HH:mm", locale as Locale)} · {t("preorderCount", { count: live.length })}
+                    {eventDates.get(slug)} · {t("preorderCount", { count: live.length })}
                   </p>
                   {itemTotals.size > 0 && (
                     <p className="mt-2 text-sm">

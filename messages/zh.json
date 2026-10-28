@@ -1090,6 +1090,7 @@
     "testHint": "发送至已注册的设备。iPhone：设置 → 专注模式 → App → 允许 Dalat.app。这不会覆盖静音模式。"
   },
   "userMenu": {
+    "myVenues": "我的场所",
     "staffDesk": "员工工作台",
     "experiences": "体验记录",
     "editProfile": "编辑资料",
@@ -3979,6 +3980,10 @@
     "open": "打开照片：{alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "编辑标题、描述、时间和人数上限。",
+    "singleOccurrence": "仅更改此重复活动的本次场次。",
+    "eventConflict": "编辑期间活动已发生更改。请刷新后再保存。",
+    "backToManagement": "返回我的场所",
     "title": "认领 {name}",
     "intro": "您是这里的店主或管理者吗？告诉我们如何核实您的身份。通过后即可编辑介绍、照片、营业时间、链接和标志。",
     "businessEmail": "商家邮箱",

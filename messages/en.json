@@ -1184,6 +1184,7 @@
     "testHint": "Sends to your registered devices. On iPhone, allow Dalat.app in Settings → Focus → Apps. This does not override Silent mode."
   },
   "userMenu": {
+    "myVenues": "My venues",
     "staffDesk": "Staff desk",
     "experiences": "Experiences",
     "editProfile": "Edit profile",
@@ -3979,6 +3980,10 @@
     "open": "Open photo: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Edit the title, description, schedule and capacity.",
+    "singleOccurrence": "This changes only this occurrence of the recurring event.",
+    "eventConflict": "This event changed while you were editing. Reload before saving.",
+    "backToManagement": "Back to my venues",
     "title": "Claim {name}",
     "intro": "Own or manage this place? Tell us how to verify you. Once approved you can edit the description, photos, hours, links and logo.",
     "businessEmail": "Business email",

@@ -43,12 +43,15 @@ export function VenueProfileForm({ venue }: {
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("saving");
-    const res = await fetch(`/api/venues/${venue.id}/profile`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ...f, operating_hours: Object.keys(hours).length ? hours : null }),
-    });
-    setStatus(res.ok ? "saved" : "error");
+    try {
+      const fields = Object.fromEntries(Object.entries(f).map(([key, value]) => [key, value.trim() || null]));
+      const res = await fetch(`/api/venues/${venue.id}/profile`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...fields, operating_hours: Object.keys(hours).length ? hours : null }),
+      });
+      setStatus(res.ok ? "saved" : "error");
+    } catch { setStatus("error"); }
   };
   return (
     <form onSubmit={save} className="space-y-5">
@@ -80,13 +83,13 @@ export function VenueProfileForm({ venue }: {
           const closed = v === "closed";
           const open = v && v !== "closed" ? v : { open: "", close: "" };
           return (
-            <div key={d} className="flex items-center gap-2 text-sm">
-              <span className="w-16">{dayLabel(i)}</span>
-              <Input type="time" className="w-28" disabled={closed} value={open.open}
+            <div key={d} className="grid grid-cols-[3rem_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 text-sm">
+              <span className="min-w-0">{dayLabel(i)}</span>
+              <Input type="time" className="min-w-0 w-full" disabled={closed} value={open.open}
                 onChange={(e) => setHours({ ...hours, [d]: { open: e.target.value, close: open.close || "21:00" } })} />
-              <Input type="time" className="w-28" disabled={closed} value={open.close}
+              <Input type="time" className="min-w-0 w-full" disabled={closed} value={open.close}
                 onChange={(e) => setHours({ ...hours, [d]: { open: open.open || "08:00", close: e.target.value } })} />
-              <label className="flex items-center gap-1">
+              <label className="col-span-2 col-start-2 flex min-h-11 items-center gap-1">
                 <input type="checkbox" checked={closed}
                   onChange={(e) => setHours({ ...hours, [d]: e.target.checked ? "closed" : { open: "08:00", close: "21:00" } })} />
                 {t("closed")}

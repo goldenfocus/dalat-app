@@ -1090,6 +1090,7 @@
     "testHint": "Se envía a tus dispositivos registrados. En iPhone: Ajustes → Modos de concentración → Apps → permitir Dalat.app. No anula el modo silencio."
   },
   "userMenu": {
+    "myVenues": "Mis lugares",
     "staffDesk": "Área del personal",
     "experiences": "Experiencias",
     "editProfile": "Editar perfil",
@@ -3979,6 +3980,10 @@
     "open": "Abrir foto: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Edita el título, la descripción, el horario y el aforo.",
+    "singleOccurrence": "Solo se modificará esta fecha del evento recurrente.",
+    "eventConflict": "El evento cambió mientras lo editabas. Recarga antes de guardar.",
+    "backToManagement": "Volver a mis lugares",
     "title": "Reclamar {name}",
     "intro": "¿Eres dueño o gestionas este lugar? Dinos cómo verificarte. Tras la aprobación podrás editar la descripción, fotos, horarios, enlaces y logo.",
     "businessEmail": "Correo del negocio",

@@ -1090,6 +1090,7 @@
     "testHint": "登録済み端末に送信します。iPhone：設定 → 集中モード → アプリ → Dalat.appを許可。消音モードは解除されません。"
   },
   "userMenu": {
+    "myVenues": "管理する会場",
     "staffDesk": "スタッフポータル",
     "experiences": "体験記",
     "editProfile": "プロフィールを編集",
@@ -3979,6 +3980,10 @@
     "open": "写真を開く: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "タイトル、説明、日時、定員を編集できます。",
+    "singleOccurrence": "定期イベントの今回の開催分のみ変更されます。",
+    "eventConflict": "編集中にイベントが変更されました。保存前に再読み込みしてください。",
+    "backToManagement": "管理する会場に戻る",
     "title": "{name} を申請する",
     "intro": "このお店のオーナーまたは管理者ですか？本人確認の方法を教えてください。承認後、紹介文・写真・営業時間・リンク・ロゴを編集できます。",
     "businessEmail": "ビジネス用メール",

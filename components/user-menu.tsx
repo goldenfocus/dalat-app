@@ -31,9 +31,10 @@ const ADMIN_ROLES: UserRole[] = ["superadmin", "admin", "moderator", "contributo
 export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = false }: UserMenuProps) {
   const router = useRouter();
   const [isExiting, setIsExiting] = useState(false);
-  const [staffDesk, setStaffDesk] = useState<{ viewer: string; href: string } | null>(null);
+  const [staffDesk, setStaffDesk] = useState<{ viewer: string; href: string | null; hasVenues: boolean } | null>(null);
   const viewerKey = `${username}:${isGodMode}`;
   const staffHref = staffDesk?.viewer === viewerKey ? staffDesk.href : null;
+  const hasVenues = staffDesk?.viewer === viewerKey && staffDesk.hasVenues;
   const [loyalty, setLoyalty] = useState<{ tier: string; points: number } | null>(null);
 
   useEffect(() => {
@@ -54,11 +55,12 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
     const controller = new AbortController();
     fetch("/api/arrival/staff", { cache: "no-store", signal: controller.signal })
       .then((res) => res.ok ? res.json() : null)
-      .then((json: { events?: { slug: string }[] } | null) => {
+      .then((json: { events?: { slug: string }[]; venues?: { id: string }[] } | null) => {
         if (controller.signal.aborted) return;
-        if (!json?.events?.length) { setStaffDesk(null); return; }
-        setStaffDesk({ viewer: viewerKey, href: json.events.length === 1
-          ? `/events/${encodeURIComponent(json.events[0].slug)}/host` : "/staff" });
+        if (!json) { setStaffDesk(null); return; }
+        setStaffDesk({ viewer: viewerKey, hasVenues: !!json.venues?.length,
+          href: !json.events?.length ? null : json.events.length === 1
+            ? `/events/${encodeURIComponent(json.events[0].slug)}/host` : "/staff" });
       })
       .catch(() => { if (!controller.signal.aborted) setStaffDesk(null); });
     return () => controller.abort();
@@ -128,6 +130,11 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
             <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover/profile:opacity-100 transition-opacity" />
           </Link>
         </div>
+        {hasVenues && <DropdownMenuItem asChild>
+          <Link href="/venues/manage" className="cursor-pointer font-semibold text-primary">
+            <Building2 className="mr-2 h-4 w-4" />{t("myVenues")}
+          </Link>
+        </DropdownMenuItem>}
         {staffHref && (
           <>
             <DropdownMenuItem asChild>

@@ -1104,6 +1104,7 @@
     "testHint": "Envoi à vos appareils inscrits. Sur iPhone : Réglages → Concentration → Apps → autoriser Dalat.app. Cela ne contourne pas le mode silencieux."
   },
   "userMenu": {
+    "myVenues": "Mes lieux",
     "staffDesk": "Espace du personnel",
     "experiences": "Expériences",
     "editProfile": "Modifier le profil",
@@ -3979,6 +3980,10 @@
     "open": "Ouvrir la photo : {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Modifiez le titre, la description, les horaires et la capacité.",
+    "singleOccurrence": "Seule cette occurrence de l’événement récurrent sera modifiée.",
+    "eventConflict": "Cet événement a changé pendant votre modification. Rechargez avant d’enregistrer.",
+    "backToManagement": "Retour à mes lieux",
     "title": "Revendiquer {name}",
     "intro": "Vous possédez ou gérez ce lieu ? Dites-nous comment vous vérifier. Une fois validé, vous pourrez modifier la description, les photos, les horaires, les liens et le logo.",
     "businessEmail": "E-mail professionnel",

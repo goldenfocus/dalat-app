@@ -1090,6 +1090,7 @@
     "testHint": "Gửi tới các thiết bị đã đăng ký. Trên iPhone, cho phép Dalat.app trong Cài đặt → Tập trung → Ứng dụng. Chế độ im lặng vẫn có hiệu lực."
   },
   "userMenu": {
+    "myVenues": "Địa điểm của tôi",
     "staffDesk": "Khu vực nhân viên",
     "experiences": "Trải nghiệm",
     "editProfile": "Chỉnh sửa hồ sơ",
@@ -3979,6 +3980,10 @@
     "open": "Mở ảnh: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Chỉnh sửa tên, mô tả, lịch và số người tham gia.",
+    "singleOccurrence": "Thay đổi này chỉ áp dụng cho lần diễn ra này của sự kiện định kỳ.",
+    "eventConflict": "Sự kiện đã thay đổi trong lúc bạn chỉnh sửa. Hãy tải lại trước khi lưu.",
+    "backToManagement": "Về địa điểm của tôi",
     "title": "Nhận quản lý {name}",
     "intro": "Bạn là chủ hoặc quản lý nơi này? Cho chúng tôi biết cách xác minh bạn. Sau khi được duyệt, bạn có thể sửa mô tả, ảnh, giờ mở cửa, liên kết và logo.",
     "businessEmail": "Email doanh nghiệp",

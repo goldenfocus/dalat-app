@@ -1,14 +1,15 @@
 import { beforeEach, expect, it, vi } from "vitest";
-const { events } = vi.hoisted(() => ({ events: vi.fn() }));
+const { events, venues } = vi.hoisted(() => ({ events: vi.fn(), venues: vi.fn() }));
+vi.mock("@/lib/venues/managed", () => ({ managedVenues: venues }));
 vi.mock("@/lib/arrival/staff-events", () => ({ staffEvents: events }));
 import { GET } from "./route";
-beforeEach(() => vi.clearAllMocks());
+beforeEach(() => { vi.clearAllMocks(); venues.mockResolvedValue([]); });
 it("keeps the authenticated event list out of shared caches", async () => {
   events.mockResolvedValue([]);
   const result = await GET();
   expect(result.headers.get("cache-control")).toContain("private, no-store");
   expect(result.headers.get("vary")).toBe("Cookie");
-  expect(await result.json()).toEqual({ events: [] });
+  expect(await result.json()).toEqual({ events: [], venues: [] });
 });
 it("returns a private authentication failure without event data", async () => {
   events.mockRejectedValue(new Error("not_authenticated"));

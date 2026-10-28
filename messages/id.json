@@ -1090,6 +1090,7 @@
     "testHint": "Dikirim ke perangkat terdaftar. Di iPhone: Pengaturan → Fokus → App → izinkan Dalat.app. Mode hening tetap berlaku."
   },
   "userMenu": {
+    "myVenues": "Tempat saya",
     "staffDesk": "Ruang staf",
     "experiences": "Pengalaman",
     "editProfile": "Edit profil",
@@ -3979,6 +3980,10 @@
     "open": "Buka foto: {alt}"
   },
   "venueClaim": {
+    "eventEditorHint": "Edit judul, deskripsi, jadwal, dan kapasitas.",
+    "singleOccurrence": "Hanya sesi ini dari acara berulang yang akan diubah.",
+    "eventConflict": "Acara berubah saat Anda mengedit. Muat ulang sebelum menyimpan.",
+    "backToManagement": "Kembali ke tempat saya",
     "title": "Klaim {name}",
     "intro": "Pemilik atau pengelola tempat ini? Beri tahu kami cara memverifikasi Anda. Setelah disetujui, Anda bisa mengedit deskripsi, foto, jam buka, tautan, dan logo.",
     "businessEmail": "Email bisnis",
