@@ -1,3 +1,4 @@
+vi.mock("@/lib/hooks/use-viewer", () => ({ useViewer: () => ({ isGodMode: false }) }));
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
 import { GuestArrival } from "./guest-arrival";

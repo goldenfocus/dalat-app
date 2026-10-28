@@ -1,5 +1,6 @@
 "use client";
 
+import { useViewer } from "@/lib/hooks/use-viewer";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -24,6 +25,7 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
   const t = useTranslations("arrival.registration");
   const common = useTranslations("arrival");
   const locale = useLocale();
+  const { isGodMode } = useViewer();
   const free = canChooseFreeDrink(context);
   const drinks = context.menu.flatMap(section => section.items).filter(item => !item.is_sold_out && context.event.sponsorship?.eligibleItemIds.includes(item.id));
   const drink = drinks.find(item => item.id === selected);
@@ -52,7 +54,7 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
           </details>
         </div> : <ArrivalMenu sections={context.menu} quantities={quantities} onChange={onChange} note={note} onNoteChange={onNoteChange} disabled={busy} />}
       </div>
-      <div className="shrink-0 space-y-2 border-t bg-background px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+      <div className={`shrink-0 space-y-2 border-t bg-background px-5 pt-3 ${isGodMode ? "pb-20" : "pb-[max(1rem,env(safe-area-inset-bottom))]"}`}>
         {failed && <p role="alert" className="text-sm text-destructive">{common("errorGeneric")}</p>}
         {(drink || hasExtras) && <p className="flex justify-between text-sm"><span>{t("youPay")}</span><strong>{formatVnd(cartTotal(context.menu, quantities), locale)}</strong></p>}
         <Button className="min-h-12 w-full" loading={busy} disabled={busy || (!drink && !hasExtras)} onClick={onReserve}>{confirmLabel || t(drink && !hasExtras ? "reserveFreeDrink" : "reserve")}</Button>
