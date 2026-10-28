@@ -1103,6 +1103,7 @@
     "testHint": "Envoi à vos appareils inscrits. Sur iPhone : Réglages → Concentration → Apps → autoriser Dalat.app. Cela ne contourne pas le mode silencieux."
   },
   "userMenu": {
+    "staffDesk": "Espace du personnel",
     "experiences": "Expériences",
     "editProfile": "Modifier le profil",
     "settings": "Paramètres",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Certains articles de votre commande précédente ne sont plus disponibles, on les a retirés."
   },
   "arrival": {
+    "staffDesk": "Espace du personnel",
+    "noStaffEvents": "Aucun événement attribué pour l’instant.",
     "metaTitle": "Enregistrement",
     "metaDescription": "Rejoignez l’événement, choisissez les langues à pratiquer et commandez auprès de l’établissement.",
     "backToEvent": "Détails de l’événement",

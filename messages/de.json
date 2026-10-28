@@ -1089,6 +1089,7 @@
     "testHint": "Sendet an deine registrierten Geräte. Auf dem iPhone: Einstellungen → Fokus → Apps → Dalat.app erlauben. Der Lautlosmodus bleibt wirksam."
   },
   "userMenu": {
+    "staffDesk": "Mitarbeiterbereich",
     "experiences": "Erlebnisse",
     "editProfile": "Profil bearbeiten",
     "settings": "Einstellungen",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Einige Artikel aus deiner früheren Bestellung sind nicht mehr verfügbar, wir haben sie entfernt."
   },
   "arrival": {
+    "staffDesk": "Mitarbeiterbereich",
+    "noStaffEvents": "Noch keine Events zugewiesen.",
     "metaTitle": "Check-in",
     "metaDescription": "Nimm am Event teil, wähle aus, welche Sprachen du üben möchtest, und bestelle Essen und Getränke beim Lokal.",
     "backToEvent": "Eventdetails",

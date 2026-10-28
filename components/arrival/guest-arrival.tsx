@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { ArrivalContext, ArrivalReceipt } from "@/lib/arrival/types";
 import { ArrivalMenu, cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView, ArrivalReceiptView } from "./arrival-receipt";
+import { StaffDeskEntry } from "./staff-desk-entry";
 
 type PracticeLanguage = "english" | "vietnamese" | "both";
 type Level = "starting" | "some" | "comfortable";
@@ -122,6 +123,7 @@ export function GuestArrival({ slug }: { slug: string }) {
   return (
     <div className="mx-auto min-h-dvh max-w-xl px-4 pb-32 pt-5 text-foreground">
       <Link href={`/events/${slug}`} className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("backToEvent")}</Link>
+      {context && <StaffDeskEntry slug={slug} />}
       {loading ? <p className="py-16 text-muted-foreground" role="status">{t("loading")}</p> : !context ? (
         <div className="space-y-4 py-12"><p role="alert">{t("loadError")}</p><Button className="scroll-mb-28 min-h-12" onClick={() => void refresh()}>{t("retry")}</Button></div>
       ) : receipt ? <ArrivalReceiptView receipt={receipt} stale={stale} onRefresh={() => void refresh()} /> : !context.event.isOpen ? (

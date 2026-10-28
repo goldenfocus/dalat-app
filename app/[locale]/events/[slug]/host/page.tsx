@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: "arrival" });
   return {
-    ...generateLocalizedMetadata({ locale: locale as Locale, path: `/events/${slug}/host`, title: t("hostTitle"), description: t("metaDescription") }),
+    ...generateLocalizedMetadata({ locale: locale as Locale, path: `/events/${slug}/host`, title: t("staffDesk"), description: t("metaDescription") }),
     robots: { index: false, follow: false },
   };
 }

@@ -1089,6 +1089,7 @@
     "testHint": "Dikirim ke perangkat terdaftar. Di iPhone: Pengaturan → Fokus → App → izinkan Dalat.app. Mode hening tetap berlaku."
   },
   "userMenu": {
+    "staffDesk": "Ruang staf",
     "experiences": "Pengalaman",
     "editProfile": "Edit profil",
     "settings": "Pengaturan",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Beberapa item dari pesananmu sebelumnya sudah tidak tersedia, jadi kami hapus."
   },
   "arrival": {
+    "staffDesk": "Ruang staf",
+    "noStaffEvents": "Belum ada acara yang ditugaskan.",
     "metaTitle": "Pencatatan kehadiran",
     "metaDescription": "Ikuti acara, pilih bahasa untuk berlatih, dan pesan makanan atau minuman di tempat acara.",
     "backToEvent": "Detail acara",

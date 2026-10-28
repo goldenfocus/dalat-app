@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper, Trophy } from "lucide-react";
+import { User, Settings, ExternalLink, Shield, Building2, LogOut, Loader2, Newspaper, Trophy, ClipboardCheck } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +31,9 @@ const ADMIN_ROLES: UserRole[] = ["superadmin", "admin", "moderator", "contributo
 export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = false }: UserMenuProps) {
   const router = useRouter();
   const [isExiting, setIsExiting] = useState(false);
+  const [staffDesk, setStaffDesk] = useState<{ viewer: string; href: string } | null>(null);
+  const viewerKey = `${username}:${isGodMode}`;
+  const staffHref = staffDesk?.viewer === viewerKey ? staffDesk.href : null;
   const [loyalty, setLoyalty] = useState<{ tier: string; points: number } | null>(null);
 
   useEffect(() => {
@@ -46,6 +49,20 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
       })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/arrival/staff", { cache: "no-store", signal: controller.signal })
+      .then((res) => res.ok ? res.json() : null)
+      .then((json: { events?: { slug: string }[] } | null) => {
+        if (controller.signal.aborted) return;
+        if (!json?.events?.length) { setStaffDesk(null); return; }
+        setStaffDesk({ viewer: viewerKey, href: json.events.length === 1
+          ? `/events/${encodeURIComponent(json.events[0].slug)}/host` : "/staff" });
+      })
+      .catch(() => { if (!controller.signal.aborted) setStaffDesk(null); });
+    return () => controller.abort();
+  }, [viewerKey]);
 
   // Hide admin access when in God Mode (full immersion)
   const hasAdminAccess = !isGodMode && ADMIN_ROLES.includes(role);
@@ -111,6 +128,17 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
             <ExternalLink className="w-4 h-4 text-muted-foreground opacity-0 group-hover/profile:opacity-100 transition-opacity" />
           </Link>
         </div>
+        {staffHref && (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={staffHref} className="cursor-pointer font-semibold text-primary">
+                <ClipboardCheck className="mr-2 h-4 w-4" />
+                {t("staffDesk")}
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+          </>
+        )}
         <DropdownMenuItem asChild><Link href="/experiences">{t("experiences")}</Link></DropdownMenuItem>
         <DropdownMenuSeparator />
 

@@ -87,7 +87,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
       <Link href={`/events/${slug}`} className="mb-5 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground">
         <ArrowLeft aria-hidden className="h-4 w-4" />{t("backToEvent")}
       </Link>
-      <h1 className="text-3xl font-semibold tracking-tight">{t("hostTitle")}</h1>
+      <h1 className="text-3xl font-semibold tracking-tight">{t("staffDesk")}</h1>
       {data && <p className="mt-2 text-muted-foreground">{data.event.title}{data.event.venueName ? ` · ${data.event.venueName}` : ""}</p>}
       {forbidden ? <section className="mt-8 border-l-2 border-destructive p-4"><h2 className="font-semibold">{t("hostForbidden")}</h2><p className="mt-2 text-sm text-muted-foreground">{t("hostAskAccess")}</p></section> : <>
         <div className="my-5 flex flex-wrap items-center justify-between gap-2 border-y py-2">

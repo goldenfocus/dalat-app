@@ -1089,6 +1089,7 @@
     "testHint": "登録済み端末に送信します。iPhone：設定 → 集中モード → アプリ → Dalat.appを許可。消音モードは解除されません。"
   },
   "userMenu": {
+    "staffDesk": "スタッフポータル",
     "experiences": "体験記",
     "editProfile": "プロフィールを編集",
     "settings": "設定",
@@ -4077,6 +4078,8 @@
     "droppedItems": "前回の注文の一部が提供できなくなったため、取り除きました。"
   },
   "arrival": {
+    "staffDesk": "スタッフポータル",
+    "noStaffEvents": "まだイベントが割り当てられていません。",
     "metaTitle": "チェックイン",
     "metaDescription": "イベントに参加して、練習する言語を選び、会場の飲食物を注文しましょう。",
     "backToEvent": "イベント詳細",

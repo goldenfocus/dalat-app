@@ -1183,6 +1183,7 @@
     "testHint": "Sends to your registered devices. On iPhone, allow Dalat.app in Settings → Focus → Apps. This does not override Silent mode."
   },
   "userMenu": {
+    "staffDesk": "Staff desk",
     "experiences": "Experiences",
     "editProfile": "Edit profile",
     "settings": "Settings",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Some items from your earlier order are no longer available, so we took them out."
   },
   "arrival": {
+    "staffDesk": "Staff desk",
+    "noStaffEvents": "No events assigned yet.",
     "metaTitle": "Check in",
     "metaDescription": "Join the event, choose your language practice, and order from the venue.",
     "backToEvent": "Event details",

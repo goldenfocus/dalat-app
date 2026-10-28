@@ -120,6 +120,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "rsvpCelebration",
       "comments",
       "checkin",
+      "arrival",
       "plusOnes",
       "attendees",
       "calendar",

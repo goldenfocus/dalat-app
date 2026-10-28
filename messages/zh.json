@@ -1089,6 +1089,7 @@
     "testHint": "发送至已注册的设备。iPhone：设置 → 专注模式 → App → 允许 Dalat.app。这不会覆盖静音模式。"
   },
   "userMenu": {
+    "staffDesk": "员工工作台",
     "experiences": "体验记录",
     "editProfile": "编辑资料",
     "settings": "设置",
@@ -4077,6 +4078,8 @@
     "droppedItems": "你之前订单里的部分餐品已无法供应，我们已帮你移除。"
   },
   "arrival": {
+    "staffDesk": "员工工作台",
+    "noStaffEvents": "暂无分配的活动。",
     "metaTitle": "签到",
     "metaDescription": "参加活动，选择想练习的语言，并在活动现场点单。",
     "backToEvent": "活动详情",

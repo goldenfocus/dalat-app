@@ -1089,6 +1089,7 @@
     "testHint": "Gửi tới các thiết bị đã đăng ký. Trên iPhone, cho phép Dalat.app trong Cài đặt → Tập trung → Ứng dụng. Chế độ im lặng vẫn có hiệu lực."
   },
   "userMenu": {
+    "staffDesk": "Khu vực nhân viên",
     "experiences": "Trải nghiệm",
     "editProfile": "Chỉnh sửa hồ sơ",
     "settings": "Cài đặt",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Một vài món trong đơn trước không còn nữa, nên mình đã bỏ ra rồi nhé."
   },
   "arrival": {
+    "staffDesk": "Khu vực nhân viên",
+    "noStaffEvents": "Chưa có sự kiện nào được phân công.",
     "metaTitle": "Xác nhận có mặt",
     "metaDescription": "Tham gia sự kiện, chọn ngôn ngữ bạn muốn luyện tập và đặt món tại địa điểm tổ chức.",
     "backToEvent": "Chi tiết sự kiện",

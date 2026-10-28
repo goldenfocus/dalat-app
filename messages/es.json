@@ -1089,6 +1089,7 @@
     "testHint": "Se envía a tus dispositivos registrados. En iPhone: Ajustes → Modos de concentración → Apps → permitir Dalat.app. No anula el modo silencio."
   },
   "userMenu": {
+    "staffDesk": "Área del personal",
     "experiences": "Experiencias",
     "editProfile": "Editar perfil",
     "settings": "Configuración",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Algunos productos de tu pedido anterior ya no están disponibles, así que los quitamos."
   },
   "arrival": {
+    "staffDesk": "Área del personal",
+    "noStaffEvents": "Aún no hay eventos asignados.",
     "metaTitle": "Registro de llegada",
     "metaDescription": "Únete al evento, elige qué idioma practicar y haz tu pedido en el local.",
     "backToEvent": "Detalles del evento",

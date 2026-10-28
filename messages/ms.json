@@ -1089,6 +1089,7 @@
     "testHint": "Dihantar ke peranti berdaftar. Pada iPhone: Seting → Fokus → App → benarkan Dalat.app. Mod senyap masih berkuat kuasa."
   },
   "userMenu": {
+    "staffDesk": "Ruang petugas",
     "experiences": "Pengalaman",
     "editProfile": "Edit profil",
     "settings": "Tetapan",
@@ -4077,6 +4078,8 @@
     "droppedItems": "Beberapa item daripada pesanan anda sebelum ini tiada lagi, jadi kami telah membuangnya."
   },
   "arrival": {
+    "staffDesk": "Ruang petugas",
+    "noStaffEvents": "Belum ada acara yang ditugaskan.",
     "metaTitle": "Daftar masuk",
     "metaDescription": "Sertai acara, pilih bahasa untuk berlatih dan buat pesanan di tempat acara.",
     "backToEvent": "Butiran acara",

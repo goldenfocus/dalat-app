@@ -1089,6 +1089,7 @@
     "testHint": "등록된 기기로 보냅니다. iPhone: 설정 → 집중 모드 → 앱 → Dalat.app 허용. 무음 모드는 해제되지 않습니다."
   },
   "userMenu": {
+    "staffDesk": "스태프 공간",
     "experiences": "체험기",
     "editProfile": "프로필 편집",
     "settings": "설정",
@@ -4077,6 +4078,8 @@
     "droppedItems": "이전 주문의 일부 메뉴를 더 이상 주문할 수 없어서 빼 두었어요."
   },
   "arrival": {
+    "staffDesk": "스태프 공간",
+    "noStaffEvents": "아직 배정된 행사가 없습니다.",
     "metaTitle": "체크인",
     "metaDescription": "행사에 참여하고, 연습할 언어를 선택하고, 현장에서 음식과 음료를 주문하세요.",
     "backToEvent": "행사 상세 정보",

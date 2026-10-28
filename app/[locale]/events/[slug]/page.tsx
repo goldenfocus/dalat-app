@@ -75,6 +75,7 @@ import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
+import { StaffDeskEntry } from "@/components/arrival/staff-desk-entry";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
@@ -1341,6 +1342,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               </>
             )}
           </div>
+          {event.arrival_enabled && <StaffDeskEntry slug={event.slug} />}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Main content */}
             <div className="min-w-0 lg:col-span-2 space-y-6">
