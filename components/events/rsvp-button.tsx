@@ -99,6 +99,7 @@ interface RsvpButtonProps {
     marked_no_show?: boolean;
   } | null;
   questionnaire?: QuestionnaireData | null;
+  prepareRegistration?: boolean;
 }
 
 // Helper to check if event is past (mirrors database logic)
@@ -122,7 +123,8 @@ export function useRsvpActions(
   questionnaire?: QuestionnaireData | null,
   onShowQuestionnaire?: () => void,
   currentStatus?: Rsvp["status"] | null,
-  arrivalSlug?: string
+  arrivalSlug?: string,
+  prepareRegistration = false
 ) {
   const router = useRouter();
   const { beforeRsvp, languageSheet, languagePending } = useRsvpLanguages(arrivalSlug);
@@ -231,7 +233,7 @@ export function useRsvpActions(
 
         if (data?.status === "going") {
           // Trigger celebration!
-          onRsvpSuccess?.();
+          if (!prepareRegistration) onRsvpSuccess?.();
 
           fetch("/api/notifications/rsvp", {
             method: "POST",
@@ -240,7 +242,10 @@ export function useRsvpActions(
           }).catch(console.error);
         }
 
-        router.refresh();
+        if (data?.status === "going" && prepareRegistration) {
+          const path = window.location.pathname.replace(/\/$/, "");
+          router.push(`${path}/prepare`);
+        } else router.refresh();
         resolve({ success: true, rsvpId });
       });
     });
@@ -362,7 +367,9 @@ export function RsvpButton({
   endsAt,
   existingFeedback,
   questionnaire,
+  prepareRegistration = false,
 }: RsvpButtonProps) {
+  const router = useRouter();
   const t = useTranslations("rsvp");
   const [showCelebration, setShowCelebration] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
@@ -383,7 +390,7 @@ export function RsvpButton({
   }, []);
 
   const { isPending, languageSheet, interestedPending, confirmedStatus, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
-    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status, arrivalEnabled ? eventSlug : undefined);
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status, arrivalEnabled ? eventSlug : undefined, prepareRegistration);
 
   const resumeRsvp = useRef(handleRsvp);
   useEffect(() => { resumeRsvp.current = handleRsvp; }, [handleRsvp]);
@@ -402,10 +409,10 @@ export function RsvpButton({
     if (isLoggedIn && currentRsvp?.status === "going" && url.searchParams.get("rsvpStatus") === "going") {
       url.searchParams.delete("rsvpStatus");
       window.history.replaceState(window.history.state, "", url);
-      setShowCelebration(true);
-      celebration.setCelebrating(true);
+      if (prepareRegistration) router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`);
+      else { setShowCelebration(true); celebration.setCelebrating(true); }
     }
-  }, [isLoggedIn, currentRsvp?.status, celebration]);
+  }, [isLoggedIn, currentRsvp?.status, celebration, prepareRegistration, router]);
 
   // Handle questionnaire submission
   const handleQuestionnaireSubmit = useCallback(async (responses: Record<string, string | string[]>) => {

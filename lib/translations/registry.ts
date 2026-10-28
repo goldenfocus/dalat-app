@@ -1,6 +1,8 @@
 import { metadataLabels } from "./metadata-labels";
 /** Every public text surface must declare its source here and render an OriginalText control. */
-// Language exchange preferences, event arrival nicknames, staff membership and order notes are private operational
+// Legacy language-exchange preferences, reusable event language profiles and
+// per-arrival language snapshots are private.
+// Event arrival nicknames, staff membership and order notes are private operational
 // data: never enqueue them. Arrival menus reuse the public menu_item/menu_section
 // sources below, including their transactional invalidation and original controls.
 export const TRANSLATION_SOURCES = [

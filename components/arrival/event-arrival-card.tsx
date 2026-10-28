@@ -10,6 +10,7 @@ export async function EventArrivalCard({ slug }: { slug: string }) {
       <QrCode className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden />
       <h2 className="font-semibold">{t("welcome")}</h2>
     </div>
+    <Button asChild variant="outline" className="min-h-12 w-full"><Link href={`/events/${slug}/prepare`}>{t("registration.prepare")}</Link></Button>
     <Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("checkIn")}</Link></Button>
   </section>;
 }

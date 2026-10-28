@@ -33,6 +33,7 @@ interface FloatingRsvpBarProps {
   startsAt: string;
   endsAt: string | null;
   questionnaire?: QuestionnaireData | null;
+  prepareRegistration?: boolean;
 }
 
 export function FloatingRsvpBar({
@@ -53,6 +54,7 @@ export function FloatingRsvpBar({
   startsAt,
   endsAt,
   questionnaire,
+  prepareRegistration = false,
 }: FloatingRsvpBarProps) {
   const t = useTranslations("rsvp");
   const [showCelebration, setShowCelebration] = useState(false);
@@ -80,7 +82,8 @@ export function FloatingRsvpBar({
     questionnaire,
     handleShowQuestionnaire,
     currentRsvp?.status,
-    arrivalEnabled ? eventSlug : undefined
+    arrivalEnabled ? eventSlug : undefined,
+    prepareRegistration
   );
 
   // Handle questionnaire submission

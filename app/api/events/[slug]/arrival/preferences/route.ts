@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { arrivalContext } from "@/lib/arrival/server";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
-import { languagePreferencesSchema } from "@/lib/arrival/languages";
+import { languagePreferencesSchema } from "@/lib/arrival/legacy-languages";
 import { getLanguagePreferences } from "@/lib/arrival/preferences";
 
 export const dynamic = "force-dynamic";

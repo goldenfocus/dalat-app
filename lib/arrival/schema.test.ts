@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { arrivalSchema, staffActionSchema } from "./schema";
+import { arrivalSchema, reservationSchema, staffActionSchema } from "./schema";
 
 const requestId = "a1000000-0000-4000-8000-000000000001";
 const itemId = "a2000000-0000-4000-8000-000000000001";
@@ -31,5 +31,23 @@ describe("arrival request boundary", () => {
   it("keeps payment independent and refuses arbitrary account roles", () => {
     expect(staffActionSchema.safeParse({ action: "setPaid", orderId: itemId, paid: true }).success).toBe(true);
     expect(staffActionSchema.safeParse({ action: "addStaff", username: "vi", role: "admin" }).success).toBe(false);
+  });
+});
+
+
+describe("sponsored reservation boundary", () => {
+  const reservation = { requestId, items: guest.items, sponsoredItemId: itemId };
+  it("accepts an explicit drink, rejecting client prices and subsidy amounts", () => {
+    expect(reservationSchema.safeParse(reservation).success).toBe(true);
+    expect(reservationSchema.safeParse({ ...reservation, sponsored_vnd: 1 }).success).toBe(false);
+    expect(reservationSchema.safeParse({ ...reservation, userId: requestId }).success).toBe(false);
+  });
+  it("rejects duplicate lines and empty reservations", () => {
+    expect(reservationSchema.safeParse({ ...reservation, items: [...guest.items, ...guest.items] }).success).toBe(false);
+    expect(reservationSchema.safeParse({ ...reservation, items: [] }).success).toBe(false);
+  });
+  it("accepts only explicit manager settlement action", () => {
+    expect(staffActionSchema.safeParse({ action: "settleSponsor", orderId: itemId }).success).toBe(true);
+    expect(staffActionSchema.safeParse({ action: "settleSponsor", orderId: itemId, amount: 1 }).success).toBe(false);
   });
 });

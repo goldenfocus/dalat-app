@@ -1,0 +1,25 @@
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { afterEach, expect, it, vi } from "vitest";
+import { GuestArrival } from "./guest-arrival";
+vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => (key: string, args?: {name?:string}) => `${key}${args?.name ? ` ${args.name}` : ""}` }));
+vi.mock("@/lib/hooks/use-viewer", () => ({ useViewer: () => ({ profile: null }) }));
+vi.mock("@/lib/i18n/routing", () => ({ Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a> }));
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+it("lets an anonymous walk-in order normally without claiming an RSVP-only sponsored drink", async () => {
+  const itemId="11111111-1111-4111-8111-111111111111";
+  const context={event:{id:"event",slug:"exchange",title:"Exchange",venueName:"Cafe",startsAt:"2026-10-28T11:00:00Z",isOpen:true,orderingEnabled:true,sponsorship:{sponsorName:"EZViet",eligibleItemIds:[itemId]}},profile:null,rsvpStatus:null,receipt:null,access:{canWelcome:false,canOrder:false,canManage:false},menu:[{id:"section",slug:"drinks",title:"Drinks",note:null,items:[{id:itemId,name:"Coffee",description:null,price_vnd:45000,tags:[],image_url:null,is_sold_out:false}]}]};
+  let payload: Record<string,unknown> | undefined;
+  vi.stubGlobal("fetch",vi.fn(async (_url:string,init?:RequestInit)=>{if(init?.method==="POST"){payload=JSON.parse(init.body as string);return {ok:false,json:async()=>({code:"unavailable"})};}return {ok:true,json:async()=>context};}));
+  render(<GuestArrival slug="exchange" />);
+  fireEvent.change(await screen.findByLabelText("nickname"),{target:{value:"Guest"}});
+  fireEvent.click(screen.getByRole("button",{name:"english",exact:true}));
+  fireEvent.change(screen.getByLabelText("englishLevel"),{target:{value:"starting"}});
+  fireEvent.change(screen.getByLabelText("vietnameseLevel"),{target:{value:"starting"}});
+  fireEvent.click(screen.getByRole("button",{name:"continue"}));
+  fireEvent.click(screen.getByText("menuTitle"));
+  fireEvent.click(screen.getByRole("button",{name:"add Coffee"}));
+  fireEvent.click(screen.getByRole("button",{name:"checkInAndOrder"}));
+  await screen.findByRole("alert");
+  expect(payload?.items).toEqual([{item_id:itemId,qty:1}]);
+  expect(payload).not.toHaveProperty("sponsoredItemId");
+});

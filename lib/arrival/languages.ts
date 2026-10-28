@@ -1,17 +1,31 @@
 import { z } from "zod";
 
-// Keep the existing values so previous check-ins retain their meaning.
-export const LANGUAGE_LEVELS = ["starting", "some", "comfortable", "advanced", "fluent", "native"] as const;
-export const languageLevelSchema = z.enum(LANGUAGE_LEVELS);
+/** ISO 639-1 language tags; Intl.DisplayNames supplies names in the guest's locale. */
+export const LANGUAGE_CODES = [
+  "aa", "ab", "ae", "af", "ak", "am", "an", "ar", "as", "av", "ay", "az", "ba", "be", "bg", "bh", "bi", "bm", "bn", "bo", "br", "bs", "ca", "ce", "ch", "co", "cr", "cs", "cu", "cv", "cy", "da", "de", "dv", "dz", "ee", "el", "en", "eo", "es", "et", "eu", "fa", "ff", "fi", "fj", "fo", "fr", "fy", "ga", "gd", "gl", "gn", "gu", "gv", "ha", "he", "hi", "ho", "hr", "ht", "hu", "hy", "hz", "ia", "id", "ie", "ig", "ii", "ik", "io", "is", "it", "iu", "ja", "jv", "ka", "kg", "ki", "kj", "kk", "kl", "km", "kn", "ko", "kr", "ks", "ku", "kv", "kw", "ky", "la", "lb", "lg", "li", "ln", "lo", "lt", "lu", "lv", "mg", "mh", "mi", "mk", "ml", "mn", "mr", "ms", "mt", "my", "na", "nb", "nd", "ne", "ng", "nl", "nn", "no", "nr", "nv", "ny", "oc", "oj", "om", "or", "os", "pa", "pi", "pl", "ps", "pt", "qu", "rm", "rn", "ro", "ru", "rw", "sa", "sc", "sd", "se", "sg", "si", "sk", "sl", "sm", "sn", "so", "sq", "sr", "ss", "st", "su", "sv", "sw", "ta", "te", "tg", "th", "ti", "tk", "tl", "tn", "to", "tr", "ts", "tt", "tw", "ty", "ug", "uk", "ur", "uz", "ve", "vi", "vo", "wa", "wo", "xh", "yi", "yo", "za", "zh", "zu",
+] as const;
+export const LANGUAGE_LEVELS = ["native", "fluent", "intermediate", "beginner", "new"] as const;
+const languageSchema = z.enum(LANGUAGE_CODES);
 export const languagePreferencesSchema = z.object({
-  practiceLanguage: z.enum(["english", "vietnamese", "both"]),
-  englishLevel: languageLevelSchema,
-  vietnameseLevel: languageLevelSchema,
+  speaks: z.array(z.object({ language: languageSchema, level: z.enum(LANGUAGE_LEVELS) }).strict())
+    .min(1).max(8).refine(items => new Set(items.map(item => item.language)).size === items.length, "Duplicate language"),
+  learning: z.object({ language: languageSchema, level: z.enum(["fluent", "intermediate", "beginner", "new"]) }).strict(),
 }).strict();
 export type LanguagePreferences = z.infer<typeof languagePreferencesSchema>;
-export type LanguageLevel = LanguagePreferences["englishLevel"];
-export type LanguageChoices = { [K in keyof LanguagePreferences]: LanguagePreferences[K] | null };
-export const emptyLanguageChoices: LanguageChoices = { practiceLanguage: null, englishLevel: null, vietnameseLevel: null };
-export function completeLanguageChoices(value: LanguageChoices): value is LanguagePreferences {
-  return languagePreferencesSchema.safeParse(value).success;
+export type LanguageLevel = typeof LANGUAGE_LEVELS[number];
+export const DEFAULT_LANGUAGE_PREFERENCES: LanguagePreferences = {
+  speaks: [], learning: { language: "vi", level: "new" },
+};
+
+/** Search localized, English and native names, including unaccented input. */
+export function languageChoices(locale: string, query = "") {
+  const localized = new Intl.DisplayNames([locale], { type: "language" });
+  const english = new Intl.DisplayNames(["en"], { type: "language" });
+  const normalize = (text: string) => text.normalize("NFD").replace(/\p{Diacritic}/gu, "").toLocaleLowerCase(locale);
+  const needle = normalize(query.trim());
+  return LANGUAGE_CODES.map(code => {
+    const label = localized.of(code) || code;
+    const native = new Intl.DisplayNames([code], { type: "language" }).of(code) || code;
+    return { code, label, search: normalize(`${code} ${label} ${english.of(code)} ${native}`) };
+  }).filter(item => item.search.includes(needle)).sort((a, b) => a.label.localeCompare(b.label, locale));
 }

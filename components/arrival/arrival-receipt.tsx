@@ -3,6 +3,7 @@
 import { Check, RefreshCw } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
+import { OrderPaymentSummary } from "./order-payment-summary";
 import { formatVnd } from "@/lib/menu/format";
 import type { ArrivalOrder, ArrivalReceipt } from "@/lib/arrival/types";
 
@@ -48,7 +49,8 @@ export function ArrivalOrderView({ order }: { order: ArrivalOrder }) {
             ))}
           </ul>
           {order.note && <p className="mt-4 whitespace-pre-wrap text-sm text-muted-foreground">{order.note}</p>}
-          <p className="mt-5 flex justify-between gap-3 font-semibold text-foreground"><span>{t("total")}</span><span>{formatVnd(order.total_vnd, locale)}</span></p>
-          {!order.paid_at && order.status !== "cancelled" && <p className="mt-2 text-sm text-muted-foreground">{t("payAtVenue")}</p>}
+          <div className="mt-5"><OrderPaymentSummary order={order} /></div>
+          {order.ready_for_preparation === false && order.status !== "cancelled" && <p className="mt-3 text-sm text-primary">{t("sponsorGuestReserved")}</p>}
+          {!order.paid_at && order.status !== "cancelled" && (order.guest_due_vnd ?? order.total_vnd) > 0 && <p className="mt-2 text-sm text-muted-foreground">{t("payAtVenue")}</p>}
         </div>;
 }

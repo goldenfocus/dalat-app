@@ -8,8 +8,8 @@ import { translatedRecords } from "@/lib/translations/public-content";
 import type { ArrivalAccess, ArrivalEvent, ArrivalOrder, ArrivalParticipant, ArrivalReceipt } from "./types";
 
 const noAccess: ArrivalAccess = { canWelcome: false, canOrder: false, canManage: false };
-export const participantColumns = "id,event_id,user_id,nickname,practice_language,english_level,vietnamese_level,checked_in_at";
-export const orderColumns = "id,participant_id,user_id,status,total_vnd,note,paid_at,created_at,event_preorder_items(menu_item_id,name_snapshot,qty,unit_price_vnd)";
+export const participantColumns = "id,event_id,user_id,nickname,practice_language,english_level,vietnamese_level,checked_in_at,language_preferences";
+export const orderColumns = "id,participant_id,user_id,status,total_vnd,sponsored_vnd,guest_due_vnd,sponsor_status,sponsor_item_id,sponsor_settled_at,is_reservation,note,paid_at,created_at,event_preorder_items(menu_item_id,name_snapshot,qty,unit_price_vnd)";
 
 export function arrivalAdmin() {
   return createSupabaseClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
@@ -51,13 +51,18 @@ export async function arrivalContext(slug: string, locale = "en") {
     isOpen: Date.now() >= new Date(row.starts_at).getTime() - 6 * 3600_000 &&
       Date.now() <= new Date(row.ends_at || new Date(new Date(row.starts_at).getTime() + 6 * 3600_000)).getTime() + 2 * 3600_000,
   };
+  const { data: campaign, error: campaignError } = await admin.from("event_drink_sponsors")
+    .select("sponsor_name,ends_at,event_sponsored_drinks(menu_item_id)").eq("event_id", row.id).maybeSingle();
+  if (campaignError) throw campaignError;
+  event.sponsorship = campaign && new Date(campaign.ends_at).getTime() >= Date.now()
+    ? { sponsorName: campaign.sponsor_name, eligibleItemIds: campaign.event_sponsored_drinks.map((item: { menu_item_id: string }) => item.menu_item_id) } : null;
   const menu = row.venue_id ? await getPublicMenu(row.venue_id, locale) : [];
   return { db, admin, user, event, access, menu };
 }
 
 export function mapOrder(row: Record<string, unknown>): ArrivalOrder {
-  const { event_preorder_items, ...rest } = row;
-  return { ...rest, items: event_preorder_items || [] } as ArrivalOrder;
+  const { event_preorder_items, is_reservation, ...rest } = row;
+  return { ...rest, ready_for_preparation: !is_reservation || !!row.participant_id, items: event_preorder_items || [] } as ArrivalOrder;
 }
 
 export async function ownReceipt(eventId: string, userId: string | undefined, hash: string | null): Promise<ArrivalReceipt | null> {

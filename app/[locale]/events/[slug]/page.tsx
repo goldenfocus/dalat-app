@@ -1396,6 +1396,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             endsAt={event.ends_at}
             existingFeedback={userFeedback}
             questionnaire={questionnaire}
+            prepareRegistration={!!event.arrival_enabled}
           />
         </RsvpCardObserver>
 
@@ -2016,6 +2017,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           startsAt={event.starts_at}
           endsAt={event.ends_at}
           questionnaire={questionnaire}
+            prepareRegistration={!!event.arrival_enabled}
         />
       </main>
     </CelebrationProvider>

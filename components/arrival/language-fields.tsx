@@ -3,7 +3,7 @@
 import { useId } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { LANGUAGE_LEVELS, type LanguageChoices, type LanguageLevel } from "@/lib/arrival/languages";
+import { LANGUAGE_LEVELS, type LanguageChoices, type LanguageLevel } from "@/lib/arrival/legacy-languages";
 
 export function LanguageFields({ value, onChange, disabled = false }: {
   value: LanguageChoices;

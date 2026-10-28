@@ -2,7 +2,8 @@ import type { NextRequest } from "next/server";
 import { arrivalContext, mapOrder, orderColumns, participantColumns } from "@/lib/arrival/server";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
 import { staffActionSchema } from "@/lib/arrival/schema";
-import { languagePreferencesSchema } from "@/lib/arrival/languages";
+import { languagePreferencesSchema as legacyLanguagePreferencesSchema } from "@/lib/arrival/legacy-languages";
+import type { LanguagePreferences } from "@/lib/arrival/languages";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
 
 export const dynamic = "force-dynamic";
@@ -29,14 +30,21 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     const saved = expectedUserIds.length ? await admin.from("language_exchange_preferences").select("user_id,practice_language,english_level,vietnamese_level").in("user_id", expectedUserIds) : { data: [], error: null };
     if (saved.error) throw saved.error;
     const preferencesByUser = new Map((saved.data || []).map(row => {
-      const parsed = languagePreferencesSchema.safeParse({ practiceLanguage: row.practice_language, englishLevel: row.english_level, vietnameseLevel: row.vietnamese_level });
+      const parsed = legacyLanguagePreferencesSchema.safeParse({ practiceLanguage: row.practice_language, englishLevel: row.english_level, vietnameseLevel: row.vietnamese_level });
       return [row.user_id, parsed.success ? parsed.data : null];
     }));
+    const rsvpUserIds = (rsvpsResult.data || []).map(row => row.user_id);
+    const savedLanguages = access.canWelcome && rsvpUserIds.length
+      ? await admin.from("event_language_profiles").select("user_id,preferences").in("user_id", rsvpUserIds)
+      : { data: [], error: null };
+    if (savedLanguages.error) throw savedLanguages.error;
+    const languageByUser = new Map((savedLanguages.data || []).map(row => [row.user_id, row.preferences as LanguagePreferences]));
+
     const rsvps = (rsvpsResult.data || []).map((row) => {
       const profile = row.profiles as unknown as Profile | null;
       const name = profile?.display_name || profile?.username || "";
       userNames.set(row.user_id, name);
-      return { preferences: preferencesByUser.get(row.user_id) || null, id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
+      return { preferences: preferencesByUser.get(row.user_id) || null, languagePreferences: languageByUser.get(row.user_id) || null, id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
     });
     // Include names for preorders placed before check-in, even on order-only screens.
     const missingUsers = [...new Set((ordersResult.data || []).map((row) => row.user_id).filter((id): id is string => !!id && !userNames.has(id)))];
@@ -52,7 +60,14 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       const profile = row.profiles as unknown as Profile | null;
       return { user_id: row.user_id, role: row.role, displayName: profile?.display_name || profile?.username || "", username: profile?.username || null };
     });
-    return arrivalJson({ event, access, menu, participants: access.canWelcome ? participants : [], orders: access.canOrder ? orders : [], rsvps, staff });
+    const sponsorAccounting = access.canManage ? orders.reduce((totals, order) => {
+      const amount = order.sponsored_vnd || 0;
+      if (order.sponsor_status === "reserved") totals.reserved_vnd += amount;
+      if (order.sponsor_status === "owed") totals.owed_vnd += amount;
+      if (order.sponsor_status === "settled") totals.settled_vnd += amount;
+      return totals;
+    }, { reserved_vnd: 0, owed_vnd: 0, settled_vnd: 0 }) : null;
+    return arrivalJson({ event, access, menu, sponsorAccounting, participants: access.canWelcome ? participants : [], orders: access.canOrder ? orders : [], rsvps, staff });
   } catch (error) { return arrivalFailure(error); }
 }
 

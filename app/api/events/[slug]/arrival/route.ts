@@ -18,9 +18,13 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     const preferences = user ? await getLanguagePreferences(user.id) : null;
     let profile = null;
     let priorOrder = null;
+    let rsvpStatus: string | null = null;
     if (user) {
       const { data } = await db.from("profiles").select("display_name,username").eq("id", user.id).maybeSingle();
       profile = { name: data?.display_name || data?.username || "" };
+      const rsvp = await db.from("rsvps").select("status").eq("event_id", event.id).eq("user_id", user.id).maybeSingle();
+      if (rsvp.error) throw rsvp.error;
+      rsvpStatus = rsvp.data?.status || null;
       if (!receipt) {
         const result = await admin.from("event_preorders").select(orderColumns)
           .eq("event_id", event.id).eq("user_id", user.id).in("status", ["pending", "confirmed"]).maybeSingle();
@@ -28,7 +32,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         priorOrder = result.data ? mapOrder(result.data) : null;
       }
     }
-    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder });
+    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder, rsvpStatus });
     response.cookies.set(guestCookieName(event.id), token, {
       httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 90 * 86400,
     });

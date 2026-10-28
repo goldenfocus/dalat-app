@@ -15,31 +15,32 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("compact language exchange flow", () => {
   it("reuses the account name and saved levels at check-in without a questionnaire", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ participant: { id: "12345678", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
+    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({ participant: { id: "12345678", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
     vi.stubGlobal("fetch", fetcher);
     wrap(<GuestArrival slug="social-house" />);
     const checkIn = await screen.findByRole("button", { name: "Check in" });
     expect(screen.queryByRole("textbox")).toBeNull();
     expect(screen.queryByRole("combobox")).toBeNull();
     fireEvent.click(checkIn);
-    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
-    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toMatchObject({ nickname: "Chico", ...preferences, items: [] });
+    await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(3));
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toMatchObject({ nickname: "Chico", ...preferences, items: [] });
     expect(await screen.findByText("You’re checked in")).toBeInTheDocument();
   });
 
   it("asks an older RSVP only for missing languages and saves before advancing", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(json({ ...context, preferences: null })).mockResolvedValue(json({ preferences }));
+    const richPreferences = { speaks: [{ language: "en", level: "native" }], learning: { language: "vi", level: "new" } };
+    const fetcher = vi.fn().mockResolvedValueOnce(json({ ...context, preferences: null })).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValue(json({ preferences: richPreferences }));
     vi.stubGlobal("fetch", fetcher);
     wrap(<GuestArrival slug="social-house" />);
     await screen.findByRole("heading", { name: "Language practice" });
     expect(screen.queryByRole("textbox")).toBeNull();
-    fireEvent.click(screen.getByRole("button", { name: "Vietnamese" }));
-    fireEvent.change(screen.getByLabelText("Your English"), { target: { value: "native" } });
-    fireEvent.change(screen.getByLabelText("Your Vietnamese"), { target: { value: "starting" } });
+    fireEvent.click(screen.getByRole("button", { name: messages.arrival.languageSetup.chooseSpoken }));
+    fireEvent.change(screen.getByRole("textbox", { name: messages.arrival.languageSetup.search }), { target: { value: "English" } });
+    fireEvent.click(screen.getByRole("button", { name: "English", exact: true }));
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     await screen.findByRole("button", { name: "Check in" });
-    expect(fetcher.mock.calls[1][0]).toContain("/arrival/preferences");
-    expect(JSON.parse(fetcher.mock.calls[1][1].body)).toEqual(preferences);
+    expect(fetcher.mock.calls[2][0]).toBe("/api/arrival/languages");
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual(richPreferences);
   });
 
   it("keeps walk-in name entry alongside compact language dropdowns", async () => {
@@ -57,29 +58,35 @@ function RsvpHarness({ proceed }: { proceed: () => Promise<void> }) {
   return <><button onClick={() => void beforeRsvp(proceed)}>RSVP</button>{languageSheet}</>;
 }
 
+const richPreferences = { speaks: [{ language: "en", level: "native" }], learning: { language: "vi", level: "new" } };
+
 describe("RSVP language capture", () => {
-  it("saves preferences before RSVP and preserves answers on a failed save", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({}, false)).mockResolvedValueOnce(json({ preferences }));
+  it("saves rich preferences before RSVP and preserves answers on a failed save", async () => {
+    const fetcher = vi.fn().mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({}, false)).mockResolvedValueOnce(json({ preferences: richPreferences }));
     vi.stubGlobal("fetch", fetcher);
     const proceed = vi.fn().mockResolvedValue(undefined);
     wrap(<RsvpHarness proceed={proceed} />);
     fireEvent.click(screen.getByText("RSVP"));
     await screen.findByRole("dialog");
     expect(proceed).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "Vietnamese" }));
-    fireEvent.change(screen.getByLabelText("Your English"), { target: { value: "native" } });
-    fireEvent.change(screen.getByLabelText("Your Vietnamese"), { target: { value: "starting" } });
+    fireEvent.click(screen.getByRole("button", { name: "Choose a language you speak" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Search languages" }), { target: { value: "English" } });
+    fireEvent.click(screen.getByRole("button", { name: "English" }));
     fireEvent.click(screen.getByRole("button", { name: "Confirm RSVP" }));
     await screen.findByRole("alert");
     expect(proceed).not.toHaveBeenCalled();
-    expect(screen.getByLabelText("Your English")).toHaveValue("native");
+    expect(screen.getByText("English")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Native" })).toHaveAttribute("aria-pressed", "true");
     fireEvent.click(screen.getByRole("button", { name: "Confirm RSVP" }));
     await waitFor(() => expect(proceed).toHaveBeenCalledTimes(1));
-    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual(preferences);
+    expect(fetcher.mock.calls[0][0]).toBe("/api/arrival/languages");
+    expect(fetcher.mock.calls[2][0]).toBe("/api/arrival/languages");
+    expect(fetcher.mock.calls[2][1].method).toBe("PUT");
+    expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual(richPreferences);
   });
 
-  it("continues directly when preferences already exist", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({ preferences })));
+  it("continues directly when rich preferences already exist", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({ preferences: richPreferences })));
     const proceed = vi.fn().mockResolvedValue(undefined);
     wrap(<RsvpHarness proceed={proceed} />);
     await act(async () => { fireEvent.click(screen.getByText("RSVP")); });

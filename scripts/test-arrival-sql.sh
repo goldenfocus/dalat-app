@@ -23,6 +23,15 @@ done
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/arrival-opt-in-fixture.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261122_001_event_arrival_opt_in.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/arrival-opt-in.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261124_001_event_drink_sponsorship.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261124_002_private_event_language_profiles.sql"
+# Simulate the concurrent release running last, then reconcile both behaviors.
+# The unrelated signup-intent function needs the full production schema, so omit it.
+awk '/CREATE OR REPLACE FUNCTION public.complete_signup_intent/{exit} {print} END {print "COMMIT;"}' "$repo_root/supabase/migrations/20261122_002_language_exchange_preferences.sql" | docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261124_003_reconcile_arrival_language_sponsor.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/event-language-profiles.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/drink-sponsorship.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/sponsored-menu-sync.sql"
 # Independent sessions contend on one request. Both must receive the same receipt.
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
 INSERT INTO auth.users(id) VALUES('81000000-0000-4000-8000-000000000001');
@@ -83,6 +92,37 @@ wait "$first_pid"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
 DO $$ BEGIN
  IF (SELECT count(*) FROM event_preorders)<>1 OR (SELECT count(*) FROM event_arrival_requests)<>3 THEN RAISE EXCEPTION 'Concurrent staff orders duplicated active orders'; END IF;
+END $$;
+SQL
+# Independent requests from the same RSVP may reserve only one sponsored order.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+UPDATE events SET arrival_enabled=true WHERE id='83000000-0000-4000-8000-000000000001';
+INSERT INTO rsvps(event_id,user_id,status) VALUES('83000000-0000-4000-8000-000000000001','81000000-0000-4000-8000-000000000001','going');
+INSERT INTO event_drink_sponsors VALUES('83000000-0000-4000-8000-000000000001','EZViet',now()+interval '4 hours');
+INSERT INTO event_sponsored_drinks VALUES('83000000-0000-4000-8000-000000000001','85000000-0000-4000-8000-000000000001');
+SQL
+docker exec -i -e PGAPPNAME=sponsor-concurrent-first "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL' &
+BEGIN;
+SELECT pg_advisory_xact_lock(hashtextextended('83000000-0000-4000-8000-000000000001'||'81000000-0000-4000-8000-000000000001',1));
+SELECT pg_sleep(1);
+SELECT arrival_reserve('83000000-0000-4000-8000-000000000001','81000000-0000-4000-8000-000000000001','86000000-0000-4000-8000-000000000004','{"items":[{"item_id":"85000000-0000-4000-8000-000000000001","qty":1}],"sponsoredItemId":"85000000-0000-4000-8000-000000000001"}');
+COMMIT;
+SQL
+first_pid=$!
+started=false
+for ((i=0;i<50;i++)); do
+ if [[ "$(docker exec "$container" psql -X -At -U postgres -c "SELECT count(*) FROM pg_stat_activity WHERE application_name='sponsor-concurrent-first' AND wait_event='PgSleep'")" == 1 ]]; then started=true; break; fi
+ sleep 0.02
+done
+if [[ "$started" != true ]]; then echo 'Concurrent sponsor request did not start' >&2; exit 1; fi
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+SELECT arrival_reserve('83000000-0000-4000-8000-000000000001','81000000-0000-4000-8000-000000000001','86000000-0000-4000-8000-000000000005','{"items":[{"item_id":"85000000-0000-4000-8000-000000000001","qty":1}],"sponsoredItemId":"85000000-0000-4000-8000-000000000001"}');
+SQL
+wait "$first_pid"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+DO $$ BEGIN
+ IF (SELECT count(*) FROM event_drink_redemptions WHERE event_id='83000000-0000-4000-8000-000000000001')<>1 OR
+ (SELECT count(*) FROM event_preorders WHERE user_id='81000000-0000-4000-8000-000000000001')<>1 THEN RAISE EXCEPTION 'Concurrent sponsorship duplicated'; END IF;
 END $$;
 SQL
 echo 'Event arrival PostgreSQL authorization, idempotency, tampering and legacy preorder tests passed.'

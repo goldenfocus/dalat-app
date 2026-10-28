@@ -1,6 +1,6 @@
 import "server-only";
 import { arrivalAdmin } from "./server";
-import { languagePreferencesSchema, type LanguagePreferences } from "./languages";
+import { languagePreferencesSchema, type LanguagePreferences } from "./legacy-languages";
 
 export async function getLanguagePreferences(userId: string): Promise<LanguagePreferences | null> {
   const admin = arrivalAdmin();

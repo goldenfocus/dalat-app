@@ -7,9 +7,10 @@ import { Link } from "@/lib/i18n/routing";
 import { HostArrivals } from "./host-arrivals";
 import { HostOrders } from "./host-orders";
 import { HostTeam } from "./host-team";
+import { SponsorLedger } from "./sponsor-ledger";
 import type { HostData } from "./host-types";
 
-type Tab = "arrivals" | "orders" | "team";
+type Tab = "arrivals" | "orders" | "sponsor" | "team";
 
 export function HostWorkspace({ slug }: { slug: string }) {
   const t = useTranslations("arrival");
@@ -78,6 +79,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
   const tabs: Tab[] = data ? [
     ...(data.access.canWelcome ? ["arrivals" as const] : []),
     ...(data.access.canOrder ? ["orders" as const] : []),
+    ...(data.access.canManage && data.sponsorAccounting ? ["sponsor" as const] : []),
     ...(data.access.canManage ? ["team" as const] : []),
   ] : [];
   const visibleTab = tabs.includes(tab) ? tab : tabs[0];
@@ -101,12 +103,13 @@ export function HostWorkspace({ slug }: { slug: string }) {
           <nav aria-label={t("hostTabs")} className="mb-6 flex overflow-x-auto border-b">
             {tabs.map(item => (
               <button type="button" key={item} onClick={() => setTab(item)} aria-current={visibleTab === item ? "page" : undefined} className={`min-h-12 flex-1 whitespace-nowrap border-b-2 px-4 font-medium ${visibleTab === item ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
-                {t(`host${item === "arrivals" ? "Arrivals" : item === "orders" ? "Orders" : "Team"}`)}
+                {t(`host${item === "arrivals" ? "Arrivals" : item === "orders" ? "Orders" : item === "sponsor" ? "Sponsor" : "Team"}`)}
               </button>
             ))}
           </nav>
           {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={load} />}
           {visibleTab === "orders" && data.access.canOrder && <HostOrders orders={data.orders} busy={busy} act={act} />}
+          {visibleTab === "sponsor" && data.access.canManage && <SponsorLedger data={data} busy={busy} act={act} />}
           {visibleTab === "team" && data.access.canManage && <HostTeam staff={data.staff} busy={busy} act={act} />}
         </>}
       </>}
