@@ -3,6 +3,11 @@ import {
   explainActivity,
   shouldReuseStoredExplanation,
 } from "./editorial";
+import {
+  rewriteDateMentions,
+  scheduleChanged,
+  withScheduleChangeLog,
+} from "./schedule-change";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { EventSeries } from "@/lib/types";
 import {
@@ -619,7 +624,7 @@ async function refreshLinkedActivity(
     const { data: event, error: eventLookupError } = await input.supabase
       .from("events")
       .select(
-        "id,source_platform,source_metadata,slug,image_url,image_alt,image_description,title,description",
+        "id,source_platform,source_metadata,slug,image_url,image_alt,image_description,title,description,starts_at,ends_at",
       )
       .eq("id", link.event_id)
       .maybeSingle();
@@ -635,19 +640,44 @@ async function refreshLinkedActivity(
       > | null;
       const media = projectedActivityMedia(input.source, input.activity);
       const description = sourceDescription(input.activity, input.source.name);
+      const previousWindow = {
+        startsAt: event.starts_at as string | null,
+        endsAt: event.ends_at as string | null,
+      };
+      const nextWindow = {
+        startsAt: input.activity.startsAt,
+        endsAt: input.activity.endsAt,
+      };
+      const moved = scheduleChanged(previousWindow, nextWindow);
+      let refreshedMetadata = refreshedSourceMetadata(
+        input,
+        currentMetadata,
+        now,
+      );
+      if (moved) {
+        // Log the move and flag it for Review's post-publish check. A schedule
+        // change always forces retranslation (date text lives in the copy).
+        refreshedMetadata = withScheduleChangeLog(refreshedMetadata, {
+          from: previousWindow,
+          to: nextWindow,
+          detectedAt: now,
+          sourceUrl: input.activity.sourceUrl,
+          detector: "activity-graph",
+        });
+        console.info("[activity-graph] published event schedule changed", {
+          eventId: link.event_id,
+          from: previousWindow.startsAt,
+          to: nextWindow.startsAt,
+        });
+      }
       const update: Record<string, unknown> = {
-        source_metadata: withEventTranslationStamp(
-          refreshedSourceMetadata(input, currentMetadata, now),
-          {
-            neededAt: now,
-            sourceTextChanged: sourceTextChanged(
-              event,
-              input.activity.title,
-              description,
-            ),
-            previousMetadata: currentMetadata,
-          },
-        ),
+        source_metadata: withEventTranslationStamp(refreshedMetadata, {
+          neededAt: now,
+          sourceTextChanged:
+            moved ||
+            sourceTextChanged(event, input.activity.title, description),
+          previousMetadata: currentMetadata,
+        }),
         title: input.activity.title,
         description,
         starts_at: input.activity.startsAt,
@@ -1084,16 +1114,54 @@ async function withStableExplanation(
 ): Promise<ProjectInput> {
   const explanationFacts = activityExplanationFacts(input.activity);
   const next = { ...input, explanationFacts };
-  if (link) {
-    const stored = await loadStoredExplanation(next, link);
-    if (shouldReuseStoredExplanation(stored, next.activity) && stored.description) {
-      return {
-        ...next,
-        activity: { ...next.activity, description: stored.description },
-      };
-    }
+  if (!link) {
+    return { ...next, activity: await explainActivity(next.activity) };
   }
-  return { ...next, activity: await explainActivity(next.activity) };
+  const stored = await loadStoredExplanation(next, link);
+  if (shouldReuseStoredExplanation(stored, next.activity) && stored.description) {
+    return {
+      ...next,
+      activity: { ...next.activity, description: stored.description },
+    };
+  }
+  try {
+    return { ...next, activity: await explainActivity(next.activity) };
+  } catch (error) {
+    // A failed AI rewrite must not block a linked refresh: the source's new
+    // date/time still has to reach the published event. Keep the stored copy
+    // with date mentions moved (or the source text when there is none), and
+    // leave explanation_facts unchanged so the next run retries the rewrite.
+    console.warn(
+      "[activity-graph] explanation failed; refreshing with fallback copy",
+      error instanceof Error ? error.message : String(error),
+    );
+    return {
+      ...input,
+      explanationFacts: undefined,
+      activity: {
+        ...input.activity,
+        description: fallbackLinkedDescription(stored, input.activity),
+      },
+    };
+  }
+}
+
+function fallbackLinkedDescription(
+  stored: { description: string | null; facts: unknown },
+  activity: ExtractedActivity,
+): string | null {
+  if (!stored.description?.trim()) return activity.description;
+  const storedFacts =
+    stored.facts && typeof stored.facts === "object"
+      ? (stored.facts as Record<string, unknown>)
+      : null;
+  const oldStart =
+    typeof storedFacts?.startsAt === "string" ? storedFacts.startsAt : null;
+  if (!oldStart || !activity.startsAt) return stored.description;
+  if (!scheduleChanged({ startsAt: oldStart, endsAt: null }, { startsAt: activity.startsAt, endsAt: null })) {
+    return stored.description;
+  }
+  return rewriteDateMentions(stored.description, oldStart, activity.startsAt);
 }
 
 export async function projectActivity(

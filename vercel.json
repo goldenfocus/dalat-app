@@ -58,6 +58,10 @@
     {
       "path": "/api/cron/venue-places",
       "schedule": "17 3 * * *"
+    },
+    {
+      "path": "/api/cron/refresh-source-schedules",
+      "schedule": "40 0 * * *"
     }
   ]
 }

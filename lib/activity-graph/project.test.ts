@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   pingIndexNow: vi.fn(),
   upsertTranslations: vi.fn(),
   rpc: vi.fn(),
+  explain: vi.fn(async (activity: unknown) => activity),
   writes: [] as Array<{ table: string; values: Record<string, unknown> }>,
 }));
 
@@ -20,7 +21,7 @@ vi.mock("./editorial", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./editorial")>();
   return {
     ...actual,
-    explainActivity: async (activity: EditorialActivity) => activity,
+    explainActivity: (activity: EditorialActivity) => mocks.explain(activity),
   };
 });
 
@@ -112,7 +113,10 @@ function confidence(
   };
 }
 
-function linkedClient(sourcePlatform: string | null = "activity-graph") {
+function linkedClient(
+  sourcePlatform: string | null = "activity-graph",
+  eventExtras: Record<string, unknown> = {},
+) {
   const from = vi.fn((table: string) => {
     let isWrite = false;
     const builder: Record<string, ReturnType<typeof vi.fn>> & {
@@ -148,6 +152,7 @@ function linkedClient(sourcePlatform: string | null = "activity-graph") {
             id: "22222222-2222-4222-8222-222222222222",
             source_platform: sourcePlatform,
             slug: "official-acoustic-night",
+            ...eventExtras,
           },
           error: null,
         };
@@ -483,6 +488,56 @@ describe("linked Activity Graph safety gates", () => {
       "finalize_activity_candidate_publication",
       expect.objectContaining({ p_published_new: false }),
     );
+  });
+
+  it("moves a linked published event when the source date changes, even if the AI rewrite fails", async () => {
+    mocks.explain.mockRejectedValueOnce(new Error("provider unavailable"));
+    const result = await projectActivity({
+      supabase: linkedClient("activity-graph", {
+        title: "Official acoustic night",
+        description: "Đêm nhạc diễn ra ngày 1 tháng 9 năm 2026.",
+        location_name: "Official Venue",
+        starts_at: "2026-09-01T12:30:00+00:00",
+        ends_at: "2026-09-01T14:30:00+00:00",
+        source_metadata: {
+          explanation_facts: { startsAt: "2026-09-01T12:30:00.000Z" },
+          translation_needed_at: null,
+        },
+      }),
+      source,
+      candidateId: "33333333-3333-4333-8333-333333333333",
+      observationId: "44444444-4444-4444-8444-444444444444",
+      activity: {
+        ...activity,
+        startsAt: "2026-09-03T12:30:00.000Z",
+        endsAt: "2026-09-03T14:30:00.000Z",
+      },
+      confidence: confidence(),
+      locality,
+      recordMergeDecision: true,
+      now: new Date("2026-08-28T02:00:00.000Z"),
+    });
+
+    expect(result).toMatchObject({ status: "published", decision: "update" });
+    const eventRefresh = mocks.writes.find(
+      ({ table, values }) =>
+        table === "events" && Object.hasOwn(values, "source_metadata"),
+    );
+    expect(eventRefresh?.values).toMatchObject({
+      starts_at: "2026-09-03T12:30:00.000Z",
+      ends_at: "2026-09-03T14:30:00.000Z",
+      source_metadata: {
+        translation_needed_at: "2026-08-28T02:00:00.000Z",
+        post_publish_review: { reason: "source_schedule_changed" },
+        // Facts stay old so the next run retries the AI rewrite.
+        explanation_facts: { startsAt: "2026-09-01T12:30:00.000Z" },
+      },
+    });
+    expect(eventRefresh?.values.status).toBeUndefined();
+    expect(
+      (eventRefresh?.values.source_metadata as Record<string, unknown>)
+        .schedule_changes,
+    ).toHaveLength(1);
   });
 
   it("projects official source media without an event approval step", async () => {
