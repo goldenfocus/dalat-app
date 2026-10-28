@@ -4,7 +4,7 @@ import { getEventTranslationsBatch } from "@/lib/translations";
 import { OriginalText } from "@/components/ui/original-text";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLatAsync } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { createStaticClient } from "@/lib/supabase/server";
 import type { Locale } from "@/lib/types";
@@ -53,6 +53,10 @@ export async function MoreAtVenue({
     ),
   ]);
 
+  const formattedDates = new Map(await Promise.all(events.map(async (event) => [
+    event.id, await formatInDaLatAsync(event.starts_at, "MMM d", resolvedLocale),
+  ] as const)));
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -94,7 +98,7 @@ export async function MoreAtVenue({
                     <p className="font-medium truncate">{title}</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {formatInDaLat(event.starts_at, "MMM d", resolvedLocale)}
+                      {formattedDates.get(event.id)}
                       {event.location_name &&
                         ` · ${decodeUnicodeEscapes(event.location_name)}`}
                     </p>

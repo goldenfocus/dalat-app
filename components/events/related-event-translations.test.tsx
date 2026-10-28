@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/translations", () => ({
   getEventTranslationsBatch: mocks.lookup,
 }));
-vi.mock("@/lib/timezone", () => ({ formatInDaLat: mocks.format }));
+vi.mock("@/lib/timezone", () => ({ formatInDaLatAsync: mocks.format }));
 vi.mock("@/lib/i18n/routing", () => ({
   Link: ({ children, ...props }: React.ComponentProps<"a">) => (
     <a {...props}>{children}</a>

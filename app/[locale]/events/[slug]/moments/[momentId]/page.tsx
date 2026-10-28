@@ -14,7 +14,7 @@ import {
 import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLatAsync } from "@/lib/timezone";
 import { generateMomentMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentSchema } from "@/lib/structured-data";
 import { DeleteMomentButton } from "@/components/moments/delete-moment-button";
@@ -242,6 +242,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
   const event = moment.events;
   const eventTitles = await getEventTranslationsBatch([event.id], locale as Locale);
   const eventTitle = eventTitles.get(event.id)?.title || event.title;
+  const eventDate = await formatInDaLatAsync(event.starts_at, "PPP", locale as Locale);
   const profile = moment.profiles;
 
   // Fetch translations for text content
@@ -545,7 +546,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{formatInDaLat(event.starts_at, "PPP", locale as Locale)}</span>
+                        <span>{eventDate}</span>
                       </div>
                       {event.location_name && (
                         <div className="flex items-center gap-2">

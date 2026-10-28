@@ -4,7 +4,7 @@ import { getEventTranslationsBatch } from "@/lib/translations";
 import { OriginalText } from "@/components/ui/original-text";
 import { Calendar, BadgeCheck, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatInDaLat } from "@/lib/timezone";
+import { formatInDaLatAsync } from "@/lib/timezone";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import type { Event, Organizer, Locale } from "@/lib/types";
 
@@ -56,6 +56,10 @@ export async function MoreFromOrganizer({
     ),
   ]);
 
+  const formattedDates = new Map(await Promise.all(upcomingEvents.map(async (event) => [
+    event.id, await formatInDaLatAsync(event.starts_at, "MMM d", resolvedLocale),
+  ] as const)));
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -94,7 +98,7 @@ export async function MoreFromOrganizer({
                     <p className="font-medium truncate">{title}</p>
                     <p className="text-sm text-muted-foreground flex items-center gap-1">
                       <Calendar className="w-3 h-3" />
-                      {formatInDaLat(event.starts_at, "MMM d", resolvedLocale)}
+                      {formattedDates.get(event.id)}
                       {event.location_name &&
                         ` · ${decodeUnicodeEscapes(event.location_name)}`}
                     </p>
