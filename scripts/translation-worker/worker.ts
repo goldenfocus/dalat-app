@@ -1,7 +1,7 @@
 import { translationWorkState } from "../../lib/translations/work-status";
 import "dotenv/config";
 import { config } from "dotenv";
-import { mkdir, writeFile, readFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile, rename } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import {
@@ -16,6 +16,7 @@ import {
 } from "../../lib/google-translate";
 import { notifyEventTranslationCompletion } from "../../lib/seo/indexnow-events";
 import { cliJson } from "./cli";
+import { RetrySchedule } from "./retry-schedule";
 import {
   pendingTranslationFields,
   sourceLanguageContext,
@@ -54,6 +55,18 @@ const workOptions = {
 };
 let stop = false;
 let retryAfter = 0;
+let retrySchedule = new RetrySchedule();
+let retrySave = Promise.resolve();
+const retryPath = join(stateDir, "retry-state.json");
+const retryKey = (def: SourceDefinition, id: string) => `${def.table}:${id}`;
+function saveRetrySchedule() {
+  const snapshot = JSON.stringify(retrySchedule.snapshot());
+  retrySave = retrySave.then(async () => {
+    await writeFile(`${retryPath}.tmp`, snapshot, { mode: 0o600 });
+    await rename(`${retryPath}.tmp`, retryPath);
+  });
+  return retrySave;
+}
 process.on("SIGTERM", () => {
   stop = true;
 });
@@ -271,7 +284,13 @@ async function processRow(
       ? "These metadata fields may be in different languages (for example English AI descriptions and a Vietnamese transcript). Translate EACH field from its own language into EVERY requested locale, including the dominant source_locale; never copy the whole record as one source-language block. source_locale is only the dominant language label."
       : "";
   const chars = Object.values(fields).join("").length;
-  const chunkSize = chars > 6000 ? 1 : chars > 1500 ? 3 : 12;
+  const chunkSize = retrySchedule.small(retryKey(def, row.id))
+    ? 1
+    : chars > 6000
+      ? 1
+      : chars > 1500
+        ? 3
+        : 12;
   if (!prepared && missing.length > chunkSize) {
     for (let index = 0; index < missing.length; index += chunkSize)
       await processRow(
@@ -521,10 +540,13 @@ async function sweep() {
     if (Date.now() < retryAfter || stop) break;
     if (selected.size && !selected.has(def.type)) continue;
     try {
-      const records = (await rows(def)).sort((a, b) =>
-          String(b.updated_at || b.created_at || "").localeCompare(
-            String(a.updated_at || a.created_at || ""),
-          ),
+      const records = (await rows(def)).sort(
+          (a, b) =>
+            retrySchedule.priority(retryKey(def, a.id)) -
+              retrySchedule.priority(retryKey(def, b.id)) ||
+            String(b.updated_at || b.created_at || "").localeCompare(
+              String(a.updated_at || a.created_at || ""),
+            ),
         ),
         existing = await coverage(
           def,
@@ -593,6 +615,7 @@ async function sweep() {
         if (
           audit ||
           stop ||
+          retrySchedule.deferred(retryKey(def, row.id), Date.now()) ||
           (maxItems && processed >= maxItems) ||
           tasks.length >= Number(process.env.TRANSLATION_ITEMS_PER_TYPE || 20)
         )
@@ -616,6 +639,8 @@ async function sweep() {
         const chars = (t: Work) => Object.values(t.pending).join("").length;
         if (
           last &&
+          !retrySchedule.small(retryKey(def, task.row.id)) &&
+          !last.some((t) => retrySchedule.small(retryKey(def, t.row.id))) &&
           last.length < 8 &&
           last[0].missing.join() === task.missing.join() &&
           last.reduce((n, t) => n + chars(t), 0) + chars(task) < 2000
@@ -627,12 +652,21 @@ async function sweep() {
         [0, 1].map(async () => {
           while (batches.length && !stop && Date.now() >= retryAfter) {
             const batch = batches.shift()!;
+            const keys = batch.map((t) => retryKey(def, t.row.id));
+            retrySchedule.start(keys, Date.now());
+            await saveRetrySchedule();
             try {
               await processBatch(def, batch);
+              retrySchedule.complete(keys);
               summary.itemsCompleted += batch.length;
             } catch (error) {
-              if (/unavailable|timed out/.test(String(error)))
+              if (/unavailable/.test(String(error)))
                 retryAfter = Date.now() + 15 * 60_000;
+              retrySchedule.failed(
+                keys,
+                Date.now(),
+                /timed out/.test(String(error)),
+              );
               report.errors.push({
                 type: def.type,
                 ids: batch.map((t) => t.row.id),
@@ -642,6 +676,7 @@ async function sweep() {
                 `[translation] ${def.type} batch failed: ${String(error).slice(0, 300)}`,
               );
             }
+            await saveRetrySchedule();
             await writeFile(
               join(stateDir, "heartbeat.json"),
               JSON.stringify({
@@ -672,8 +707,19 @@ async function sweep() {
 }
 async function main() {
   if (loop && workOptions.force)
-    throw new Error("Force review is single-pass only; loop mode uses requireReview to avoid repeatedly translating completed work.");
+    throw new Error(
+      "Force review is single-pass only; loop mode uses requireReview to avoid repeatedly translating completed work.",
+    );
   await mkdir(stateDir, { recursive: true });
+  if (!audit) {
+    try {
+      retrySchedule = new RetrySchedule(
+        JSON.parse(await readFile(retryPath, "utf8")),
+      );
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== "ENOENT") throw error;
+    }
+  }
   do {
     if (Date.now() >= retryAfter) await sweep();
     if (loop && !stop) await new Promise((r) => setTimeout(r, 60_000));

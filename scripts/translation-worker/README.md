@@ -34,7 +34,7 @@ Optional environment controls:
 - `TRANSLATION_MAX_ITEMS=4`: bounded smoke test.
 - `TRANSLATION_STATE_DIR`: separate output directory for a parallel audit or targeted repair.
 
-The worker uses two batch lanes, splitting long records into smaller locale groups. Failures are reported and retried in subsequent rounds. Do not report complete based on a startup, heartbeat, or first batch: run a fresh audit and verify *zero* missing fields, no stale human rows, no failures, and actual localized public routes.
+The worker uses two batch lanes, splitting long records into smaller locale groups. Failures are reported and retried in subsequent rounds. `retry-state.json` atomically persists only record identifiers and scheduling timestamps. Never-attempted and least-recently-attempted records run first, so a failing newest record cannot starve older content after a restart. Timeouts defer only their records for 15 minutes and retry them individually, one locale at a time; other content families continue. Genuine CLI unavailability retains a global 15-minute backoff. Do not report complete based on a startup, heartbeat, or first batch: run a fresh audit and verify *zero* missing fields, no stale human rows, no failures, and actual localized public routes.
 
 Native menu overrides carry per-locale `*_i18n_sources` JSON bindings. A source edit preserves editor JSON for recovery but hides each locale until its current source is re-reviewed; the worker fills missing current-source locales. Migration `20261119_001_menu_locale_source_bindings.sql` supersedes the earlier scalar binding, so reviewing one language cannot revive another language’s stale text.
 
