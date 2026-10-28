@@ -27,26 +27,27 @@ export default function robots(): MetadataRoute.Robots {
   ];
 
   // Root-only technical routes (never locale-prefixed)
-  const technicalRoutes = ["/api/", "/_next/"];
+  // Google needs JS/CSS to render pages. Keep private APIs excluded, with the
+  // public attributed Places image proxy explicitly crawlable for image search.
+  const technicalRoutes = ["/api/"];
 
   const disallow = [
     ...technicalRoutes,
     ...privatePages,
-    ...allLocales.flatMap((locale) => privatePages.map((path) => `/${locale}${path}`)),
+    ...allLocales.flatMap((locale) =>
+      privatePages.map((path) => `/${locale}${path}`),
+    ),
   ];
 
   return {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/api/places/photo"],
         disallow,
       },
     ],
-    sitemap: [
-      `${baseUrl}/sitemap.xml`,
-      `${baseUrl}/news/sitemap.xml`,
-    ],
+    sitemap: [`${baseUrl}/sitemap.xml`, `${baseUrl}/news/sitemap.xml`],
     host: baseUrl,
   };
 }

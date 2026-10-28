@@ -9,7 +9,7 @@
  *
  * Invariants enforced on app/robots.ts source:
  *  1. No rule contains a blanket `disallow: "/"`.
- *  2. There is an `allow: "/"` rule.
+ *  2. There is a root allow rule (string or first entry in an array).
  *  3. Locale-prefixed private routes are covered (allLocales expansion present).
  */
 import { readFileSync } from "node:fs";
@@ -21,7 +21,7 @@ if (/disallow:\s*["']\/["']/.test(source)) {
   errors.push('robots.ts contains a blanket `disallow: "/"` — this blocks crawlers from the whole site.');
 }
 
-if (!/allow:\s*["']\/["']/.test(source)) {
+if (!/allow:\s*(?:\[\s*)?["']\/["']/.test(source)) {
   errors.push('robots.ts has no `allow: "/"` rule.');
 }
 

@@ -1,5 +1,9 @@
 # Golden Focus DaLat App — Agent Instructions
 
+## Venue search quality
+
+Read `docs/seo/venue-search.md` before changing venue discovery, metadata, structured data, sitemap or crawler policy. Keep official names/slugs and sourced facts intact. Verify raw server HTML for Google and AI search crawlers; a robots allow rule or llms.txt is not proof of indexing, ranking, or citations. Preserve translation readiness, canonical entity IDs and privacy gates.
+
 ## Activity Graph visual truth standard
 
 This is a hard user requirement for every public Activity Graph event page.

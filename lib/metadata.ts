@@ -8,7 +8,8 @@
  */
 
 import type { Metadata } from "next";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { locales } from "@/lib/i18n/locales";
+import type { Locale } from "@/lib/i18n/routing";
 import { localeUrl } from "@/lib/i18n/locale-url";
 import { isVideoUrl } from "@/lib/media-utils";
 import {
@@ -32,7 +33,7 @@ export { localeUrl } from "@/lib/i18n/locale-url";
 export function buildAlternates(
   locale: Locale,
   path: string,
-  availableLocales: readonly Locale[] = locales
+  availableLocales: readonly Locale[] = locales,
 ): NonNullable<Metadata["alternates"]> {
   const canonical = localeUrl(locale, path);
   if (availableLocales.length === 0) {
@@ -45,7 +46,7 @@ export function buildAlternates(
   }
   const fallbackLocale = availableLocales.includes(DEFAULT_LOCALE)
     ? DEFAULT_LOCALE
-    : availableLocales[0] ?? locale;
+    : (availableLocales[0] ?? locale);
   languages["x-default"] = localeUrl(fallbackLocale, path);
   return {
     canonical,
@@ -61,12 +62,12 @@ export function buildAlternates(
 export function resolveEventIndexableLocales(
   readyLocales: readonly Locale[] | null | undefined,
   sourceLocale: string | null | undefined,
-  readinessQueryFailed: boolean
+  readinessQueryFailed: boolean,
 ): Locale[] {
   if (!readinessQueryFailed) return [...(readyLocales ?? [])];
 
   const safeSourceLocale = locales.includes(sourceLocale as Locale)
-    ? sourceLocale as Locale
+    ? (sourceLocale as Locale)
     : DEFAULT_LOCALE;
   return [safeSourceLocale];
 }
@@ -94,6 +95,8 @@ interface LocalizedMetadataOptions {
   publishedTime?: string;
   /** Modified time (for article type) */
   modifiedTime?: string;
+  availableLocales?: readonly Locale[];
+  index?: boolean;
 }
 
 /**
@@ -111,10 +114,12 @@ export function generateLocalizedMetadata({
   author,
   publishedTime,
   modifiedTime,
+  availableLocales,
+  index = true,
 }: LocalizedMetadataOptions): Metadata {
   // Canonical + hreflang honoring 'as-needed' locale prefixes (en = root)
   const canonicalUrl = localeUrl(locale, path);
-  const alternates = buildAlternates(locale, path);
+  const alternates = buildAlternates(locale, path, availableLocales);
 
   // Format title
   const formattedTitle = noTitleSuffix ? title : `${title} | ${SITE_NAME}`;
@@ -167,10 +172,10 @@ export function generateLocalizedMetadata({
 
     // Robots
     robots: {
-      index: true,
+      index,
       follow: true,
       googleBot: {
-        index: true,
+        index,
         follow: true,
         "max-video-preview": -1,
         "max-image-preview": "large",
@@ -194,14 +199,14 @@ export function generateProfileMetadata(
     avatar_url: string | null;
   },
   locale: Locale,
-  eventCount?: number
+  eventCount?: number,
 ): Metadata {
   const name = profile.display_name || profile.username || "User";
   const description = profile.bio
     ? `${profile.bio.slice(0, 150)}${profile.bio.length > 150 ? "..." : ""}`
     : eventCount
-    ? `${name} has organized ${eventCount} events in Đà Lạt, Vietnam`
-    : `${name}'s profile on ĐàLạt.app - Event discovery in Đà Lạt, Vietnam`;
+      ? `${name} has organized ${eventCount} events in Đà Lạt, Vietnam`
+      : `${name}'s profile on ĐàLạt.app - Event discovery in Đà Lạt, Vietnam`;
 
   // Use username if available, otherwise fall back to user ID for URL
   const profileIdentifier = profile.username || profile.id;
@@ -235,19 +240,19 @@ export function generateVenueMetadata(
     google_photos?: { name: string }[] | null;
   },
   locale: Locale,
-  _eventCount?: number
+  _eventCount?: number,
+  search?: { availableLocales: readonly Locale[]; title?: string },
 ): Metadata {
-  const description = buildSeoDescription(venue.description, {
-    contentType: "venue",
-    title: venue.name,
-    venue_type: venue.venue_type,
-  });
+  // Keep short translations; never replace them with English keyword boilerplate.
+  const description = (
+    venue.description?.trim() || `${venue.name} · Đà Lạt`
+  ).slice(0, 160);
 
   return generateLocalizedMetadata({
     locale,
     // Vanity URL — /venues/[slug] 301s to /[slug]; canonical must be the URL that serves 200
     path: `/${venue.slug}`,
-    title: venue.name,
+    title: search?.title || `${venue.name} · Đà Lạt`,
     description,
     image:
       venue.cover_photo_url ||
@@ -257,8 +262,10 @@ export function generateVenueMetadata(
         : null) ||
       venue.logo_url ||
       undefined,
-    type: "profile",
+    type: "website",
     keywords: getVenueSeoKeywords(venue, locale),
+    availableLocales: search?.availableLocales,
+    index: !search || search.availableLocales.includes(locale),
   });
 }
 

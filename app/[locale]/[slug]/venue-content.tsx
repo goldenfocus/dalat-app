@@ -42,7 +42,7 @@ import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
-import { JsonLd } from "@/lib/structured-data";
+import { JsonLd, generateVenuePageSchema } from "@/lib/structured-data";
 import { getVenuePastEventsPath } from "@/lib/venues/routes";
 import { localeUrl } from "@/lib/i18n/locale-url";
 import { getPublicMenu } from "@/lib/menu/queries";
@@ -351,78 +351,22 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         </span>
       </a>
     ) : null;
-  const hoursSpec = venue.operating_hours
-    ? Object.entries(venue.operating_hours)
-        .filter(([, h]) => h && h !== "closed")
-        .map(([day, h]) => ({
-          "@type": "OpeningHoursSpecification",
-          dayOfWeek: `https://schema.org/${day.charAt(0).toUpperCase()}${day.slice(1)}`,
-          opens: (h as { open: string }).open,
-          closes: (h as { close: string }).close,
-        }))
-    : [];
   const ownImages = gallery.filter((g) => !g.googleAuthors).map((g) => g.src);
-
   const isUnclaimed = !venue.owner_id;
-
   const typeConfig = venue.venue_type
     ? getVenueTypeConfig(venue.venue_type)
     : null;
   const TypeIcon = typeConfig?.icon;
-
-  // Build LocalBusiness structured data for rich SEO
-  const localBusinessSchema: Record<string, unknown> = {
-    "@context": "https://schema.org",
-    "@type":
-      venue.venue_type === "restaurant" ||
-      venue.venue_type === "vegetarian" ||
-      venue.venue_type === "vegan"
-        ? "Restaurant"
-        : venue.venue_type === "cafe"
-          ? "CafeOrCoffeeShop"
-          : venue.venue_type === "bar"
-            ? "BarOrPub"
-            : venue.venue_type === "hotel"
-              ? "Hotel"
-              : venue.venue_type === "park"
-                ? "Park"
-                : "LocalBusiness",
-    name: venue.name,
-    description:
-      translatedDescription ||
-      venue.description ||
-      `${venue.name} in Da Lat, Vietnam`,
-    url: `https://dalat.app/${venue.slug}`,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: venue.address || "",
-      addressLocality: "Da Lat",
-      addressRegion: "Lam Dong",
-      addressCountry: "VN",
+  const localBusinessSchema = generateVenuePageSchema(
+    { ...venue, description: translatedDescription },
+    locale,
+    {
+      images: ownImages,
+      mapsUrl,
+      ...(menu.length > 0 && { menuUrl }),
+      venuesLabel: t("title"),
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: venue.latitude,
-      longitude: venue.longitude,
-    },
-    ...(venue.logo_url && { logo: venue.logo_url }),
-    ...(ownImages.length && { image: ownImages.slice(0, 10) }),
-    ...(hoursSpec.length && { openingHoursSpecification: hoursSpec }),
-    hasMap: mapsUrl,
-    ...(venue.phone && { telephone: venue.phone }),
-    ...(venue.email && { email: venue.email }),
-    sameAs: [
-      venue.google_maps_url,
-      venue.website_url,
-      venue.facebook_url,
-      venue.instagram_url,
-    ].filter(Boolean),
-    ...(venue.price_range && { priceRange: venue.price_range }),
-    ...(menu.length > 0 && { hasMenu: menuUrl }),
-    ...(venue.is_verified && {
-      isAccessibleForFree: venue.venue_type === "park",
-    }),
-  };
+  );
 
   const formatEventDate = (iso: string) =>
     new Intl.DateTimeFormat(locale, {
@@ -494,6 +438,17 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             : localBusinessSchema
         }
       />
+
+      <nav
+        aria-label={t("title")}
+        className="mb-4 flex items-center gap-2 text-sm text-muted-foreground"
+      >
+        <Link href="/venues" className="hover:underline">
+          {t("title")}
+        </Link>
+        <span aria-hidden="true">/</span>
+        <span aria-current="page">{venue.name}</span>
+      </nav>
 
       {/* Hero Section with Cover Photo */}
       {heroImage ? (

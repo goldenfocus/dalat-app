@@ -370,80 +370,90 @@ const VENUE_TYPE_SCHEMA_MAP: Record<VenueType, string> = {
 export function generateLocalBusinessSchema(
   venue: Venue,
   locale: string,
-  eventCount?: number,
+  _eventCount?: number,
+  options: { images?: string[]; menuUrl?: string; mapsUrl?: string } = {},
 ) {
-  const venueUrl = localizedSiteUrl(locale, `/venues/${venue.slug}`);
-  const schemaType = venue.venue_type
-    ? VENUE_TYPE_SCHEMA_MAP[venue.venue_type]
-    : "LocalBusiness";
-
-  // Format opening hours for Schema.org
-  const openingHoursSpec = venue.operating_hours
-    ? Object.entries(venue.operating_hours)
-        .filter(([, hours]) => hours !== "closed" && hours)
-        .map(([day, hours]) => {
-          if (hours === "closed" || !hours) return null;
-          const dayMap: Record<string, string> = {
-            monday: "Monday",
-            tuesday: "Tuesday",
-            wednesday: "Wednesday",
-            thursday: "Thursday",
-            friday: "Friday",
-            saturday: "Saturday",
-            sunday: "Sunday",
-          };
-          return {
-            "@type": "OpeningHoursSpecification",
-            dayOfWeek: dayMap[day],
-            opens: (hours as { open: string; close: string }).open,
-            closes: (hours as { open: string; close: string }).close,
-          };
-        })
-        .filter(Boolean)
-    : undefined;
-
-  const schema: Record<string, unknown> = {
+  const venueUrl = localizedSiteUrl(locale, `/${venue.slug}`);
+  const placeId = `${SITE_URL}/${venue.slug}#place`;
+  const days = [
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+    "sunday",
+  ];
+  const time = /^(?:[01]\d|2[0-3]):[0-5]\d$/;
+  const openingHoursSpecification = Object.entries(
+    venue.operating_hours || {},
+  ).flatMap(([day, hours]) => {
+    if (!days.includes(day) || !hours) return [];
+    if (
+      hours !== "closed" &&
+      (!time.test(hours.open) || !time.test(hours.close))
+    )
+      return [];
+    return [
+      {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: `https://schema.org/${day[0].toUpperCase()}${day.slice(1)}`,
+        opens: hours === "closed" ? "00:00" : hours.open,
+        closes: hours === "closed" ? "00:00" : hours.close,
+      },
+    ];
+  });
+  const images = [
+    ...new Set(
+      options.images ||
+        [
+          venue.cover_photo_url,
+          ...(venue.photos || []).map((photo) => photo.url),
+        ].filter((url): url is string => !!url),
+    ),
+  ];
+  const mapsUrl = options.mapsUrl || venue.google_maps_url;
+  return {
     "@context": "https://schema.org",
-    "@type": schemaType,
+    "@type": venue.venue_type
+      ? VENUE_TYPE_SCHEMA_MAP[venue.venue_type]
+      : "LocalBusiness",
+    "@id": placeId,
     name: venue.name,
     url: venueUrl,
+    mainEntityOfPage: { "@id": `${venueUrl}#webpage` },
     ...(venue.description && { description: venue.description }),
     ...(venue.logo_url && { logo: venue.logo_url }),
-    ...(venue.cover_photo_url && { image: venue.cover_photo_url }),
-
-    // Location with precise coordinates
+    ...(images.length && { image: images.slice(0, 10) }),
     address: {
       "@type": "PostalAddress",
       ...(venue.address && { streetAddress: venue.address }),
       addressLocality: "Đà Lạt",
-      addressRegion: "Lam Dong",
+      addressRegion: "Lâm Đồng",
       addressCountry: "VN",
     },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: venue.latitude,
-      longitude: venue.longitude,
-    },
-
-    // Contact info
-    ...(venue.email && { email: venue.email }),
-    ...(venue.phone && { telephone: venue.phone }),
-
-    // Social links
-    sameAs: [venue.website_url, venue.facebook_url, venue.instagram_url].filter(
-      Boolean,
-    ),
-
-    // Opening hours
-    ...(openingHoursSpec &&
-      openingHoursSpec.length > 0 && {
-        openingHoursSpecification: openingHoursSpec,
+    ...(typeof venue.latitude === "number" &&
+      Number.isFinite(venue.latitude) &&
+      Math.abs(venue.latitude) <= 90 &&
+      typeof venue.longitude === "number" &&
+      Number.isFinite(venue.longitude) &&
+      Math.abs(venue.longitude) <= 180 && {
+        geo: {
+          "@type": "GeoCoordinates",
+          latitude: venue.latitude,
+          longitude: venue.longitude,
+        },
       }),
-
-    // Price range
+    ...(venue.phone && { telephone: venue.phone }),
+    ...(venue.email && { email: venue.email }),
+    sameAs: [
+      venue.website_url,
+      venue.facebook_url,
+      venue.instagram_url,
+      venue.google_maps_url,
+    ].filter(Boolean),
+    ...(openingHoursSpecification.length && { openingHoursSpecification }),
     ...(venue.price_range && { priceRange: venue.price_range }),
-
-    // Amenities as features
     ...(venue.has_wifi && {
       amenityFeature: {
         "@type": "LocationFeatureSpecification",
@@ -451,22 +461,54 @@ export function generateLocalBusinessSchema(
         value: true,
       },
     }),
-
-    // Events at this venue
-    ...(eventCount !== undefined &&
-      eventCount > 0 && {
-        event: {
-          "@type": "ItemList",
-          numberOfItems: eventCount,
-          itemListElement: `${venueUrl}#events`,
-        },
-      }),
-
-    // Google Maps
-    ...(venue.google_maps_url && { hasMap: venue.google_maps_url }),
+    ...(mapsUrl && { hasMap: mapsUrl }),
+    ...(options.menuUrl && { hasMenu: options.menuUrl }),
   };
+}
 
-  return schema;
+/** One real place across languages; one indexable WebPage per localized canonical. */
+export function generateVenuePageSchema(
+  venue: Venue,
+  locale: string,
+  options: {
+    images?: string[];
+    menuUrl?: string;
+    mapsUrl?: string;
+    venuesLabel: string;
+  },
+) {
+  const url = localizedSiteUrl(locale, `/${venue.slug}`);
+  const breadcrumbs = generateBreadcrumbSchema(
+    [
+      { name: options.venuesLabel, url: localizedSiteUrl(locale, "/venues") },
+      { name: venue.name, url },
+    ],
+    locale,
+  );
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      generateLocalBusinessSchema(venue, locale, undefined, options),
+      {
+        "@type": "WebPage",
+        "@id": `${url}#webpage`,
+        url,
+        name: venue.name,
+        inLanguage: locale,
+        ...(venue.description && { description: venue.description }),
+        mainEntity: { "@id": `${SITE_URL}/${venue.slug}#place` },
+        isPartOf: { "@type": "WebSite", url: SITE_URL, name: SITE_NAME },
+        ...(Number.isFinite(Date.parse(venue.created_at)) && {
+          datePublished: venue.created_at,
+        }),
+        ...(Number.isFinite(Date.parse(venue.updated_at)) && {
+          dateModified: venue.updated_at,
+        }),
+        breadcrumb: { "@id": `${url}#breadcrumb` },
+      },
+      { ...breadcrumbs, "@id": `${url}#breadcrumb` },
+    ],
+  };
 }
 
 /**

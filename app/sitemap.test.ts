@@ -154,6 +154,20 @@ describe("sitemap event and recurring activity images", () => {
     expect(entries.filter(e => e.url.includes("/experiences/"))).toEqual([{url:"https://dalat.app/vi/experiences/experience-one",lastModified:new Date("2026-09-12T10:00:00Z")}]);
   });
 
+  it("lists only ready venue languages and updates lastmod when a translation arrives", async () => {
+    const venue = {id:"venue-one",slug:"social-house-dalat",description:"A café and community space in Đà Lạt.",source_locale:"en",updated_at:"2026-10-01T00:00:00Z",cover_photo_url:"https://cdn.dalat.app/venue.jpg"};
+    const translated = {content_id:venue.id,target_locale:"de",translated_text:"Ein Café und Treffpunkt in Đà Lạt.",updated_at:"2026-10-28T00:00:00Z"};
+    mocks.createClient.mockResolvedValue({
+      from:vi.fn((table:string)=>queryResult(table === "venues" ? [venue] : table === "content_translations" ? [translated] : [])),
+      rpc:vi.fn().mockResolvedValue({data:[],error:null}),
+    });
+    const entries=(await sitemap()).filter(entry=>entry.url.endsWith("/social-house-dalat"));
+    expect(entries).toEqual([
+      {url:"https://dalat.app/social-house-dalat",lastModified:new Date(venue.updated_at),changeFrequency:"weekly",priority:0.7,images:[venue.cover_photo_url]},
+      {url:"https://dalat.app/de/social-house-dalat",lastModified:new Date(translated.updated_at),changeFrequency:"weekly",priority:0.7,images:[venue.cover_photo_url]},
+    ]);
+  });
+
   it("includes active series with fact art in every canonical locale", async () => {
     const entries = await sitemap();
     const seriesEntries = entries.filter((item) =>

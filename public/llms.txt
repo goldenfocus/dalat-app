@@ -41,6 +41,9 @@ Supported locales: English (en), Vietnamese (vi), Korean (ko), Chinese (zh), Rus
 - `/festivals/[slug]` — evergreen festival context
 - `/festivals/da-lat-flower-festival/2026` — the dated 2026 Flower Festival edition
 - `/venues` and `/map` — place-based discovery
+- `/[venue-slug]` — canonical venue details: known hours, location, menu/prices,
+  upcoming events and community photos. Venue names remain their official names.
+- `/venues/[venue-slug]/menu` — a venue's public menu when available
 - `/tribes/[slug]` — a listed community
 
 English uses unprefixed canonical URLs. Other locales use a locale prefix, for example `/vi/events/[slug]`, `/ko/series/[slug]`, or `/fr/festivals/[slug]`.
@@ -49,7 +52,7 @@ A recurring activity is represented by a series plus dated occurrences. Use the 
 
 ## Indexing, Sources, and Freshness
 
-The sitemap advertises each localized event URL only after that language has a complete title and substantive description. Published pages provide self-canonical URLs, localized alternates, and structured data when facts are known.
+The sitemap advertises each localized event URL only after that language has a complete title and substantive description. Venue locales with source descriptions are advertised only when that primary description is available in the requested language. Published pages provide self-canonical URLs, localized alternates, and structured data when facts are known.
 
 Prefer a page's visible status, source links, confirmation details, and `dateModified` over copied or older summaries. The Flower Festival guide separates confirmed 2026 facts from archival imagery and links to the official government sources used for verification.
 
@@ -69,4 +72,4 @@ Prefer a page's visible status, source links, confirmation details, and `dateMod
 
 ## Last Updated
 
-2026-08-28
+2026-10-28

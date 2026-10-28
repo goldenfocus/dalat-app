@@ -11,8 +11,12 @@ import {
   generateVenueMetadata,
 } from "@/lib/metadata";
 import type { Profile, Organizer, Locale } from "@/lib/types";
-import { getTranslationsWithFallback } from "@/lib/translations";
 import { isUnroutableUnifiedSlug, isUuid } from "@/lib/slug-guard";
+import {
+  fetchVenueSearchTranslations,
+  venueSearchLocales,
+} from "@/lib/venues/search-indexing";
+import { getTranslations } from "next-intl/server";
 
 interface PageProps {
   searchParams?: Promise<Record<string, string | string[] | undefined>>;
@@ -272,12 +276,14 @@ export async function generateMetadata({
       if (!venue) return { title: "Venue not found" };
 
       // Translate descriptive copy only; venue names remain canonical.
-      const venueTranslations = await getTranslationsWithFallback(
-        "venue",
-        venue.id,
-        locale as Locale,
-        { description: venue.description },
-      );
+      const [venueTranslations, tVenue] = await Promise.all([
+        fetchVenueSearchTranslations(supabase, [venue.id]),
+        getTranslations({ locale, namespace: "venues" }),
+      ]);
+      const availableLocales = venueSearchLocales(venue, venueTranslations);
+      const description =
+        venueTranslations.find((row) => row.target_locale === locale)
+          ?.translated_text || venue.description;
 
       const { data: events } = await supabase
         .from("events")
@@ -289,10 +295,14 @@ export async function generateMetadata({
       return generateVenueMetadata(
         {
           ...venue,
-          description: venueTranslations.description ?? venue.description,
+          description,
         },
         locale as Locale,
         events?.length ?? 0,
+        {
+          availableLocales,
+          title: `${venue.name} · ${venue.venue_type ? tVenue(`types.${venue.venue_type}`) : tVenue("title")} · Đà Lạt`,
+        },
       );
     }
 

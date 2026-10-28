@@ -16,6 +16,12 @@ import {
   type EventIndexingTranslationRow,
 } from "@/lib/translations-readiness";
 import { getNewsPageModifiedAt } from "@/lib/news/article-policy";
+import {
+  fetchVenueSearchTranslations,
+  fetchVenueSearchSources,
+  venueSearchLocales,
+  venueSearchModifiedAt,
+} from "@/lib/venues/search-indexing";
 
 const MAX_SITEMAP_URLS = 50_000;
 const MAX_SITEMAP_BYTES = 50 * 1024 * 1024;
@@ -304,7 +310,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       .order("updated_at", { ascending: false }),
     supabase.from("festivals").select("slug, updated_at"),
     supabase.from("organizers").select("slug, updated_at"),
-    supabase.from("venues").select("slug, updated_at"),
+    fetchVenueSearchSources(supabase).then(data => ({data,error:null})),
     // Same discoverability gate as the tribes browse filter + tribe page noindex
     supabase
       .from("tribes")
@@ -543,13 +549,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }
 
   // Add venues (unified vanity URLs — /venues/[slug] 301s to /[slug])
+  const venueTranslations = await fetchVenueSearchTranslations(
+    supabase,
+    venues.map((venue) => venue.id),
+  );
   for (const venue of venues) {
     sitemapEntries.push(
-      ...localizedEntries(`/${venue.slug}`, {
-        lastModified: new Date(venue.updated_at),
-        changeFrequency: "weekly",
-        priority: 0.7,
-      }),
+      ...venueSearchLocales(venue, venueTranslations).map((locale) =>
+        localeEntry(locale, `/${venue.slug}`, {
+          lastModified: new Date(
+            venueSearchModifiedAt(venue, locale, venueTranslations),
+          ),
+          changeFrequency: "weekly",
+          priority: 0.7,
+          images: sitemapImages(venue.cover_photo_url),
+        }),
+      ),
     );
   }
 
