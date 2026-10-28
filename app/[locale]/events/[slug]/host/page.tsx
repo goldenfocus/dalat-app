@@ -4,13 +4,18 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, getTranslations } from "next-intl/server";
 import { HostWorkspace } from "@/components/arrival/host-workspace";
 import { createClient } from "@/lib/supabase/server";
+import { generateLocalizedMetadata } from "@/lib/metadata";
+import type { Locale } from "@/lib/types";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
+  const { locale, slug } = await params;
   const t = await getTranslations({ locale, namespace: "arrival" });
-  return { title: t("hostTitle"), robots: { index: false, follow: false } };
+  return {
+    ...generateLocalizedMetadata({ locale: locale as Locale, path: `/events/${slug}/host`, title: t("hostTitle"), description: t("metaDescription") }),
+    robots: { index: false, follow: false },
+  };
 }
 
 export default async function HostPage({ params }: Props) {
