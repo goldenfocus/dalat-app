@@ -126,7 +126,7 @@ export function eventTranslationQueueClears(options: {
   sourceLocale: string | null;
   planned: PlannedLocaleWrite[];
 }): boolean {
-  return isSupportedContentLocale(options.sourceLocale) && options.planned.length === 0;
+  return (isSupportedContentLocale(options.sourceLocale) || options.sourceLocale === "und") && options.planned.length === 0;
 }
 
 function startInstant(startsAt: string | null): number | null {
@@ -286,7 +286,7 @@ async function loadTranslationRows(
 async function persistSourceLocale(
   supabase: SupabaseClient,
   eventId: string,
-  sourceLocale: ContentLocale,
+  sourceLocale: ContentLocale | "und",
 ): Promise<void> {
   const { error } = await supabase
     .from("events")
@@ -327,7 +327,7 @@ async function clearTranslationNeededAt(
 async function upsertMissingFields(
   supabase: SupabaseClient,
   eventId: string,
-  sourceLocale: ContentLocale,
+  sourceLocale: ContentLocale | "und",
   locale: ContentLocale,
   translated: Record<string, string>,
   fields: EventTranslationSourceField[],
@@ -398,16 +398,15 @@ export async function translatePublishedEvent(
     };
   }
 
-  let sourceLocale = isSupportedContentLocale(event.source_locale)
-    ? event.source_locale
-    : null;
+  let sourceLocale: ContentLocale | "und" | null = event.source_locale === "und"
+    ? "und" : isSupportedContentLocale(event.source_locale) ? event.source_locale : null;
   if (!sourceLocale) {
     sourceLocale = await detectLanguage(fields.map((field) => field.text).join("\n"), {
       timeoutMs: EVENT_PROVIDER_TIMEOUT_MS,
     });
     await persistSourceLocale(supabase, eventId, sourceLocale);
   }
-  const resolvedSourceLocale: ContentLocale = sourceLocale;
+  const resolvedSourceLocale: ContentLocale | "und" = sourceLocale;
 
   const coverage = await loadTranslationRows(supabase, [eventId]);
   const planned = planEventLocaleWrites(

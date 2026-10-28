@@ -150,6 +150,16 @@ describe("event translation indexing readiness", () => {
     });
   });
 
+  it("requires all twelve translations when the source is outside the supported targets", () => {
+    const original=event({source_locale:"und"});
+    const missingEnglish=evaluateEventIndexingReadiness(original,completeRows());
+    expect(missingEnglish.sourceLocale).toBe("und");
+    expect(missingEnglish.contentReady).toBe(true);
+    expect(missingEnglish.locales.find(x=>x.locale==="en")?.ready).toBe(false);
+    const complete=evaluateEventIndexingReadiness(original,[...completeRows(),translation("en","title"),translation("en","description")]);
+    expect(complete.allLocalesReady).toBe(true);
+    expect(complete.locales.every(x=>!x.isSourceLocale)).toBe(true);
+  });
   it("blocks every locale while source-language detection is pending", () => {
     const result = evaluateEventIndexingReadiness(
       event({ source_locale: null }),

@@ -37,6 +37,8 @@ describe("event translation locale plan", () => {
     );
     expect(nonSourceEventLocales("vi")).not.toContain("vi");
     expect(nonSourceEventLocales(null)).toEqual(CONTENT_LOCALES);
+    expect(nonSourceEventLocales("und")).toEqual(CONTENT_LOCALES);
+    expect(eventTranslationQueueClears({sourceLocale:"und",planned:[]})).toBe(true);
   });
 
   it("plans only missing fields and is empty once they are stored", () => {

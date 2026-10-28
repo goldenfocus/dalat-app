@@ -23,5 +23,19 @@ with open(path,'wb') as f:plistlib.dump(job,f)
 PY
 worker_label="gui/$(id -u)/com.goldenfocus.dalat-subscription-translation"
 launchctl bootout "$worker_label" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.goldenfocus.dalat-subscription-translation.plist"
+# launchd may still be reaping the previous process immediately after bootout.
+translation_bootstrap_error="$(mktemp)"
+trap 'rm -f "$translation_bootstrap_error"' EXIT
+translation_bootstrapped=0
+for translation_attempt in 1 2 3 4 5; do
+  if launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.goldenfocus.dalat-subscription-translation.plist" 2>"$translation_bootstrap_error"; then
+    translation_bootstrapped=1
+    break
+  fi
+  sleep 1
+done
+if [ "$translation_bootstrapped" -ne 1 ]; then
+  cat "$translation_bootstrap_error" >&2
+  exit 1
+fi
 echo 'Installed worker. Verify heartbeat and a reviewed write before stopping any previous worker.'

@@ -1,12 +1,14 @@
 import { spawn } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { JsonSchema } from "./work-plan";
 
 /** No API keys, source text in argv, repository tools or persistent model sessions. */
 export async function cliJson(
   engine: "claude" | "codex",
   prompt: string,
+  schema?: JsonSchema,
   attempt = 0,
 ): Promise<Record<string, any>> {
   const dir = await mkdtemp(join(tmpdir(), "dalat-translation-"));
@@ -39,6 +41,9 @@ export async function cliJson(
     ),
   };
   const output = join(dir, "result.json");
+  const schemaPath = join(dir, "schema.json");
+  if (engine === "codex" && schema)
+    await writeFile(schemaPath, JSON.stringify(schema), { mode: 0o600 });
   const args =
     engine === "claude"
       ? [
@@ -53,7 +58,9 @@ export async function cliJson(
           "--output-format",
           "json",
           "--json-schema",
-          JSON.stringify({ type: "object", additionalProperties: true }),
+          JSON.stringify(
+            schema || { type: "object", additionalProperties: true },
+          ),
         ]
       : [
           "exec",
@@ -68,6 +75,7 @@ export async function cliJson(
           'model_reasoning_effort="high"',
           "-c",
           "features.shell_tool=false",
+          ...(schema ? ["--output-schema", schemaPath] : []),
           "-o",
           output,
           "-",
@@ -125,6 +133,7 @@ export async function cliJson(
         engine,
         prompt +
           "\nYour output must be strict JSON. Escape all quote characters and newlines inside strings. Do not include prose or markdown fences.",
+        schema,
         attempt + 1,
       );
     }

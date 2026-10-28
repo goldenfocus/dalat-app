@@ -84,7 +84,7 @@ export interface EventContentIndexingReadiness {
 export interface EventIndexingReadiness {
   eventId: string;
   slug: string;
-  sourceLocale: ContentLocale;
+  sourceLocale: ContentLocale | "und";
   published: boolean;
   contentReady: boolean;
   content: EventContentIndexingReadiness;
@@ -196,7 +196,7 @@ function evaluateEventSourceContent(
   if (event.tribe_id && event.tribe_visibility !== "public") {
     blockingIssues.push("not_publicly_discoverable");
   }
-  if (!validLocale(event.source_locale)) {
+  if (!validLocale(event.source_locale) && event.source_locale !== "und") {
     blockingIssues.push("unknown_source_locale");
   }
   if (normalizedLength(event.title) < MIN_EVENT_TITLE_LENGTH) {
@@ -270,7 +270,7 @@ export function evaluateEventIndexingReadiness(
 ): EventIndexingReadiness {
   const sourceLocale = validLocale(event.source_locale)
     ? event.source_locale
-    : DEFAULT_LOCALE;
+    : event.source_locale === "und" ? "und" : DEFAULT_LOCALE;
   const requiredFields = requiredFieldsForEvent(event);
   const published = event.status === "published";
   const content = evaluateEventSourceContent(event);
