@@ -124,11 +124,12 @@ export function useRsvpActions(
   const router = useRouter();
   const communityContext = useCommunityRsvp();
   const [transitionPending, startTransition] = useTransition();
+  const [signupPending, setSignupPending] = useState(false);
   const [interestedPending, setInterestedPending] = useState(false);
   const interestedLock = useRef(false);
   const [confirmedStatus, setConfirmedStatus] = useState<Rsvp["status"] | null | undefined>();
   useEffect(() => { setConfirmedStatus(undefined); }, [eventId, currentStatus]);
-  const isPending = transitionPending || interestedPending;
+  const isPending = transitionPending || interestedPending || signupPending;
   // Bound both network and auth-lock waits. A timed-out write may have reached
   // the server, so never claim it failed or retry it automatically.
   async function boundedRpc(name: string, args: Record<string, unknown>) {
@@ -151,9 +152,12 @@ export function useRsvpActions(
   async function handleRsvp() {
     prepareCelebrationAudio();
     if (!isLoggedIn) {
+      if (isPending) return;
+      setSignupPending(true);
       setError(null);
       try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join, communitySlug: communityContext.community?.slug }); }
       catch { setError("Could not continue. Please try again."); }
+      finally { setSignupPending(false); }
       return;
     }
 
@@ -465,6 +469,17 @@ export function RsvpButton({
           existingFeedback={existingFeedback}
         />
       </>
+    );
+  }
+
+  if (!isLoggedIn) {
+    return (
+      <div className="space-y-2">
+        <Button onClick={handleRsvp} disabled={isPending} className="event-join-action min-h-12 w-full text-base">
+          {isPending ? "..." : t("signInToJoin")}
+        </Button>
+        {error && <p role="alert" className="text-sm text-destructive text-center">{error}</p>}
+      </div>
     );
   }
 

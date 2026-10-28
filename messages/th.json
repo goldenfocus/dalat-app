@@ -547,6 +547,7 @@
     "allEventsAtVenue": "กิจกรรมทั้งหมดที่สถานที่นี้"
   },
   "rsvp": {
+    "signInToJoin": "เข้าสู่ระบบเพื่อเข้าร่วม",
     "imGoing": "ฉันจะไป",
     "joinWaitlist": "เข้าร่วมรายชื่อรอ",
     "interested": "สนใจ",

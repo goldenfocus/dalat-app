@@ -547,6 +547,7 @@
     "allEventsAtVenue": "Alle Events an diesem Ort"
   },
   "rsvp": {
+    "signInToJoin": "Anmelden und teilnehmen",
     "imGoing": "Ich bin dabei",
     "joinWaitlist": "Auf Warteliste setzen",
     "interested": "Interessiert",

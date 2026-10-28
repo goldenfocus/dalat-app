@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { recordInstallVisit, INSTALL_MIN_VISITS } from '@/lib/pwa-install-visits';
 
 type Platform = 'ios' | 'android' | 'desktop' | 'unknown';
 type InstallState = 'prompt' | 'installed' | 'dismissed' | 'unsupported';
@@ -48,7 +49,8 @@ function isStandaloneMode(): boolean {
 function isDismissed(): boolean {
   if (typeof window === 'undefined') return false;
 
-  const dismissed = localStorage.getItem(DISMISS_KEY);
+  let dismissed: string | null;
+  try { dismissed = localStorage.getItem(DISMISS_KEY); } catch { return true; }
   if (!dismissed) return false;
 
   const dismissedAt = parseInt(dismissed, 10);
@@ -96,17 +98,20 @@ export function useInstallPrompt(): UseInstallPromptReturn {
       return;
     }
 
+    const canSuggestInstall = recordInstallVisit(localStorage) >= INSTALL_MIN_VISITS;
+
     // iOS doesn't support beforeinstallprompt but can still be installed
     if (detectedPlatform === 'ios') {
-      setInstallState('prompt');
-      return;
+      if (!canSuggestInstall) return;
+      const timer = setTimeout(() => setInstallState('prompt'), 12000);
+      return () => clearTimeout(timer);
     }
 
     // Listen for the beforeinstallprompt event (Chrome, Edge, etc.)
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setInstallState('prompt');
+      if (canSuggestInstall) setInstallState('prompt');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -137,11 +142,11 @@ export function useInstallPrompt(): UseInstallPromptReturn {
         setInstallState('installed');
         return;
       }
-      if (!deferredPrompt) {
+      if (canSuggestInstall && !deferredPrompt) {
         // No native prompt available, but we can still show manual instructions
         setInstallState('prompt');
       }
-    }, 3000);
+    }, 12000);
 
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
@@ -176,7 +181,7 @@ export function useInstallPrompt(): UseInstallPromptReturn {
   }, [deferredPrompt]);
 
   const dismissPrompt = useCallback(() => {
-    localStorage.setItem(DISMISS_KEY, Date.now().toString());
+    try { localStorage.setItem(DISMISS_KEY, Date.now().toString()); } catch { /* Still dismiss for this page. */ }
     setInstallState('dismissed');
   }, []);
 

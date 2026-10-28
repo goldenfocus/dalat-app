@@ -547,6 +547,7 @@
     "allEventsAtVenue": "此场馆的所有活动"
   },
   "rsvp": {
+    "signInToJoin": "登录并参加",
     "imGoing": "我要参加",
     "joinWaitlist": "加入等候名单",
     "interested": "感兴趣",

@@ -547,6 +547,7 @@
     "allEventsAtVenue": "Tất cả sự kiện tại địa điểm này"
   },
   "rsvp": {
+    "signInToJoin": "Đăng nhập để tham gia",
     "imGoing": "Tôi sẽ đi",
     "joinWaitlist": "Vào danh sách chờ",
     "interested": "Quan tâm",

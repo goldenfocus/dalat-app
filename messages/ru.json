@@ -547,6 +547,7 @@
     "allEventsAtVenue": "Все события в этом месте"
   },
   "rsvp": {
+    "signInToJoin": "Войти и присоединиться",
     "imGoing": "Я пойду",
     "joinWaitlist": "В очередь",
     "interested": "Интересует",

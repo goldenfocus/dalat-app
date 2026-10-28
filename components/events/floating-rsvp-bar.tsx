@@ -71,7 +71,7 @@ export function FloatingRsvpBar({
     setShowQuestionnaire(true);
   }, []);
 
-  const { isPending, confirmedStatus, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
+  const { isPending, confirmedStatus, error, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
     eventId,
     isLoggedIn,
     handleCelebrationTrigger,
@@ -121,7 +121,9 @@ export function FloatingRsvpBar({
   let statusText: string | null = null;
   let actionButton: React.ReactNode = null;
 
-  if (isGoing) {
+  if (!isLoggedIn) {
+    actionButton = <Button onClick={handleRsvp} disabled={isPending} className="event-join-action min-h-12 flex-1 text-base">{isPending ? "..." : t("signInToJoin")}</Button>;
+  } else if (isGoing) {
     statusText = t("youreGoing");
     actionButton = (
       <Button
@@ -199,8 +201,8 @@ export function FloatingRsvpBar({
       )}
       <div hidden={showCelebration} className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-0 right-0 z-40 lg:hidden">
         <div className="mx-4 mb-2 bg-background rounded-xl">
-          {!isGoing && !isWaitlist && <CommunityRsvpChoice id="floating-join-community" />}
-          <div className="bg-background/95 backdrop-blur-sm border rounded-xl shadow-lg px-4 py-3 flex items-center justify-between gap-3">
+          {isLoggedIn && !isGoing && !isWaitlist && <CommunityRsvpChoice id="floating-join-community" />}
+          <div className="bg-background/90 backdrop-blur-xl border border-primary/15 rounded-2xl shadow-[0_-4px_30px_hsl(var(--primary)/0.08)] px-4 py-3 flex items-center justify-between gap-3">
             {statusText ? (
               <>
                 <span
@@ -220,6 +222,7 @@ export function FloatingRsvpBar({
               actionButton
             )}
           </div>
+          {error && <p role="alert" className="px-4 pb-2 text-sm text-destructive">{error}</p>}
         </div>
       </div>
     </>

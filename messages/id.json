@@ -547,6 +547,7 @@
     "allEventsAtVenue": "Semua acara di tempat ini"
   },
   "rsvp": {
+    "signInToJoin": "Masuk untuk bergabung",
     "imGoing": "Saya hadir",
     "joinWaitlist": "Daftar tunggu",
     "interested": "Tertarik",

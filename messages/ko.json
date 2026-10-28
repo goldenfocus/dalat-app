@@ -547,6 +547,7 @@
     "allEventsAtVenue": "이 장소의 모든 이벤트"
   },
   "rsvp": {
+    "signInToJoin": "로그인하고 참여하기",
     "imGoing": "참석합니다",
     "joinWaitlist": "대기자 명단 참가",
     "interested": "관심 있음",

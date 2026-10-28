@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, ArrowRight, Music } from "lucide-react";
+import { Sparkles, Pencil, Image as ImageIcon, Play, FileText, X, ChevronLeft, ChevronRight, Images, Loader2, Check, Repeat, Upload, Music } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -381,13 +381,9 @@ export function PromoMediaSection({
       {pastMoments.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex flex-wrap items-center gap-2 min-w-0">
-              <Images className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm font-medium text-muted-foreground">{t("pastMomentsTitle")}</span>
-              <Link href={`/events/${sourceEvent.event_slug}`} className="max-w-full text-xs bg-muted px-2 py-1 rounded-full text-muted-foreground hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring break-words">
-                {sourceEvent.event_title}
-              </Link>
-            </div>
+            <Link href={`/events/${sourceEvent.event_slug}/moments`} aria-label={t("pastMomentsTitle")} title={t("pastMomentsTitle")} className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border text-muted-foreground hover:text-foreground hover:bg-muted">
+              <Images className="w-5 h-5" aria-hidden />
+            </Link>
             <div className="flex items-center gap-1 flex-shrink-0">
               {promo.length === 0 && isOwner && canManageInline && (
                 <>
@@ -422,7 +418,7 @@ export function PromoMediaSection({
             {pastMoments.slice(0, 6).map((moment) => {
               const thumb = moment.thumbnail_url || moment.media_url;
               return (
-                <Link key={moment.id} href={`/events/${moment.event_slug}/moments`}>
+                <Link key={moment.id} href={`/events/${moment.event_slug}/moments`} aria-label={`${t("pastMomentsTitle")} · ${moment.event_title}`}>
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted group">
                     {thumb && (
                       <img src={thumb} alt="" className="w-full h-full object-cover transition-transform group-hover:scale-105" />
@@ -432,17 +428,6 @@ export function PromoMediaSection({
               );
             })}
           </div>
-          {/* Big "See all" CTA */}
-          <Link href={`/events/${sourceEvent.event_slug}/moments`}>
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full gap-2 font-medium"
-            >
-              {t("seeAll")}
-              <ArrowRight className="w-4 h-4" />
-            </Button>
-          </Link>
         </div>
       )}
 

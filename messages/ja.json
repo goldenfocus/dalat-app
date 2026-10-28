@@ -547,6 +547,7 @@
     "allEventsAtVenue": "この会場のすべてのイベント"
   },
   "rsvp": {
+    "signInToJoin": "ログインして参加",
     "imGoing": "参加する",
     "joinWaitlist": "キャンセル待ちに参加",
     "interested": "興味あり",

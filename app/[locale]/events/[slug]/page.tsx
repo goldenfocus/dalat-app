@@ -1,3 +1,4 @@
+import { eventParticipationVisibility } from "@/lib/events/participation-visibility";
 import { CommunityRsvpProvider, CommunityActionNotice } from "@/components/events/community-rsvp";
 import { ActivitySourceFooter } from "@/components/events/activity-source-footer";
 import { WhatsAppSourceCredit } from "@/components/events/whatsapp-source-credit";
@@ -54,7 +55,6 @@ import {
 } from "@/components/events/rsvp-button";
 import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
-import { SeriesBadge } from "@/components/events/series-badge";
 import { EventActions } from "@/components/events/event-actions";
 import { EventSettingsSheet } from "@/components/events/event-settings-sheet";
 import { InviteModal } from "@/components/events/invite-modal";
@@ -1246,6 +1246,186 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     </EventLocation>
   );
 
+  const participation = eventParticipationVisibility({
+    isLoggedIn, isPast, rsvpStatus: currentRsvp?.status, canManageEvent,
+  });
+
+  const attendanceCard = (
+    <Card className="event-join-card">
+      <CardContent className="p-4 space-y-4">
+        {/* Date/time */}
+        <div className="flex items-start gap-3">
+          <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
+          <div className="space-y-2">
+            <div>
+              {spansMultipleDays && (
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {t("starts")}
+                </p>
+              )}
+              <time
+                dateTime={event.starts_at}
+                className="font-medium"
+              >
+                {formattedStartDate}
+              </time>
+              <p className="text-sm text-muted-foreground">
+                {timeTbd ? "TBD" : formattedStartTime}
+                {!timeTbd &&
+                  !spansMultipleDays &&
+                  formattedEndTime &&
+                  ` - ${formattedEndTime}`}
+              </p>
+            </div>
+            {spansMultipleDays &&
+              event.ends_at &&
+              formattedEndDate && (
+                <div className="border-l-2 border-border pl-3">
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {t("ends")}
+                  </p>
+                  <time
+                    dateTime={event.ends_at}
+                    className="font-medium"
+                  >
+                    {formattedEndDate}
+                  </time>
+                  {formattedEndTime && (
+                    <p className="text-sm text-muted-foreground">
+                      {formattedEndTime}
+                    </p>
+                  )}
+                </div>
+              )}
+          </div>
+        </div>
+
+        {/* Online event indicator */}
+        {event.is_online && (
+          <div className="flex items-start gap-3">
+            <Video className="w-5 h-5 text-muted-foreground mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-medium">{t("onlineEvent")}</p>
+              {/* Only show meeting link to RSVPed users */}
+              {event.online_link &&
+              currentRsvp?.status === "going" ? (
+                <a
+                  href={event.online_link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center gap-1"
+                >
+                  {t("joinMeeting")}
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : event.online_link ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("rsvpToSeeMeetingLink")}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        )}
+
+        {/* Spots - only show counts to logged-in users */}
+        {isLoggedIn ? (
+          <div className="flex items-center gap-3">
+            <Users className="w-5 h-5 text-muted-foreground" />
+            <div>
+              <p className="font-medium">
+                {spotsText} {isPast ? t("went") : t("going")}
+                {(counts?.interested_count ?? 0) > 0 && (
+                  <span className="text-muted-foreground font-normal">
+                    {" "}
+                    · {counts?.interested_count} {t("interested")}
+                  </span>
+                )}
+              </p>
+              {(counts?.waitlist_count ?? 0) > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {counts?.waitlist_count} {t("onWaitlist")}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : null}
+
+        {/* External link — never for WhatsApp-sourced events: their
+            external_chat_url points at the raw group message. */}
+        {event.external_chat_url && !isWhatsAppSourced(event.source_platform) && (
+          <a
+            href={event.external_chat_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-primary hover:underline"
+          >
+            <Link2 className="w-4 h-4" />
+            {t("moreInfo")}
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
+
+        <hr />
+
+        {/* RSVP button - wrapped in observer to show/hide floating bar */}
+        <CommunityActionNotice status={communityNotice} />
+        <RsvpCardObserver>
+          <RsvpButton
+            eventId={event.id}
+            eventSlug={event.slug}
+            eventTitle={event.title}
+            eventDescription={event.description}
+            eventImageUrl={event.image_url}
+            locationName={event.location_name}
+            address={event.address ?? privateDetails?.address ?? null}
+            googleMapsUrl={
+              event.google_maps_url ??
+              privateDetails?.google_maps_url ??
+              null
+            }
+            capacity={event.capacity}
+            goingSpots={counts?.going_spots ?? 0}
+            currentRsvp={currentRsvp}
+            isLoggedIn={isLoggedIn}
+            waitlistPosition={waitlistPosition}
+            startsAt={event.starts_at}
+            endsAt={event.ends_at}
+            existingFeedback={userFeedback}
+            questionnaire={questionnaire}
+          />
+        </RsvpCardObserver>
+
+        {/* Feedback stats for past events */}
+        {feedbackStats && feedbackStats.total > 0 && (
+          <div className="flex justify-center">
+            <FeedbackBadge
+              positivePercentage={feedbackStats.positive_percentage}
+              totalFeedback={feedbackStats.total}
+            />
+          </div>
+        )}
+
+        {/* Add to calendar - only for upcoming events */}
+        {!isPast && isLoggedIn && (
+          <AddToCalendar
+            title={event.title}
+            description={event.description}
+            locationName={event.location_name}
+            address={event.address ?? privateDetails?.address ?? null}
+            googleMapsUrl={
+              event.google_maps_url ??
+              privateDetails?.google_maps_url ??
+              null
+            }
+            startsAt={event.starts_at}
+            endsAt={event.ends_at}
+            url={`https://dalat.app/events/${event.slug}`}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+
   return (
     <CommunityRsvpProvider eventSlug={event.slug} alreadyMember={viewerInTribe}
       community={event.tribes && ["public","request"].includes(event.tribes.access_type) ? { slug: event.tribes.slug, name: event.tribes.name } : null}
@@ -1351,7 +1531,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 <>
                   {/* Title first so users know what event this is */}
                   <div>
-                    <h1 className="text-3xl font-bold mb-2">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight mb-3">
                       {eventTranslations.title}
                     </h1>
                     {eventTranslations.title !== eventTranslations.originalTitle && (
@@ -1363,20 +1543,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     {event.event_series && (
                       <Link
                         href={`/series/${event.event_series.slug}`}
-                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground mb-2"
+                        aria-label={t("partOfSeries", { seriesName: event.event_series.title })}
+                        title={t("partOfSeries", { seriesName: event.event_series.title })}
                       >
                         <Repeat className="w-3.5 h-3.5" />
-                        <span>
-                          {t("partOfSeries", {
-                            seriesName: event.event_series.title,
-                          })}
-                        </span>
-                        {event.event_series.rrule && (
-                          <SeriesBadge
-                            rrule={event.event_series.rrule}
-                            className="ml-1"
-                          />
-                        )}
+
                       </Link>
                     )}
                     {locationSummary}
@@ -1466,7 +1638,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   {eventTranslations.description && (
                     <ExpandableText
                       text={eventTranslations.description}
-                      maxLines={event.source_platform === "activity-graph" ? 8 : 4}
+                      maxLines={event.source_platform === "activity-graph" ? 8 : 3}
                     />
                   )}
 
@@ -1477,6 +1649,55 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 </>
               ) : (
                 <>
+                  {/* Title and description */}
+                  <div>
+                    <div className="flex items-start gap-3">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight leading-tight mb-3 flex-1">
+                      {eventTranslations.title}
+                    </h1>
+                    {/* Series context - show if this event is part of a recurring series */}
+                    {event.event_series && (
+                      <Link
+                        href={`/series/${event.event_series.slug}`}
+                        className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border/60 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground mb-2"
+                        aria-label={t("partOfSeries", { seriesName: event.event_series.title })}
+                        title={t("partOfSeries", { seriesName: event.event_series.title })}
+                      >
+                        <Repeat className="w-3.5 h-3.5" />
+
+                      </Link>
+                    )}
+                    </div>
+                    {eventTranslations.title !== eventTranslations.originalTitle && (
+                      <p lang={eventTranslations.sourceLocale ?? undefined} className="mb-3 text-base leading-relaxed text-muted-foreground">
+                        {eventTranslations.originalTitle}
+                      </p>
+                    )}
+                    {locationSummary}
+                    {!isPast && <div className="mb-5">{attendanceCard}</div>}
+                    {/* Show translation indicator with original */}
+                    {eventTranslations.isTranslated && (
+                      <TranslatedFrom
+                        sourceLocale={eventTranslations.sourceLocale}
+                        originalText={[eventTranslations.originalTitle, eventTranslations.originalDescription].filter(Boolean).join("\n\n")}
+                        className="mb-4"
+                      />
+                    )}
+                    {eventTranslations.description && (
+                      <ExpandableText
+                        text={eventTranslations.description}
+                        maxLines={event.source_platform === "activity-graph" ? 8 : 3}
+                      />
+                    )}
+
+                    {/* Clickable tags for category discovery */}
+                    {event.ai_tags && event.ai_tags.length > 0 && (
+                      <div className="mt-4">
+                        <ClickableTagList tags={event.ai_tags} />
+                      </div>
+                    )}
+                  </div>
+
                   {/* Upcoming events or past events without moments: Original layout */}
                   {/* Event image/video - clickable to view full */}
                   {event.image_url ? (
@@ -1503,60 +1724,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       priority
                     />
                   ) : null}
-
-                  {/* Title and description */}
-                  <div>
-                    <h1 className="text-3xl font-bold mb-2">
-                      {eventTranslations.title}
-                    </h1>
-                    {eventTranslations.title !== eventTranslations.originalTitle && (
-                      <p lang={eventTranslations.sourceLocale ?? undefined} className="mb-3 text-base leading-relaxed text-muted-foreground">
-                        {eventTranslations.originalTitle}
-                      </p>
-                    )}
-                    {/* Series context - show if this event is part of a recurring series */}
-                    {event.event_series && (
-                      <Link
-                        href={`/series/${event.event_series.slug}`}
-                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-3 -mt-1"
-                      >
-                        <Repeat className="w-3.5 h-3.5" />
-                        <span>
-                          {t("partOfSeries", {
-                            seriesName: event.event_series.title,
-                          })}
-                        </span>
-                        {event.event_series.rrule && (
-                          <SeriesBadge
-                            rrule={event.event_series.rrule}
-                            className="ml-1"
-                          />
-                        )}
-                      </Link>
-                    )}
-                    {locationSummary}
-                    {/* Show translation indicator with original */}
-                    {eventTranslations.isTranslated && (
-                      <TranslatedFrom
-                        sourceLocale={eventTranslations.sourceLocale}
-                        originalText={[eventTranslations.originalTitle, eventTranslations.originalDescription].filter(Boolean).join("\n\n")}
-                        className="mb-4"
-                      />
-                    )}
-                    {eventTranslations.description && (
-                      <ExpandableText
-                        text={eventTranslations.description}
-                        maxLines={event.source_platform === "activity-graph" ? 8 : 4}
-                      />
-                    )}
-
-                    {/* Clickable tags for category discovery */}
-                    {event.ai_tags && event.ai_tags.length > 0 && (
-                      <div className="mt-4">
-                        <ClickableTagList tags={event.ai_tags} />
-                      </div>
-                    )}
-                  </div>
 
                   {/* Moments for past events without moments yet (empty state) */}
                   {isPast && (
@@ -1631,7 +1798,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 />
               )}
 
-              {event.arrival_enabled && !isPast && <Suspense fallback={null}>
+              {event.arrival_enabled && participation.arrival && <Suspense fallback={null}>
                 <EventArrivalCard slug={event.slug} />
               </Suspense>}
 
@@ -1666,14 +1833,14 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Attendees */}
-              <AttendeeList
+              {isLoggedIn && <AttendeeList
                 attendees={attendees}
                 waitlist={waitlist}
                 interested={interested}
                 isPast={isPast}
-              />
+              />}
 
-              <EventPeople eventId={event.id} locale={locale} />
+              {isLoggedIn && <EventPeople eventId={event.id} locale={locale} />}
 
               {event.source_platform === "activity-graph" && (
                 <ActivitySourceFooter
@@ -1688,199 +1855,19 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Comments Section */}
-              <EventCommentsSection
+              {(isLoggedIn || isPast) && <EventCommentsSection
                 eventId={event.id}
                 eventSlug={event.slug}
                 contentOwnerId={event.created_by}
                 currentUserId={currentUserId ?? undefined}
                 rsvpStatus={currentRsvp?.status}
                 canManageEvent={canManageEvent}
-              />
+              />}
             </div>
 
             {/* Sidebar */}
             <div className="min-w-0 space-y-4">
-              {/* RSVP card */}
-              <Card>
-                <CardContent className="p-4 space-y-4">
-                  {/* Date/time */}
-                  <div className="flex items-start gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground mt-0.5" />
-                    <div className="space-y-2">
-                      <div>
-                        {spansMultipleDays && (
-                          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                            {t("starts")}
-                          </p>
-                        )}
-                        <time
-                          dateTime={event.starts_at}
-                          className="font-medium"
-                        >
-                          {formattedStartDate}
-                        </time>
-                        <p className="text-sm text-muted-foreground">
-                          {timeTbd ? "TBD" : formattedStartTime}
-                          {!timeTbd &&
-                            !spansMultipleDays &&
-                            formattedEndTime &&
-                            ` - ${formattedEndTime}`}
-                        </p>
-                      </div>
-                      {spansMultipleDays &&
-                        event.ends_at &&
-                        formattedEndDate && (
-                          <div className="border-l-2 border-border pl-3">
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                              {t("ends")}
-                            </p>
-                            <time
-                              dateTime={event.ends_at}
-                              className="font-medium"
-                            >
-                              {formattedEndDate}
-                            </time>
-                            {formattedEndTime && (
-                              <p className="text-sm text-muted-foreground">
-                                {formattedEndTime}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                    </div>
-                  </div>
-
-                  {/* Online event indicator */}
-                  {event.is_online && (
-                    <div className="flex items-start gap-3">
-                      <Video className="w-5 h-5 text-muted-foreground mt-0.5" />
-                      <div className="space-y-1">
-                        <p className="font-medium">{t("onlineEvent")}</p>
-                        {/* Only show meeting link to RSVPed users */}
-                        {event.online_link &&
-                        currentRsvp?.status === "going" ? (
-                          <a
-                            href={event.online_link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline flex items-center gap-1"
-                          >
-                            {t("joinMeeting")}
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : event.online_link ? (
-                          <p className="text-sm text-muted-foreground">
-                            {t("rsvpToSeeMeetingLink")}
-                          </p>
-                        ) : null}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Spots - only show counts to logged-in users */}
-                  {isLoggedIn ? (
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium">
-                          {spotsText} {isPast ? t("went") : t("going")}
-                          {(counts?.interested_count ?? 0) > 0 && (
-                            <span className="text-muted-foreground font-normal">
-                              {" "}
-                              · {counts?.interested_count} {t("interested")}
-                            </span>
-                          )}
-                        </p>
-                        {(counts?.waitlist_count ?? 0) > 0 && (
-                          <p className="text-sm text-muted-foreground">
-                            {counts?.waitlist_count} {t("onWaitlist")}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-3">
-                      <Users className="w-5 h-5 text-muted-foreground" />
-                      <p className="text-muted-foreground text-sm">
-                        {t("signInToSeeAttendees")}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* External link — never for WhatsApp-sourced events: their
-                      external_chat_url points at the raw group message. */}
-                  {event.external_chat_url && !isWhatsAppSourced(event.source_platform) && (
-                    <a
-                      href={event.external_chat_url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-sm text-primary hover:underline"
-                    >
-                      <Link2 className="w-4 h-4" />
-                      {t("moreInfo")}
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  )}
-
-                  <hr />
-
-                  {/* RSVP button - wrapped in observer to show/hide floating bar */}
-                  <CommunityActionNotice status={communityNotice} />
-                  <RsvpCardObserver>
-                    <RsvpButton
-                      eventId={event.id}
-                      eventSlug={event.slug}
-                      eventTitle={event.title}
-                      eventDescription={event.description}
-                      eventImageUrl={event.image_url}
-                      locationName={event.location_name}
-                      address={event.address ?? privateDetails?.address ?? null}
-                      googleMapsUrl={
-                        event.google_maps_url ??
-                        privateDetails?.google_maps_url ??
-                        null
-                      }
-                      capacity={event.capacity}
-                      goingSpots={counts?.going_spots ?? 0}
-                      currentRsvp={currentRsvp}
-                      isLoggedIn={isLoggedIn}
-                      waitlistPosition={waitlistPosition}
-                      startsAt={event.starts_at}
-                      endsAt={event.ends_at}
-                      existingFeedback={userFeedback}
-                      questionnaire={questionnaire}
-                    />
-                  </RsvpCardObserver>
-
-                  {/* Feedback stats for past events */}
-                  {feedbackStats && feedbackStats.total > 0 && (
-                    <div className="flex justify-center">
-                      <FeedbackBadge
-                        positivePercentage={feedbackStats.positive_percentage}
-                        totalFeedback={feedbackStats.total}
-                      />
-                    </div>
-                  )}
-
-                  {/* Add to calendar - only for upcoming events */}
-                  {!isPast && (
-                    <AddToCalendar
-                      title={event.title}
-                      description={event.description}
-                      locationName={event.location_name}
-                      address={event.address ?? privateDetails?.address ?? null}
-                      googleMapsUrl={
-                        event.google_maps_url ??
-                        privateDetails?.google_maps_url ??
-                        null
-                      }
-                      startsAt={event.starts_at}
-                      endsAt={event.ends_at}
-                      url={`https://dalat.app/events/${event.slug}`}
-                    />
-                  )}
-                </CardContent>
-              </Card>
+              {isPast && attendanceCard}
 
               {/* Organizer */}
               <Card>
@@ -1975,7 +1962,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Preorder from the venue's menu (only renders when the venue enables it) */}
-              {event.venues && (
+              {event.venues && participation.preorder && (
                 <Suspense fallback={null}>
                   <EventPreorderCard
                     eventId={event.id}
@@ -1988,8 +1975,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 </Suspense>
               )}
 
-              {/* More events at this venue — internal linking for SEO */}
-              {event.venues && (
+              {/* Avoid repeating the organizer recommendations for the same event. */}
+              {event.venues && (!event.organizers || organizerEvents.length <= 1) && (
                 <Suspense fallback={null}>
                   <MoreAtVenue
                     venueId={event.venues.id}

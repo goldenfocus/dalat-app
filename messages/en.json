@@ -547,6 +547,7 @@
     "allEventsAtVenue": "All events at this venue"
   },
   "rsvp": {
+    "signInToJoin": "Sign in to join",
     "imGoing": "I'm going",
     "joinWaitlist": "Join waitlist",
     "interested": "Interested",
