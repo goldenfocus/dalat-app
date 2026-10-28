@@ -598,7 +598,7 @@ export function RsvpButton({
     <>
       {celebrationPortal}
       {questionnaireSheet}
-        {languageSheet}
+      {languageSheet}
       <div className="space-y-3">
         <CommunityRsvpChoice />
         <Button

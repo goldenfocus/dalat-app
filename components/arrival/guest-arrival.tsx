@@ -163,10 +163,11 @@ export function GuestArrival({ slug }: { slug: string }) {
           )}
           {step === 1 && (
             <div className="space-y-6">
-              {context.priorOrder ? <ArrivalOrderView order={context.priorOrder} /> : <>
-                {menu.length > 0 && <p className="text-sm text-muted-foreground">{t("menuHint")}</p>}
+              {context.priorOrder ? <ArrivalOrderView order={context.priorOrder} /> : menu.length > 0 && <details className="rounded-lg border border-border p-3">
+                <summary className="flex min-h-11 cursor-pointer items-center font-medium">{t("menuTitle")}</summary>
+                <p className="mb-4 mt-2 text-sm text-muted-foreground">{t("menuHint")}</p>
                 <ArrivalMenu sections={menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />
-              </>}
+              </details>}
               {error && <p className="text-sm text-destructive" role="alert">{t(error)}</p>}
               <Button type="button" loading={busy} disabled={busy} className="scroll-mb-28 min-h-12 w-full whitespace-normal text-base" onClick={() => void submit(selectedItems.length > 0)}>{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>
               {!context.priorOrder && menu.length > 0 && <Button type="button" variant="ghost" disabled={busy} className="scroll-mb-28 min-h-12 w-full" onClick={() => void submit(false)}>{t("orderWithStaff")}</Button>}
