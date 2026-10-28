@@ -6,7 +6,10 @@ import { PastEventMomentsShowcase } from "./past-event-moments-showcase";
 import { MomentAiInsights } from "./moment-ai-insights";
 import type { MomentWithProfile } from "@/lib/types";
 
-vi.mock("next-intl", () => ({ useTranslations: () => (key: string) => key }));
+vi.mock("next-intl", () => ({
+  useTranslations: () => (key: string) => key,
+  useLocale: () => "de",
+}));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 vi.mock("next/image", () => ({ default: () => null }));
 vi.mock("@/lib/i18n/routing", () => ({

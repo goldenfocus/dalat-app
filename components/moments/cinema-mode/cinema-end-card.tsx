@@ -1,9 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { RotateCcw, Camera, Grid3X3, Share2, Check, MapPin, Calendar } from "lucide-react";
+import {
+  RotateCcw,
+  Camera,
+  Grid3X3,
+  Share2,
+  Check,
+  MapPin,
+  Calendar,
+} from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import { useShare } from "@/lib/hooks/use-share";
@@ -48,6 +56,8 @@ export function CinemaEndCard({
   onBrowseAll,
 }: CinemaEndCardProps) {
   const locale = useLocale();
+  const t = useTranslations("moments");
+  const common = useTranslations("common");
   const { share: nativeShare, copied: shared } = useShare();
   const [animateIn, setAnimateIn] = useState(false);
 
@@ -59,17 +69,17 @@ export function CinemaEndCard({
 
   const shareUrl = useMemo(() => {
     if (typeof window === "undefined") return "";
-    return `${window.location.origin}/events/${eventSlug}/moments?view=cinema`;
-  }, [eventSlug]);
+    return `${window.location.origin}${locale === "en" ? "" : `/${locale}`}/events/${eventSlug}/moments?view=cinema`;
+  }, [eventSlug, locale]);
 
   const shareText = eventMeta
-    ? `${eventMeta.title} — ${totalMoments} moments captured`
-    : `${totalMoments} moments captured`;
+    ? `${eventMeta.title} — ${t("albumStats", { count: totalMoments })}`
+    : t("albumStats", { count: totalMoments });
 
   const handleShare = (e: React.MouseEvent) => {
     e.stopPropagation();
     nativeShare({
-      title: eventMeta?.title ?? "Moments",
+      title: eventMeta?.title ?? t("moments"),
       text: shareText,
       url: shareUrl,
     });
@@ -80,7 +90,9 @@ export function CinemaEndCard({
     fn();
   };
 
-  const eventDate = eventMeta?.date ? formatEventDate(eventMeta.date, locale) : null;
+  const eventDate = eventMeta?.date
+    ? formatEventDate(eventMeta.date, locale)
+    : null;
 
   return (
     <div className="fixed inset-0 z-30 bg-black overflow-hidden">
@@ -143,8 +155,12 @@ export function CinemaEndCard({
 
           {/* Stats line */}
           <p className="text-white/40 text-sm mb-6">
-            {totalMoments} moments
-            {contributors.length > 0 && ` by ${contributors.length} contributor${contributors.length > 1 ? "s" : ""}`}
+            {contributors.length > 0
+              ? t("albumStatsWithContributors", {
+                  count: totalMoments,
+                  contributors: contributors.length,
+                })
+              : t("albumStats", { count: totalMoments })}
           </p>
 
           {/* Contributors */}
@@ -172,12 +188,12 @@ export function CinemaEndCard({
               {shared ? (
                 <>
                   <Check className="w-4 h-4 text-green-600" />
-                  Link copied
+                  {common("copied")}
                 </>
               ) : (
                 <>
                   <Share2 className="w-4 h-4" />
-                  Share this album
+                  {t("shareAlbum")}
                 </>
               )}
             </button>
@@ -189,14 +205,14 @@ export function CinemaEndCard({
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 active:scale-[0.98] transition-all"
               >
                 <RotateCcw className="w-4 h-4" />
-                Replay
+                {t("replay")}
               </button>
               <button
                 onClick={handleAction(onAddMoment)}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white/10 text-white font-medium hover:bg-white/20 active:scale-[0.98] transition-all"
               >
                 <Camera className="w-4 h-4" />
-                Add yours
+                {t("addMoment")}
               </button>
             </div>
 
@@ -206,7 +222,7 @@ export function CinemaEndCard({
                 className="flex items-center justify-center gap-2 px-4 py-2.5 text-white/50 text-sm hover:text-white/70 transition-colors"
               >
                 <Grid3X3 className="w-3.5 h-3.5" />
-                Browse all moments
+                {t("viewAll")}
               </button>
             )}
           </div>
@@ -215,7 +231,7 @@ export function CinemaEndCard({
           <div className="flex items-center justify-center gap-3">
             <div className="flex-1 h-px bg-white/10" />
             <div className="flex items-center gap-1.5 text-white/25 text-xs tracking-wide">
-              <span>made with</span>
+              <span>{t("madeWith")}</span>
               <span className="font-semibold text-white/40">dalat.app</span>
             </div>
             <div className="flex-1 h-px bg-white/10" />

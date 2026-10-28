@@ -391,34 +391,44 @@ export function generateMomentMetadata(
     content_type: string;
     user_id: string;
     profiles?: { display_name: string | null; username: string | null };
-    events?: { title: string | null; location_name?: string | null; slug?: string | null };
+    events?: {
+      title: string | null;
+      location_name?: string | null;
+      slug?: string | null;
+    };
     // AI metadata (optional, from moment_metadata join)
     ai_description?: string | null;
     ai_tags?: string[] | null;
     detected_objects?: string[] | null;
     mood?: string | null;
   },
-  locale: Locale
+  locale: Locale,
+  localizedContent?: { title: string; fallbackDescription: string },
 ): Metadata {
-  const userName = moment.profiles?.display_name || moment.profiles?.username || "Someone";
+  const userName =
+    moment.profiles?.display_name || moment.profiles?.username || "Someone";
   const eventTitle = moment.events?.title || "an event";
 
-  // Prefer AI description for richer SEO, fall back to user text
-  const description = moment.ai_description
-    ? buildSeoDescription(moment.ai_description, {
-        contentType: "moment",
-        title: `${userName}'s moment at ${eventTitle}`,
-      })
-    : moment.text_content
-    ? buildSeoDescription(moment.text_content, {
-        contentType: "moment",
-        title: `${userName}'s moment at ${eventTitle}`,
-      })
-    : `${userName} shared a moment from ${eventTitle} in Đà Lạt, Vietnam`;
+  const title =
+    localizedContent?.title || `${userName}'s moment at ${eventTitle}`;
 
-  const title = `${userName}'s moment at ${eventTitle}`;
+  // Localized prose must not fall through to English SEO filler or suffixes.
+  const localizedText = (moment.ai_description || moment.text_content)?.trim();
+  const description = localizedContent
+    ? localizedText
+      ? localizedText.length > 160 ? `${localizedText.slice(0, 157)}…` : localizedText
+      : localizedContent.fallbackDescription
+    : moment.ai_description
+      ? buildSeoDescription(moment.ai_description, { contentType: "moment", title })
+      : moment.text_content
+        ? buildSeoDescription(moment.text_content, { contentType: "moment", title })
+        : `${userName} shared a moment from ${eventTitle} in Đà Lạt, Vietnam`;
+
   const fallbackOg = `${SITE_URL}/${locale}/moments/${moment.id}/opengraph-image`;
-  const image = moment.media_url && !isVideoUrl(moment.media_url) ? moment.media_url : fallbackOg;
+  const image =
+    moment.media_url && !isVideoUrl(moment.media_url)
+      ? moment.media_url
+      : fallbackOg;
 
   // Canonical is the event-scoped URL — /moments/[id] 301s to it
   const momentPath = moment.events?.slug
@@ -443,7 +453,7 @@ export function generateMomentMetadata(
         event_title: eventTitle,
         location_name: moment.events?.location_name,
       },
-      locale
+      locale,
     ),
   });
 }

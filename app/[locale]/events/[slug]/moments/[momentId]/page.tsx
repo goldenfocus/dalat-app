@@ -1,3 +1,5 @@
+import { OriginalText } from "@/components/ui/original-text";
+import { translatedRecords } from "@/lib/translations/public-content";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
@@ -27,7 +29,7 @@ import { MomentImagePreloader } from "@/components/moments/moment-image-preloade
 import { MomentVideoPlayer } from "@/components/moments/moment-video-player";
 import { MomentAiInsights } from "@/components/moments/moment-ai-insights";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
-import { getTranslationsWithFallback, isValidContentLocale } from "@/lib/translations";
+import { getTranslationsWithFallback, isValidContentLocale, getEventTranslationsBatch } from "@/lib/translations";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import { hasRoleLevel, type Moment, type Event, type Profile, type MomentMetadata, type ContentLocale, type Locale, type UserRole } from "@/lib/types";
 import {
@@ -159,10 +161,22 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const meta = moment.moment_metadata;
+  const [t, tCommon, titles, translated] = await Promise.all([
+    getTranslations({ locale, namespace: "moments" }),
+    getTranslations({ locale, namespace: "common" }),
+    getEventTranslationsBatch([moment.events.id], locale as Locale),
+    translatedRecords("moment", [moment.id], locale),
+  ]);
+  const eventTitle = titles.get(moment.events.id)?.title || moment.events.title;
+  const name = moment.profiles.display_name || moment.profiles.username || tCommon("anonymous");
+  const fields = translated.get(moment.id);
   return generateMomentMetadata(
     {
       ...moment,
-      ai_description: meta?.ai_description,
+      profiles: { ...moment.profiles, display_name: name },
+      text_content: fields?.get("text_content") || moment.text_content,
+      events: { ...moment.events, title: eventTitle },
+      ai_description: fields?.get("ai_description") || meta?.ai_description,
       ai_tags: meta?.ai_tags,
       detected_objects: meta?.detected_objects,
       mood: meta?.mood,
@@ -172,7 +186,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       detected_objects?: string[] | null;
       mood?: string | null;
     },
-    locale as Locale
+    locale as Locale,
+    {
+      title: t("momentTitle", { name, event: eventTitle }),
+      fallbackDescription: t("momentDescription", { name, event: eventTitle }),
+    }
   );
 }
 
@@ -222,6 +240,8 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
   const tCommon = await getTranslations("common");
 
   const event = moment.events;
+  const eventTitles = await getEventTranslationsBatch([event.id], locale as Locale);
+  const eventTitle = eventTitles.get(event.id)?.title || event.title;
   const profile = moment.profiles;
 
   // Fetch translations for text content
@@ -229,7 +249,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
     "moment",
     moment.id,
     locale as ContentLocale,
-    { text_content: moment.text_content }
+    { text_content: moment.text_content, ai_description: moment.moment_metadata?.ai_description || null }
   );
 
   const translatedText = translationResult.text_content
@@ -252,12 +272,16 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
   // Structured data for SEO
   const breadcrumbSchema = generateBreadcrumbSchema([
-    { name: "Home", url: "https://dalat.app" },
-    { name: event.title, url: `https://dalat.app/events/${event.slug}` },
+    { name: "ĐàLạt.app", url: "https://dalat.app" },
+    { name: eventTitle, url: `https://dalat.app/events/${event.slug}` },
     { name: t("moments"), url: `https://dalat.app/events/${event.slug}/moments` },
   ], locale);
 
-  const momentSchema = generateMomentSchema(moment, locale);
+  const momentSchema = generateMomentSchema(
+    { ...moment, text_content: translatedText, profiles: { ...profile, display_name: profile.display_name || profile.username || tCommon("anonymous") }, events: { ...event, title: eventTitle } },
+    locale,
+    t("momentTitle", { name: profile.display_name || profile.username || tCommon("anonymous"), event: eventTitle }),
+  );
 
   return (
     <>
@@ -273,7 +297,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
       <div className="min-h-screen bg-background">
         <MomentDetailHeader
           eventSlug={event.slug}
-          eventTitle={event.title}
+          eventTitle={eventTitle}
           momentId={moment.id}
           from={from}
           mediaUrl={moment.media_url}
@@ -340,7 +364,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       {moment.thumbnail_url ? (
                         <Image
                           src={moment.thumbnail_url}
-                          alt="Video processing"
+                          alt={t("videoProcessing")}
                           fill
                           className="object-cover opacity-50"
                         />
@@ -367,7 +391,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                   <div className="relative aspect-[4/3]">
                     <ExpandableMomentImage
                       src={moment.media_url}
-                      alt={moment.moment_metadata?.ai_description || translatedText || "Photo from Đà Lạt"}
+                      alt={translationResult.ai_description || translatedText || eventTitle}
                     />
                   </div>
                 )}
@@ -388,7 +412,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       <Link
                         href={buildMomentUrl(adjacentMoments.prevId)}
                         className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-                        aria-label="Previous moment"
+                        aria-label={tCommon("previous")}
                       >
                         <ChevronLeft className="w-6 h-6" />
                       </Link>
@@ -397,7 +421,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       <Link
                         href={buildMomentUrl(adjacentMoments.nextId)}
                         className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
-                        aria-label="Next moment"
+                        aria-label={tCommon("next")}
                       >
                         <ChevronRight className="w-6 h-6" />
                       </Link>
@@ -508,7 +532,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       <div className="relative aspect-video rounded-lg overflow-hidden mb-3">
                         <Image
                           src={event.image_url}
-                          alt={event.title}
+                          alt={eventTitle}
                           fill
                           className="object-cover group-hover:scale-105 transition-transform"
                           sizes="320px"
@@ -516,12 +540,12 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       </div>
                     )}
                     <h3 className="font-semibold group-hover:underline line-clamp-2">
-                      {event.title}
+                      {eventTitle}
                     </h3>
                     <div className="mt-2 space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4" />
-                        <span>{formatInDaLat(event.starts_at, "PPP")}</span>
+                        <span>{formatInDaLat(event.starts_at, "PPP", locale as Locale)}</span>
                       </div>
                       {event.location_name && (
                         <div className="flex items-center gap-2">
@@ -531,6 +555,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
                       )}
                     </div>
                   </Link>
+                  {eventTitle !== event.title && <OriginalText text={event.title} />}
                 </CardContent>
               </Card>
 

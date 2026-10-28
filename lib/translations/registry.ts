@@ -1,3 +1,4 @@
+import { metadataLabels } from "./metadata-labels";
 /** Every public text surface must declare its source here and render an OriginalText control. */
 // Event arrival nicknames, staff membership and order notes are private operational
 // data: never enqueue them. Arrival menus reuse the public menu_item/menu_section
@@ -100,6 +101,7 @@ export const TRANSLATION_SOURCES = [
       "audio_transcript",
       "pdf_summary",
       "pdf_extracted_text",
+      "tags",
     ],
     filters: [["processing_status", "completed"]],
   },
@@ -143,7 +145,9 @@ export function sourceFields(
       )
         return [];
       const value =
-        field === "lyrics"
+        field === "tags" && def.table === "moment_metadata"
+          ? metadataLabels(row)
+          : field === "lyrics"
           ? String(row.lyrics_lrc || "")
               .split("\n")
               .map((line) =>

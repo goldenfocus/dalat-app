@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { TranslatedContent } from "@/components/ui/translated-content";
+import { OriginalText } from "@/components/ui/original-text";
+import { createClient } from "@/lib/supabase/client";
+import { metadataLabels } from "@/lib/translations/metadata-labels";
 import { ChevronDown, Eye, Sparkles, Tag, Palette, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,9 +44,84 @@ export function MomentAiInsights({
   videoSummary,
   audioSummary,
   pdfSummary,
-  contentType,
+  contentType: _contentType,
 }: MomentAiInsightsProps) {
+  const t = useTranslations("moments");
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
+  const sourceGroups = [
+    metadataLabels({ ai_tags: aiTags }),
+    metadataLabels({ detected_objects: detectedObjects }),
+    metadataLabels({ location_hints: locationHints }),
+    metadataLabels({ mood }),
+    metadataLabels({ detected_text: detectedText }),
+  ];
+  const sourceLabels = metadataLabels({
+    ai_tags: aiTags,
+    detected_objects: detectedObjects,
+    location_hints: locationHints,
+    mood,
+    detected_text: detectedText,
+  });
+  const sourceKey = JSON.stringify(sourceLabels);
+  const key = JSON.stringify([locale, momentId, sourceKey]);
+  const [labelTranslation, setLabelTranslation] = useState<{
+    key: string;
+    labels: string[];
+  } | null>(null);
+  useEffect(() => {
+    if (sourceKey === "[]") return;
+    let active = true;
+    async function loadLabels() {
+      try {
+        const { data, error } = await createClient()
+          .from("content_translations")
+          .select("translated_text")
+          .eq("content_type", "moment")
+          .eq("content_id", momentId)
+          .eq("target_locale", locale)
+          .eq("field_name", "tags")
+          .maybeSingle();
+        if (error || !data) return;
+        const translated: unknown = JSON.parse(data.translated_text);
+        if (
+          Array.isArray(translated) &&
+          translated.length === JSON.parse(sourceKey).length &&
+          translated.every(
+            (label): label is string =>
+              typeof label === "string" && !!label.trim(),
+          ) &&
+          active
+        )
+          setLabelTranslation({ key, labels: translated });
+      } catch {
+        /* Missing/malformed translations keep the exact source visible. */
+      }
+    }
+    void loadLabels();
+    return () => {
+      active = false;
+    };
+  }, [key, locale, momentId, sourceKey]);
+  const labels =
+    labelTranslation?.key === key ? labelTranslation.labels : sourceLabels;
+  const groups = sourceGroups.map((group, index) => {
+    const start = sourceGroups
+      .slice(0, index)
+      .reduce((count, previous) => count + previous.length, 0);
+    return labels.slice(start, start + group.length);
+  });
+  const [
+    localizedTags,
+    localizedObjects,
+    localizedLocations,
+    localizedMoods,
+    localizedText,
+  ] = groups;
+  const localizedMood = localizedMoods[0];
+  const hasTranslatedLabels = labels.some(
+    (label, index) => label !== sourceLabels[index],
+  );
 
   // Determine what summary to show based on content type
   const summary = videoSummary || audioSummary || pdfSummary || aiDescription;
@@ -57,23 +136,23 @@ export function MomentAiInsights({
   // Only render if we have at least some metadata
   const hasContent =
     summary ||
-    aiTags?.length ||
-    detectedObjects?.length ||
-    detectedText?.length;
+    sceneDescription ||
+    sourceLabels.length ||
+    dominantColors?.length;
   if (!hasContent) return null;
 
   const pills = [
-    ...(aiTags || []).map((tag) => ({ label: tag, icon: Tag })),
-    ...(detectedObjects || []).map((obj) => ({ label: obj, icon: Eye })),
-    ...(locationHints || []).map((hint) => ({ label: hint, icon: MapPin })),
+    ...localizedTags.map((tag) => ({ label: tag, icon: Tag })),
+    ...localizedObjects.map((obj) => ({ label: obj, icon: Eye })),
+    ...localizedLocations.map((hint) => ({ label: hint, icon: MapPin })),
   ];
 
   // Deeper metadata lives in the accordion; the summary is always visible
   const hasDetails =
     (sceneDescription && sceneDescription !== summary) ||
     pills.length > 0 ||
-    (detectedText && detectedText.length > 0) ||
-    mood ||
+    localizedText.length > 0 ||
+    localizedMood ||
     (dominantColors && dominantColors.length > 0);
 
   return (
@@ -95,11 +174,13 @@ export function MomentAiInsights({
         <details
           className="group rounded-lg border border-border/50 bg-muted/30"
           open={isOpen}
-          onToggle={(e) => setIsOpen((e.target as HTMLDetailsElement).open)}
+          onToggle={(e) => {
+            if (e.target === e.currentTarget) setIsOpen(e.currentTarget.open);
+          }}
         >
           <summary className="flex items-center gap-2 px-4 py-3 cursor-pointer select-none text-sm font-medium text-muted-foreground hover:text-foreground transition-colors list-none [&::-webkit-details-marker]:hidden">
             <Sparkles className="w-4 h-4 text-primary/60" />
-            <span>AI Insights</span>
+            <span>{t("aiInsights")}</span>
             <ChevronDown
               className={cn(
                 "w-4 h-4 ml-auto transition-transform",
@@ -138,13 +219,13 @@ export function MomentAiInsights({
             )}
 
             {/* Detected text (OCR) */}
-            {detectedText && detectedText.length > 0 && (
+            {localizedText.length > 0 && (
               <div className="space-y-1">
                 <span className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
-                  Text found in {contentType}
+                  {t("detectedText")}
                 </span>
                 <div className="flex flex-wrap gap-1.5">
-                  {detectedText.map((text, i) => (
+                  {localizedText.map((text, i) => (
                     <span
                       key={i}
                       className="inline-block px-2 py-0.5 rounded bg-background border text-xs"
@@ -157,9 +238,12 @@ export function MomentAiInsights({
             )}
 
             {/* Mood + Colors row */}
-            {(mood || (dominantColors && dominantColors.length > 0)) && (
+            {(localizedMood ||
+              (dominantColors && dominantColors.length > 0)) && (
               <div className="flex items-center gap-4 text-xs text-muted-foreground/60">
-                {mood && <span className="capitalize">{mood}</span>}
+                {localizedMood && (
+                  <span className="capitalize">{localizedMood}</span>
+                )}
                 {dominantColors && dominantColors.length > 0 && (
                   <div className="flex items-center gap-1">
                     <Palette className="w-3 h-3" />
@@ -174,6 +258,9 @@ export function MomentAiInsights({
                   </div>
                 )}
               </div>
+            )}
+            {hasTranslatedLabels && (
+              <OriginalText text={sourceLabels.join("\n")} />
             )}
           </div>
         </details>

@@ -1,6 +1,7 @@
 "use client";
 
-import { Layers, Image, Film } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { Layers, Image as ImageIcon, Film } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type MediaTypeFilter = "all" | "photo" | "video";
@@ -23,23 +24,36 @@ export function MediaTypeFilterToggle({
   className,
   hasVideos = true,
 }: MediaTypeFilterProps) {
+  const t = useTranslations("moments");
   // Don't show filter if there are no videos (nothing to filter)
   if (!hasVideos) return null;
 
-  const options: { key: MediaTypeFilter; icon: React.ReactNode; label: string }[] = [
-    { key: "all", icon: <Layers className="w-4 h-4" />, label: "All" },
-    { key: "photo", icon: <Image className="w-4 h-4" />, label: "Photos" },
-    { key: "video", icon: <Film className="w-4 h-4" />, label: "Videos" },
+  const options: {
+    key: MediaTypeFilter;
+    icon: React.ReactNode;
+    label: string;
+  }[] = [
+    { key: "all", icon: <Layers className="w-4 h-4" />, label: t("filterAll") },
+    {
+      key: "photo",
+      icon: <ImageIcon className="w-4 h-4" />,
+      label: t("filterPhotos"),
+    },
+    {
+      key: "video",
+      icon: <Film className="w-4 h-4" />,
+      label: t("filterVideos"),
+    },
   ];
 
   return (
     <div
       className={cn(
         "inline-flex items-center rounded-lg bg-muted/50 p-0.5 gap-0.5",
-        className
+        className,
       )}
       role="radiogroup"
-      aria-label="Filter by media type"
+      aria-label={t("filterMediaType")}
     >
       {options.map(({ key, icon, label }) => (
         <button
@@ -53,7 +67,7 @@ export function MediaTypeFilterToggle({
             "p-1.5 rounded-md transition-all",
             value === key
               ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground/60 hover:text-muted-foreground"
+              : "text-muted-foreground/60 hover:text-muted-foreground",
           )}
         >
           {icon}

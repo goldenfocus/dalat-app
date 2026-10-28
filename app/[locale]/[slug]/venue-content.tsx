@@ -939,8 +939,11 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {happening_now.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden">
+                <Card
+                  key={event.id}
+                  className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden"
+                >
+                  <Link href={`/events/${event.slug}`} className="block">
                     <CardContent className="p-0">
                       {event.image_url && (
                         <img
@@ -958,8 +961,14 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                         </p>
                       </div>
                     </CardContent>
-                  </Card>
-                </Link>
+                  </Link>
+                  {eventTitles.get(event.id)?.title &&
+                    eventTitles.get(event.id)?.title !== event.title && (
+                      <div className="px-4 pb-3">
+                        <OriginalText text={event.title} />
+                      </div>
+                    )}
+                </Card>
               ))}
             </div>
           </section>
@@ -973,8 +982,11 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {upcoming_events.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="hover:border-primary/50 transition-colors overflow-hidden">
+                <Card
+                  key={event.id}
+                  className="hover:border-primary/50 transition-colors overflow-hidden"
+                >
+                  <Link href={`/events/${event.slug}`} className="block">
                     <CardContent className="p-0">
                       {event.image_url && (
                         <img
@@ -993,8 +1005,14 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                         </span>
                       </div>
                     </CardContent>
-                  </Card>
-                </Link>
+                  </Link>
+                  {eventTitles.get(event.id)?.title &&
+                    eventTitles.get(event.id)?.title !== event.title && (
+                      <div className="px-4 pb-3">
+                        <OriginalText text={event.title} />
+                      </div>
+                    )}
+                </Card>
               ))}
             </div>
           </section>

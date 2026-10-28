@@ -42,4 +42,24 @@ DO $$ BEGIN
  IF EXISTS(SELECT 1 FROM public.content_translations WHERE content_id=current_setting('translation.test_event_id')::uuid) THEN RAISE EXCEPTION 'Unpublished event translation remained publicly readable'; END IF;
 END $$;
 RESET ROLE;
+DO $$
+DECLARE eid uuid := gen_random_uuid(); mid uuid := gen_random_uuid(); owner_id uuid; col text;
+BEGIN
+ SELECT id INTO owner_id FROM public.profiles LIMIT 1;
+ INSERT INTO public.events(id,slug,title,starts_at,created_by,status) VALUES(eid,'translation-labels-'||eid,'Translation label fixture',now()+interval '1 day',owner_id,'published');
+ INSERT INTO public.moments(id,event_id,user_id,content_type,text_content,status) VALUES(mid,eid,owner_id,'text','Source caption','published');
+ INSERT INTO public.moment_metadata(moment_id,ai_tags,processing_status) VALUES(mid,ARRAY['coffee'],'completed');
+ INSERT INTO public.content_translations(content_type,content_id,source_locale,target_locale,field_name,translated_text,translation_status) VALUES('moment',mid,'en','fr','tags','["café"]','reviewed');
+ FOREACH col IN ARRAY ARRAY['ai_tags','detected_objects','location_hints','detected_text','mood'] LOOP
+   INSERT INTO public.content_translations(content_type,content_id,source_locale,target_locale,field_name,translated_text,translation_status) VALUES('moment',mid,'en','de','tags','["Kaffee"]','auto');
+   UPDATE public.content_translations SET is_stale=false WHERE content_id=mid AND target_locale='fr';
+   IF col='mood' THEN
+     UPDATE public.moment_metadata SET mood='welcoming' WHERE moment_id=mid;
+   ELSE
+     EXECUTE format('UPDATE public.moment_metadata SET %I=ARRAY[$1] WHERE moment_id=$2',col) USING 'Updated '||col,mid;
+   END IF;
+   IF EXISTS(SELECT 1 FROM public.content_translations WHERE content_id=mid AND translation_status='auto') THEN RAISE EXCEPTION 'Metadata label edit did not invalidate %',col; END IF;
+   IF NOT EXISTS(SELECT 1 FROM public.content_translations WHERE content_id=mid AND target_locale='fr' AND translation_status='reviewed' AND is_stale AND translated_text='["café"]') THEN RAISE EXCEPTION 'Metadata label edit damaged or revived human review for %',col; END IF;
+ END LOOP;
+END $$;
 ROLLBACK;

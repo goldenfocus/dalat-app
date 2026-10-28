@@ -78,3 +78,14 @@ describe("public translation source contract", () => {
     ]);
   });
 });
+
+
+it("queues all public AI label prose in stable order without colors or model diagnostics", () => {
+  const def = TRANSLATION_SOURCES.find((x) => x.table === "moment_metadata")!;
+  const fields = sourceFields(def, {
+    ai_tags: ["coffee"], detected_objects: ["cup"], location_hints: ["café"],
+    mood: "welcoming", detected_text: ["Welcome!"], dominant_colors: ["#123456"],
+    confidence: 0.9, processing_status: "completed",
+  });
+  expect(fields).toEqual({ tags: JSON.stringify(["coffee", "cup", "café", "welcoming", "Welcome!"]) });
+});

@@ -792,8 +792,12 @@ export function generateEventSeriesSchema(
 export function generateMomentSchema(
   moment: Moment & { profiles?: Profile; events?: Event },
   locale: string,
+  localizedHeadline?: string,
 ) {
-  const momentUrl = localizedSiteUrl(locale, `/moments/${moment.id}`);
+  const momentPath = moment.events?.slug
+    ? `/events/${moment.events.slug}/moments/${moment.id}`
+    : `/moments/${moment.id}`;
+  const momentUrl = localizedSiteUrl(locale, momentPath);
   const userName =
     moment.profiles?.display_name || moment.profiles?.username || "Someone";
   const userIdentifier = moment.profiles?.username || moment.user_id;
@@ -803,7 +807,7 @@ export function generateMomentSchema(
   const schema: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "SocialMediaPosting",
-    headline: `${userName}'s moment at ${eventTitle}`,
+    headline: localizedHeadline || `${userName}'s moment at ${eventTitle}`,
     url: momentUrl,
     datePublished: moment.created_at,
     author: {
@@ -842,7 +846,7 @@ export function generateMomentSchema(
       "@type": "VideoObject",
       contentUrl: moment.media_url,
       uploadDate: moment.created_at,
-      name: `${userName}'s moment at ${eventTitle}`,
+      name: localizedHeadline || `${userName}'s moment at ${eventTitle}`,
     };
   }
 
@@ -894,6 +898,7 @@ export function generateCinemaAlbumSchema(
   }>,
   totalCount: number,
   locale: string,
+  localizedContent?: { title: string; description: string; viewLabel: string },
 ) {
   // AI caption → JSON-LD description: keep it human-length, no keyword tails.
   // NEVER feed detected_text here — it's OCR exhaust (name tags, phone numbers).
@@ -929,8 +934,8 @@ export function generateCinemaAlbumSchema(
   return {
     "@context": "https://schema.org",
     "@type": "ImageGallery",
-    name: `${event.title} — Moments`,
-    description: `A cinematic slideshow of ${totalCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""}. Captured by ${contributors.length} contributor${contributors.length !== 1 ? "s" : ""} and presented by ĐàLạt.app.`,
+    name: localizedContent?.title || `${event.title} — Moments`,
+    description: localizedContent?.description || `A cinematic slideshow of ${totalCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""}. Captured by ${contributors.length} contributor${contributors.length !== 1 ? "s" : ""} and presented by ĐàLạt.app.`,
     url: albumUrl,
     numberOfItems: totalCount,
     dateCreated: event.starts_at,
@@ -971,7 +976,7 @@ export function generateCinemaAlbumSchema(
         "@type": "VideoObject",
         contentUrl: v.media_url,
         uploadDate: v.created_at,
-        name: `Video moment from ${event.title}`,
+        name: localizedContent ? event.title : `Video moment from ${event.title}`,
         ...(v.display_name && {
           author: { "@type": "Person", name: v.display_name },
         }),
@@ -979,7 +984,7 @@ export function generateCinemaAlbumSchema(
     }),
     potentialAction: {
       "@type": "ViewAction",
-      name: "Watch Cinema Mode",
+      name: localizedContent?.viewLabel || "Watch Cinema Mode",
       target: albumUrl,
     },
   };

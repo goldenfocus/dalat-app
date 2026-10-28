@@ -1,3 +1,6 @@
+import { getEventTranslationsBatch } from "@/lib/translations";
+import { translatedRecords } from "@/lib/translations/public-content";
+import { OriginalText } from "@/components/ui/original-text";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
@@ -211,8 +214,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     .eq("event_id", event.id);
 
   const momentCount = count ?? 0;
-  const title = `${event.title} — ${momentCount} Moments | ĐàLạt.app`;
-  const description = `Watch ${momentCount} photos and videos from ${event.title}${event.location_name ? ` in ${event.location_name}` : ""} in cinema mode. A collaborative photo album powered by ĐàLạt.app.`;
+  const [t, titles] = await Promise.all([
+    getTranslations({ locale, namespace: "moments" }),
+    getEventTranslationsBatch([event.id], locale as Locale),
+  ]);
+  const eventTitle = titles.get(event.id)?.title || event.title;
+  const title = `${t("albumTitle", { event: eventTitle, count: momentCount })} | ĐàLạt.app`;
+  const description = t("albumDescription", { event: eventTitle });
   const canonicalUrl = localeUrl(locale as Locale, `/events/${event.slug}/moments`);
   const previewVersion = `${momentCount}-${Date.parse(event.updated_at) || 0}`;
   const previewSourceUrl = `${canonicalUrl}/og-image?v=${previewVersion}`;
@@ -234,7 +242,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         width: 1200,
         height: 630,
         type: "image/jpeg",
-        alt: event.title,
+        alt: eventTitle,
       }],
     },
     twitter: {
@@ -401,12 +409,21 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   const t = await getTranslations("moments");
 
-  const [{ moments, hasMore, totalCount }, canPost, playlist] = await Promise.all([
+  const [{ moments, hasMore, totalCount }, canPost, playlist, titles] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
     getEventPlaylist(event.slug, event.title, event.image_url),
+    getEventTranslationsBatch([event.id], locale as Locale),
   ]);
+  const eventTitle = titles.get(event.id)?.title || event.title;
+  if (playlist) playlist.playlistInfo.eventTitle = eventTitle;
 
+  // Schema copies use localized AI prose; the UI retains exact author sources.
+  const momentFields = await translatedRecords("moment", moments.map((moment) => moment.id), locale);
+  const schemaMoments = moments.map((moment) => ({
+    ...moment,
+    ai_description: momentFields.get(moment.id)?.get("ai_description") || (moment as MomentWithProfile & { ai_description?: string }).ai_description,
+  }));
   const firstTrackUrl = playlist?.tracks[0]?.file_url;
 
   return (
@@ -417,10 +434,15 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
       )}
       <JsonLd
         data={generateCinemaAlbumSchema(
-          event,
-          moments,
+          { ...event, title: eventTitle },
+          schemaMoments,
           totalCount,
-          locale
+          locale,
+          {
+            title: t("albumTitle", { event: eventTitle, count: totalCount }),
+            description: t("albumDescription", { event: eventTitle }),
+            viewLabel: t("viewMoments"),
+          }
         )}
       />
       <div className="container max-w-4xl mx-auto px-4 py-6">
@@ -442,8 +464,9 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             href={`/events/${event.slug}`}
             className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
           >
-            {event.title} &rarr;
+            {eventTitle} &rarr;
           </Link>
+          {eventTitle !== event.title && <OriginalText text={event.title} />}
           {/* Moments inherit their tribe from the event — no moments.tribe_id */}
           {event.tribes && (
             <div className="mt-3">
@@ -465,7 +488,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             undefined
           }
           eventMeta={{
-            title: event.title,
+            title: eventTitle,
             date: event.starts_at,
             locationName: event.location_name,
             imageUrl: event.image_url,

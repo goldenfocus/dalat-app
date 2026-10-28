@@ -28,6 +28,8 @@ const identicalAllowed = new Set([
   "calendar.appleOutlook",
   "moments.proUpload.supportedFormats",
   "flowerFestivalGuide.edition2026.schema.jazzName",
+  "fr.moments.albumTitle", // Moment/moments is also native French; independently reviewed.
+  "fr.moments.albumStats", // Same French noun and ICU plural forms.
   "es.common.no", // No is the native Spanish answer as well.
   "de.venuePages.restaurants.h1", // Restaurants in Da Lat is also natural German.
 ]);

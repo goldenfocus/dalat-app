@@ -4,7 +4,7 @@ import { TranslatedContent } from "@/components/ui/translated-content";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useFormatter, useLocale, useTranslations } from "next-intl";
 import {
   X,
   ChevronUp,
@@ -21,7 +21,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import { UserAvatar } from "@/components/ui/user-avatar";
-import { formatDistanceToNow } from "date-fns";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
@@ -41,64 +40,6 @@ import {
 import { ReactionBar } from "@/components/reactions/reaction-bar";
 import { MomentWatermark } from "./moment-watermark";
 import type { MomentWithProfile } from "@/lib/types";
-
-// Hilariously random end-of-album phrases
-const END_PHRASES = [
-  {
-    main: "That's all folks!",
-    sub: "You've officially seen everything. Achievement unlocked.",
-  },
-  {
-    main: "The End... or is it?",
-    sub: "Plot twist: you can add more moments!",
-  },
-  {
-    main: "You speedran this album!",
-    sub: "New world record? Probably not. But still impressive.",
-  },
-  {
-    main: "Congratulations, you reached the edge of the internet!",
-    sub: "Just kidding, there's more out there. But not here.",
-  },
-  {
-    main: "Album complete!",
-    sub: "Your prize? The memories. And maybe some FOMO.",
-  },
-  {
-    main: "You've seen things...",
-    sub: "Things other people might have also seen. You're not special. But you're here!",
-  },
-  { main: "No more moments!", sub: "Unless... you make one? *wink wink*" },
-  {
-    main: "EOF: End of Fun",
-    sub: "Just kidding, the fun never ends. Loop it!",
-  },
-  {
-    main: "You made it!",
-    sub: "Through all the photos. Some were blurry. That's okay.",
-  },
-  {
-    main: "Achievement: Album Completionist",
-    sub: "Your reward: the satisfaction of a job well scrolled.",
-  },
-  {
-    main: "This is where the credits would roll",
-    sub: "But we're too lazy for that. Here are the stars instead.",
-  },
-  { main: "Fin.", sub: "That's French for 'add your own moment already!'" },
-  {
-    main: "You've reached enlightenment!",
-    sub: "Or at least the end of this album. Same thing, basically.",
-  },
-  {
-    main: "The algorithm has nothing left for you",
-    sub: "Time to create your own content. No pressure.",
-  },
-  {
-    main: "End of transmission",
-    sub: "Beep boop. Add moments to extend transmission.",
-  },
-];
 
 interface ImmersiveMomentViewProps {
   moments: MomentWithProfile[];
@@ -140,6 +81,9 @@ export function ImmersiveMomentView({
   const containerRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const t = useTranslations("moments");
+  const common = useTranslations("common");
+  const locale = useLocale();
+  const format = useFormatter();
   const { share: nativeShare } = useShare();
 
   const moment = moments[currentIndex];
@@ -153,11 +97,6 @@ export function ImmersiveMomentView({
     }
   }, [moments.length, currentIndex]);
 
-  // Get random phrase (memoized to stay consistent during session)
-  const endPhrase = useMemo(() => {
-    return END_PHRASES[Math.floor(Math.random() * END_PHRASES.length)];
-  }, []);
-
   // Extract unique contributors from moments
   const contributors = useMemo(() => {
     const seen = new Set<string>();
@@ -170,10 +109,9 @@ export function ImmersiveMomentView({
       .map((m) => ({
         id: m.user_id,
         avatar: m.avatar_url,
-        name: m.display_name || m.username || "Anonymous",
-      }))
-      .slice(0, 8); // Max 8 avatars for visual balance
-  }, [moments]);
+        name: m.display_name || m.username || common("anonymous"),
+      }));
+  }, [moments, common]);
 
   // Fetch current user on mount
   useEffect(() => {
@@ -321,8 +259,8 @@ export function ImmersiveMomentView({
 
   // Share
   const handleShare = () => {
-    const url = `${window.location.origin}/events/${eventSlug}/moments/${moment.id}`;
-    nativeShare({ title: "Moment", url });
+    const url = `${window.location.origin}${locale === "en" ? "" : `/${locale}`}/events/${eventSlug}/moments/${moment.id}`;
+    nativeShare({ title: t("moments"), url });
   };
 
   // Handle empty moments array (e.g., filter returned no results)
@@ -330,15 +268,15 @@ export function ImmersiveMomentView({
     return (
       <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
         <div className="text-center text-white max-w-sm mx-4">
-          <p className="text-lg mb-2">No moments to show</p>
+          <p className="text-lg mb-2">{t("noMoments")}</p>
           <p className="text-white/60 text-sm mb-6">
-            Try changing your filter or check back later
+            {t("searchNoResultsHint")}
           </p>
           <button
             onClick={onClose}
             className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 transition-all text-white font-medium"
           >
-            Close
+            {t("lightbox.close")}
           </button>
         </div>
       </div>
@@ -571,12 +509,10 @@ export function ImmersiveMomentView({
               />
               <div>
                 <p className="text-white font-medium text-sm">
-                  {moment.display_name || moment.username || "Anonymous"}
+                  {moment.display_name || moment.username || common("anonymous")}
                 </p>
                 <p className="text-white/60 text-xs">
-                  {formatDistanceToNow(new Date(moment.created_at), {
-                    addSuffix: true,
-                  })}
+                  {format.relativeTime(new Date(moment.created_at), new Date())}
                 </p>
               </div>
             </div>
@@ -667,22 +603,20 @@ export function ImmersiveMomentView({
           <div className="relative max-w-sm mx-4 text-center">
             {/* Main message */}
             <h2 className="text-2xl font-bold text-white mb-2 animate-in slide-in-from-bottom-4 duration-500">
-              {endPhrase.main}
+              {t("albumComplete")}
             </h2>
             <p className="text-white/60 text-sm mb-8 animate-in slide-in-from-bottom-4 duration-500 delay-100">
-              {endPhrase.sub}
+              {t("albumCompleteHint")}
             </p>
 
             {/* Contributors */}
             {contributors.length > 0 && (
               <div className="mb-6 animate-in slide-in-from-bottom-4 duration-500 delay-200">
                 <p className="text-white/40 text-xs uppercase tracking-wider mb-3">
-                  {contributors.length === 1
-                    ? "The star of the show"
-                    : `${contributors.length} contributors made this happen`}
+                  {t("albumContributors", { count: contributors.length })}
                 </p>
                 <div className="flex justify-center -space-x-2">
-                  {contributors.map((c, i) => (
+                  {contributors.slice(0, 8).map((c, i) => (
                     <div
                       key={c.id}
                       className="relative transition-transform hover:scale-110 hover:z-10"
@@ -717,7 +651,7 @@ export function ImmersiveMomentView({
                 className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white text-black font-medium hover:bg-white/90 active:scale-95 transition-all"
               >
                 <RotateCcw className="w-5 h-5" />
-                Watch again
+                {t("replay")}
               </button>
 
               <button
@@ -725,7 +659,7 @@ export function ImmersiveMomentView({
                 className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-gradient-to-r from-pink-500 to-orange-400 text-white font-medium hover:opacity-90 active:scale-95 transition-all"
               >
                 <Camera className="w-5 h-5" />
-                Add your moment
+                {t("addMoment")}
               </button>
 
               <button
@@ -736,14 +670,13 @@ export function ImmersiveMomentView({
                 className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-full bg-white/10 text-white font-medium hover:bg-white/20 active:scale-95 transition-all"
               >
                 <Grid3X3 className="w-5 h-5" />
-                Browse all moments
+                {t("viewAll")}
               </button>
             </div>
 
             {/* Stats */}
             <p className="mt-6 text-white/30 text-xs animate-in slide-in-from-bottom-4 duration-500 delay-500">
-              {moments.length} moment{moments.length !== 1 ? "s" : ""} in this
-              album
+              {t("albumStats", { count: totalCount ?? moments.length })}
             </p>
           </div>
 

@@ -5,6 +5,7 @@ vi.mock("@/lib/i18n/routing", () => ({
 }));
 
 import {
+  generateMomentMetadata,
   buildAlternates,
   localeUrl,
   resolveEventIndexableLocales,
@@ -45,4 +46,46 @@ describe("localized metadata URLs", () => {
     expect(resolveEventIndexableLocales([], "vi", true)).toEqual(["vi"]);
     expect(resolveEventIndexableLocales([], "unsupported", true)).toEqual(["en"]);
   });
+});
+
+
+describe("localized moment previews", () => {
+  it("uses localized title and empty-caption fallback throughout social metadata", () => {
+    const metadata = generateMomentMetadata({
+      id: "moment", created_at: "2026-10-21T00:00:00Z", text_content: null,
+      media_url: null, content_type: "photo", user_id: "author",
+      profiles: { display_name: "Slaven", username: "slaven" },
+      events: { title: "Sprachaustausch", slug: "language-exchange" },
+    }, "de", {
+      title: "Ein Moment von Slaven beim Sprachaustausch",
+      fallbackDescription: "Slaven hat einen Moment beim Sprachaustausch geteilt.",
+    });
+    expect(metadata.title).toBe("Ein Moment von Slaven beim Sprachaustausch | ĐàLạt.app");
+    expect(metadata.description).toBe("Slaven hat einen Moment beim Sprachaustausch geteilt.");
+    expect(metadata.openGraph?.title).toBe("Ein Moment von Slaven beim Sprachaustausch");
+    expect(metadata.twitter?.description).toBe(metadata.description);
+    expect(metadata.alternates?.canonical).toBe("https://dalat.app/de/events/language-exchange/moments/moment");
+  });
+});
+
+
+it("retains short localized captions instead of replacing them with English SEO filler", () => {
+  const metadata = generateMomentMetadata({
+    id: "moment", created_at: "2026-10-21T00:00:00Z", text_content: "Ein schöner Abend!",
+    media_url: null, content_type: "photo", user_id: "author",
+    events: { title: "Sprachaustausch", slug: "exchange" },
+  }, "de", { title: "Ein Moment", fallbackDescription: "Ein geteilter Moment." });
+  expect(metadata.description).toBe("Ein schöner Abend!");
+  expect(metadata.openGraph?.description).toBe("Ein schöner Abend!");
+});
+
+
+it("does not append English SEO suffixes to longer localized captions", () => {
+  const caption = "Ein gemeinsamer Abend mit Gesprächen, Musik und neuen Freunden.";
+  const metadata = generateMomentMetadata({
+    id: "moment", created_at: "2026-10-21T00:00:00Z", text_content: caption,
+    media_url: null, content_type: "photo", user_id: "author",
+    events: { title: "Sprachaustausch", slug: "exchange" },
+  }, "de", { title: "Ein Moment", fallbackDescription: "Ein geteilter Moment." });
+  expect(metadata.description).toBe(caption);
 });

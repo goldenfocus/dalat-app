@@ -1,5 +1,7 @@
 import { Link } from "@/lib/i18n/routing";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { getEventTranslationsBatch } from "@/lib/translations";
+import { OriginalText } from "@/components/ui/original-text";
 import { Calendar, MapPin, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
@@ -42,7 +44,14 @@ export async function MoreAtVenue({
 
   if (!events || events.length === 0) return null;
 
-  const t = await getTranslations("events");
+  const resolvedLocale = locale || ((await getLocale()) as Locale);
+  const [t, translatedTitles] = await Promise.all([
+    getTranslations({ locale: resolvedLocale, namespace: "events" }),
+    getEventTranslationsBatch(
+      events.map((event) => event.id),
+      resolvedLocale,
+    ),
+  ]);
 
   return (
     <Card>
@@ -65,31 +74,37 @@ export async function MoreAtVenue({
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0 space-y-3">
-        {events.map((event) => (
-          <Link
-            key={event.id}
-            href={`/events/${event.slug}`}
-            className="block p-3 -mx-3 rounded-lg hover:bg-muted transition-colors"
-          >
-            <div className="flex gap-3">
-              {event.image_url && (
-                <img
-                  src={event.image_url}
-                  alt=""
-                  className="w-12 h-12 rounded object-cover shrink-0"
-                />
-              )}
-              <div className="min-w-0">
-                <p className="font-medium truncate">{event.title}</p>
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Calendar className="w-3 h-3" />
-                  {formatInDaLat(event.starts_at, "MMM d", locale)}
-                  {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
-                </p>
-              </div>
+        {events.map((event) => {
+          const title = translatedTitles.get(event.id)?.title || event.title;
+          return (
+            <div key={event.id}>
+              <Link
+                href={`/events/${event.slug}`}
+                className="block p-3 -mx-3 rounded-lg hover:bg-muted transition-colors"
+              >
+                <div className="flex gap-3">
+                  {event.image_url && (
+                    <img
+                      src={event.image_url}
+                      alt=""
+                      className="w-12 h-12 rounded object-cover shrink-0"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <p className="font-medium truncate">{title}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {formatInDaLat(event.starts_at, "MMM d", resolvedLocale)}
+                      {event.location_name &&
+                        ` · ${decodeUnicodeEscapes(event.location_name)}`}
+                    </p>
+                  </div>
+                </div>
+              </Link>
+              {title !== event.title && <OriginalText text={event.title} />}
             </div>
-          </Link>
-        ))}
+          );
+        })}
 
         <Link
           href={`/venues/${venueSlug}`}

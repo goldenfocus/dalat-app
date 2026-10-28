@@ -2,6 +2,8 @@ import { render } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import type { Event, EventSeries } from "@/lib/types";
 import {
+  generateCinemaAlbumSchema,
+  generateMomentSchema,
   generateEventSchema,
   generateEventSeriesSchema,
   JsonLd,
@@ -352,4 +354,36 @@ describe("generateEventSeriesSchema", () => {
       }),
     ]);
   });
+});
+
+
+describe("localized album schema", () => {
+  it("keeps album, event, video and action prose in the requested language", () => {
+    const schema = generateCinemaAlbumSchema(makeEvent({ title: "Sprachaustausch" }), [{
+      id: "video", content_type: "video", media_url: "https://media.example/video.mp4",
+      created_at: "2026-10-21T00:00:00Z", display_name: "Slaven", username: "slaven",
+    }], 1, "de", {
+      title: "Sprachaustausch — 1 Moment", description: "Fotos und Videos vom Sprachaustausch.",
+      viewLabel: "Momente ansehen",
+    });
+    expect(schema.name).toBe("Sprachaustausch — 1 Moment");
+    expect(schema.description).toBe("Fotos und Videos vom Sprachaustausch.");
+    expect(schema.isPartOf.name).toBe("Sprachaustausch");
+    expect(schema.video && schema.video[0].name).toBe("Sprachaustausch");
+    expect(schema.potentialAction.name).toBe("Momente ansehen");
+    expect(schema.url).toContain("/de/events/");
+  });
+});
+
+
+it("uses localized moment text and its event-scoped canonical in structured data", () => {
+  const schema = generateMomentSchema({
+    id: "moment", user_id: "author", created_at: "2026-10-21T00:00:00Z",
+    text_content: "Ein schöner Abend!", content_type: "video", media_url: "https://media.example/video.mp4",
+    events: makeEvent({ title: "Sprachaustausch" }),
+  } as Parameters<typeof generateMomentSchema>[0], "de", "Ein Moment beim Sprachaustausch");
+  expect(schema.headline).toBe("Ein Moment beim Sprachaustausch");
+  expect(schema.articleBody).toBe("Ein schöner Abend!");
+  expect(schema.url).toBe("https://dalat.app/de/events/truthful-event/moments/moment");
+  expect((schema.video as { name: string }).name).toBe(schema.headline);
 });
