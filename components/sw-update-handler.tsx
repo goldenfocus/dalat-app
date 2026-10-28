@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 import { isMomentUploadActive } from "@/lib/uploads/activity";
+import { isArrivalWorkspacePath } from "@/lib/arrival/navigation";
 
 /**
  * Listens for service worker updates and automatically reloads the page.
@@ -33,7 +34,7 @@ export function SwUpdateHandler() {
             `[App] New version available: ${event.data.version}, reloading...`,
           );
           // Apply the update on the next navigation; never interrupt a private recording.
-          if (!isExperienceEditorPath(window.location.pathname) && !isMomentUploadActive())
+          if (!isExperienceEditorPath(window.location.pathname) && !isArrivalWorkspacePath(window.location.pathname) && !isMomentUploadActive())
             window.location.reload();
         } else {
           console.log(
@@ -50,7 +51,7 @@ export function SwUpdateHandler() {
       if (hadInitialController.current) {
         console.log("[App] Service worker controller changed, reloading...");
         // Apply the update on the next navigation; never interrupt a private recording.
-        if (!isExperienceEditorPath(window.location.pathname) && !isMomentUploadActive())
+        if (!isExperienceEditorPath(window.location.pathname) && !isArrivalWorkspacePath(window.location.pathname) && !isMomentUploadActive())
           window.location.reload();
       } else {
         console.log("[App] First-time SW activation, skipping reload");

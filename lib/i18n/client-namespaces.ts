@@ -32,6 +32,7 @@ export const CLIENT_NAMESPACES = [
   "activity",
   "adminActivityGraph",
   "archive",
+  "arrival",
   "attendees",
   "auth",
   "calendar",

@@ -1,0 +1,42 @@
+# Event arrival and venue orders
+
+Guest: `/events/<slug>/arrive`. Staff: `/events/<slug>/host`.
+
+The Social House language-exchange series is opted in. Other events default off;
+`events.arrival_enabled` controls each occurrence. New occurrences inherit the
+series setting at insertion. This is deliberately independent of publishing.
+
+The event creator, venue owner/editor and site administrators can open **Team**
+and add an existing account by its exact username. Welcome staff can check guests
+in. Order takers can also take and progress orders. Event managers can assign
+roles. All access is event-scoped and uses each person's own login.
+
+At the door, open **Arrivals**, show the QR, or find an RSVP/add a walk-in.
+The QR leads only to the public guest flow and grants no staff access. A guest
+can finish without creating an account. Arrival opens six hours before the event
+and closes two hours after its end. Keep a paper list when connectivity fails;
+do not promise a successful check-in or accepted order until the screen confirms.
+
+**Orders** shows a shared queue, refreshing every five seconds while visible.
+Accept → mark served. Payment is recorded separately when collected at the venue.
+Existing orders are shown before staff can accidentally duplicate them. A missing
+refresh is visible with the last successful update time. No online payments,
+newsletter enrollment or cross-app account linking are performed.
+
+## Release and security checks
+
+- `bash scripts/test-arrival-sql.sh`: disposable PostgreSQL tests, including real
+  concurrent requests, role boundaries, server pricing and legacy preorders.
+- `npx vitest run lib/arrival components/arrival`
+- `node scripts/check-data-api-grants.mjs`
+- `node scripts/check-translation-catalogs.mjs`
+- Normal typecheck, lint, build and live mobile guest/staff checks.
+
+Migrations `20261121_001_event_arrival.sql` and
+`20261122_001_event_arrival_opt_in.sql` were applied via the repository's
+Management API SQL runner. A production-schema check-in/order/payment test was
+performed inside a rolled-back transaction before the first migration was applied.
+The tables and RPCs are service-only. API routes validate the signed-in staff
+identity, enforce same-origin mutations and keep guest secrets in HttpOnly cookies.
+Private nicknames, staff records and order notes never enter public translations.
+Public menu labels reuse the existing translated menu sources and original controls.

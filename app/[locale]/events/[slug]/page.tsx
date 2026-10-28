@@ -74,6 +74,7 @@ import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { EventPreorderCard } from "@/components/menu/event-preorder-card";
+import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { decodeUnicodeEscapes } from "@/lib/utils";
@@ -1588,6 +1589,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   sourceMetadata={event.source_metadata ?? null}
                 />
               )}
+
+              {event.arrival_enabled && !isPast && <Suspense fallback={null}>
+                <EventArrivalCard slug={event.slug} />
+              </Suspense>}
 
               {/* Sponsors */}
               {sponsors.length > 0 && <SponsorDisplay sponsors={sponsors} />}

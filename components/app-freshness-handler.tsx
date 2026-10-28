@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { isMomentUploadActive } from "@/lib/uploads/activity";
+import { isArrivalWorkspacePath } from "@/lib/arrival/navigation";
 
 export const LIVE_DATA_REFRESH_INTERVAL_MS = 60_000;
 export const LIVE_DATA_REFRESH_THROTTLE_MS = 10_000;
@@ -18,7 +19,7 @@ const NON_REFRESHABLE_EVENT_ROUTES =
 export function isLiveDataPath(pathname: string): boolean {
   const path = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, "") || "/";
 
-  if (NON_REFRESHABLE_EVENT_ROUTES.test(path)) return false;
+  if (NON_REFRESHABLE_EVENT_ROUTES.test(path) || isArrivalWorkspacePath(path)) return false;
 
   return (
     path === "/" ||

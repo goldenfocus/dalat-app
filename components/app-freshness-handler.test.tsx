@@ -34,6 +34,8 @@ describe("isLiveDataPath", () => {
   it("does not interrupt forms or unrelated pages", () => {
     expect(isLiveDataPath("/events/new")).toBe(false);
     expect(isLiveDataPath("/vi/events/some-event/edit")).toBe(false);
+    expect(isLiveDataPath("/vi/events/some-event/arrive")).toBe(false);
+    expect(isLiveDataPath("/events/some-event/host")).toBe(false);
     expect(isLiveDataPath("/settings")).toBe(false);
     expect(isLiveDataPath("/blog/a-story")).toBe(false);
   });

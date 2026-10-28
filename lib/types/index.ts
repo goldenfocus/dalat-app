@@ -538,6 +538,8 @@ export interface InviteResult {
 }
 
 export interface Event {
+  /** Opt-in guest arrival and venue ordering workspace. */
+  arrival_enabled?: boolean;
   id: string;
   slug: string;
   previous_slugs: string[];

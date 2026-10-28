@@ -25,7 +25,7 @@ const isCacheablePage = (pathname) => {
   // Strip the optional 2-letter locale prefix (/vi/events/x → /events/x)
   const path = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '') || '/';
   // Auth-gated sub-routes under the public prefixes render user-specific HTML
-  if (/\/(?:new|edit|settings|moderation|responses|checkin|reconfirmation|questionnaire|broadcast|pro-upload|download)(?:\/|$)/.test(path)) {
+  if (/\/(?:new|edit|settings|moderation|responses|checkin|arrive|host|reconfirmation|questionnaire|broadcast|pro-upload|download)(?:\/|$)/.test(path)) {
     return false;
   }
   return path === '/' || /^\/(?:events|venues|map|moments)(?:\/|$)/.test(path);
