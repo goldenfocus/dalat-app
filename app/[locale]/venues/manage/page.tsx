@@ -8,12 +8,14 @@ import { managedVenues } from "@/lib/venues/managed";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { OriginalText } from "@/components/ui/original-text";
 import { formatInDaLatAsync } from "@/lib/timezone";
+import { generateLocalizedMetadata } from "@/lib/metadata";
 import type { Locale } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
-export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations("userMenu");
-  return { title: t("myVenues"), robots: { index: false, follow: false } };
+export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "userMenu" });
+  return { ...generateLocalizedMetadata({ locale, path: "/venues/manage", title: t("myVenues") }), robots: { index: false, follow: false } };
 }
 
 export default async function ManageVenuesPage({ params }: { params: Promise<{ locale: Locale }> }) {
