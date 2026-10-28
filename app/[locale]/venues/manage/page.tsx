@@ -15,7 +15,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ locale: Locale }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "userMenu" });
-  return { ...generateLocalizedMetadata({ locale, path: "/venues/manage", title: t("myVenues") }), robots: { index: false, follow: false } };
+  return { ...generateLocalizedMetadata({ locale, path: "/venues/manage", title: t("myVenues"), description: t("myVenues") }), robots: { index: false, follow: false } };
 }
 
 export default async function ManageVenuesPage({ params }: { params: Promise<{ locale: Locale }> }) {
