@@ -44,6 +44,17 @@ describe('locale routing', () => {
     vi.mocked(createServerClient).mockReset();
   });
 
+  it('keeps venue management out of legacy public venue redirects', async () => {
+    for (const path of ['/venues/manage', '/en/venues/manage', '/vi/venues/manage', '/fr/venues/manage']) {
+      const response = await updateSession(request(path));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('location')).toBeNull();
+    }
+    const venue = await updateSession(request('/venues/social-house-dalat'));
+    expect(venue.status).toBe(301);
+    expect(venue.headers.get('location')).toBe('https://dalat.app/social-house-dalat');
+  });
+
   it('redirects the homepage to Spanish for a Spanish browser', async () => {
     const response = await updateSession(request('/', {
       acceptLanguage: 'es-ES,es;q=0.9,en;q=0.8',

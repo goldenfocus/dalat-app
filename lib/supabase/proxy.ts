@@ -252,7 +252,7 @@ export async function updateSession(request: NextRequest) {
   // Default locale redirects to the unprefixed vanity URL (localePrefix: 'as-needed'),
   // otherwise intlMiddleware bounces /en/[slug] a second time.
   const legacyVenueMatch = pathname.match(/^(?:\/([a-z]{2}))?\/venues\/([a-zA-Z0-9_-]+)$/);
-  if (legacyVenueMatch) {
+  if (legacyVenueMatch && legacyVenueMatch[2] !== "manage") {
     const [, locale, venueSlug] = legacyVenueMatch;
     const prefix = locale && locale !== routing.defaultLocale ? `/${locale}` : '';
     const url = new URL(`${prefix}/${venueSlug}`, request.url);
