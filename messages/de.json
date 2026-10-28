@@ -4275,5 +4275,27 @@
       "saveLimit": "Limit speichern",
       "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen."
     }
+  },
+  "eventPractice": {
+    "title": "Gemeinsam üben",
+    "ready": "{count} Personen eingecheckt · Alle nehmen automatisch teil.",
+    "duration": "Minuten",
+    "start": "Übung starten",
+    "starting": "Startet…",
+    "nextRound": "Nächste Runde starten",
+    "needTwo": "Mindestens zwei Personen müssen eingecheckt sein.",
+    "error": "Aktualisierung fehlgeschlagen. Bitte vor dem nächsten Versuch neu laden.",
+    "refresh": "Aktualisieren",
+    "round": "Runde {number}",
+    "timeUp": "Zeit vorbei — wartet auf die Leitung.",
+    "group": "Gruppe {number}",
+    "practice": "Probiert es gemeinsam",
+    "prompt0": "Stellt euch vor. Fragt nach dem Namen und der Herkunft.",
+    "prompt1": "Bestellt ein Getränk. Fragt nach dem Preis und tauscht die Rollen.",
+    "prompt2": "Was gefällt euch an Đà Lạt? Stellt eine weitere Frage.",
+    "swap": "Wechselt euch ab. Helft eurem Gegenüber in der Sprache, die es lernt.",
+    "nextPrompt": "Nächste Aufgabe",
+    "waiting": "Du bist eingecheckt. Deine Zuteilung erscheint, sobald die Runde startet.",
+    "nextWaiting": "Du bist eingecheckt. Die Leitung nimmt dich in die nächste Runde auf."
   }
 }

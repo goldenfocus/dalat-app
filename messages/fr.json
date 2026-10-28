@@ -4275,5 +4275,27 @@
       "saveLimit": "Enregistrer la limite",
       "saveFailed": "Enregistrement impossible. Réessayez."
     }
+  },
+  "eventPractice": {
+    "title": "Pratiquons ensemble",
+    "ready": "{count} personnes présentes · Tout le monde participe automatiquement.",
+    "duration": "Minutes",
+    "start": "Commencer la pratique",
+    "starting": "Démarrage…",
+    "nextRound": "Commencer le tour suivant",
+    "needTwo": "Au moins deux personnes doivent être présentes.",
+    "error": "Mise à jour impossible. Actualisez avant de réessayer.",
+    "refresh": "Actualiser",
+    "round": "Tour {number}",
+    "timeUp": "Temps écoulé — attendez l’animateur.",
+    "group": "Groupe {number}",
+    "practice": "Essayez ensemble",
+    "prompt0": "Présentez-vous. Demandez à votre partenaire son nom et d’où il vient.",
+    "prompt1": "Commandez une boisson. Demandez le prix, puis échangez les rôles.",
+    "prompt2": "Qu’aimez-vous à Đà Lạt ? Posez une question complémentaire.",
+    "swap": "Parlez à tour de rôle. Aidez votre partenaire dans la langue qu’il apprend.",
+    "nextPrompt": "Sujet suivant",
+    "waiting": "Votre présence est confirmée. Votre partenaire apparaîtra au début du tour.",
+    "nextWaiting": "Votre présence est confirmée. L’animateur vous inclura au prochain tour."
   }
 }

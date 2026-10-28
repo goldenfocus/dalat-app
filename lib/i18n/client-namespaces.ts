@@ -46,6 +46,7 @@ export const CLIENT_NAMESPACES = [
   "contacts",
   "errors",
   "eventActions",
+  "eventPractice",
   "eventForm",
   "eventSettings",
   "eventTags",

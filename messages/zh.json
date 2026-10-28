@@ -4275,5 +4275,27 @@
       "saveLimit": "保存限额",
       "saveFailed": "保存失败，请重试。"
     }
+  },
+  "eventPractice": {
+    "title": "一起练习",
+    "ready": "{count}人已签到 · 所有人自动参与。",
+    "duration": "分钟",
+    "start": "开始练习",
+    "starting": "正在开始…",
+    "nextRound": "开始下一轮",
+    "needTwo": "至少需要两人签到。",
+    "error": "无法更新。请刷新后重试。",
+    "refresh": "刷新",
+    "round": "第{number}轮",
+    "timeUp": "时间到了 — 请等待主持人。",
+    "group": "第{number}组",
+    "practice": "一起试试",
+    "prompt0": "介绍自己。问问对方的名字和来自哪里。",
+    "prompt1": "点一杯饮料，询问价格，然后交换角色。",
+    "prompt2": "你喜欢大叻的什么？再追问一个问题。",
+    "swap": "轮流说话。帮助对方使用正在学习的语言表达。",
+    "nextPrompt": "下一个话题",
+    "waiting": "你已签到。主持人开始后将显示你的搭档。",
+    "nextWaiting": "你已签到。主持人将在下一轮为你配对。"
   }
 }

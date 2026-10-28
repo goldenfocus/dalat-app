@@ -4275,5 +4275,27 @@
       "saveLimit": "Save limit",
       "saveFailed": "Couldn’t save. Please try again."
     }
+  },
+  "eventPractice": {
+    "title": "Practice together",
+    "ready": "{count} checked in · Everyone is included automatically.",
+    "duration": "Minutes",
+    "start": "Start practice",
+    "starting": "Starting…",
+    "nextRound": "Start next round",
+    "needTwo": "At least two people must be checked in.",
+    "error": "Could not update. Refresh before trying again.",
+    "refresh": "Refresh",
+    "round": "Round {number}",
+    "timeUp": "Time to switch — wait for the host.",
+    "group": "Group {number}",
+    "practice": "Try this together",
+    "prompt0": "Introduce yourself. Ask your partner’s name and where they are from.",
+    "prompt1": "Order a drink. Ask the price, then change roles.",
+    "prompt2": "What do you enjoy about Đà Lạt? Ask a follow-up question.",
+    "swap": "Take turns. Help your partner say it in the language they are learning.",
+    "nextPrompt": "Next prompt",
+    "waiting": "You’re checked in. Your partner will appear when the host starts.",
+    "nextWaiting": "You’re checked in. The host will include you in the next round."
   }
 }

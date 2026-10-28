@@ -9,6 +9,7 @@ import { HostOrders } from "./host-orders";
 import { HostTeam } from "./host-team";
 import { DrinkOfferSettings } from "./drink-offer-settings";
 import { SponsorLedger } from "./sponsor-ledger";
+import { EventPractice } from "@/components/practice/event-practice";
 import type { HostData } from "./host-types";
 
 type Tab = "arrivals" | "orders" | "sponsor" | "team";
@@ -92,6 +93,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
       </Link>
       <h1 className="text-3xl font-semibold tracking-tight">{t("staffDesk")}</h1>
       {data && <p className="mt-2 text-muted-foreground">{data.event.title}{data.event.venueName ? ` · ${data.event.venueName}` : ""}</p>}
+      {data && /^language-exchange-social-house-z8oc-\d{8}$/.test(slug) && <EventPractice slug={slug} />}
       {forbidden ? <section className="mt-8 border-l-2 border-destructive p-4"><h2 className="font-semibold">{t("hostForbidden")}</h2><p className="mt-2 text-sm text-muted-foreground">{t("hostAskAccess")}</p></section> : <>
         <div className="my-5 flex flex-wrap items-center justify-between gap-2 border-y py-2">
           <p className="text-xs text-muted-foreground" role="status">{lastUpdated ? t("hostUpdated", { time: lastUpdated.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" }) }) : t("loading")}</p>

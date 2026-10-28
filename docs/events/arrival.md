@@ -40,3 +40,20 @@ The tables and RPCs are service-only. API routes validate the signed-in staff
 identity, enforce same-origin mutations and keep guest secrets in HttpOnly cookies.
 Private nicknames, staff records and order notes never enter public translations.
 Public menu labels reuse the existing translated menu sources and original controls.
+
+## Practice rounds
+
+The Social House event page and staff desk include **Start practice** for staff who
+can welcome guests. The server includes every existing arrival and legacy checked-in
+RSVP, deduplicated by account; nobody checks in twice. Language preferences guide
+pairing, repeat partners are avoided when possible, and an odd attendee joins a trio.
+The host controls round changes; late arrivals enter on the next round.
+
+Participants use the same DaLat event page and their existing login or guest receipt
+to see only their assigned group and practice prompts. Staff see all groups and can
+announce partners for guests without phones. The separate EZViet practice room is
+independent; this event-page flow does not require joining it. All group data stays
+in the service-only `event_practice_rooms` table; compare-and-swap updates prevent
+two staff members from starting the same round twice. Private names are excluded
+from public translation storage. UI and prompt instructions cover all 12 locales;
+Vietnamese/English example phrases intentionally preserve their teaching language.

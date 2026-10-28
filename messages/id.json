@@ -4275,5 +4275,27 @@
       "saveLimit": "Simpan batas",
       "saveFailed": "Gagal menyimpan. Coba lagi."
     }
+  },
+  "eventPractice": {
+    "title": "Berlatih bersama",
+    "ready": "{count} orang sudah check-in · Semua otomatis ikut.",
+    "duration": "Menit",
+    "start": "Mulai latihan",
+    "starting": "Memulai…",
+    "nextRound": "Mulai putaran berikutnya",
+    "needTwo": "Setidaknya dua orang harus check-in.",
+    "error": "Tidak dapat memperbarui. Muat ulang sebelum mencoba lagi.",
+    "refresh": "Muat ulang",
+    "round": "Putaran {number}",
+    "timeUp": "Waktu habis — tunggu pemandu.",
+    "group": "Kelompok {number}",
+    "practice": "Coba bersama",
+    "prompt0": "Perkenalkan diri. Tanyakan nama pasangan dan asalnya.",
+    "prompt1": "Pesan minuman. Tanyakan harganya, lalu bertukar peran.",
+    "prompt2": "Apa yang kamu sukai dari Đà Lạt? Ajukan pertanyaan lanjutan.",
+    "swap": "Bergantian. Bantu pasangan berbicara dalam bahasa yang sedang dipelajari.",
+    "nextPrompt": "Topik berikutnya",
+    "waiting": "Kamu sudah check-in. Pasangan akan muncul saat pemandu memulai.",
+    "nextWaiting": "Kamu sudah check-in. Pemandu akan menyertakanmu pada putaran berikutnya."
   }
 }

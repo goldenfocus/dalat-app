@@ -4275,5 +4275,27 @@
       "saveLimit": "Lưu giới hạn",
       "saveFailed": "Không lưu được. Vui lòng thử lại."
     }
+  },
+  "eventPractice": {
+    "title": "Cùng luyện nói",
+    "ready": "{count} người đã điểm danh · Tất cả được tự động tham gia.",
+    "duration": "Phút",
+    "start": "Bắt đầu luyện nói",
+    "starting": "Đang bắt đầu…",
+    "nextRound": "Bắt đầu vòng tiếp",
+    "needTwo": "Cần ít nhất hai người đã điểm danh.",
+    "error": "Không thể cập nhật. Hãy làm mới trước khi thử lại.",
+    "refresh": "Làm mới",
+    "round": "Vòng {number}",
+    "timeUp": "Hết giờ — chờ người dẫn.",
+    "group": "Nhóm {number}",
+    "practice": "Cùng thử nhé",
+    "prompt0": "Giới thiệu bản thân. Hỏi tên và quê quán của bạn tập.",
+    "prompt1": "Gọi một món uống. Hỏi giá, rồi đổi vai.",
+    "prompt2": "Bạn thích điều gì ở Đà Lạt? Hỏi thêm một câu.",
+    "swap": "Thay phiên nhau. Giúp bạn tập nói bằng ngôn ngữ họ đang học.",
+    "nextPrompt": "Câu tiếp theo",
+    "waiting": "Bạn đã điểm danh. Bạn tập sẽ hiện khi người dẫn bắt đầu.",
+    "nextWaiting": "Bạn đã điểm danh. Người dẫn sẽ ghép bạn vào vòng tiếp."
   }
 }

@@ -76,6 +76,7 @@ import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
 import { StaffDeskEntry } from "@/components/arrival/staff-desk-entry";
+import { EventPractice } from "@/components/practice/event-practice";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
@@ -1528,6 +1529,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             )}
           </div>
           {event.arrival_enabled && <StaffDeskEntry slug={event.slug} />}
+          {event.arrival_enabled && /^language-exchange-social-house-z8oc-\d{8}$/.test(event.slug) && <EventPractice slug={event.slug} />}
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
             {/* Main content */}
             <div className="min-w-0 lg:col-span-2 space-y-6">

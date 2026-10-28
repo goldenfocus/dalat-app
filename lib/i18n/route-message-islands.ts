@@ -125,6 +125,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
       "attendees",
       "calendar",
       "eventActions",
+      "eventPractice",
       "eventTags",
       "feedback",
       "promo",

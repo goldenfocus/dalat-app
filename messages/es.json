@@ -4275,5 +4275,27 @@
       "saveLimit": "Guardar límite",
       "saveFailed": "No se pudo guardar. Inténtalo de nuevo."
     }
+  },
+  "eventPractice": {
+    "title": "Practiquemos juntos",
+    "ready": "{count} personas registradas · Todas participan automáticamente.",
+    "duration": "Minutos",
+    "start": "Empezar a practicar",
+    "starting": "Empezando…",
+    "nextRound": "Empezar la siguiente ronda",
+    "needTwo": "Deben estar registradas al menos dos personas.",
+    "error": "No se pudo actualizar. Actualiza antes de volver a intentarlo.",
+    "refresh": "Actualizar",
+    "round": "Ronda {number}",
+    "timeUp": "Se acabó el tiempo — espera al anfitrión.",
+    "group": "Grupo {number}",
+    "practice": "Probad juntos",
+    "prompt0": "Preséntate. Pregunta a tu compañero su nombre y de dónde es.",
+    "prompt1": "Pide una bebida. Pregunta el precio y luego cambiad los papeles.",
+    "prompt2": "¿Qué te gusta de Đà Lạt? Haz otra pregunta relacionada.",
+    "swap": "Hablad por turnos. Ayuda a tu compañero en el idioma que aprende.",
+    "nextPrompt": "Siguiente tema",
+    "waiting": "Ya estás registrado. Tu compañero aparecerá cuando empiece la ronda.",
+    "nextWaiting": "Ya estás registrado. El anfitrión te incluirá en la siguiente ronda."
   }
 }
