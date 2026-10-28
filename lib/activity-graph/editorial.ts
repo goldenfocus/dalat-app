@@ -1,7 +1,7 @@
 import { aiChatJson } from "@/lib/ai/provider";
 import type { ExtractedActivity } from "./types";
 
-/** Facts that should change the public description. Order is part of the hash. */
+/** Facts that should change the public description. */
 export function activityExplanationFacts(
   activity: Pick<
     ExtractedActivity,
@@ -63,7 +63,28 @@ export function shouldReuseStoredExplanation(
       (stored.locationName ?? "") === (activity.locationName ?? "")
     );
   }
-  return JSON.stringify(stored.facts) === JSON.stringify(activityExplanationFacts(activity));
+  return (
+    canonicalJson(stored.facts) ===
+    canonicalJson(activityExplanationFacts(activity))
+  );
+}
+
+/**
+ * Key-order-insensitive JSON. Stored facts come back from a jsonb column,
+ * which reorders object keys, so a plain JSON.stringify comparison never
+ * matched and every hourly refresh re-ran the AI explanation.
+ */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(",")}]`;
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, item]) => item !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries
+      .map(([key, item]) => `${JSON.stringify(key)}:${canonicalJson(item)}`)
+      .join(",")}}`;
+  }
+  return JSON.stringify(value ?? null);
 }
 
 /** Write original explanatory copy from evidence, never from generated images. */
