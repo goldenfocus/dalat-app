@@ -13,7 +13,6 @@ import type { Metadata } from "next";
 export const maxDuration = 60;
 import {
   Calendar,
-  MapPin,
   Users,
   ExternalLink,
   Link2,
@@ -61,7 +60,8 @@ import { EventSettingsSheet } from "@/components/events/event-settings-sheet";
 import { InviteModal } from "@/components/events/invite-modal";
 import { EventShareButton } from "@/components/events/event-share-button";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
-import { CopyAddress } from "@/components/events/copy-address";
+import { EventLocation } from "@/components/events/event-location";
+import { LOCATION_VENUE_FIELDS, resolveEventLocation, type LocationVenue } from "@/lib/events/location";
 import { ConfirmAttendanceHandler } from "@/components/events/confirm-attendance-handler";
 import { AttendeeList } from "@/components/events/attendee-list";
 import { ReconfirmationBadge } from "@/components/events/reconfirmation-badge";
@@ -77,7 +77,6 @@ import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
 import { Linkify } from "@/lib/linkify";
 import { ExpandableText } from "@/components/ui/expandable-text";
-import { decodeUnicodeEscapes } from "@/lib/utils";
 import { MomentsPreview, PastEventMomentsShowcase } from "@/components/moments";
 import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { getEventQuestionnaireServer } from "@/lib/questionnaire-server";
@@ -121,19 +120,23 @@ export async function generateMetadata({
   const supabase = createStaticClient();
   if (!supabase) return { title: "Event" };
 
-  const { data: event } = await supabase
+  const { data: row } = await supabase
     .from("events")
     .select(
-      "id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, tribe_id, tribe_visibility",
+      `id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, is_online, tribe_id, tribe_visibility, venue_id, venues(${LOCATION_VENUE_FIELDS}), event_series(venues(${LOCATION_VENUE_FIELDS}))`,
     )
     .eq("slug", slug)
     .single();
 
-  if (!event) {
+  if (!row) {
     return {
       title: "Event not found",
     };
   }
+
+  // PostgREST returns these many-to-one relations as single records.
+  const joined = row as unknown as { venues: LocationVenue | null; event_series: { venues: LocationVenue | null } | null };
+  const event = resolveEventLocation(row, row.venue_id ? joined.venues : joined.event_series?.venues);
 
   // Get translated content for the current locale
   // Skip translation lookup if viewing in the original language
@@ -275,12 +278,12 @@ type OrganizerWithOwner = Organizer & {
   owner: Pick<Profile, "avatar_url" | "display_name" | "username"> | null;
 };
 
-type VenueInfo = { id: string; slug: string; name: string };
+type VenueInfo = LocationVenue;
 
-type EventWithJoins = Event & {
+type EventWithJoins = Omit<Event, "venues"> & {
   profiles: Profile;
   organizers: OrganizerWithOwner | null;
-  event_series: Pick<EventSeries, "slug" | "title" | "rrule"> | null;
+  event_series: (Pick<EventSeries, "slug" | "title" | "rrule" | "venue_id"> & { venues: LocationVenue | null }) | null;
   venues: VenueInfo | null;
   tribes: (ChipTribe & { id: string }) | null;
 };
@@ -298,13 +301,15 @@ async function getEvent(slug: string): Promise<GetEventResult> {
   const { data: event, error } = await supabase
     .from("events")
     .select(
-      "*, profiles!events_created_by_fkey(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule), venues(id, slug, name), tribes(id, slug, name, cover_image_url, access_type, settings)",
+      `*, profiles!events_created_by_fkey(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule, venue_id, venues(${LOCATION_VENUE_FIELDS})), venues(${LOCATION_VENUE_FIELDS}), tribes(id, slug, name, cover_image_url, access_type, settings)`,
     )
     .eq("slug", slug)
     .single();
 
   if (!error && event) {
-    return { type: "found", event: event as EventWithJoins };
+    const joined = event as EventWithJoins;
+    const venue = joined.venue_id ? joined.venues : joined.event_series?.venues;
+    return { type: "found", event: { ...resolveEventLocation(joined, venue), venues: joined.has_private_details ? null : venue ?? null } };
   }
 
   // If not found, check if this is an old slug that needs redirect
@@ -1052,12 +1057,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     typeof activityMediaMetadata?.activity_media_source_url === "string"
       ? activityMediaMetadata.activity_media_source_url
       : undefined;
-  const [t, tCommon, tPlaylist, tTribes, tNavigation] = await Promise.all([
+  const [t, tCommon, tPlaylist, tTribes, tNavigation, tVenues] = await Promise.all([
     getTranslations("events"),
     getTranslations("common"),
     getTranslations("playlist"),
     getTranslations("tribes"),
     getTranslations("nav"),
+    getTranslations("venues"),
   ]);
 
   const tRecap = await getTranslations("recap");
@@ -1103,8 +1109,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       event.id,
       event.title,
       event.description,
-      (event as Event & { image_alt?: string }).image_alt ?? null,
-      (event as Event & { image_description?: string }).image_description ??
+      (event as { image_alt?: string }).image_alt ?? null,
+      (event as { image_description?: string }).image_description ??
         null,
       event.source_locale,
       locale,
@@ -1173,7 +1179,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   // Generate structured data for SEO and AEO (with translated image metadata)
   const eventSchema = generateEventSchema(
-    event,
+    { ...event, venues: undefined },
     locale,
     counts?.going_spots,
     {
@@ -1207,6 +1213,37 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     locale as Locale,
   );
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
+
+  const locationSummary = (
+    <EventLocation
+      location={{
+        ...event,
+        address: event.address ?? privateDetails?.address ?? null,
+        google_maps_url: event.google_maps_url ?? privateDetails?.google_maps_url ?? null,
+      }}
+      venue={!event.has_private_details && !event.is_online ? event.venues : null}
+      directionsLabel={tVenues("directionsGoogle")}
+      mapLabel={t("viewOnMap")}
+    >
+      {/* Secret address: guests-only extras or the lock hint */}
+      {privateDetails?.arrival_notes && (
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+          <Linkify text={privateDetails.arrival_notes} />
+        </p>
+      )}
+      {event.has_private_details && privateDetails && (
+        <p className="text-xs text-muted-foreground">
+          {t("secretAddressRevealedHint")}
+        </p>
+      )}
+      {event.has_private_details && !privateDetails && (
+        <p className="text-sm text-muted-foreground flex items-center gap-1.5">
+          <Lock className="w-3.5 h-3.5 shrink-0" />
+          {t("secretAddressLockHint")}
+        </p>
+      )}
+    </EventLocation>
+  );
 
   return (
     <CommunityRsvpProvider eventSlug={event.slug} alreadyMember={viewerInTribe}
@@ -1340,6 +1377,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                         )}
                       </Link>
                     )}
+                    {locationSummary}
                     {/* Translation indicator */}
                     {eventTranslations.isTranslated && (
                       <TranslatedFrom
@@ -1494,6 +1532,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                         )}
                       </Link>
                     )}
+                    {locationSummary}
                     {/* Show translation indicator with original */}
                     {eventTranslations.isTranslated && (
                       <TranslatedFrom
@@ -1732,62 +1771,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                             {t("rsvpToSeeMeetingLink")}
                           </p>
                         ) : null}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Location */}
-                  {(event.location_name ||
-                    event.address ||
-                    event.has_private_details) && (
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-5 h-5 text-muted-foreground mt-0.5" />
-                      <div className="space-y-1">
-                        {event.location_name && (
-                          <p className="font-medium">
-                            {decodeUnicodeEscapes(event.location_name)}
-                          </p>
-                        )}
-                        {(event.address || privateDetails?.address) && (
-                          <CopyAddress
-                            address={
-                              (event.address ||
-                                privateDetails?.address) as string
-                            }
-                          />
-                        )}
-                        {(event.google_maps_url ||
-                          privateDetails?.google_maps_url) && (
-                          <a
-                            href={
-                              (event.google_maps_url ||
-                                privateDetails?.google_maps_url) as string
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-primary hover:underline flex items-center gap-1"
-                          >
-                            {t("viewOnMap")}
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        )}
-                        {/* Secret address: guests-only extras or the lock hint */}
-                        {privateDetails?.arrival_notes && (
-                          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
-                            <Linkify text={privateDetails.arrival_notes} />
-                          </p>
-                        )}
-                        {event.has_private_details && privateDetails && (
-                          <p className="text-xs text-muted-foreground">
-                            {t("secretAddressRevealedHint")}
-                          </p>
-                        )}
-                        {event.has_private_details && !privateDetails && (
-                          <p className="text-sm text-muted-foreground flex items-center gap-1.5">
-                            <Lock className="w-3.5 h-3.5 shrink-0" />
-                            {t("secretAddressLockHint")}
-                          </p>
-                        )}
                       </div>
                     </div>
                   )}

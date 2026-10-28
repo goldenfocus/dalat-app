@@ -69,24 +69,23 @@ export function parseCoordinates(input: string): ParsedCoordinates | null {
  * Check if input looks like a Google Maps URL
  */
 export function isGoogleMapsUrl(input: string): boolean {
-  const trimmed = input.trim().toLowerCase();
-  return (
-    trimmed.includes("google.com/maps") ||
-    trimmed.includes("maps.google.com") ||
-    trimmed.includes("goo.gl/maps") ||
-    trimmed.includes("maps.app.goo.gl")
-  );
+  try {
+    const url = new URL(input.trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.port) return false;
+    return (url.hostname === "maps.app.goo.gl")
+      || (url.hostname === "goo.gl" && url.pathname.startsWith("/maps/"))
+      || (url.hostname === "maps.google.com")
+      || ((url.hostname === "google.com" || url.hostname === "www.google.com") && url.pathname.startsWith("/maps"));
+  } catch { return false; }
 }
 
 /**
  * Check if URL is a short Google Maps link that needs resolution
  */
 export function isShortGoogleMapsUrl(input: string): boolean {
-  const trimmed = input.trim().toLowerCase();
-  return (
-    trimmed.includes("goo.gl/maps") ||
-    trimmed.includes("maps.app.goo.gl")
-  );
+  if (!isGoogleMapsUrl(input)) return false;
+  const url = new URL(input.trim());
+  return url.hostname === "maps.app.goo.gl" || url.hostname === "goo.gl";
 }
 
 /**
@@ -101,82 +100,30 @@ export function isShortGoogleMapsUrl(input: string): boolean {
  * - Plus codes like https://www.google.com/maps/place/87P4+XM...
  */
 export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
-  const trimmed = input.trim();
+  let url: URL;
+  try { url = new URL(input.trim()); } catch { return null; }
+  if (!isGoogleMapsUrl(input) || isShortGoogleMapsUrl(input)) return null;
+  let text: string;
+  try { text = decodeURIComponent(url.pathname + url.search); } catch { return null; }
+  const point = (match: RegExpMatchArray | null): ParsedCoordinates | null => {
+    if (!match) return null;
+    const latitude = Number(match[1]), longitude = Number(match[2]);
+    return isValidCoordinate(latitude, longitude)
+      ? { latitude, longitude, source: "google-maps-url" } : null;
+  };
 
-  // Skip short URLs - they need API resolution
-  if (isShortGoogleMapsUrl(trimmed)) {
-    return null;
+  // A place's pin is authoritative. @lat,lng describes only the camera view,
+  // which may be kilometres away after the user pans or zooms before sharing.
+  const pin = point(text.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/));
+  if (pin) return pin;
+  for (const key of ["destination", "query", "q", "ll"]) {
+    const value = url.searchParams.get(key);
+    const coordinates = value && parseCoordinates(value);
+    if (coordinates) return { ...coordinates, source: "google-maps-url" };
   }
-
-  // Pattern 1: /@lat,lng in URL path (most common)
-  // e.g., /maps/@12.345,67.890,15z or /maps/place/Name/@12.345,67.890
-  const atPattern = /@(-?\d+\.?\d*),(-?\d+\.?\d*)/;
-  const atMatch = trimmed.match(atPattern);
-  if (atMatch) {
-    const lat = parseFloat(atMatch[1]);
-    const lng = parseFloat(atMatch[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  // Pattern 2: ?q=lat,lng or &q=lat,lng query parameter
-  const qPattern = /[?&]q=(-?\d+\.?\d*)[,+](-?\d+\.?\d*)/;
-  const qMatch = trimmed.match(qPattern);
-  if (qMatch) {
-    const lat = parseFloat(qMatch[1]);
-    const lng = parseFloat(qMatch[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  // Pattern 3: /search/lat,+lng or /search/lat,lng
-  const searchPattern = /\/search\/(-?\d+\.?\d*)[,+\s]+(-?\d+\.?\d*)/;
-  const searchMatch = trimmed.match(searchPattern);
-  if (searchMatch) {
-    const lat = parseFloat(searchMatch[1]);
-    const lng = parseFloat(searchMatch[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  // Pattern 4: ll=lat,lng parameter (older format)
-  const llPattern = /[?&]ll=(-?\d+\.?\d*),(-?\d+\.?\d*)/;
-  const llMatch = trimmed.match(llPattern);
-  if (llMatch) {
-    const lat = parseFloat(llMatch[1]);
-    const lng = parseFloat(llMatch[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  // Pattern 5: !3d{lat}!4d{lng} in data parameter (common in share URLs)
-  // e.g., data=...!3d11.9002492!4d108.4359672...
-  const dataPattern = /!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
-  const dataMatch = trimmed.match(dataPattern);
-  if (dataMatch) {
-    const lat = parseFloat(dataMatch[1]);
-    const lng = parseFloat(dataMatch[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  // Pattern 6: !8m2!3d{lat}!4d{lng} variant
-  const dataPattern2 = /!8m2!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/;
-  const dataMatch2 = trimmed.match(dataPattern2);
-  if (dataMatch2) {
-    const lat = parseFloat(dataMatch2[1]);
-    const lng = parseFloat(dataMatch2[2]);
-    if (isValidCoordinate(lat, lng)) {
-      return { latitude: lat, longitude: lng, source: "google-maps-url" };
-    }
-  }
-
-  return null;
+  const search = point(text.match(/\/search\/(-?\d+\.?\d*)[, +]+(-?\d+\.?\d*)/));
+  if (search) return search;
+  return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
 }
 
 /**

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseGoogleMapsUrl } from "@/lib/geo/parse-location";
+import { isShortGoogleMapsUrl, parseGoogleMapsUrl } from "@/lib/geo/parse-location";
 
 /**
  * POST /api/resolve-maps-url
@@ -20,10 +20,7 @@ export async function POST(request: Request) {
     }
 
     // Validate it's a Google Maps short URL
-    const lowerUrl = url.toLowerCase();
-    const isShortUrl =
-      lowerUrl.includes("goo.gl/maps") ||
-      lowerUrl.includes("maps.app.goo.gl");
+    const isShortUrl = isShortGoogleMapsUrl(url);
 
     if (!isShortUrl) {
       return NextResponse.json(
@@ -37,6 +34,7 @@ export async function POST(request: Request) {
     const response = await fetch(url, {
       method: "HEAD",
       redirect: "follow",
+      signal: AbortSignal.timeout(8000),
     });
 
     const finalUrl = response.url;
@@ -49,6 +47,7 @@ export async function POST(request: Request) {
       // Some short URLs need the actual page to extract coords
       const getResponse = await fetch(url, {
         redirect: "follow",
+        signal: AbortSignal.timeout(8000),
       });
       const getUrl = getResponse.url;
       const parsedFromGet = parseGoogleMapsUrl(getUrl);

@@ -5,11 +5,12 @@ import type { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
-  MapPin,
   Users,
   Repeat,
   ExternalLink,
 } from "lucide-react";
+import { EventLocation } from "@/components/events/event-location";
+import { LOCATION_VENUE_FIELDS, resolveEventLocation, type LocationVenue } from "@/lib/events/location";
 import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { getTranslations, getLocale } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
@@ -18,7 +19,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { formatInDaLat, loadDateFnsLocale } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
-import { decodeUnicodeEscapes } from "@/lib/utils";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
 import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
 import { buildEventSeriesMetadata } from "@/lib/series/seo";
@@ -40,6 +40,7 @@ interface PageProps {
 type SeriesWithRelations = EventSeries & {
   profiles: Profile;
   organizers: Organizer | null;
+  venues: LocationVenue | null;
 };
 
 type EventInstance = Pick<
@@ -70,18 +71,19 @@ export async function generateMetadata({
   const supabase = createStaticClient();
   if (!supabase) return { title: "Series" };
 
-  const { data: series } = await supabase
+  const { data: row } = await supabase
     .from("event_series")
     .select(
-      "slug, title, description, image_url, location_name, address, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name)",
+      `slug, title, description, image_url, location_name, address, is_online, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name), venues(${LOCATION_VENUE_FIELDS})`,
     )
     .eq("slug", slug)
     .single();
 
-  if (!series) {
+  if (!row) {
     return { title: "Series not found" };
   }
 
+  const series = resolveEventLocation(row, row.venues as unknown as LocationVenue | null);
   const recurrenceLabel = getShortRRuleLabel(series.rrule);
   const organizerRelation = series.organizers as
     | { name: string }
@@ -120,7 +122,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
   // Get series
   const { data: series, error } = await supabase
     .from("event_series")
-    .select("*, profiles:created_by(*), organizers:organizer_id(*)")
+    .select(`*, profiles:created_by(*), organizers:organizer_id(*), venues(${LOCATION_VENUE_FIELDS})`)
     .eq("slug", slug)
     .single();
 
@@ -167,7 +169,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
   });
 
   return {
-    series: series as SeriesWithRelations,
+    series: resolveEventLocation(series as SeriesWithRelations, series.venues as LocationVenue | null),
     upcomingEvents: (upcomingEvents || []) as EventInstance[],
     subscriberCount: subscriberCount || 0,
     isSubscribed,
@@ -303,18 +305,12 @@ export default async function SeriesPage({ params }: PageProps) {
                 </span>
               </div>
 
-              {/* Location */}
-              {series.location_name && (
-                <div className="flex items-start gap-2 text-muted-foreground">
-                  <MapPin className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <span>{decodeUnicodeEscapes(series.location_name)}</span>
-                    {series.address && (
-                      <p className="text-sm">{series.address}</p>
-                    )}
-                  </div>
-                </div>
-              )}
+              <EventLocation
+                location={series}
+                venue={!series.is_online ? series.venues : null}
+                directionsLabel={t("venues.directionsGoogle")}
+                mapLabel={t("events.viewOnMap")}
+              />
 
               {/* Subscribers */}
               <div className="flex items-center gap-2 text-muted-foreground">

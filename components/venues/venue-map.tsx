@@ -1,5 +1,6 @@
 "use client";
 
+import { getLocationMapLinks } from "@/lib/events/location";
 import { useState } from "react";
 import { MapPin, ExternalLink, Navigation } from "lucide-react";
 
@@ -32,8 +33,9 @@ export function VenueMap({
     : null;
 
   // Google Maps links
-  const mapsLink = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
-  const directionsLink = `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+  const { map: mapsLink, directions: directionsLink } = getLocationMapLinks({
+    latitude, longitude, location_name: name, address,
+  });
 
   return (
     <div className="rounded-xl overflow-hidden border border-border">
@@ -41,7 +43,7 @@ export function VenueMap({
       <div className="relative aspect-[16/9] bg-muted">
         {mapUrl && !mapError ? (
           <a
-            href={mapsLink}
+            href={mapsLink ?? undefined}
             target="_blank"
             rel="noopener noreferrer"
             className="block w-full h-full"
@@ -66,7 +68,7 @@ export function VenueMap({
       {/* Action Buttons */}
       <div className="flex border-t border-border">
         <a
-          href={directionsLink}
+          href={directionsLink ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium hover:bg-muted active:scale-[0.98] transition-all"
@@ -76,7 +78,7 @@ export function VenueMap({
         </a>
         <div className="w-px bg-border" />
         <a
-          href={mapsLink}
+          href={mapsLink ?? undefined}
           target="_blank"
           rel="noopener noreferrer"
           className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium hover:bg-muted active:scale-[0.98] transition-all"

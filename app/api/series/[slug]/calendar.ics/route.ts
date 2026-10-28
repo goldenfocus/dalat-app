@@ -1,3 +1,4 @@
+import { LOCATION_VENUE_FIELDS, resolveEventLocation } from "@/lib/events/location";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { format, parseISO } from "date-fns";
@@ -46,20 +47,23 @@ export async function GET(request: Request, { params }: Params) {
   const supabase = await createClient();
 
   // Get series with full details
-  const { data: series, error: fetchError } = await supabase
+  const { data: row, error: fetchError } = await supabase
     .from("event_series")
     .select(
       `
       *,
-      profiles:created_by (display_name)
+      profiles:created_by (display_name),
+      venues (${LOCATION_VENUE_FIELDS})
     `
     )
     .eq("slug", slug)
     .single();
 
-  if (fetchError || !series) {
+  if (fetchError || !row) {
     return NextResponse.json({ error: "Series not found" }, { status: 404 });
   }
+
+  const series = resolveEventLocation(row, row.venues);
 
   // Get exception dates (cancelled instances)
   const { data: exceptions } = await supabase
