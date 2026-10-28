@@ -10,6 +10,7 @@ import type { ArrivalContext, ArrivalReceipt } from "@/lib/arrival/types";
 import { ArrivalMenu, cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView, ArrivalReceiptView } from "./arrival-receipt";
 import { StaffDeskEntry } from "./staff-desk-entry";
+import { EventPractice } from "@/components/practice/event-practice";
 import { LanguageFields } from "./language-fields";
 import { completeLanguageChoices, emptyLanguageChoices, type LanguageChoices } from "@/lib/arrival/legacy-languages";
 
@@ -168,6 +169,7 @@ export function GuestArrival({ slug }: { slug: string }) {
     <div className="mx-auto min-h-dvh max-w-xl px-4 pb-24 pt-3 text-foreground">
       <Link href={`/events/${slug}`} className="inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground hover:text-foreground"><ArrowLeft className="h-4 w-4" aria-hidden="true" />{t("backToEvent")}</Link>
       {context && <StaffDeskEntry slug={slug} />}
+      {receipt && /^language-exchange-social-house-z8oc-\d{8}$/.test(slug) && <EventPractice slug={slug} />}
       {loading ? <p className="py-16 text-muted-foreground" role="status">{t("loading")}</p> : !context ? (
         <div className="space-y-4 py-12"><p role="alert">{t("loadError")}</p><Button className="scroll-mb-28 min-h-12" onClick={() => void refresh()}>{t("retry")}</Button></div>
       ) : receipt ? <ArrivalReceiptView receipt={receipt} stale={stale} onRefresh={() => void refresh()} /> : !context.event.isOpen ? (

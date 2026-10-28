@@ -1,7 +1,9 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { arrivalContext, guestToken, ownReceipt, participantColumns, tokenHash } from "@/lib/arrival/server";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
 import { arrivalPerson, pairRound, practiceView, type Person, type PracticeState } from "./model";
+import { claimCookieName, signClaim, verifyClaim } from "./claim";
 
 export async function practiceContext(slug: string) {
   // Restrict the pilot to the existing language-exchange series.
@@ -29,10 +31,31 @@ export async function practiceContext(slug: string) {
     const token = await guestToken(event.id);
     if (token) ownId = (await ownReceipt(event.id, undefined, tokenHash(token)))?.participant.id || null;
   }
+  if (!ownId) {
+    const claim = (await cookies()).get(claimCookieName(event.id))?.value;
+    if (claim) ownId = verifyClaim(claim, event.id, process.env.SUPABASE_SERVICE_ROLE_KEY!);
+  }
   const state: PracticeState = stored.data?.state || { rounds: [] };
   // Welcome/co-host staff already have authority over the checked-in roster.
   const canStart = access.canManage || access.canWelcome;
   return { ...context, people, ownId, state, revision: stored.data?.revision ?? -1, canStart };
+}
+
+export async function recoverPractice(slug: string, code: string, ip: string) {
+  const c = await practiceContext(slug);
+  const limit = await c.admin.rpc("arrival_rate_limit", {
+    p_key: tokenHash(`practice-receipt:${c.event.id}:${ip}`), p_limit: 200,
+  });
+  if (limit.error) throw limit.error;
+  if (!limit.data) throw new Error("forbidden");
+  const matches = c.people.filter(p => p.id.replace(/^rsvp:/, "").slice(0, 8).toUpperCase() === code.toUpperCase());
+  if (matches.length !== 1) throw new Error("invalid_request");
+  const person = matches[0];
+  return {
+    view: practiceView(c.state, c.people, person.id, c.canStart),
+    cookie: claimCookieName(c.event.id),
+    token: signClaim(c.event.id, person.id, process.env.SUPABASE_SERVICE_ROLE_KEY!),
+  };
 }
 
 export async function readPractice(slug: string) {

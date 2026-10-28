@@ -27,6 +27,8 @@ describe("practice from event attendance", () => {
     const guest = practiceView(state, people, "a", false);
     expect(guest.groups).toHaveLength(1);
     expect(guest.round?.groups).toEqual([]);
+    expect(guest.myGroup?.some(p => p.id === "a")).toBe(true);
+    expect(guest.myGroupNumber).toBe(round.groups.findIndex(g => g.some(p => p.id === "a")) + 1);
     expect(JSON.stringify(guest)).not.toContain('"name":"' + (round.groups.find(g => !g.some(p => p.id === "a"))![0].name) + '"');
     expect(practiceView(state, people, "late", false).groups).toEqual([]);
     expect(practiceView(state, people, null, false).groups).toEqual([]);

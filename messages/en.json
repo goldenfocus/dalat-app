@@ -4296,6 +4296,17 @@
     "swap": "Take turns. Help your partner say it in the language they are learning.",
     "nextPrompt": "Next prompt",
     "waiting": "You’re checked in. Your partner will appear when the host starts.",
-    "nextWaiting": "You’re checked in. The host will include you in the next round."
+    "nextWaiting": "You’re checked in. The host will include you in the next round.",
+    "findPartner": "Find your partner",
+    "yourPartner": "Your partner",
+    "you": "You: {name}",
+    "findHint": "Already checked in? Use the same browser, or enter your check-in code below.",
+    "code": "Check-in code",
+    "find": "Show my partner",
+    "askHost": "Your 8-character code is on your check-in confirmation. The host can also find it.",
+    "codeError": "Code not found. Check your confirmation or ask the host.",
+    "allGroups": "All pairs ({count})",
+    "loading": "Loading pairings…",
+    "where": "Find each other by name and sit together."
   }
 }

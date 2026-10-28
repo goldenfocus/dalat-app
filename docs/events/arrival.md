@@ -57,3 +57,11 @@ in the service-only `event_practice_rooms` table; compare-and-swap updates preve
 two staff members from starting the same round twice. Private names are excluded
 from public translation storage. UI and prompt instructions cover all 12 locales;
 Vietnamese/English example phrases intentionally preserve their teaching language.
+
+The event page always shows **Find your partner**, including when a phone has no
+recognized check-in cookie. Existing accounts/receipts resolve automatically. A
+guest can also enter the eight-character code on their check-in confirmation;
+this restores only their own group through a signed, event-scoped, six-hour
+HttpOnly cookie. Recovery is rate-limited and never re-registers the guest or
+advances a round. Hosts can read this code from the arrival list. The receipt page
+also shows pairings directly, so guests do not need to discover another route.

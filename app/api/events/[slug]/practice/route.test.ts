@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ read: vi.fn(), start: vi.fn() }));
-vi.mock("@/lib/practice/server", () => ({ readPractice: mocks.read, startPractice: mocks.start }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), start: vi.fn(), recover: vi.fn() }));
+vi.mock("@/lib/practice/server", () => ({ readPractice: mocks.read, startPractice: mocks.start, recoverPractice: mocks.recover }));
 import { GET, POST } from "./route";
 const context = { params: Promise.resolve({ slug: "language-exchange-social-house-z8oc-20261028" }) };
 function request(body: unknown, origin = "https://dalat.app") {
@@ -23,5 +23,13 @@ describe("event practice API", () => {
     const response = await GET(new Request("https://dalat.app/api/events/test/practice"), context);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(response.headers.get("vary")).toBe("Cookie");
+  });
+  it("restores a receipt with a private cookie without starting another round", async () => {
+    mocks.recover.mockResolvedValue({ view: { canStart: false, me: { name: "Guest" }, groups: [] }, cookie: "dalat_practice_event", token: "signed-test-token" });
+    const response = await POST(request({ action: "find", code: "12ABCDEF" }), context);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+    expect(response.headers.get("set-cookie")).toContain("Secure");
+    expect(mocks.start).not.toHaveBeenCalled();
   });
 });

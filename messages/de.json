@@ -4296,6 +4296,17 @@
     "swap": "Wechselt euch ab. Helft eurem Gegenüber in der Sprache, die es lernt.",
     "nextPrompt": "Nächste Aufgabe",
     "waiting": "Du bist eingecheckt. Deine Zuteilung erscheint, sobald die Runde startet.",
-    "nextWaiting": "Du bist eingecheckt. Die Leitung nimmt dich in die nächste Runde auf."
+    "nextWaiting": "Du bist eingecheckt. Die Leitung nimmt dich in die nächste Runde auf.",
+    "findPartner": "Partner finden",
+    "yourPartner": "Dein Partner",
+    "you": "Du: {name}",
+    "findHint": "Schon eingecheckt? Nutze denselben Browser oder gib deinen Check-in-Code ein.",
+    "code": "Check-in-Code",
+    "find": "Meinen Partner anzeigen",
+    "askHost": "Dein Code mit 8 Zeichen steht auf der Bestätigung. Auch die Leitung kann ihn finden.",
+    "codeError": "Code nicht gefunden. Prüfe die Bestätigung oder frage die Leitung.",
+    "allGroups": "Alle Paare ({count})",
+    "loading": "Paare werden geladen…",
+    "where": "Findet euch anhand eurer Namen und setzt euch zusammen."
   }
 }

@@ -4296,6 +4296,17 @@
     "swap": "Bergilir-gilir. Bantu pasangan bertutur dalam bahasa yang dipelajarinya.",
     "nextPrompt": "Topik seterusnya",
     "waiting": "Anda sudah daftar masuk. Pasangan akan muncul apabila pengacara bermula.",
-    "nextWaiting": "Anda sudah daftar masuk. Pengacara akan menyertakan anda dalam pusingan seterusnya."
+    "nextWaiting": "Anda sudah daftar masuk. Pengacara akan menyertakan anda dalam pusingan seterusnya.",
+    "findPartner": "Cari pasangan",
+    "yourPartner": "Pasangan anda",
+    "you": "Anda: {name}",
+    "findHint": "Sudah daftar masuk? Gunakan pelayar yang sama atau masukkan kod daftar masuk.",
+    "code": "Kod daftar masuk",
+    "find": "Lihat pasangan saya",
+    "askHost": "Kod 8 aksara ada pada pengesahan daftar masuk. Pengacara juga boleh mencarinya.",
+    "codeError": "Kod tidak ditemui. Semak pengesahan atau tanya pengacara.",
+    "allGroups": "Semua pasangan ({count})",
+    "loading": "Memuatkan pasangan…",
+    "where": "Cari satu sama lain mengikut nama dan duduk bersama."
   }
 }

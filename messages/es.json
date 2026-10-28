@@ -4296,6 +4296,17 @@
     "swap": "Hablad por turnos. Ayuda a tu compañero en el idioma que aprende.",
     "nextPrompt": "Siguiente tema",
     "waiting": "Ya estás registrado. Tu compañero aparecerá cuando empiece la ronda.",
-    "nextWaiting": "Ya estás registrado. El anfitrión te incluirá en la siguiente ronda."
+    "nextWaiting": "Ya estás registrado. El anfitrión te incluirá en la siguiente ronda.",
+    "findPartner": "Encontrar mi pareja",
+    "yourPartner": "Tu pareja",
+    "you": "Tú: {name}",
+    "findHint": "¿Ya te registraste? Usa el mismo navegador o introduce tu código de registro.",
+    "code": "Código de registro",
+    "find": "Ver mi pareja",
+    "askHost": "Tu código de 8 caracteres está en la confirmación. El anfitrión también puede encontrarlo.",
+    "codeError": "Código no encontrado. Revisa la confirmación o pregunta al anfitrión.",
+    "allGroups": "Todas las parejas ({count})",
+    "loading": "Cargando parejas…",
+    "where": "Busca a tu pareja por su nombre y sentaos juntos."
   }
 }

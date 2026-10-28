@@ -3,7 +3,7 @@ import type { ArrivalParticipant } from "@/lib/arrival/types";
 export type Person = { id: string; name: string; speaks: string[]; learns: string | null };
 export type Round = { number: number; startedAt: string; minutes: number; groups: Person[][] };
 export type PracticeState = { rounds: Round[] };
-export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][] };
+export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null };
 
 export function arrivalPerson(p: ArrivalParticipant): Person {
   const prefs = p.language_preferences;
@@ -52,9 +52,12 @@ export function pairRound(people: Person[], previous: Round[], minutes: number, 
 export function practiceView(state: PracticeState, people: Person[], ownId: string | null, canStart: boolean): PracticeView {
   const current = state.rounds.at(-1) || null;
   const groups = current?.groups || [];
+  const myGroupIndex = groups.findIndex(g => g.some(p => p.id === ownId));
   return {
     canStart, count: people.length, me: people.find(p => p.id === ownId) || null,
     round: current ? { ...current, groups: [] } : null,
     groups: canStart ? groups : groups.filter(g => g.some(p => p.id === ownId)),
+    myGroup: myGroupIndex < 0 ? [] : groups[myGroupIndex],
+    myGroupNumber: myGroupIndex < 0 ? null : myGroupIndex + 1,
   };
 }

@@ -4296,6 +4296,17 @@
     "swap": "Bergantian. Bantu pasangan berbicara dalam bahasa yang sedang dipelajari.",
     "nextPrompt": "Topik berikutnya",
     "waiting": "Kamu sudah check-in. Pasangan akan muncul saat pemandu memulai.",
-    "nextWaiting": "Kamu sudah check-in. Pemandu akan menyertakanmu pada putaran berikutnya."
+    "nextWaiting": "Kamu sudah check-in. Pemandu akan menyertakanmu pada putaran berikutnya.",
+    "findPartner": "Cari pasangan",
+    "yourPartner": "Pasanganmu",
+    "you": "Kamu: {name}",
+    "findHint": "Sudah check-in? Gunakan browser yang sama atau masukkan kode check-in.",
+    "code": "Kode check-in",
+    "find": "Lihat pasangan saya",
+    "askHost": "Kode 8 karakter ada di konfirmasi check-in. Pemandu juga bisa menemukannya.",
+    "codeError": "Kode tidak ditemukan. Periksa konfirmasi atau tanyakan kepada pemandu.",
+    "allGroups": "Semua pasangan ({count})",
+    "loading": "Memuat pasangan…",
+    "where": "Cari satu sama lain berdasarkan nama dan duduk bersama."
   }
 }

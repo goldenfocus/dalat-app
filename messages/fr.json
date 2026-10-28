@@ -4296,6 +4296,17 @@
     "swap": "Parlez à tour de rôle. Aidez votre partenaire dans la langue qu’il apprend.",
     "nextPrompt": "Sujet suivant",
     "waiting": "Votre présence est confirmée. Votre partenaire apparaîtra au début du tour.",
-    "nextWaiting": "Votre présence est confirmée. L’animateur vous inclura au prochain tour."
+    "nextWaiting": "Votre présence est confirmée. L’animateur vous inclura au prochain tour.",
+    "findPartner": "Trouver mon partenaire",
+    "yourPartner": "Votre partenaire",
+    "you": "Vous : {name}",
+    "findHint": "Déjà présent ? Utilisez le même navigateur ou saisissez votre code de présence.",
+    "code": "Code de présence",
+    "find": "Voir mon partenaire",
+    "askHost": "Votre code de 8 caractères figure sur la confirmation. L’animateur peut aussi le trouver.",
+    "codeError": "Code introuvable. Vérifiez la confirmation ou demandez à l’animateur.",
+    "allGroups": "Toutes les paires ({count})",
+    "loading": "Chargement des paires…",
+    "where": "Retrouvez-vous par votre nom et asseyez-vous ensemble."
   }
 }

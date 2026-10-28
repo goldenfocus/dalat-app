@@ -4296,6 +4296,17 @@
     "swap": "Thay phiên nhau. Giúp bạn tập nói bằng ngôn ngữ họ đang học.",
     "nextPrompt": "Câu tiếp theo",
     "waiting": "Bạn đã điểm danh. Bạn tập sẽ hiện khi người dẫn bắt đầu.",
-    "nextWaiting": "Bạn đã điểm danh. Người dẫn sẽ ghép bạn vào vòng tiếp."
+    "nextWaiting": "Bạn đã điểm danh. Người dẫn sẽ ghép bạn vào vòng tiếp.",
+    "findPartner": "Tìm bạn tập",
+    "yourPartner": "Bạn tập của bạn",
+    "you": "Bạn: {name}",
+    "findHint": "Đã điểm danh? Dùng cùng trình duyệt hoặc nhập mã điểm danh bên dưới.",
+    "code": "Mã điểm danh",
+    "find": "Xem bạn tập",
+    "askHost": "Mã 8 ký tự nằm trên xác nhận điểm danh. Người dẫn cũng có thể tìm mã.",
+    "codeError": "Không tìm thấy mã. Kiểm tra xác nhận hoặc hỏi người dẫn.",
+    "allGroups": "Tất cả các cặp ({count})",
+    "loading": "Đang tải các cặp…",
+    "where": "Tìm nhau theo tên và ngồi cùng nhau."
   }
 }
