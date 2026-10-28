@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     }
     const response = arrivalJson({ event, access, menu, profile, receipt, priorOrder });
     response.cookies.set(guestCookieName(event.id), token, {
-      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "strict", path: "/", maxAge: 90 * 86400,
+      httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 90 * 86400,
     });
     return response;
   } catch (error) { return arrivalFailure(error); }
