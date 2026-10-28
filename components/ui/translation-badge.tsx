@@ -75,8 +75,8 @@ export function TranslationBadge({
 }
 
 interface TranslatedFromProps {
-  sourceLocale: ContentLocale;
-  originalText?: string;
+  sourceLocale?: ContentLocale | null;
+  originalText: string | undefined;
   className?: string;
 }
 
@@ -90,19 +90,24 @@ export function TranslatedFrom({
   className,
 }: TranslatedFromProps) {
   const t = useTranslations("translations");
-  const flag = LOCALE_FLAGS[sourceLocale];
-  const langName = LOCALE_NAMES[sourceLocale];
+  const flag = sourceLocale ? LOCALE_FLAGS[sourceLocale] : undefined;
+  const langName = sourceLocale ? LOCALE_NAMES[sourceLocale] : undefined;
 
   return (
     <div className={cn("text-sm text-muted-foreground", className)}>
-      <span className="inline-flex items-center gap-1.5">
-        <Bot className="w-3.5 h-3.5" />
-        <span>
-          {t("translatedFrom")} {flag} {langName}
+      {sourceLocale && (
+        <span className="inline-flex items-center gap-1.5">
+          <Bot className="w-3.5 h-3.5" />
+          <span>
+            {t("translatedFrom")} {flag} {langName}
+          </span>
         </span>
-      </span>
+      )}
       {originalText && (
-        <OriginalText text={originalText} sourceLocale={sourceLocale} />
+        <OriginalText
+          text={originalText}
+          sourceLocale={sourceLocale || undefined}
+        />
       )}
     </div>
   );

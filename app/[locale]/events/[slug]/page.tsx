@@ -1341,13 +1341,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       </Link>
                     )}
                     {/* Translation indicator */}
-                    {eventTranslations.isTranslated &&
-                      eventTranslations.sourceLocale && (
-                        <TranslatedFrom
-                          sourceLocale={eventTranslations.sourceLocale}
-                          className="mb-4"
-                        />
-                      )}
+                    {eventTranslations.isTranslated && (
+                      <TranslatedFrom
+                        sourceLocale={eventTranslations.sourceLocale}
+                        originalText={[eventTranslations.originalTitle, eventTranslations.originalDescription].filter(Boolean).join("\n\n")}
+                        className="mb-4"
+                      />
+                    )}
                   </div>
 
                   {/* Moments Gallery - HERO position for past events */}
@@ -1495,13 +1495,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                       </Link>
                     )}
                     {/* Show translation indicator with original */}
-                    {eventTranslations.isTranslated &&
-                      eventTranslations.sourceLocale && (
-                        <TranslatedFrom
-                          sourceLocale={eventTranslations.sourceLocale}
-                          className="mb-4"
-                        />
-                      )}
+                    {eventTranslations.isTranslated && (
+                      <TranslatedFrom
+                        sourceLocale={eventTranslations.sourceLocale}
+                        originalText={[eventTranslations.originalTitle, eventTranslations.originalDescription].filter(Boolean).join("\n\n")}
+                        className="mb-4"
+                      />
+                    )}
                     {eventTranslations.description && (
                       <ExpandableText
                         text={eventTranslations.description}

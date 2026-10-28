@@ -441,12 +441,13 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               </div>
 
               {/* Caption */}
-              {translatedText && moment.content_type !== "text" && (
+              {translatedText && (
                 <div className="space-y-2">
-                  <p className="text-lg whitespace-pre-wrap">{translatedText}</p>
-                  {isTranslated && sourceLocale && (
+                  {moment.content_type !== "text" && <p className="text-lg whitespace-pre-wrap">{translatedText}</p>}
+                  {isTranslated && (
                     <TranslatedFrom
                       sourceLocale={sourceLocale}
+                      originalText={moment.text_content || undefined}
                       className="text-xs"
                     />
                   )}
