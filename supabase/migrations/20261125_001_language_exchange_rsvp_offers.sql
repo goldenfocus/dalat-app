@@ -68,6 +68,10 @@ BEGIN
  IF TG_OP='UPDATE' AND OLD.arrival_enabled AND NOT NEW.arrival_enabled AND NEW.ai_tags IS NOT DISTINCT FROM OLD.ai_tags THEN
   NEW.ai_tags:=array_remove(NEW.ai_tags,'language-exchange'); RETURN NEW;
  END IF;
+ IF TG_OP='UPDATE' AND 'language-exchange'=ANY(COALESCE(OLD.ai_tags,'{}'))
+ AND NOT ('language-exchange'=ANY(COALESCE(NEW.ai_tags,'{}'))) AND NEW.arrival_enabled=OLD.arrival_enabled THEN
+  NEW.arrival_enabled:=false; RETURN NEW;
+ END IF;
  IF 'language-exchange'=ANY(COALESCE(NEW.ai_tags,'{}')) THEN NEW.arrival_enabled:=true; END IF;
  IF TG_OP='INSERT' AND NEW.series_id IS NOT NULL AND NOT NEW.arrival_enabled THEN
   NEW.arrival_enabled:=COALESCE((SELECT arrival_enabled FROM event_series WHERE id=NEW.series_id),false);

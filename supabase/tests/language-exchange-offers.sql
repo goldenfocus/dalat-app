@@ -42,4 +42,8 @@ DO $$ BEGIN
  IF NOT (SELECT arrival_enabled FROM events WHERE id='af000000-0000-4000-8000-000000000003') THEN RAISE EXCEPTION 'Other tagged language event missing flow'; END IF;
  IF EXISTS(SELECT 1 FROM event_drink_sponsors WHERE event_id='af000000-0000-4000-8000-000000000003') THEN RAISE EXCEPTION 'Tag promised unconfigured free drinks'; END IF;
 END $$;
+UPDATE events SET ai_tags=ARRAY['meetup'] WHERE id='af000000-0000-4000-8000-000000000003';
+DO $$ BEGIN
+ IF (SELECT arrival_enabled FROM events WHERE id='af000000-0000-4000-8000-000000000003') THEN RAISE EXCEPTION 'Removing tag did not disable language flow'; END IF;
+END $$;
 ROLLBACK;
