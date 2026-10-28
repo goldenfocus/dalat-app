@@ -4094,7 +4094,7 @@
     "nameHint": "Nama anda membantu pasukan penyambut tetamu dan rakan latihan mencari anda.",
     "continue": "Teruskan",
     "back": "Kembali",
-    "languageTitle": "Bahasa apa yang ingin anda praktikkan?",
+    "languageTitle": "Latihan bahasa",
     "english": "Bahasa Inggeris",
     "vietnamese": "Bahasa Vietnam",
     "both": "Kedua-duanya",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Sedang menyimpan…",
     "hostSaveAndOrder": "Simpan dan hantar pesanan",
     "hostCancel": "Batal",
-    "hostViewOrder": "Lihat pesanan"
+    "hostViewOrder": "Lihat pesanan",
+    "practiceLabel": "Ingin berlatih",
+    "level_starting": "Bermula dari sifar",
+    "level_some": "Pemula",
+    "level_comfortable": "Pertengahan",
+    "level_advanced": "Lanjutan",
+    "level_fluent": "Fasih",
+    "level_native": "Penutur asli",
+    "confirmRsvp": "Sahkan kehadiran",
+    "editLanguages": "Ubah bahasa"
   }
 }

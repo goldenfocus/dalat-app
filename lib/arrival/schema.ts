@@ -1,6 +1,8 @@
 import { z } from "zod";
 
-const level = z.enum(["starting", "some", "comfortable"]).nullable().optional();
+import { languageLevelSchema } from "./languages";
+
+const level = languageLevelSchema.nullable().optional();
 export const arrivalSchema = z.object({
   requestId: z.uuid(),
   nickname: z.string().trim().min(1).max(80),

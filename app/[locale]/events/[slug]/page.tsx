@@ -1374,6 +1374,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         <CommunityActionNotice status={communityNotice} />
         <RsvpCardObserver>
           <RsvpButton
+            arrivalEnabled={event.arrival_enabled}
             eventId={event.id}
             eventSlug={event.slug}
             eventTitle={event.title}
@@ -1996,6 +1997,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
         {/* Floating RSVP bar for mobile */}
         <FloatingRsvpBar
+          arrivalEnabled={event.arrival_enabled}
           eventId={event.id}
           eventSlug={event.slug}
           eventTitle={event.title}

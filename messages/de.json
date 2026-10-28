@@ -4094,7 +4094,7 @@
     "nameHint": "Ihr Name hilft dem Empfangsteam und Ihren Übungspartnern, Sie zu finden.",
     "continue": "Weiter",
     "back": "Zurück",
-    "languageTitle": "Was möchtest du üben?",
+    "languageTitle": "Sprachen üben",
     "english": "Englisch",
     "vietnamese": "Vietnamesisch",
     "both": "Beides",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Wird gespeichert…",
     "hostSaveAndOrder": "Speichern und Bestellung senden",
     "hostCancel": "Abbrechen",
-    "hostViewOrder": "Bestellung ansehen"
+    "hostViewOrder": "Bestellung ansehen",
+    "practiceLabel": "Üben",
+    "level_starting": "Ganz am Anfang",
+    "level_some": "Anfänger",
+    "level_comfortable": "Mittelstufe",
+    "level_advanced": "Fortgeschritten",
+    "level_fluent": "Fließend",
+    "level_native": "Muttersprache",
+    "confirmRsvp": "Teilnahme bestätigen",
+    "editLanguages": "Sprachen bearbeiten"
   }
 }

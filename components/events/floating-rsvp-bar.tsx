@@ -16,6 +16,7 @@ import {
 import type { Rsvp, QuestionnaireData } from "@/lib/types";
 
 interface FloatingRsvpBarProps {
+  arrivalEnabled?: boolean;
   eventId: string;
   eventSlug: string;
   eventTitle: string;
@@ -35,6 +36,7 @@ interface FloatingRsvpBarProps {
 }
 
 export function FloatingRsvpBar({
+  arrivalEnabled = false,
   eventId,
   eventSlug,
   eventTitle,
@@ -71,13 +73,14 @@ export function FloatingRsvpBar({
     setShowQuestionnaire(true);
   }, []);
 
-  const { isPending, confirmedStatus, error, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
+  const { isPending, languageSheet, confirmedStatus, error, handleRsvp, handleCancel, performRsvp, hasActiveQuestionnaire } = useRsvpActions(
     eventId,
     isLoggedIn,
     handleCelebrationTrigger,
     questionnaire,
     handleShowQuestionnaire,
-    currentRsvp?.status
+    currentRsvp?.status,
+    arrivalEnabled ? eventSlug : undefined
   );
 
   // Handle questionnaire submission
@@ -186,6 +189,7 @@ export function FloatingRsvpBar({
   return (
     <>
       {questionnaireSheet}
+      {languageSheet}
       {showCelebration && (
         <RsvpCelebration
           eventUrl={eventUrl}

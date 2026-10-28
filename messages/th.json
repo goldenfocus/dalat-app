@@ -4094,7 +4094,7 @@
     "nameHint": "ชื่อของคุณช่วยให้ทีมต้อนรับและเพื่อนร่วมฝึกหาคุณพบ",
     "continue": "ถัดไป",
     "back": "ย้อนกลับ",
-    "languageTitle": "คุณอยากฝึกภาษาอะไร?",
+    "languageTitle": "ฝึกภาษา",
     "english": "ภาษาอังกฤษ",
     "vietnamese": "ภาษาเวียดนาม",
     "both": "ทั้งสองภาษา",
@@ -4191,6 +4191,15 @@
     "hostSaving": "กำลังบันทึก…",
     "hostSaveAndOrder": "บันทึกและส่งรายการสั่งอาหาร",
     "hostCancel": "ยกเลิก",
-    "hostViewOrder": "ดูคำสั่งซื้อ"
+    "hostViewOrder": "ดูคำสั่งซื้อ",
+    "practiceLabel": "อยากฝึก",
+    "level_starting": "เริ่มจากศูนย์",
+    "level_some": "เริ่มต้น",
+    "level_comfortable": "ปานกลาง",
+    "level_advanced": "ขั้นสูง",
+    "level_fluent": "คล่องแคล่ว",
+    "level_native": "ภาษาแม่",
+    "confirmRsvp": "ยืนยันเข้าร่วม",
+    "editLanguages": "แก้ไขภาษา"
   }
 }

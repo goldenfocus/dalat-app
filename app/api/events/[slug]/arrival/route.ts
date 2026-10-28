@@ -3,6 +3,7 @@ import { arrivalContext, guestCookieName, guestToken, newGuestToken, ownReceipt,
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
 import { arrivalSchema } from "@/lib/arrival/schema";
 import { visibleArrivalReceipt } from "@/lib/arrival/receipt";
+import { getLanguagePreferences } from "@/lib/arrival/preferences";
 import type { ArrivalReceipt } from "@/lib/arrival/types";
 
 export const dynamic = "force-dynamic";
@@ -14,6 +15,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     const { db, admin, user, event, access, menu } = await arrivalContext(slug, request.nextUrl.searchParams.get("locale") || "en");
     const token = await guestToken(event.id) || newGuestToken();
     const receipt = await ownReceipt(event.id, user?.id, tokenHash(token));
+    const preferences = user ? await getLanguagePreferences(user.id) : null;
     let profile = null;
     let priorOrder = null;
     if (user) {
@@ -26,7 +28,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         priorOrder = result.data ? mapOrder(result.data) : null;
       }
     }
-    const response = arrivalJson({ event, access, menu, profile, receipt, priorOrder });
+    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder });
     response.cookies.set(guestCookieName(event.id), token, {
       httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 90 * 86400,
     });

@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { arrivalContext, mapOrder, orderColumns, participantColumns } from "@/lib/arrival/server";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
 import { staffActionSchema } from "@/lib/arrival/schema";
+import { languagePreferencesSchema } from "@/lib/arrival/languages";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
 
 export const dynamic = "force-dynamic";
@@ -24,11 +25,18 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     const participants = (participantsResult.data || []) as ArrivalParticipant[];
     const names = new Map(participants.map((p) => [p.id, p.nickname]));
     const userNames = new Map(participants.filter((p) => p.user_id).map((p) => [p.user_id, p.nickname]));
+    const expectedUserIds = (rsvpsResult.data || []).map(row => row.user_id);
+    const saved = expectedUserIds.length ? await admin.from("language_exchange_preferences").select("user_id,practice_language,english_level,vietnamese_level").in("user_id", expectedUserIds) : { data: [], error: null };
+    if (saved.error) throw saved.error;
+    const preferencesByUser = new Map((saved.data || []).map(row => {
+      const parsed = languagePreferencesSchema.safeParse({ practiceLanguage: row.practice_language, englishLevel: row.english_level, vietnameseLevel: row.vietnamese_level });
+      return [row.user_id, parsed.success ? parsed.data : null];
+    }));
     const rsvps = (rsvpsResult.data || []).map((row) => {
       const profile = row.profiles as unknown as Profile | null;
       const name = profile?.display_name || profile?.username || "";
       userNames.set(row.user_id, name);
-      return { id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
+      return { preferences: preferencesByUser.get(row.user_id) || null, id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
     });
     // Include names for preorders placed before check-in, even on order-only screens.
     const missingUsers = [...new Set((ordersResult.data || []).map((row) => row.user_id).filter((id): id is string => !!id && !userNames.has(id)))];

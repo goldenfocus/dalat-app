@@ -4,6 +4,7 @@
 // rest of CLIENT_NAMESPACES after first paint so deep pages still work.
 // Enforced by scripts/check-client-namespaces.mjs (runs in prebuild).
 export const CORE_CLIENT_NAMESPACES = [
+  "arrival", // RSVP language sheet can open immediately after sign-up.
   "auth",
   "common",
   "errors",

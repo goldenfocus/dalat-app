@@ -4094,7 +4094,7 @@
     "nameHint": "お名前があると、受付スタッフや練習仲間があなたを見つけやすくなります。",
     "continue": "次へ",
     "back": "戻る",
-    "languageTitle": "どの言語を練習したいですか？",
+    "languageTitle": "言語練習",
     "english": "英語",
     "vietnamese": "ベトナム語",
     "both": "両方",
@@ -4191,6 +4191,15 @@
     "hostSaving": "保存中…",
     "hostSaveAndOrder": "保存して注文を送信",
     "hostCancel": "キャンセル",
-    "hostViewOrder": "注文を確認"
+    "hostViewOrder": "注文を確認",
+    "practiceLabel": "練習したい言語",
+    "level_starting": "初めて",
+    "level_some": "初級",
+    "level_comfortable": "中級",
+    "level_advanced": "上級",
+    "level_fluent": "流暢",
+    "level_native": "母語",
+    "confirmRsvp": "参加を確定",
+    "editLanguages": "言語を変更"
   }
 }

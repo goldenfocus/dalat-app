@@ -4094,7 +4094,7 @@
     "nameHint": "Votre nom aide l’équipe d’accueil et vos partenaires de pratique à vous trouver.",
     "continue": "Continuer",
     "back": "Retour",
-    "languageTitle": "Quelle langue souhaitez-vous pratiquer ?",
+    "languageTitle": "Pratique des langues",
     "english": "Anglais",
     "vietnamese": "Vietnamien",
     "both": "Les deux",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Enregistrement en cours…",
     "hostSaveAndOrder": "Enregistrer et envoyer la commande",
     "hostCancel": "Annuler",
-    "hostViewOrder": "Voir la commande"
+    "hostViewOrder": "Voir la commande",
+    "practiceLabel": "À pratiquer",
+    "level_starting": "Débutant complet",
+    "level_some": "Débutant",
+    "level_comfortable": "Intermédiaire",
+    "level_advanced": "Avancé",
+    "level_fluent": "Courant",
+    "level_native": "Langue maternelle",
+    "confirmRsvp": "Confirmer ma présence",
+    "editLanguages": "Modifier les langues"
   }
 }

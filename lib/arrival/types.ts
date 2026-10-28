@@ -1,3 +1,4 @@
+import type { LanguageLevel, LanguagePreferences } from "./languages";
 import type { MenuSection } from "@/lib/menu/types";
 
 export type ArrivalAccess = { canWelcome: boolean; canOrder: boolean; canManage: boolean };
@@ -7,8 +8,8 @@ export type ArrivalParticipant = {
   user_id: string | null;
   nickname: string;
   practice_language: "english" | "vietnamese" | "both";
-  english_level: "starting" | "some" | "comfortable" | null;
-  vietnamese_level: "starting" | "some" | "comfortable" | null;
+  english_level: LanguageLevel | null;
+  vietnamese_level: LanguageLevel | null;
   checked_in_at: string;
 };
 export type ArrivalOrder = {
@@ -29,6 +30,7 @@ export type ArrivalContext = {
   event: ArrivalEvent;
   menu: MenuSection[];
   profile: { name: string } | null;
+  preferences?: LanguagePreferences | null;
   receipt: ArrivalReceipt | null;
   priorOrder?: ArrivalOrder | null;
   access: ArrivalAccess;
@@ -37,5 +39,5 @@ export type StaffArrivalContext = Omit<ArrivalContext, "receipt" | "profile"> & 
   participants: ArrivalParticipant[];
   orders: ArrivalOrder[];
   staff: { user_id: string; role: "welcome" | "orders" | "manager"; displayName: string; username: string | null }[];
-  rsvps: { id: string; user_id: string; displayName: string; username: string | null; checked_in_at: string | null }[];
+  rsvps: { id: string; user_id: string; displayName: string; username: string | null; checked_in_at: string | null; preferences?: LanguagePreferences | null }[];
 };

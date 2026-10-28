@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { LANGUAGE_LEVELS } from "@/lib/arrival/languages";
 import { formatVnd } from "@/lib/menu/format";
 import { ArrivalMenu, cartLines } from "./arrival-menu";
 import type { HostData, HostParticipant, HostRsvp, LanguageLevel, PracticeLanguage } from "./host-types";
@@ -13,9 +14,9 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
   const existingOrder = data.orders.find(order => ["pending", "confirmed"].includes(order.status) && ((participant && order.participant_id === participant.id) || ((participant?.user_id || rsvp?.user_id) && order.user_id === (participant?.user_id || rsvp?.user_id))));
   const viewOnly = Boolean(existingOrder && (participant || rsvp?.checked_in_at));
   const [nickname, setNickname] = useState(participant?.nickname || rsvp?.displayName || rsvp?.username || "");
-  const [practiceLanguage, setPracticeLanguage] = useState<PracticeLanguage | "">(participant?.practice_language || "");
-  const [englishLevel, setEnglishLevel] = useState<LanguageLevel | "">(participant?.english_level || "");
-  const [vietnameseLevel, setVietnameseLevel] = useState<LanguageLevel | "">(participant?.vietnamese_level || "");
+  const [practiceLanguage, setPracticeLanguage] = useState<PracticeLanguage | "">(participant?.practice_language || rsvp?.preferences?.practiceLanguage || "");
+  const [englishLevel, setEnglishLevel] = useState<LanguageLevel | "">(participant?.english_level || rsvp?.preferences?.englishLevel || "");
+  const [vietnameseLevel, setVietnameseLevel] = useState<LanguageLevel | "">(participant?.vietnamese_level || rsvp?.preferences?.vietnameseLevel || "");
   const [quantities, setQuantities] = useState<Record<string, number>>({});
   const [note, setNote] = useState("");
   const [busy, setBusy] = useState(false);
@@ -41,7 +42,7 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
     } catch { setError(t("errorGeneric")); }
     finally { submitting.current = false; setBusy(false); }
   };
-  const levelSelect = (id: string, value: LanguageLevel | "", setValue: (next: LanguageLevel | "") => void, label: string) => <label className="block space-y-2" htmlFor={id}><span className="text-sm font-medium">{label}</span><select id={id} required value={value} onChange={event => setValue(event.target.value as LanguageLevel | "")} className="min-h-12 w-full rounded-lg border bg-background px-3"><option value="" disabled>{t("hostChoose")}</option><option value="starting">{t("starting")}</option><option value="some">{t("some")}</option><option value="comfortable">{t("comfortable")}</option></select></label>;
+  const levelSelect = (id: string, value: LanguageLevel | "", setValue: (next: LanguageLevel | "") => void, label: string) => <label className="block space-y-2" htmlFor={id}><span className="text-sm font-medium">{label}</span><select id={id} required value={value} onChange={event => setValue(event.target.value as LanguageLevel | "")} className="min-h-12 w-full rounded-lg border bg-background px-3"><option value="" disabled>{t("hostChoose")}</option>{LANGUAGE_LEVELS.map(level => <option key={level} value={level}>{t(`level_${level}`)}</option>)}</select></label>;
   return <form onSubmit={submit} className="space-y-5 rounded-lg border bg-card p-4">
     <h2 className="text-xl font-semibold">{t(existingOrder ? "hostViewOrder" : participant ? "hostAddOrder" : "hostGuestCheckIn")}</h2>
     {viewOnly && <p className="font-medium">{participant?.nickname || rsvp?.displayName || rsvp?.username}</p>}

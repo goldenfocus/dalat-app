@@ -4094,7 +4094,7 @@
     "nameHint": "Ваше имя помогает команде приёма гостей и партнёрам по практике найти вас.",
     "continue": "Продолжить",
     "back": "Назад",
-    "languageTitle": "Какой язык хотите практиковать?",
+    "languageTitle": "Языковая практика",
     "english": "Английский",
     "vietnamese": "Вьетнамский",
     "both": "Оба",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Сохранение…",
     "hostSaveAndOrder": "Сохранить и отправить заказ",
     "hostCancel": "Отмена",
-    "hostViewOrder": "Просмотреть заказ"
+    "hostViewOrder": "Просмотреть заказ",
+    "practiceLabel": "Хочу практиковать",
+    "level_starting": "С нуля",
+    "level_some": "Начальный",
+    "level_comfortable": "Средний",
+    "level_advanced": "Продвинутый",
+    "level_fluent": "Свободно",
+    "level_native": "Родной язык",
+    "confirmRsvp": "Подтвердить участие",
+    "editLanguages": "Изменить языки"
   }
 }

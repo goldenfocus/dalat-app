@@ -4094,7 +4094,7 @@
     "nameHint": "Tên của bạn giúp đội ngũ đón tiếp và các bạn cùng luyện tập tìm thấy bạn.",
     "continue": "Tiếp tục",
     "back": "Quay lại",
-    "languageTitle": "Bạn muốn luyện ngôn ngữ nào?",
+    "languageTitle": "Luyện ngôn ngữ",
     "english": "Tiếng Anh",
     "vietnamese": "Tiếng Việt",
     "both": "Cả hai",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Đang lưu…",
     "hostSaveAndOrder": "Lưu và gửi đơn",
     "hostCancel": "Hủy",
-    "hostViewOrder": "Xem đơn hàng"
+    "hostViewOrder": "Xem đơn hàng",
+    "practiceLabel": "Muốn luyện",
+    "level_starting": "Mới bắt đầu",
+    "level_some": "Sơ cấp",
+    "level_comfortable": "Trung cấp",
+    "level_advanced": "Nâng cao",
+    "level_fluent": "Thành thạo",
+    "level_native": "Bản ngữ",
+    "confirmRsvp": "Xác nhận tham gia",
+    "editLanguages": "Sửa ngôn ngữ"
   }
 }

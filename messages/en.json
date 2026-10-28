@@ -4094,7 +4094,7 @@
     "nameHint": "Your name helps the welcome team and your practice partners find you.",
     "continue": "Continue",
     "back": "Back",
-    "languageTitle": "What would you like to practice?",
+    "languageTitle": "Language practice",
     "english": "English",
     "vietnamese": "Vietnamese",
     "both": "Both",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Saving…",
     "hostSaveAndOrder": "Save & send order",
     "hostCancel": "Cancel",
-    "hostViewOrder": "View order"
+    "hostViewOrder": "View order",
+    "practiceLabel": "Practice",
+    "level_starting": "Total beginner",
+    "level_some": "Beginner",
+    "level_comfortable": "Intermediate",
+    "level_advanced": "Advanced",
+    "level_fluent": "Fluent",
+    "level_native": "Native",
+    "confirmRsvp": "Confirm RSVP",
+    "editLanguages": "Edit languages"
   }
 }

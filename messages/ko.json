@@ -4094,7 +4094,7 @@
     "nameHint": "이름을 알려주시면 안내팀과 연습 파트너가 여러분을 찾는 데 도움이 됩니다.",
     "continue": "계속",
     "back": "뒤로",
-    "languageTitle": "어떤 언어를 연습하시겠어요?",
+    "languageTitle": "언어 연습",
     "english": "영어",
     "vietnamese": "베트남어",
     "both": "둘 다",
@@ -4191,6 +4191,15 @@
     "hostSaving": "저장 중…",
     "hostSaveAndOrder": "저장하고 주문 전송",
     "hostCancel": "취소",
-    "hostViewOrder": "주문 보기"
+    "hostViewOrder": "주문 보기",
+    "practiceLabel": "연습할 언어",
+    "level_starting": "완전 입문",
+    "level_some": "초급",
+    "level_comfortable": "중급",
+    "level_advanced": "고급",
+    "level_fluent": "유창함",
+    "level_native": "모국어",
+    "confirmRsvp": "참석 확정",
+    "editLanguages": "언어 수정"
   }
 }

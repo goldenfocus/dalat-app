@@ -4094,7 +4094,7 @@
     "nameHint": "您的姓名有助于接待团队和练习伙伴找到您。",
     "continue": "继续",
     "back": "返回",
-    "languageTitle": "您想练习哪种语言？",
+    "languageTitle": "语言练习",
     "english": "英语",
     "vietnamese": "越南语",
     "both": "两种都练习",
@@ -4191,6 +4191,15 @@
     "hostSaving": "保存中…",
     "hostSaveAndOrder": "保存并发送订单",
     "hostCancel": "取消",
-    "hostViewOrder": "查看订单"
+    "hostViewOrder": "查看订单",
+    "practiceLabel": "想练习",
+    "level_starting": "零基础",
+    "level_some": "初级",
+    "level_comfortable": "中级",
+    "level_advanced": "高级",
+    "level_fluent": "流利",
+    "level_native": "母语",
+    "confirmRsvp": "确认参加",
+    "editLanguages": "修改语言"
   }
 }

@@ -1,4 +1,5 @@
 "use client";
+import { useRsvpLanguages } from "@/components/arrival/use-rsvp-languages";
 import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
 import { currentCommunityVisit } from "@/lib/communities/activity";
@@ -76,6 +77,7 @@ export function RsvpCardObserver({ children }: { children: React.ReactNode }) {
 }
 
 interface RsvpButtonProps {
+  arrivalEnabled?: boolean;
   eventId: string;
   eventSlug: string;
   eventTitle?: string;
@@ -119,9 +121,11 @@ export function useRsvpActions(
   onRsvpSuccess?: () => void,
   questionnaire?: QuestionnaireData | null,
   onShowQuestionnaire?: () => void,
-  currentStatus?: Rsvp["status"] | null
+  currentStatus?: Rsvp["status"] | null,
+  arrivalSlug?: string
 ) {
   const router = useRouter();
+  const { beforeRsvp, languageSheet, languagePending } = useRsvpLanguages(arrivalSlug);
   const communityContext = useCommunityRsvp();
   const [transitionPending, startTransition] = useTransition();
   const [signupPending, setSignupPending] = useState(false);
@@ -129,7 +133,7 @@ export function useRsvpActions(
   const interestedLock = useRef(false);
   const [confirmedStatus, setConfirmedStatus] = useState<Rsvp["status"] | null | undefined>();
   useEffect(() => { setConfirmedStatus(undefined); }, [eventId, currentStatus]);
-  const isPending = transitionPending || interestedPending || signupPending;
+  const isPending = transitionPending || interestedPending || signupPending || languagePending;
   // Bound both network and auth-lock waits. A timed-out write may have reached
   // the server, so never claim it failed or retry it automatically.
   async function boundedRpc(name: string, args: Record<string, unknown>) {
@@ -161,14 +165,13 @@ export function useRsvpActions(
       return;
     }
 
-    // If there's a questionnaire, show it instead of directly RSVP'ing
-    if (hasActiveQuestionnaire && onShowQuestionnaire) {
-      onShowQuestionnaire();
-      return;
-    }
-
-    // Otherwise, proceed with direct RSVP
-    await performRsvp();
+    await beforeRsvp(async () => {
+      if (hasActiveQuestionnaire && onShowQuestionnaire) {
+        onShowQuestionnaire();
+        return;
+      }
+      await performRsvp();
+    });
   }
 
   async function joinSelectedCommunity(celebrate: boolean) {
@@ -327,6 +330,7 @@ export function useRsvpActions(
 
   return {
     isPending,
+    languageSheet,
     interestedPending,
     confirmedStatus,
     error,
@@ -340,6 +344,7 @@ export function useRsvpActions(
 }
 
 export function RsvpButton({
+  arrivalEnabled = false,
   eventId,
   eventSlug,
   eventTitle = "",
@@ -377,17 +382,20 @@ export function RsvpButton({
     setShowQuestionnaire(true);
   }, []);
 
-  const { isPending, interestedPending, confirmedStatus, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
-    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status);
+  const { isPending, languageSheet, interestedPending, confirmedStatus, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status, arrivalEnabled ? eventSlug : undefined);
+
+  const resumeRsvp = useRef(handleRsvp);
+  useEffect(() => { resumeRsvp.current = handleRsvp; }, [handleRsvp]);
 
   useEffect(() => {
-    if (isLoggedIn && hasActiveQuestionnaire && !currentRsvp && !isEventPast(startsAt, endsAt) && new URLSearchParams(window.location.search).get("resumeRsvp") === "1") {
-      setShowQuestionnaire(true);
+    if (isLoggedIn && (hasActiveQuestionnaire || arrivalEnabled) && !currentRsvp && !isEventPast(startsAt, endsAt) && new URLSearchParams(window.location.search).get("resumeRsvp") === "1") {
+      void resumeRsvp.current();
       const url = new URL(window.location.href);
       url.searchParams.delete("resumeRsvp");
       window.history.replaceState(null, "", url);
     }
-  }, [isLoggedIn, hasActiveQuestionnaire, currentRsvp, startsAt, endsAt]);
+  }, [isLoggedIn, hasActiveQuestionnaire, arrivalEnabled, currentRsvp, startsAt, endsAt]);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -462,6 +470,7 @@ export function RsvpButton({
       <>
         {celebrationPortal}
         {questionnaireSheet}
+        {languageSheet}
         <EventFeedback
           eventId={eventId}
           eventTitle={eventTitle}
@@ -489,6 +498,7 @@ export function RsvpButton({
       <>
         {celebrationPortal}
         {questionnaireSheet}
+        {languageSheet}
         <div className="space-y-3">
           <p className="text-sm text-green-600 font-medium text-center">
             {t("youreGoing")}
@@ -520,6 +530,7 @@ export function RsvpButton({
       <>
         {celebrationPortal}
         {questionnaireSheet}
+        {languageSheet}
         <div className="space-y-3">
           <div className="text-center space-y-1">
             <p className="text-sm text-orange-600 font-medium">
@@ -556,6 +567,7 @@ export function RsvpButton({
       <>
         {celebrationPortal}
         {questionnaireSheet}
+        {languageSheet}
         <div className="space-y-3">
           <p className="text-sm text-blue-600 font-medium text-center">
             {t("youreInterested")}
@@ -586,6 +598,7 @@ export function RsvpButton({
     <>
       {celebrationPortal}
       {questionnaireSheet}
+        {languageSheet}
       <div className="space-y-3">
         <CommunityRsvpChoice />
         <Button

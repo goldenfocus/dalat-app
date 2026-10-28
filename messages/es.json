@@ -4094,7 +4094,7 @@
     "nameHint": "Tu nombre ayuda al equipo de bienvenida y a tus compañeros de práctica a encontrarte.",
     "continue": "Continuar",
     "back": "Volver",
-    "languageTitle": "¿Qué idioma te gustaría practicar?",
+    "languageTitle": "Práctica de idiomas",
     "english": "Inglés",
     "vietnamese": "Vietnamita",
     "both": "Ambos",
@@ -4191,6 +4191,15 @@
     "hostSaving": "Guardando…",
     "hostSaveAndOrder": "Guardar y enviar pedido",
     "hostCancel": "Cancelar",
-    "hostViewOrder": "Ver pedido"
+    "hostViewOrder": "Ver pedido",
+    "practiceLabel": "Quiero practicar",
+    "level_starting": "Desde cero",
+    "level_some": "Principiante",
+    "level_comfortable": "Intermedio",
+    "level_advanced": "Avanzado",
+    "level_fluent": "Fluido",
+    "level_native": "Nativo",
+    "confirmRsvp": "Confirmar asistencia",
+    "editLanguages": "Editar idiomas"
   }
 }
