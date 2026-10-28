@@ -6,7 +6,7 @@ import {
   type EventIndexingTranslationRow,
 } from "@/lib/translations-readiness";
 import { CONTENT_LOCALES } from "@/lib/types";
-import { isDuplicateOf } from "./duplicate-key";
+import { isDuplicateOf, isSeriesInstanceDuplicate } from "./duplicate-key";
 import { evaluateDiscoveryHorizon } from "./horizon";
 import { eventLooksLocalToDalat } from "./locality";
 import { isPersistedSourceRef } from "./safe-url";
@@ -203,7 +203,8 @@ export function evaluateDraftQuality(
   if (options.publishedDuplicate) {
     reasons.push({
       code: "duplicate_published",
-      message: "A published event with the same title and date already exists",
+      message:
+        "A published event (or recurring-series instance at the same venue and slot) already exists for this date",
     });
   }
   const heroPresent = Boolean(event.image_url?.trim());
@@ -846,7 +847,9 @@ async function hasPublishedDuplicate(
   // on either UTC date. isDuplicateOf does the real matching.
   const { data, error } = await supabase
     .from("events")
-    .select("id, title, starts_at, venue_id, location_name")
+    .select(
+      "id, title, starts_at, ends_at, series_id, venue_id, location_name, venue:venues(name)",
+    )
     .eq("status", "published")
     .neq("id", event.id)
     .gte("starts_at", prevDay(day))
@@ -860,12 +863,20 @@ async function hasPublishedDuplicate(
     id: event.id,
     title: event.title,
     starts_at: event.starts_at,
+    ends_at: event.ends_at ?? null,
     venue_id: event.venue_id ?? null,
     location_name: event.location_name ?? null,
   };
-  return (data ?? []).some((other) => {
+  return (data ?? []).some((row) => {
+    const venue = (row as { venue?: { name?: string | null } | null }).venue;
+    const other = {
+      ...(row as Record<string, unknown>),
+      venue_name: venue?.name ?? null,
+    } as Parameters<typeof isSeriesInstanceDuplicate>[1];
     if (!sameLocalDay(self.starts_at, other.starts_at)) return false;
-    return isDuplicateOf(self, other);
+    // Published recurring-series instances rarely share a chat post's title:
+    // match them on venue + date + slot instead.
+    return isDuplicateOf(self, other) || isSeriesInstanceDuplicate(self, other);
   });
 }
 

@@ -480,6 +480,24 @@ func (b *ingestBot) ingestWithResult(memory *groupContext, in inbound, fromHisto
 			logf("skipped repost %q (%s): matches %s event %s", draft.Title, draft.Slug, dup.Status, dup.Slug)
 			out.Skip = "repost of " + dup.Slug
 			return
+		} else if inst := matchSeriesInstance(draft, rows); inst != nil {
+			// The post announces a published recurring-series instance: never
+			// draft a duplicate. Only add what the instance lacks (its flyer).
+			memory.add(in.GroupJID, remembered)
+			if inst.ImageURL == "" && draft.ImageURL != "" {
+				patch := map[string]any{"image_url": draft.ImageURL}
+				if draft.ImageAlt != "" {
+					patch["image_alt"] = draft.ImageAlt
+				}
+				if _, err := b.supa.patchEvent(context.Background(), inst.ID, patch); err != nil {
+					logf("series instance %s flyer attach failed: %v", inst.Slug, err)
+				} else {
+					logf("attached WhatsApp flyer to series instance %s", inst.Slug)
+				}
+			}
+			logf("skipped %q (%s): matches published series instance %s", draft.Title, draft.Slug, inst.Slug)
+			out.Skip = "series instance " + inst.Slug
+			return
 		}
 	}
 	row := draft.toRow(b.createdBy)

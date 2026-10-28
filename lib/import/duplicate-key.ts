@@ -108,3 +108,90 @@ export function isDuplicateOf(
   const na = normalizeDuplicateTitle(event.title);
   return na.length >= 3 && na === normalizeDuplicateTitle(other.title);
 }
+
+export type SeriesInstanceCandidate = DuplicateCandidate & {
+  ends_at?: string | null;
+  series_id?: string | null;
+  venue_name?: string | null;
+};
+
+const SERIES_SLOT_TOLERANCE_MS = 60 * 60_000;
+const DEFAULT_WINDOW_MS = 2 * 60 * 60_000;
+const GENERIC_VENUE_WORDS = new Set([
+  "coffee",
+  "cafe",
+  "caphe",
+  "ca",
+  "phe",
+  "quan",
+  "the",
+  "dalat",
+  "da",
+  "lat",
+  "bar",
+  "restaurant",
+  "tea",
+  "studio",
+  "vietnam",
+  "lam",
+  "dong",
+]);
+
+/** Distinctive venue letters: "Socialhouse Coffee" and "Social House Dalat" -> "socialhouse". */
+export function seriesVenueKey(name: string | null | undefined): string {
+  return normalizeDuplicateTitle(venueKey(name))
+    .split(" ")
+    .filter((word) => word && !GENERIC_VENUE_WORDS.has(word))
+    .join("");
+}
+
+function sameSeriesVenueKey(a: string, b: string): boolean {
+  if (a.length < 4 || b.length < 4) return false;
+  if (a === b) return true;
+  const [short, long] = a.length <= b.length ? [a, b] : [b, a];
+  return short.length >= 6 && long.includes(short);
+}
+
+function localDay(value: string): string {
+  return new Date(Date.parse(value)).toLocaleDateString("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  });
+}
+
+/**
+ * A draft repeats a published recurring-series instance when both fall on
+ * the same Đà Lạt date, at the same venue, in the same slot (start within an
+ * hour, or overlapping windows). Titles are ignored: chat posts such as
+ * "Event at Socialhouse Coffee" rarely repeat the series title.
+ */
+export function isSeriesInstanceDuplicate(
+  event: SeriesInstanceCandidate,
+  instance: SeriesInstanceCandidate,
+): boolean {
+  if (event.id === instance.id || !instance.series_id) return false;
+  if (!event.starts_at || !instance.starts_at) return false;
+  const start = Date.parse(event.starts_at);
+  const otherStart = Date.parse(instance.starts_at);
+  if (!Number.isFinite(start) || !Number.isFinite(otherStart)) return false;
+  if (localDay(event.starts_at) !== localDay(instance.starts_at)) return false;
+  const end = event.ends_at ? Date.parse(event.ends_at) : NaN;
+  const otherEnd = instance.ends_at ? Date.parse(instance.ends_at) : NaN;
+  const eventEnd =
+    Number.isFinite(end) && end > start ? end : start + DEFAULT_WINDOW_MS;
+  const instanceEnd =
+    Number.isFinite(otherEnd) && otherEnd > otherStart
+      ? otherEnd
+      : otherStart + DEFAULT_WINDOW_MS;
+  const overlap = start < instanceEnd && otherStart < eventEnd;
+  if (Math.abs(start - otherStart) > SERIES_SLOT_TOLERANCE_MS && !overlap) {
+    return false;
+  }
+  if (event.venue_id && instance.venue_id) {
+    return event.venue_id === instance.venue_id;
+  }
+  const key = seriesVenueKey(event.location_name);
+  if (!key) return false;
+  return [instance.location_name, instance.venue_name].some((name) =>
+    sameSeriesVenueKey(key, seriesVenueKey(name)),
+  );
+}

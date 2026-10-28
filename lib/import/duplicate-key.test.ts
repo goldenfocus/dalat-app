@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   isDuplicateOf,
+  isSeriesInstanceDuplicate,
   normalizeDuplicateTitle,
   sameVenue,
+  seriesVenueKey,
   titlesSimilar,
 } from "./duplicate-key";
 
@@ -127,6 +129,87 @@ describe("helpers", () => {
   it("titlesSimilar ignores accents and date suffixes", () => {
     expect(
       titlesSimilar("Trung Quan - Da Lat (28.11)", "TRUNG QUÂN - ĐÀ LẠT"),
+    ).toBe(true);
+  });
+});
+
+describe("isSeriesInstanceDuplicate", () => {
+  // Review: wa-3a1ed7fe81ad8773c956 vs language-exchange-social-house-z8oc-20261028.
+  const draft = {
+    id: "788cbc2e-48c5-45b6-b575-ebcc97714fd5",
+    title: "Event at Socialhouse Coffee",
+    starts_at: "2026-10-28T11:00:00+00:00",
+    ends_at: "2026-10-28T13:00:00+00:00",
+    venue_id: null,
+    location_name: "Socialhouse Coffee",
+  };
+  const instance = {
+    id: "171fa31b-4040-4ec3-a7cf-58e6f17dc096",
+    title: "Language Exchange @ Social House",
+    starts_at: "2026-10-28T11:00:00+00:00",
+    ends_at: "2026-10-28T13:00:00+00:00",
+    series_id: "ad0a0c5e-f718-447c-89f1-6fa3b78e3c52",
+    venue_id: "436f8b46-d5fe-41ef-8245-e8ffb9ee7980",
+    location_name:
+      "184 Đ. Tô Ngọc Vân, Xuân Hương - Đà Lạt, Lâm Đồng 66122, Vietnam",
+    venue_name: "Social House Dalat",
+  };
+
+  it("matches the WhatsApp Socialhouse post to the weekly series instance", () => {
+    expect(isDuplicateOf(draft, instance)).toBe(false);
+    expect(seriesVenueKey("Socialhouse Coffee")).toBe("socialhouse");
+    expect(seriesVenueKey("Social House Dalat")).toBe("socialhouse");
+    expect(isSeriesInstanceDuplicate(draft, instance)).toBe(true);
+    expect(
+      isSeriesInstanceDuplicate(
+        { ...draft, starts_at: "2026-10-28T11:30:00+00:00", ends_at: null },
+        instance,
+      ),
+    ).toBe(true);
+  });
+
+  it("requires a series instance, the same date, slot and venue", () => {
+    expect(
+      isSeriesInstanceDuplicate(draft, { ...instance, series_id: null }),
+    ).toBe(false);
+    expect(
+      isSeriesInstanceDuplicate(draft, {
+        ...instance,
+        starts_at: "2026-10-29T11:00:00+00:00",
+        ends_at: "2026-10-29T13:00:00+00:00",
+      }),
+    ).toBe(false);
+    expect(
+      isSeriesInstanceDuplicate(
+        {
+          ...draft,
+          starts_at: "2026-10-28T14:00:00+00:00",
+          ends_at: "2026-10-28T15:00:00+00:00",
+        },
+        instance,
+      ),
+    ).toBe(false);
+    expect(
+      isSeriesInstanceDuplicate(
+        { ...draft, location_name: "Nghiêm Brewing Đà Lạt" },
+        instance,
+      ),
+    ).toBe(false);
+    expect(
+      isSeriesInstanceDuplicate(
+        {
+          ...draft,
+          venue_id: "another-venue",
+          location_name: "Socialhouse Coffee",
+        },
+        instance,
+      ),
+    ).toBe(false);
+    expect(
+      isSeriesInstanceDuplicate(
+        { ...draft, venue_id: instance.venue_id, location_name: null },
+        instance,
+      ),
     ).toBe(true);
   });
 });
