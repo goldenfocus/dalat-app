@@ -1,3 +1,5 @@
+import { VenueShareButton as ContentShareActions } from "@/components/venues/venue-share-button";
+import { localeUrl } from "@/lib/i18n/locale-url";
 import { translatedFields } from "@/lib/translations/public-content";
 import { getEventTranslationsBatch } from "@/lib/translations";
 import { OriginalText } from "@/components/ui/original-text";
@@ -95,6 +97,7 @@ export default async function OrganizerPage({ params }: PageProps) {
   const { slug } = await params;
   const locale = await getLocale();
   const t = await getTranslations("organizer");
+  const common = await getTranslations("common");
   const organizer = await getOrganizer(slug);
 
   if (!organizer) {
@@ -177,6 +180,14 @@ export default async function OrganizerPage({ params }: PageProps) {
                 <UnclaimedOrganizerBadge />
               )}
             </h1>
+            <div className="mt-3">
+              <ContentShareActions
+                name={organizer.name}
+                shareText={description || organizer.name}
+                url={localeUrl(locale as Locale, `/${organizer.slug}`)}
+                label={common("share")}
+              />
+            </div>
             {organizer.description && (
               <div>
                 <p className="text-muted-foreground mt-2">{description}</p>

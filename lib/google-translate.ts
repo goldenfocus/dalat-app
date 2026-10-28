@@ -32,6 +32,7 @@ export const TRANSLATE_SYSTEM =
   'Preserve markdown formatting, links, HTML tags, and emoji. ' +
   'Proper nouns (place names, business names, people): use the well-known form in the target language if one exists (e.g. 달랏 for Da Lat in Korean); otherwise KEEP them in their original spelling — never invent a transliteration, mix scripts inside one name, or translate a venue or business name into a literal descriptive phrase. ' +
   'Write as a native speaker would, not word-for-word: use established local terms or loanwords for sports/equipment (e.g. Korean 그래블 바이크 for gravel bike, Japanese タンデム自転車 for tandem bike, Malay kayuhan — never pemanduan — for a bike ride), prefer natural collocations (French en bonne compagnie, not avec de bonne compagnie), and double-check grammatical agreement — gender, case, measure words (Russian "своё воскресное утро", never "свой воскресный утро"). ' +
+  'Retain personal nicknames and labels exactly, including Mom and Mama when they identify people; do not turn those into local words for mother. Preserve the full scope of modifiers (for example homemade applies to all listed baked goods). Never infer an unstated activity or transport mode: sunrise rides alone does not specify cycling. ' +
   'Never add commentary. Never translate URLs or code.';
 
 /**
