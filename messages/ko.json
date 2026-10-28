@@ -2697,7 +2697,9 @@
     "outdoor": "야외",
     "indoor": "실내",
     "free": "무료",
-    "charity": "자선"
+    "charity": "자선",
+    "language-exchange": "언어 교환",
+    "languageExchangeDescription": "달랏에서 언어를 연습하고 사람들을 만나보세요."
   },
   "venues": {
     "title": "장소",
@@ -4253,7 +4255,20 @@
       "noDrink": "음료는 괜찮아요",
       "ready": "준비 완료",
       "editLanguages": "내 언어 설정 수정",
-      "claimed": "이 주문에 무료 음료 한 잔이 적용되었습니다."
+      "claimed": "이 주문에 무료 음료 한 잔이 적용되었습니다.",
+      "chooseFreeDrink": "무료 음료를 선택하세요",
+      "chooseFromMenu": "메뉴에서 선택하세요",
+      "firstRsvps": "선착순 {count}명에게 음료 한 잔을 무료로 제공합니다.",
+      "venuePurchase": "매장 메뉴에서 음료나 음식을 주문해 주세요.",
+      "drink": "음료",
+      "addExtras": "음식이나 음료 추가",
+      "reserveFreeDrink": "무료 음료 예약",
+      "chooseAtVenue": "매장에서 선택",
+      "chooseDrink": "음료를 선택하세요",
+      "freeDrinkLimit": "무료 음료 선착순 인원",
+      "limitHint": "이 행사에 적용됩니다. 0을 입력하면 신규 무료 신청을 중단합니다. 기존 예약은 유지됩니다.",
+      "saveLimit": "인원 제한 저장",
+      "saveFailed": "저장하지 못했습니다. 다시 시도해 주세요."
     }
   }
 }

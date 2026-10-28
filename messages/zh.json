@@ -2697,7 +2697,9 @@
     "outdoor": "户外",
     "indoor": "室内",
     "free": "免费",
-    "charity": "公益"
+    "charity": "公益",
+    "language-exchange": "语言交流",
+    "languageExchangeDescription": "在大叻练习语言、结识朋友。"
   },
   "venues": {
     "title": "场馆",
@@ -4253,7 +4255,20 @@
       "noDrink": "不用饮品，谢谢",
       "ready": "准备就绪",
       "editLanguages": "修改我的语言选择",
-      "claimed": "本订单已享免费饮品优惠。"
+      "claimed": "本订单已享免费饮品优惠。",
+      "chooseFreeDrink": "选择免费饮品",
+      "chooseFromMenu": "从菜单中选择",
+      "firstRsvps": "前{count}位报名者可获赠一杯饮品。",
+      "venuePurchase": "请从店家的菜单中点些饮品或食物。",
+      "drink": "饮品",
+      "addExtras": "添加食物或其他饮品",
+      "reserveFreeDrink": "预订免费饮品",
+      "chooseAtVenue": "到店再选",
+      "chooseDrink": "选择饮品",
+      "freeDrinkLimit": "免费饮品：前几位报名者",
+      "limitHint": "仅适用于本活动。输入0停止新增免费饮品。已有预订仍由赞助方承担。",
+      "saveLimit": "保存限额",
+      "saveFailed": "保存失败，请重试。"
     }
   }
 }

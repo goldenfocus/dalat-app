@@ -2697,7 +2697,9 @@
     "outdoor": "Ngoài trời",
     "indoor": "Trong nhà",
     "free": "Miễn phí",
-    "charity": "Từ thiện"
+    "charity": "Từ thiện",
+    "language-exchange": "Trao đổi ngôn ngữ",
+    "languageExchangeDescription": "Luyện ngôn ngữ và gặp gỡ mọi người tại Đà Lạt."
   },
   "venues": {
     "title": "Địa điểm",
@@ -4253,7 +4255,20 @@
       "noDrink": "Không dùng đồ uống, cảm ơn",
       "ready": "Bạn đã sẵn sàng",
       "editLanguages": "Chỉnh sửa ngôn ngữ của tôi",
-      "claimed": "Đơn này đã bao gồm đồ uống miễn phí của bạn."
+      "claimed": "Đơn này đã bao gồm đồ uống miễn phí của bạn.",
+      "chooseFreeDrink": "Chọn đồ uống miễn phí",
+      "chooseFromMenu": "Chọn từ thực đơn",
+      "firstRsvps": "Một đồ uống miễn phí cho {count} người đăng ký đầu tiên.",
+      "venuePurchase": "Vui lòng gọi món từ thực đơn của quán.",
+      "drink": "Đồ uống",
+      "addExtras": "Thêm món ăn hoặc đồ uống",
+      "reserveFreeDrink": "Đặt đồ uống miễn phí",
+      "chooseAtVenue": "Chọn khi đến quán",
+      "chooseDrink": "Chọn đồ uống",
+      "freeDrinkLimit": "Đồ uống miễn phí: số người đăng ký đầu tiên",
+      "limitHint": "Áp dụng cho sự kiện này. Nhập 0 để ngừng nhận yêu cầu miễn phí mới. Các đơn đã đặt vẫn được tài trợ.",
+      "saveLimit": "Lưu giới hạn",
+      "saveFailed": "Không lưu được. Vui lòng thử lại."
     }
   }
 }

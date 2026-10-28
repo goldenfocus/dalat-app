@@ -29,6 +29,8 @@ docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_r
 # The unrelated signup-intent function needs the full production schema, so omit it.
 awk '/CREATE OR REPLACE FUNCTION public.complete_signup_intent/{exit} {print} END {print "COMMIT;"}' "$repo_root/supabase/migrations/20261122_002_language_exchange_preferences.sql" | docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261124_003_reconcile_arrival_language_sponsor.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261125_001_language_exchange_rsvp_offers.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/language-exchange-offers.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/event-language-profiles.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/drink-sponsorship.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/sponsored-menu-sync.sql"
@@ -126,3 +128,29 @@ DO $$ BEGIN
 END $$;
 SQL
 echo 'Event arrival PostgreSQL authorization, idempotency, tampering and legacy preorder tests passed.'
+# Simultaneous RSVP inserts must not both receive the last free-drink position.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+INSERT INTO auth.users(id) VALUES('ba000000-0000-4000-8000-000000000001'),('ba000000-0000-4000-8000-000000000002');
+INSERT INTO profiles(id,username) VALUES('ba000000-0000-4000-8000-000000000001','race_offer_1'),('ba000000-0000-4000-8000-000000000002','race_offer_2');
+INSERT INTO events(id,created_by,status,starts_at,ends_at,arrival_enabled) VALUES('bf000000-0000-4000-8000-000000000001','81000000-0000-4000-8000-000000000001','published',now(),now()+interval '2 hours',true);
+INSERT INTO event_drink_sponsors(event_id,sponsor_name,ends_at,rsvp_limit) VALUES('bf000000-0000-4000-8000-000000000001','EZViet',now()+interval '2 hours',1);
+SQL
+for suffix in 1 2; do
+ docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<SQL &
+BEGIN;
+INSERT INTO rsvps(event_id,user_id,status) VALUES('bf000000-0000-4000-8000-000000000001','ba000000-0000-4000-8000-00000000000${suffix}','going');
+SELECT pg_sleep(0.1);
+COMMIT;
+SQL
+ if [[ "$suffix" == 1 ]]; then offer_first=$!; else offer_second=$!; fi
+done
+wait "$offer_first"
+wait "$offer_second"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+DO $$ BEGIN
+ IF (SELECT count(DISTINCT position) FROM language_exchange_rsvp_positions WHERE event_id='bf000000-0000-4000-8000-000000000001')<>2 OR
+ (SELECT count(*) FROM language_exchange_rsvp_positions WHERE event_id='bf000000-0000-4000-8000-000000000001' AND (arrival_sponsor_eligibility(event_id,user_id)->>'eligible')::boolean)<>1 THEN
+ RAISE EXCEPTION 'Concurrent RSVPs duplicated the final free-drink slot'; END IF;
+END $$;
+SQL
+echo 'Concurrent RSVP free-drink cutoff passed.'

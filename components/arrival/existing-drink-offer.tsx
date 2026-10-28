@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { ArrivalEvent, ArrivalOrder } from "@/lib/arrival/types";
 
 /** Apply the offer to an unchanged unpaid order; never rewrite an existing cart. */
-export function ExistingDrinkOffer({ event, order, onClaimed }: { event: ArrivalEvent; order: ArrivalOrder; onClaimed: (order: ArrivalOrder) => void }) {
+export function ExistingDrinkOffer({ event, order, onClaimed, eligible = false }: { eligible?: boolean; event: ArrivalEvent; order: ArrivalOrder; onClaimed: (order: ArrivalOrder) => void }) {
   const t = useTranslations("arrival");
   const [selected, setSelected] = useState("");
   const [busy, setBusy] = useState(false);
@@ -13,7 +13,7 @@ export function ExistingDrinkOffer({ event, order, onClaimed }: { event: Arrival
   const pending = useRef<{ item: string; requestId: string } | null>(null);
   const lock = useRef(false);
   const choices = order.items.filter(item => item.menu_item_id && event.sponsorship?.eligibleItemIds.includes(item.menu_item_id));
-  if (!event.sponsorship || order.paid_at || (order.sponsored_vnd || 0) > 0 || !["pending", "confirmed"].includes(order.status) || !choices.length) return null;
+  if (!eligible || !event.sponsorship || order.paid_at || (order.sponsored_vnd || 0) > 0 || !["pending", "confirmed"].includes(order.status) || !choices.length) return null;
   const chosen = selected || choices[0].menu_item_id!;
   const claim = async () => {
     if (lock.current) return;

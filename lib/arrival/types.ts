@@ -33,9 +33,10 @@ export type ArrivalOrder = {
   guestName?: string;
 };
 export type ArrivalReceipt = { participant: ArrivalParticipant; order: ArrivalOrder | null };
-export type ArrivalEvent = { id: string; slug: string; title: string; startsAt: string; venueName: string; orderingEnabled: boolean; isOpen: boolean; sponsorship?: { sponsorName: string; eligibleItemIds: string[] } | null };
+export type ArrivalEvent = { id: string; slug: string; title: string; startsAt: string; venueName: string; orderingEnabled: boolean; isOpen: boolean; sponsorship?: { sponsorName: string; eligibleItemIds: string[]; rsvpLimit?: number } | null };
 export type ArrivalContext = {
   event: ArrivalEvent;
+  sponsorEligibility?: { eligible: boolean; position: number | null; limit: number | null; claimed: boolean };
   menu: MenuSection[];
   profile: { name: string } | null;
   preferences?: LegacyLanguagePreferences | null;
@@ -49,5 +50,5 @@ export type StaffArrivalContext = Omit<ArrivalContext, "receipt" | "profile"> & 
   participants: ArrivalParticipant[];
   orders: ArrivalOrder[];
   staff: { user_id: string; role: "welcome" | "orders" | "manager"; displayName: string; username: string | null }[];
-  rsvps: { id: string; user_id: string; displayName: string; username: string | null; checked_in_at: string | null; preferences?: LegacyLanguagePreferences | null; languagePreferences?: LanguagePreferences | null }[];
+  rsvps: { id: string; user_id: string; displayName: string; username: string | null; checked_in_at: string | null; sponsorEligible?: boolean; preferences?: LegacyLanguagePreferences | null; languagePreferences?: LanguagePreferences | null }[];
 };

@@ -2697,7 +2697,9 @@
     "outdoor": "屋外",
     "indoor": "屋内",
     "free": "無料",
-    "charity": "チャリティ"
+    "charity": "チャリティ",
+    "language-exchange": "言語交換",
+    "languageExchangeDescription": "ダラットで言語を練習し、人と出会いましょう。"
   },
   "venues": {
     "title": "会場",
@@ -4253,7 +4255,20 @@
       "noDrink": "ドリンクは不要です",
       "ready": "準備ができました",
       "editLanguages": "言語設定を変更",
-      "claimed": "この注文には無料ドリンク1杯分が適用されています。"
+      "claimed": "この注文には無料ドリンク1杯分が適用されています。",
+      "chooseFreeDrink": "無料ドリンクを選ぶ",
+      "chooseFromMenu": "メニューから選ぶ",
+      "firstRsvps": "先着{count}名の参加登録にドリンク1杯を無料提供。",
+      "venuePurchase": "お店のメニューから何かご注文ください。",
+      "drink": "ドリンク",
+      "addExtras": "料理や追加ドリンクを注文",
+      "reserveFreeDrink": "無料ドリンクを予約",
+      "chooseAtVenue": "お店で選ぶ",
+      "chooseDrink": "ドリンクを選ぶ",
+      "freeDrinkLimit": "無料ドリンクの先着人数",
+      "limitHint": "このイベントに適用。0で新規の無料提供を停止します。既存の予約は引き続き対象です。",
+      "saveLimit": "上限を保存",
+      "saveFailed": "保存できませんでした。再度お試しください。"
     }
   }
 }

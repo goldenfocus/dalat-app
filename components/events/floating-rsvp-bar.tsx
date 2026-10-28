@@ -3,6 +3,7 @@
 import { CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useRsvpActions, isEventPast, useCelebration } from "./rsvp-button";
 import { RsvpCelebration } from "./rsvp-celebration";
@@ -56,7 +57,9 @@ export function FloatingRsvpBar({
   questionnaire,
   prepareRegistration = false,
 }: FloatingRsvpBarProps) {
+  const router = useRouter();
   const t = useTranslations("rsvp");
+  const arrivalT = useTranslations("arrival");
   const [showCelebration, setShowCelebration] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const celebration = useCelebration();
@@ -131,7 +134,7 @@ export function FloatingRsvpBar({
     actionButton = <Button onClick={handleRsvp} disabled={isPending} className="event-join-action min-h-12 flex-1 text-base">{isPending ? "..." : t("signInToJoin")}</Button>;
   } else if (isGoing) {
     statusText = t("youreGoing");
-    actionButton = (
+    actionButton = arrivalEnabled ? <Button className="min-h-11" onClick={() => router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`)}>{arrivalT("registration.chooseDrink")}</Button> : (
       <Button
         onClick={handleCancel}
         disabled={isPending}

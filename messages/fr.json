@@ -2711,7 +2711,9 @@
     "outdoor": "Extérieur",
     "indoor": "Intérieur",
     "free": "Gratuit",
-    "charity": "Caritatif"
+    "charity": "Caritatif",
+    "language-exchange": "Échange linguistique",
+    "languageExchangeDescription": "Pratiquez les langues et faites des rencontres à Da Lat."
   },
   "venues": {
     "title": "Lieux",
@@ -4253,7 +4255,20 @@
       "noDrink": "Pas de boisson, merci",
       "ready": "Tout est prêt",
       "editLanguages": "Modifier mes langues",
-      "claimed": "Votre boisson offerte est incluse dans cette commande."
+      "claimed": "Votre boisson offerte est incluse dans cette commande.",
+      "chooseFreeDrink": "Choisissez votre boisson offerte",
+      "chooseFromMenu": "Choisissez dans le menu",
+      "firstRsvps": "Une boisson offerte pour les {count} premières inscriptions.",
+      "venuePurchase": "Merci de commander quelque chose sur la carte du lieu.",
+      "drink": "Boisson",
+      "addExtras": "Ajouter à manger ou à boire",
+      "reserveFreeDrink": "Réserver ma boisson offerte",
+      "chooseAtVenue": "Choisir sur place",
+      "chooseDrink": "Choisissez votre boisson",
+      "freeDrinkLimit": "Boissons offertes : premières inscriptions",
+      "limitHint": "Pour cet événement. Saisissez 0 pour arrêter les nouvelles offres. Les réservations existantes restent prises en charge.",
+      "saveLimit": "Enregistrer la limite",
+      "saveFailed": "Enregistrement impossible. Réessayez."
     }
   }
 }

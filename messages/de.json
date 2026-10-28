@@ -2697,7 +2697,9 @@
     "outdoor": "Draußen",
     "indoor": "Drinnen",
     "free": "Kostenlos",
-    "charity": "Wohltätigkeit"
+    "charity": "Wohltätigkeit",
+    "language-exchange": "Sprachaustausch",
+    "languageExchangeDescription": "Übe Sprachen und lerne Menschen in Da Lat kennen."
   },
   "venues": {
     "title": "Veranstaltungsorte",
@@ -4253,7 +4255,20 @@
       "noDrink": "Kein Getränk, danke",
       "ready": "Du bist startklar",
       "editLanguages": "Meine Sprachen bearbeiten",
-      "claimed": "Dein Gratisgetränk wurde auf diese Bestellung angerechnet."
+      "claimed": "Dein Gratisgetränk wurde auf diese Bestellung angerechnet.",
+      "chooseFreeDrink": "Wähle dein Gratisgetränk",
+      "chooseFromMenu": "Wähle aus der Karte",
+      "firstRsvps": "Ein Gratisgetränk für die ersten {count} Anmeldungen.",
+      "venuePurchase": "Bitte bestelle etwas von der Karte des Lokals.",
+      "drink": "Getränk",
+      "addExtras": "Essen oder weitere Getränke hinzufügen",
+      "reserveFreeDrink": "Gratisgetränk reservieren",
+      "chooseAtVenue": "Vor Ort auswählen",
+      "chooseDrink": "Wähle dein Getränk",
+      "freeDrinkLimit": "Gratisgetränke: erste Anmeldungen",
+      "limitHint": "Gilt für dieses Event. Mit 0 werden neue Gratisgetränke gestoppt. Bestehende Reservierungen bleiben gedeckt.",
+      "saveLimit": "Limit speichern",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen."
     }
   }
 }

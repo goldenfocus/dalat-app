@@ -16,7 +16,7 @@ it("lets an anonymous walk-in order normally without claiming an RSVP-only spons
   fireEvent.change(screen.getByLabelText("englishLevel"),{target:{value:"starting"}});
   fireEvent.change(screen.getByLabelText("vietnameseLevel"),{target:{value:"starting"}});
   fireEvent.click(screen.getByRole("button",{name:"continue"}));
-  fireEvent.click(screen.getByText("menuTitle"));
+  fireEvent.click(screen.getByText("registration.chooseFromMenu"));
   fireEvent.click(screen.getByRole("button",{name:"add Coffee"}));
   fireEvent.click(screen.getByRole("button",{name:"checkInAndOrder"}));
   await screen.findByRole("alert");

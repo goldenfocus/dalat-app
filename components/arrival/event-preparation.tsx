@@ -10,9 +10,9 @@ import { Button } from "@/components/ui/button";
 import { LanguageSetup } from "./language-setup";
 import { DEFAULT_LANGUAGE_PREFERENCES, languagePreferencesSchema, type LanguagePreferences } from "@/lib/arrival/languages";
 import type { ArrivalContext, ArrivalOrder } from "@/lib/arrival/types";
-import { ArrivalMenu, cartLines, type ArrivalQuantities } from "./arrival-menu";
+import { cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView } from "./arrival-receipt";
-import { SponsoredCart, sponsoredItemId } from "./sponsored-cart";
+import { DrinkMenuSheet, canChooseFreeDrink, reservationQuantities } from "./drink-menu-sheet";
 import { ExistingDrinkOffer } from "./existing-drink-offer";
 
 type PreparationContext = ArrivalContext & { rsvpStatus?: string | null };
@@ -64,8 +64,8 @@ export function EventPreparation({ slug }: { slug: string }) {
   const reserve = async () => {
     if (lock.current || !context) return;
     lock.current = true; setBusy(true); setFailed(false);
-    const eligible = context.event.sponsorship?.eligibleItemIds || [];
-    const body = JSON.stringify({ items: cartLines(context.menu, quantities), note, sponsoredItemId: sponsoredItemId(context.menu, quantities, eligible, selected) || undefined });
+    const freeDrink = canChooseFreeDrink(context) ? selected : null;
+    const body = JSON.stringify({ items: cartLines(context.menu, reservationQuantities(quantities, freeDrink)), note, sponsoredItemId: freeDrink || undefined });
     if (pending.current?.body !== body) pending.current = { body, id: crypto.randomUUID() };
     try {
       const response = await fetch(`${endpoint}/reserve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...JSON.parse(body), requestId: pending.current.id }) });
@@ -75,7 +75,6 @@ export function EventPreparation({ slug }: { slug: string }) {
     finally { lock.current = false; setBusy(false); }
   };
 
-  const items = context ? cartLines(context.menu, quantities) : [];
   return <main className="mx-auto max-w-xl px-4 pb-32 pt-5">
     <Link href={`/events/${slug}`} className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" aria-hidden />{common("backToEvent")}</Link>
     <h1 className="text-3xl font-semibold tracking-tight">{t("prepare")}</h1>
@@ -86,15 +85,8 @@ export function EventPreparation({ slug }: { slug: string }) {
         <p className="font-semibold">{context.profile?.name || profile?.display_name || profile?.username}</p>
       </div>
       {step === "languages" && <section className="space-y-6"><p className="text-muted-foreground">{t("intro")}</p><LanguageSetup value={preferences} onChange={setPreferences} disabled={busy} /><Button className="min-h-12 w-full" disabled={busy || !languagePreferencesSchema.safeParse(preferences).success} onClick={() => void saveLanguages()}>{common(busy ? "submitting" : "continue")}</Button></section>}
-      {step === "menu" && <section className="space-y-6">
-        <h2 className="text-2xl font-semibold">{context.event.sponsorship ? t("complimentary") : common("menuTitle")}</h2>
-        <p className="text-muted-foreground">{t("prepareAtArrival")}</p>
-        <ArrivalMenu sections={context.menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />
-        {context.event.sponsorship && <SponsoredCart sections={context.menu} quantities={quantities} eligible={context.event.sponsorship.eligibleItemIds} selected={selected} onSelect={setSelected} />}
-        <Button className="min-h-12 w-full" disabled={busy || !items.length} onClick={() => void reserve()}>{common(busy ? "submitting" : "registration.reserve")}</Button>
-        <Button variant="ghost" className="min-h-12 w-full" disabled={busy} onClick={() => setStep("done")}>{t("noDrink")}</Button>
-      </section>}
-      {step === "done" && <section className="space-y-6 py-3"><Check className="h-9 w-9 text-primary" aria-hidden /><h2 className="text-2xl font-semibold">{t("ready")}</h2><p className="text-muted-foreground">{t("prepareAtArrival")}</p>{order && <><ArrivalOrderView order={order} /><ExistingDrinkOffer event={context.event} order={order} onClaimed={setOrder} /></>}<Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button><Button variant="ghost" onClick={() => setStep("languages")}>{t("editLanguages")}</Button></section>}
+      {step === "menu" && <DrinkMenuSheet context={context} open onLater={() => setStep("done")} busy={busy} failed={failed} quantities={quantities} onChange={setQuantities} selected={selected} onSelect={setSelected} note={note} onNoteChange={setNote} onReserve={() => void reserve()} />}
+      {step === "done" && <section className="space-y-6 py-3"><Check className="h-9 w-9 text-primary" aria-hidden /><h2 className="text-2xl font-semibold">{t("ready")}</h2><p className="text-muted-foreground">{t("prepareAtArrival")}</p>{order && <><ArrivalOrderView order={order} /><ExistingDrinkOffer eligible={context.sponsorEligibility?.eligible} event={context.event} order={order} onClaimed={setOrder} /></>}<Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button>{!order && <Button className="min-h-12 w-full" onClick={() => setStep("menu")}>{t(canChooseFreeDrink(context) ? "chooseFreeDrink" : "chooseFromMenu")}</Button>}<Button variant="ghost" onClick={() => setStep("languages")}>{t("editLanguages")}</Button></section>}
     </>}
     {failed && <p className="mt-4 text-destructive" role="alert">{common("errorGeneric")}</p>}
   </main>;

@@ -54,6 +54,7 @@ const TAG_DESCRIPTIONS: Record<EventTag, string> = {
   pickleball: "Find and organize pickleball games in Da Lat's perfect climate",
   games: "Poker nights, board games, trivia, and friendly competition",
   // Social
+  "language-exchange": "Practice languages and meet people in Da Lat",
   meetup: "Connect with like-minded people at casual social gatherings",
   networking: "Build professional connections and grow your network",
   community: "Community-building events that bring people together",
@@ -103,12 +104,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const config = TAG_CONFIG[tag as EventTag];
-  const description = TAG_DESCRIPTIONS[tag as EventTag];
+  const t = await getTranslations({ locale, namespace: "eventTags" });
+  const description = tag === "language-exchange" ? t("languageExchangeDescription") : TAG_DESCRIPTIONS[tag as EventTag];
+  const title = tag === "language-exchange" ? t("language-exchange") : `${config.label} Events`;
 
   return generateLocalizedMetadata({
     locale,
     path: `/events/tags/${tag}`,
-    title: `${config.label} Events`,
+    title,
     description,
     keywords: ["events", config.label.toLowerCase(), "Da Lat", "activities"],
   });
@@ -182,7 +185,13 @@ export default async function TagPage({ params }: PageProps) {
 
   const validTag = tag as EventTag;
   const config = TAG_CONFIG[validTag];
-  const description = TAG_DESCRIPTIONS[validTag];
+  const t = await getTranslations("eventTags");
+  const upcoming = await getTranslations("upcomingEvents");
+  const common = await getTranslations("auth");
+  const nav = await getTranslations("nav");
+  const isLanguageExchange = validTag === "language-exchange";
+  const title = isLanguageExchange ? t("language-exchange") : `${config.label} Events`;
+  const description = isLanguageExchange ? t("languageExchangeDescription") : TAG_DESCRIPTIONS[validTag];
   const IconComponent = ICON_MAP[config.icon];
 
   const _t = await getTranslations("archive");
@@ -194,9 +203,9 @@ export default async function TagPage({ params }: PageProps) {
   // Breadcrumb structured data
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
-      { name: "Home", url: "/" },
-      { name: "Events", url: "/" },
-      { name: config.label, url: `/events/tags/${tag}` },
+      { name: isLanguageExchange ? "ĐàLạt.app" : "Home", url: "/" },
+      { name: isLanguageExchange ? nav("events") : "Events", url: "/" },
+      { name: isLanguageExchange ? title : config.label, url: `/events/tags/${tag}` },
     ],
     locale
   );
@@ -205,7 +214,7 @@ export default async function TagPage({ params }: PageProps) {
   const itemListSchema = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: `${config.label} Events in Da Lat`,
+    name: isLanguageExchange ? title : `${config.label} Events in Da Lat`,
     description,
     numberOfItems: events.length,
     itemListElement: events.map((event, index) => ({
@@ -230,12 +239,12 @@ export default async function TagPage({ params }: PageProps) {
                 <IconComponent className="w-8 h-8 text-foreground" />
               </div>
               <div className="flex-1">
-                <h1 className="text-2xl font-bold mb-1">{config.label} Events</h1>
+                <h1 className="text-2xl font-bold mb-1">{title}</h1>
                 <p className="text-muted-foreground">{description}</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground">
-              {events.length === 0
+              {isLanguageExchange ? upcoming("eventCount", { count: events.length }) : events.length === 0
                 ? "No upcoming events"
                 : `${events.length} upcoming ${events.length === 1 ? "event" : "events"}`}
             </p>
@@ -255,13 +264,13 @@ export default async function TagPage({ params }: PageProps) {
                   <IconComponent className="w-12 h-12 text-muted-foreground/50" />
                 </div>
               </div>
-              <p className="mb-2 font-medium">No upcoming {config.label.toLowerCase()} events</p>
-              <p className="mb-6 text-sm">Check back soon for new events in this category</p>
+              <p className="mb-2 font-medium">{isLanguageExchange ? upcoming("eventCount", { count: 0 }) : `No upcoming ${config.label.toLowerCase()} events`}</p>
+              <p className="mb-6 text-sm">{isLanguageExchange ? description : "Check back soon for new events in this category"}</p>
               <Link
                 href="/"
                 className="inline-flex items-center gap-2 text-primary hover:underline"
               >
-                Browse all events
+                {isLanguageExchange ? common("backToEvents") : "Browse all events"}
               </Link>
             </div>
           )}

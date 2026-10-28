@@ -81,7 +81,7 @@ describe("sponsored order operations", () => {
 
 
 describe("staff sponsored drink selection", () => {
-  const rsvp = { id: "rsvp", user_id: "guest", displayName: "Vi", username: "vivian", checked_in_at: null };
+  const rsvp = { sponsorEligible: true, id: "rsvp", user_id: "guest", displayName: "Vi", username: "vivian", checked_in_at: null };
   const data: StaffArrivalContext = {
     ...ledgerData,
     event: { ...ledgerData.event, sponsorship: { sponsorName: "EZViet", eligibleItemIds: ["coffee"] } },

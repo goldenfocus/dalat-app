@@ -7,6 +7,7 @@ import { Link } from "@/lib/i18n/routing";
 import { HostArrivals } from "./host-arrivals";
 import { HostOrders } from "./host-orders";
 import { HostTeam } from "./host-team";
+import { DrinkOfferSettings } from "./drink-offer-settings";
 import { SponsorLedger } from "./sponsor-ledger";
 import type { HostData } from "./host-types";
 
@@ -109,7 +110,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
           </nav>
           {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={load} />}
           {visibleTab === "orders" && data.access.canOrder && <HostOrders orders={data.orders} busy={busy} act={act} />}
-          {visibleTab === "sponsor" && data.access.canManage && <SponsorLedger data={data} busy={busy} act={act} />}
+          {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <DrinkOfferSettings key={data.event.sponsorship.rsvpLimit} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} onSaved={load} />}<SponsorLedger data={data} busy={busy} act={act} /></>}
           {visibleTab === "team" && data.access.canManage && <HostTeam staff={data.staff} busy={busy} act={act} />}
         </>}
       </>}

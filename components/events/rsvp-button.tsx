@@ -371,6 +371,7 @@ export function RsvpButton({
 }: RsvpButtonProps) {
   const router = useRouter();
   const t = useTranslations("rsvp");
+  const arrivalT = useTranslations("arrival");
   const [showCelebration, setShowCelebration] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const celebration = useCelebration();
@@ -510,6 +511,7 @@ export function RsvpButton({
           <p className="text-sm text-green-600 font-medium text-center">
             {t("youreGoing")}
           </p>
+          {arrivalEnabled && <Button className="min-h-12 w-full" onClick={() => router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`)}>{arrivalT("registration.chooseDrink")}</Button>}
           <Button
             onClick={handleCancel}
             disabled={isPending}

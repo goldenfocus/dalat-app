@@ -2728,7 +2728,9 @@
     "outdoor": "Outdoor",
     "indoor": "Indoor",
     "free": "Free",
-    "charity": "Charity"
+    "charity": "Charity",
+    "language-exchange": "Language exchange",
+    "languageExchangeDescription": "Practice languages and meet people in Da Lat."
   },
   "venues": {
     "title": "Venues",
@@ -4253,7 +4255,20 @@
       "noDrink": "No drink, thanks",
       "ready": "You’re all set",
       "editLanguages": "Edit my languages",
-      "claimed": "Your complimentary drink is applied to this order."
+      "claimed": "Your complimentary drink is applied to this order.",
+      "chooseFreeDrink": "Choose your free drink",
+      "chooseFromMenu": "Choose from the menu",
+      "firstRsvps": "One free drink for the first {count} RSVPs.",
+      "venuePurchase": "Please order something from the venue’s menu.",
+      "drink": "Drink",
+      "addExtras": "Add food or extra drinks",
+      "reserveFreeDrink": "Reserve my free drink",
+      "chooseAtVenue": "Choose at the venue",
+      "chooseDrink": "Choose your drink",
+      "freeDrinkLimit": "Free drinks: first RSVPs",
+      "limitHint": "Applies to this event. Enter 0 to stop new free-drink claims. Existing reservations stay covered.",
+      "saveLimit": "Save limit",
+      "saveFailed": "Couldn’t save. Please try again."
     }
   }
 }

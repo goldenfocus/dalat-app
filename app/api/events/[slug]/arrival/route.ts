@@ -12,7 +12,7 @@ type RouteContext = { params: Promise<{ slug: string }> };
 export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
-    const { db, admin, user, event, access, menu } = await arrivalContext(slug, request.nextUrl.searchParams.get("locale") || "en");
+    const { db, admin, user, event, access, menu, sponsorEligibility } = await arrivalContext(slug, request.nextUrl.searchParams.get("locale") || "en");
     const token = await guestToken(event.id) || newGuestToken();
     const receipt = await ownReceipt(event.id, user?.id, tokenHash(token));
     const preferences = user ? await getLanguagePreferences(user.id) : null;
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         priorOrder = result.data ? mapOrder(result.data) : null;
       }
     }
-    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder, rsvpStatus });
+    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder, rsvpStatus, sponsorEligibility });
     response.cookies.set(guestCookieName(event.id), token, {
       httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 90 * 86400,
     });

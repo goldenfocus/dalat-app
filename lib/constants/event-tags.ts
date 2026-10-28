@@ -9,7 +9,7 @@ export const EVENT_TAGS = [
   'music', 'yoga', 'meditation', 'fitness', 'dance', 'art', 'photography',
   'cooking', 'workshop', 'class', 'tour', 'hiking', 'sports', 'pickleball', 'games',
   // Social
-  'meetup', 'networking', 'community', 'party', 'celebration',
+  'language-exchange', 'meetup', 'networking', 'community', 'party', 'celebration',
   // Food & Drink
   'food', 'coffee', 'restaurant', 'market', 'tasting',
   // Culture
@@ -50,6 +50,7 @@ export const TAG_CONFIG: Record<EventTag, { label: string; color: string; icon: 
   pickleball: { label: 'Pickleball', icon: 'CircleDot', color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' },
   games: { label: 'Games', icon: 'Dices', color: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200' },
   // Social
+  'language-exchange': { label: 'Language exchange', icon: 'Users', color: 'bg-secondary text-secondary-foreground' },
   meetup: { label: 'Meetup', icon: 'Users', color: 'bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200' },
   networking: { label: 'Networking', icon: 'Handshake', color: 'bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200' },
   community: { label: 'Community', icon: 'Users', color: 'bg-teal-100 text-teal-800 dark:bg-teal-900 dark:text-teal-200' },

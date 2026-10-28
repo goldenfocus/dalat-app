@@ -52,12 +52,15 @@ export async function arrivalContext(slug: string, locale = "en") {
       Date.now() <= new Date(row.ends_at || new Date(new Date(row.starts_at).getTime() + 6 * 3600_000)).getTime() + 2 * 3600_000,
   };
   const { data: campaign, error: campaignError } = await admin.from("event_drink_sponsors")
-    .select("sponsor_name,ends_at,event_sponsored_drinks(menu_item_id)").eq("event_id", row.id).maybeSingle();
+    .select("sponsor_name,ends_at,rsvp_limit,event_sponsored_drinks(menu_item_id)").eq("event_id", row.id).maybeSingle();
   if (campaignError) throw campaignError;
   event.sponsorship = campaign && new Date(campaign.ends_at).getTime() >= Date.now()
-    ? { sponsorName: campaign.sponsor_name, eligibleItemIds: campaign.event_sponsored_drinks.map((item: { menu_item_id: string }) => item.menu_item_id) } : null;
+    ? { sponsorName: campaign.sponsor_name, rsvpLimit: campaign.rsvp_limit, eligibleItemIds: campaign.event_sponsored_drinks.map((item: { menu_item_id: string }) => item.menu_item_id) } : null;
   const menu = row.venue_id ? await getPublicMenu(row.venue_id, locale) : [];
-  return { db, admin, user, event, access, menu };
+  const eligibility = user && event.sponsorship ? await admin.rpc("arrival_sponsor_eligibility", { p_event_id: row.id, p_user_id: user.id }) : null;
+  if (eligibility?.error) throw eligibility.error;
+  const sponsorEligibility = eligibility?.data || { eligible: false, position: null, limit: campaign?.rsvp_limit ?? null, claimed: false };
+  return { db, admin, user, event, access, menu, sponsorEligibility };
 }
 
 export function mapOrder(row: Record<string, unknown>): ArrivalOrder {

@@ -17,6 +17,7 @@ import { LanguageSetup } from "./language-setup";
 import { DEFAULT_LANGUAGE_PREFERENCES, languagePreferencesSchema, type LanguagePreferences } from "@/lib/arrival/languages";
 import { legacyLanguageChoices } from "@/lib/arrival/language-compat";
 import { SponsoredCart, sponsoredItemId } from "./sponsored-cart";
+import { DrinkMenuSheet, reservationQuantities } from "./drink-menu-sheet";
 import { ExistingDrinkOffer } from "./existing-drink-offer";
 
 export function GuestArrival({ slug }: { slug: string }) {
@@ -30,6 +31,7 @@ export function GuestArrival({ slug }: { slug: string }) {
   const [stale, setStale] = useState(false);
   const [step, setStep] = useState(0);
   const [preferences, setPreferences] = useState<LanguagePreferences>(DEFAULT_LANGUAGE_PREFERENCES);
+  const [showDrinkMenu, setShowDrinkMenu] = useState(true);
   const [selectedSponsored, setSelectedSponsored] = useState<string | null>(null);
   const [nickname, setNickname] = useState("");
   const [languages, setLanguages] = useState<LanguageChoices>(emptyLanguageChoices);
@@ -100,15 +102,16 @@ export function GuestArrival({ slug }: { slug: string }) {
 
   useEffect(() => { if (!loading) heading.current?.focus(); }, [step, loading]);
 
-  const submit = async (withOrder: boolean) => {
+  const submit = async (withOrder: boolean, fromDrinkSheet = false) => {
     if (submitting.current || !context || !nickname.trim() || !completeLanguageChoices(languages)) return;
     submitting.current = true;
     setBusy(true);
     setError(null);
+    const orderQuantities = fromDrinkSheet && context.sponsorEligibility?.eligible ? reservationQuantities(quantities, selectedSponsored) : quantities;
     const body = JSON.stringify({
       nickname: nickname.trim(), ...languages,
-      sponsoredItemId: withOrder && context.profile && context.rsvpStatus === "going" ? sponsoredItemId(context.menu, quantities, context.event.sponsorship?.eligibleItemIds || [], selectedSponsored) || undefined : undefined,
-      items: withOrder ? cartLines(context.menu, quantities) : [], note: withOrder ? note.trim() : "",
+      sponsoredItemId: withOrder && context.profile && context.rsvpStatus === "going" && context.sponsorEligibility?.eligible === true ? sponsoredItemId(context.menu, orderQuantities, context.event.sponsorship?.eligibleItemIds || [], selectedSponsored) || undefined : undefined,
+      items: withOrder ? cartLines(context.menu, orderQuantities) : [], note: withOrder ? note.trim() : "",
     });
     if (request.current?.body !== body) request.current = { body, id: crypto.randomUUID() };
     try {
@@ -185,11 +188,12 @@ export function GuestArrival({ slug }: { slug: string }) {
           )}
           {step === 1 && (
             <div className="space-y-6">
-              {context.priorOrder ? <><ArrivalOrderView order={context.priorOrder} />{context.rsvpStatus === "going" && <ExistingDrinkOffer event={context.event} order={context.priorOrder} onClaimed={order => setContext({ ...context, priorOrder: order })} />}</> : menu.length > 0 && <details className="rounded-lg border border-border p-3">
-                <summary className="flex min-h-11 cursor-pointer items-center font-medium">{t("menuTitle")}</summary>
+              {context.profile && context.rsvpStatus === "going" && !context.priorOrder && menu.length > 0 && <DrinkMenuSheet context={context} open={showDrinkMenu} onLater={() => setShowDrinkMenu(false)} busy={busy} failed={!!error} quantities={quantities} onChange={setQuantities} selected={selectedSponsored} onSelect={setSelectedSponsored} note={note} onNoteChange={setNote} onReserve={() => void submit(true, true)} confirmLabel={t("checkInAndOrder")} />}
+              {context.priorOrder ? <><ArrivalOrderView order={context.priorOrder} />{context.rsvpStatus === "going" && <ExistingDrinkOffer eligible={context.sponsorEligibility?.eligible} event={context.event} order={context.priorOrder} onClaimed={order => setContext({ ...context, priorOrder: order })} />}</> : menu.length > 0 && <details className="rounded-lg border border-border p-3">
+                <summary className="flex min-h-11 cursor-pointer items-center font-medium">{t(context.sponsorEligibility?.eligible ? "registration.chooseFreeDrink" : "registration.chooseFromMenu")}</summary>
                 <p className="mb-4 mt-2 text-sm text-muted-foreground">{t("menuHint")}</p>
                 <ArrivalMenu sections={menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />
-                {context.event.sponsorship && context.profile && context.rsvpStatus === "going" && <SponsoredCart sections={menu} quantities={quantities} eligible={context.event.sponsorship.eligibleItemIds} selected={selectedSponsored} onSelect={setSelectedSponsored} />}
+                {context.event.sponsorship && context.profile && context.rsvpStatus === "going" && context.sponsorEligibility?.eligible === true && <SponsoredCart sections={menu} quantities={quantities} eligible={context.event.sponsorship.eligibleItemIds} selected={selectedSponsored} onSelect={setSelectedSponsored} />}
               </details>}
               {error && <p className="text-sm text-destructive" role="alert">{t(error)}</p>}
               <Button type="button" loading={busy} disabled={busy} className="scroll-mb-28 min-h-12 w-full whitespace-normal text-base" onClick={() => void submit(selectedItems.length > 0)}>{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>

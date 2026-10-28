@@ -2697,7 +2697,9 @@
     "outdoor": "Luar",
     "indoor": "Dalam",
     "free": "Percuma",
-    "charity": "Amal"
+    "charity": "Amal",
+    "language-exchange": "Pertukaran bahasa",
+    "languageExchangeDescription": "Berlatih bahasa dan bertemu orang baharu di Da Lat."
   },
   "venues": {
     "title": "Tempat",
@@ -4253,7 +4255,20 @@
       "noDrink": "Tidak mahu minuman, terima kasih",
       "ready": "Semuanya sudah siap",
       "editLanguages": "Edit pilihan bahasa saya",
-      "claimed": "Tajaan minuman percuma anda telah digunakan untuk pesanan ini."
+      "claimed": "Tajaan minuman percuma anda telah digunakan untuk pesanan ini.",
+      "chooseFreeDrink": "Pilih minuman percuma anda",
+      "chooseFromMenu": "Pilih daripada menu",
+      "firstRsvps": "Satu minuman percuma untuk {count} pendaftar pertama.",
+      "venuePurchase": "Sila pesan sesuatu daripada menu tempat ini.",
+      "drink": "Minuman",
+      "addExtras": "Tambah makanan atau minuman",
+      "reserveFreeDrink": "Tempah minuman percuma",
+      "chooseAtVenue": "Pilih di tempat",
+      "chooseDrink": "Pilih minuman anda",
+      "freeDrinkLimit": "Minuman percuma: pendaftar pertama",
+      "limitHint": "Untuk acara ini. Masukkan 0 untuk menghentikan tuntutan baharu. Tempahan sedia ada masih ditanggung.",
+      "saveLimit": "Simpan had",
+      "saveFailed": "Tidak dapat menyimpan. Cuba lagi."
     }
   }
 }
