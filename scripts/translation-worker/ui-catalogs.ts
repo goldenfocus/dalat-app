@@ -23,7 +23,7 @@ async function run(locale: string) {
   const input = Object.fromEntries(
     Object.entries(english).filter(([key, text]) =>
       process.env.UI_SHORT_ONLY === "1"
-        ? current[key] === text && text.length <= 20 && /[a-zA-Z]{3}/.test(text)
+        ? current[key] === text && text.length <= 20 && /[a-zA-Z]{2}/.test(text)
         : !current[key] ||
           [...text.matchAll(/\{([a-zA-Z_][\w]*)[},]/g)]
             .map((m) => m[1])
@@ -34,7 +34,7 @@ async function run(locale: string) {
               .sort()
               .join() ||
           (current[key] === text &&
-            /[a-zA-Z]{3}/.test(text) &&
+            /[a-zA-Z]{2}/.test(text) &&
             (process.env.UI_INCLUDE_SHORT === "1" ||
               (text.length > 20 && /\s/.test(text)))),
     ),

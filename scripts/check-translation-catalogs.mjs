@@ -28,6 +28,7 @@ const identicalAllowed = new Set([
   "calendar.appleOutlook",
   "moments.proUpload.supportedFormats",
   "flowerFestivalGuide.edition2026.schema.jazzName",
+  "es.common.no", // No is the native Spanish answer as well.
   "de.venuePages.restaurants.h1", // Restaurants in Da Lat is also natural German.
 ]);
 const errors = [];
@@ -55,9 +56,8 @@ for (const locale of locales) {
     if (
       locale !== "en" &&
       target[key] === value &&
-      value.length > 20 &&
-      /[a-zA-Z]{3}/.test(value) &&
-      /\s/.test(value) &&
+      ((value.length > 20 && /[a-zA-Z]{3}/.test(value) && /\s/.test(value)) ||
+        (/^[A-Za-z]{2}$/.test(value) && /[a-z]/.test(value))) &&
       !identicalAllowed.has(key) &&
       !identicalAllowed.has(`${locale}.${key}`)
     )
