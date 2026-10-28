@@ -84,13 +84,17 @@ function attributes(tag) {
 }
 function inspect(html, venue, locale, expectedDescription, expectedIndex) {
   const failures = [];
+  const head = html.match(/<head\b[^>]*>([\s\S]*?)<\/head>/i)?.[1] || "";
+  if (!/<title\b[^>]*>[^<]+<\/title>/i.test(head)) failures.push("head-title");
   const url = `${base.origin}${locale === "en" ? "" : `/${locale}`}/${venue.slug}`;
-  const links = [...html.matchAll(/<link\b[^>]*>/gi)].map((match) =>
+  const links = [...head.matchAll(/<link\b[^>]*>/gi)].map((match) =>
     attributes(match[0]),
   );
-  const meta = [...html.matchAll(/<meta\b[^>]*>/gi)].map((match) =>
+  const meta = [...head.matchAll(/<meta\b[^>]*>/gi)].map((match) =>
     attributes(match[0]),
   );
+  if (!meta.some((tag) => tag.name === "description" && tag.content?.trim()))
+    failures.push("head-description");
   if (!links.some((link) => link.rel === "canonical" && link.href === url))
     failures.push("canonical");
   const noindex = meta.some(

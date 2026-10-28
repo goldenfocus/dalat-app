@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { searchHtmlLimitedBots } from "./lib/seo/html-limited-bots";
 
 const withNextIntl = createNextIntlPlugin("./lib/i18n/request.ts");
 
 const nextConfig: NextConfig = {
+  htmlLimitedBots: searchHtmlLimitedBots,
   // Meet People rollout: apply its migration before shipping this release.
   // An explicit false at build time keeps the release switch available.
   env: {

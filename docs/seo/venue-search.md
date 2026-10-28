@@ -10,6 +10,7 @@ Goal: make the canonical Dalat.app venue page the most useful, trustworthy answe
 - Schema must match visible, sourced facts. Never invent ratings, reviews, free admission, coordinates, hours, Wi-Fi speeds, first-person visits or rankings. Google ratings may be displayed with attribution; do not relabel third-party reviews as Dalat.app aggregate ratings.
 - A missing primary-description translation is `noindex,follow`, absent from hreflang and the venue sitemap. The source language remains indexable. When translation arrives, readiness automatically restores the localized canonical; its sitemap lastmod reflects the actual translation update. Pages with no description contain no fallback prose claim.
 - Keep search crawlers able to fetch rendering resources and public venue photo endpoints. Private API/admin/auth routes remain excluded. Never bypass security globally or trust a spoofed user-agent as a verified crawler.
+- Search and AI crawler user agents must receive title, description, canonical, alternates and robots in the initial HTML head. `lib/seo/html-limited-bots.ts` extends the installed Next.js defaults to preserve social previews and browser streaming; verify that import and its tests on Next upgrades. Metadata appearing only later in the body is a failed crawler-head audit.
 - Use the translation release contract in AGENTS.md for every new visible or metadata field. Do not generate English SEO filler over short translations.
 
 ## Repeatable delivery audit
