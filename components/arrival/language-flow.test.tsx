@@ -36,7 +36,7 @@ describe("compact language exchange flow", () => {
     expect(screen.queryByRole("textbox")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: messages.arrival.languageSetup.chooseSpoken }));
     fireEvent.change(screen.getByRole("textbox", { name: messages.arrival.languageSetup.search }), { target: { value: "English" } });
-    fireEvent.click(screen.getByRole("button", { name: "English", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "English" }));
     fireEvent.click(screen.getByRole("button", { name: "Continue" }));
     await screen.findByRole("button", { name: "Check in" });
     expect(fetcher.mock.calls[2][0]).toBe("/api/arrival/languages");

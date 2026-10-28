@@ -12,7 +12,7 @@ it("lets an anonymous walk-in order normally without claiming an RSVP-only spons
   vi.stubGlobal("fetch",vi.fn(async (_url:string,init?:RequestInit)=>{if(init?.method==="POST"){payload=JSON.parse(init.body as string);return {ok:false,json:async()=>({code:"unavailable"})};}return {ok:true,json:async()=>context};}));
   render(<GuestArrival slug="exchange" />);
   fireEvent.change(await screen.findByLabelText("nickname"),{target:{value:"Guest"}});
-  fireEvent.click(screen.getByRole("button",{name:"english",exact:true}));
+  fireEvent.click(screen.getByRole("button",{name:"english"}));
   fireEvent.change(screen.getByLabelText("englishLevel"),{target:{value:"starting"}});
   fireEvent.change(screen.getByLabelText("vietnameseLevel"),{target:{value:"starting"}});
   fireEvent.click(screen.getByRole("button",{name:"continue"}));
