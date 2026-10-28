@@ -1,5 +1,6 @@
 "use client";
 import { isExperiencePath } from "@/lib/experiences/navigation";
+import { isArrivalWorkspacePath } from "@/lib/arrival/navigation";
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
@@ -120,6 +121,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
 
   const shouldHide =
     isExperiencePath(pathname ?? "") ||
+    isArrivalWorkspacePath(pathname ?? "") ||
     hiddenPaths.some((path) => (pathname ?? "").includes(path));
 
   if (
