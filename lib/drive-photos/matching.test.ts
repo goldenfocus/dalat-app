@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SOURCE, captureTime, datesInName, matchPhoto, type PhotoEvent } from "./matching";
+import { SOURCE, captureTime, resolveCaptureTime, datesInName, matchPhoto, type PhotoEvent } from "./matching";
 const event: PhotoEvent = { id:"event",slug:"language-exchange",starts_at:"2026-10-28T11:00:00Z",ends_at:"2026-10-28T13:00:00Z",venue_id:SOURCE.venueId,series_id:SOURCE.seriesId,created_by:"owner",status:"published" };
 const now = new Date("2026-10-29T00:00:00Z");
 describe("dated owner folder matching", () => {
@@ -23,4 +23,17 @@ describe("capture timestamps", () => {
     expect(matchPhoto([],"2026-10-27T18:30:00Z",[midnight],now)).toMatchObject({day:"2026-10-28"});
   });
   it.each(["2026:02:30 18:00:00","2026-10-28T99:00:00","yesterday",""])("rejects invalid %s", input => expect(captureTime(input)).toBeNull());
+});
+
+describe("Social House camera dates", () => {
+  it("matches the real Nikon offset and 28-Oct folder", () => {
+    const capture = resolveCaptureTime("2026:10:28 19:13:40", "2026:10:28 19:13:40", "+08:00");
+    expect(capture).toEqual({captured:"2026-10-28T11:13:40.000Z",conflict:false});
+    expect(matchPhoto(["28-Oct","DSC_7902.jpg"],capture.captured,[event],now)).toHaveProperty("event");
+  });
+  it("holds a photo placed in the wrong day/month folder", () => expect(matchPhoto(["21-Oct","DSC_7902.jpg"],"2026-10-28T11:13:40Z",[event],now)).toHaveProperty("reason","Conflicting dates; manual review required"));
+  it("does not invent a year for a short folder name", () => expect(matchPhoto(["28-Oct"],null,[event],now)).toHaveProperty("reason"));
+  it("recognizes a written month with an explicit year", () => expect(datesInName("28-October-2026")).toEqual(["2026-10-28"]));
+  it("handles an omitted offset at a Vietnam midnight boundary", () => expect(resolveCaptureTime("2026:10:28 00:30:00", "2026:10:28 00:30:00", "+08:00")).toEqual({captured:"2026-10-27T16:30:00.000Z",conflict:false}));
+  it("holds genuinely different capture dates", () => expect(resolveCaptureTime("2026:10:21 19:13:40", "2026:10:28 19:13:40", "+08:00").conflict).toBe(true));
 });

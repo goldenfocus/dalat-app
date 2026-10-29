@@ -5,7 +5,7 @@ import sharp from "sharp";
 import { parse as readExif } from "exifr";
 import { R2StorageProvider } from "@/lib/storage/r2";
 import { DriveClient, type DriveFile } from "./drive";
-import { SOURCE, captureTime, matchPhoto, type PhotoEvent } from "./matching";
+import { SOURCE, resolveCaptureTime, matchPhoto, type PhotoEvent } from "./matching";
 
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 function momentId(fileId: string) {
@@ -69,12 +69,13 @@ export async function syncDrivePhotos(apiKey: string) {
         // Read date only. GPS and all other EXIF are stripped from the public derivative.
         const exif = await readExif(original, { pick: ["DateTimeOriginal", "OffsetTimeOriginal"], reviveValues: false }).catch(() => null);
         const rawExif = exif?.DateTimeOriginal;
-        const exifTime = typeof rawExif === "string" ? captureTime(rawExif + (typeof exif?.OffsetTimeOriginal === "string" ? exif.OffsetTimeOriginal : "")) : null;
-        const driveTime = captureTime(file.imageMediaMetadata?.time);
-        if (driveTime && exifTime && driveTime !== exifTime) {
+        const capture = resolveCaptureTime(file.imageMediaMetadata?.time,
+          typeof rawExif === "string" ? rawExif : undefined,
+          typeof exif?.OffsetTimeOriginal === "string" ? exif.OffsetTimeOriginal : undefined);
+        if (capture.conflict) {
           await save("held", "Drive and embedded capture timestamps disagree"); report.held++; continue;
         }
-        const match = matchPhoto(file.names, driveTime || exifTime, events);
+        const match = matchPhoto(file.names, capture.captured, events);
         if ("reason" in match) { await save("held", match.reason); report.held++; continue; }
         // Re-read visibility and posting settings immediately before publishing.
         const fresh = await db.from("events").select("status,venue_id,series_id,created_by,tribe_id,tribe_visibility").eq("id",match.event.id).single();

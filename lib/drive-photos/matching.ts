@@ -17,7 +17,7 @@ function validDay(year: string, month: string, day: string): string | null {
   const date = new Date(`${value}T12:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value ? value : null;
 }
-export function datesInName(name: string): string[] {
+export function datesInName(name: string, captureYear?: string): string[] {
   const dates = new Set<string>();
   for (const m of name.matchAll(/(?<!\d)((?:19|20)\d{2})[-_. /](\d{1,2})[-_. /](\d{1,2})(?!\d)/g)) {
     const d = validDay(m[1], m[2], m[3]); if (d) dates.add(d);
@@ -32,6 +32,13 @@ export function datesInName(name: string): string[] {
   for (const m of name.matchAll(/(?<!\d)((?:19|20)\d{2})(\d{2})(\d{2})(?!\d)/g)) {
     const d = validDay(m[1], m[2], m[3]); if (d) dates.add(d);
   }
+  const months = ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"];
+  for (const m of name.matchAll(/(?<![\da-z])(\d{1,2})[-_. /]+(jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)(?:[-_. /]+((?:19|20)\d{2}))?(?![a-z])/gi)) {
+    const year = m[3] || captureYear;
+    if (!year) continue; // A folder without a year needs independent capture metadata.
+    const day = validDay(year, String(months.indexOf(m[2].toLowerCase().slice(0,3))+1), m[1]);
+    if (day) dates.add(day);
+  }
   return [...dates];
 }
 /** Drive/EXIF timestamps without an offset are camera-local time, never UTC. */
@@ -42,9 +49,20 @@ export function captureTime(value?: string | null): string | null {
   const iso = `${match[1]}-${match[2]}-${match[3]}T${match[4]}:${match[5]}:${match[6]}${match[7] || ""}${match[8] || "+07:00"}`;
   const d = new Date(iso); return Number.isFinite(d.getTime()) ? d.toISOString() : null;
 }
+/** Camera offsets are authoritative; Drive can omit the offset from the same EXIF timestamp. */
+export function resolveCaptureTime(driveValue?: string, exifValue?: string, exifOffset?: string): { captured: string | null; conflict: boolean } {
+  const drive = captureTime(driveValue);
+  const exif = captureTime(exifValue ? exifValue + (exifOffset || "") : undefined);
+  const wallClock = (value?: string) => value?.replace(/^(\d{4}):(\d{2}):(\d{2})/, "$1-$2-$3").replace(" ", "T").slice(0,19);
+  const driveHasOffset = Boolean(driveValue && /(?:Z|[+-]\d{2}:?\d{2})$/.test(driveValue));
+  const lostOffset = !driveHasOffset && Boolean(exifValue) && wallClock(driveValue) === wallClock(exifValue);
+  const conflict = Boolean(drive && exif && dayInDaLat(drive) !== dayInDaLat(exif) && !lostOffset);
+  return { captured: exif || drive, conflict };
+}
 export type Match = { event: PhotoEvent; day: string; capturedAt: string | null } | { reason: string };
 export function matchPhoto(names: string[], captured: string | null, events: PhotoEvent[], now = new Date()): Match {
-  const dates = new Set(names.flatMap(datesInName));
+  const year = captured ? dayInDaLat(captured).slice(0,4) : undefined;
+  const dates = new Set(names.flatMap(name => datesInName(name, year)));
   if (captured) dates.add(dayInDaLat(captured));
   if (!dates.size) return { reason: "No complete date in folder, filename, or capture metadata" };
   if (dates.size !== 1) return { reason: "Conflicting dates; manual review required" };
