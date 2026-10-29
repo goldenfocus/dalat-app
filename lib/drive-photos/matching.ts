@@ -24,6 +24,10 @@ export function datesInName(name: string): string[] {
   }
   for (const m of name.matchAll(/(?<!\d)(\d{1,2})[-_. /](\d{1,2})[-_. /]((?:19|20)\d{2})(?!\d)/g)) {
     const d = validDay(m[3], m[2], m[1]); if (d) dates.add(d);
+    // Do not silently choose day/month over month/day when both are possible.
+    if (+m[1] <= 12 && +m[2] <= 12) {
+      const alternate = validDay(m[3], m[1], m[2]); if (alternate) dates.add(alternate);
+    }
   }
   for (const m of name.matchAll(/(?<!\d)((?:19|20)\d{2})(\d{2})(\d{2})(?!\d)/g)) {
     const d = validDay(m[1], m[2], m[3]); if (d) dates.add(d);

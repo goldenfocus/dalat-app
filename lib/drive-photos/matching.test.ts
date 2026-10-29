@@ -8,6 +8,7 @@ describe("dated owner folder matching", () => {
   it("matches a dated nested folder even without EXIF", () => expect(matchPhoto(["2026","2026-10-28","jpgs","DSC_002.jpg"],null,[event],now)).toMatchObject({event:{id:"event"},day:"2026-10-28",capturedAt:null}));
   it("uses capture time when folder has no date", () => expect(matchPhoto(["uploads","IMG.jpg"],captureTime("2026:10:28 18:25:00"),[event],now)).toHaveProperty("event"));
   it("holds conflicting folder and capture dates", () => expect(matchPhoto(["2026-10-21","IMG.jpg"],captureTime("2026:10:28 18:25:00"),[event],now)).toHaveProperty("reason","Conflicting dates; manual review required"));
+  it("holds ambiguous day/month dates", () => expect(matchPhoto(["01/02/2026"],null,[event],now)).toHaveProperty("reason", "Conflicting dates; manual review required"));
   it("holds contradictory ancestor and child folders", () => expect(matchPhoto(["2026-10-21","2026-10-28"],null,[event],now)).toHaveProperty("reason"));
   it("does not match other venues or other event series", () => expect(matchPhoto(["2026-10-28"],null,[{...event,venue_id:"other"},{...event,series_id:"other"}],now)).toHaveProperty("reason"));
   it("holds more than one event on a date", () => expect(matchPhoto(["2026-10-28"],null,[event,{...event,id:"second"}],now)).toHaveProperty("reason","Multiple events on this date"));
