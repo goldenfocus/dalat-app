@@ -62,6 +62,10 @@
     {
       "path": "/api/cron/refresh-source-schedules",
       "schedule": "40 0 * * *"
+    },
+    {
+      "path": "/api/cron/sync-drive-photos",
+      "schedule": "13,43 * * * *"
     }
   ]
 }
