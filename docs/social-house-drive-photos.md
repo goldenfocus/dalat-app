@@ -1,6 +1,6 @@
 # Social House Drive photo import
 
-Source: [Socialhouse Language exchange](https://drive.google.com/drive/folders/1Gwkv7ht3evXGMkwkT8W8E9YOZwgzDt_y).
+Source: [Language Exchange](https://drive.google.com/drive/folders/1o-ovV6YS6Y5ycymamLRP6A7xtYXIbWyw).
 Destination: existing published occurrences of the Social House language-exchange series only (`ad0a0c5e-f718-447c-89f1-6fa3b78e3c52` at venue `436f8b46-d5fe-41ef-8245-e8ffb9ee7980`). This source does not import unrelated Social House activities or create events.
 
 ## Team workflow
