@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { LANGUAGE_LEVELS, languageChoices, type LanguageLevel, type LanguagePreferences } from "@/lib/arrival/languages";
+import { LANGUAGE_LEVELS, languageChoices, languageDisplayName, type LanguageLevel, type LanguagePreferences } from "@/lib/arrival/languages";
 
 type LanguageCode = LanguagePreferences["learning"]["language"];
 
@@ -18,7 +18,7 @@ function LanguagePicker({ value, onChange, disabled, excluded = [], label }: {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const choices = useMemo(() => languageChoices(locale, query).filter(item => !excluded.includes(item.code)), [locale, query, excluded]);
-  const name = value ? new Intl.DisplayNames([locale], { type: "language" }).of(value) : null;
+  const name = value ? languageDisplayName(value, locale) : null;
   return <Popover open={open} onOpenChange={next => { setOpen(next); if (!next) setQuery(""); }}>
     <PopoverTrigger asChild><Button type="button" variant="outline" disabled={disabled} aria-label={label} className="min-h-12 w-full justify-between text-base"><span>{name || label}</span><ChevronDown className="h-4 w-4" aria-hidden="true" /></Button></PopoverTrigger>
     <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] p-2">

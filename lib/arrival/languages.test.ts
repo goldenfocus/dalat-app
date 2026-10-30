@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
-import { DEFAULT_LANGUAGE_PREFERENCES, LANGUAGE_CODES, languageChoices, languagePreferencesSchema } from "./languages";
+import { describe, expect, it, vi } from "vitest";
+import { DEFAULT_LANGUAGE_PREFERENCES, LANGUAGE_CODES, languageChoices, languageDisplayName, languagePreferencesSchema } from "./languages";
+import { locales } from "@/lib/i18n/locales";
 const preferences = { speaks: [{ language: "fr", level: "native" }], learning: { language: "vi", level: "new" } };
 
 describe("private language preferences", () => {
@@ -27,5 +28,31 @@ describe("private language preferences", () => {
     expect(languageChoices("en", "Tiếng Việt").map(item => item.code)).toContain("vi");
     expect(languageChoices("en", "tieng viet").map(item => item.code)).toContain("vi");
     expect(languageChoices("en", "日本語").map(item => item.code)).toContain("ja");
+  });
+  it.each(locales)("pins the requested languages and names every option in %s", locale => {
+    const choices = languageChoices(locale);
+    expect(choices.map(item => item.code).slice(0, 4)).toEqual(["en", "vi", "fr", "es"]);
+    expect(choices).toHaveLength(LANGUAGE_CODES.length);
+    for (const { code, label } of choices) {
+      expect(label.trim()).not.toBe("");
+      expect(label).not.toBe(code);
+    }
+    const remaining = choices.slice(4).map(item => item.label);
+    expect(remaining).toEqual([...remaining].sort((a, b) => a.localeCompare(b, locale)));
+  });
+  it("keeps complete names and search when browser display-name data is missing", () => {
+    const displayNames = vi.spyOn(Intl, "DisplayNames").mockImplementation(() => {
+      throw new Error("Browser has no display-name data");
+    });
+    try {
+      expect(languageChoices("en", "Afar").map(item => item.code)).toEqual(["aa"]);
+      expect(languageDisplayName("ab", "en")).toBe("Abkhazian");
+      expect(languageDisplayName("ae", "en")).toBe("Avestan");
+      expect(languageDisplayName("en", "vi")).toBe("Tiếng Anh");
+      expect(languageDisplayName("vi", "fr-CA")).toBe("vietnamien");
+      expect(languageChoices("en", "tieng viet").map(item => item.code)).toContain("vi");
+    } finally {
+      displayNames.mockRestore();
+    }
   });
 });

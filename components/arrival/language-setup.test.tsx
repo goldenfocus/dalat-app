@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, cleanup } from "@testing-library/react";
+import { fireEvent, render, screen, cleanup, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { LanguageSetup } from "./language-setup";
@@ -11,6 +11,15 @@ function Form({ initial = DEFAULT_LANGUAGE_PREFERENCES, disabled = false }: { in
 }
 function preferences() { return JSON.parse(screen.getByTestId("preferences").textContent || "{}"); }
 describe("reusable language setup", () => {
+  it("shows the priority languages first in both pickers and excludes existing spoken languages", () => {
+    render(<Form initial={{ speaks: [{ language: "en", level: "native" }], learning: { language: "vi", level: "new" } }} />);
+    fireEvent.click(screen.getByRole("button", { name: "addLanguage" }));
+    expect(within(screen.getByRole("group", { name: "addLanguage" })).getAllByRole("button").slice(0, 3).map(button => button.textContent)).toEqual(["Vietnamese", "French", "Spanish"]);
+    fireEvent.click(screen.getByRole("button", { name: "French" }));
+    expect(preferences().speaks.map((entry: { language: string }) => entry.language)).toEqual(["en", "fr"]);
+    fireEvent.click(screen.getByRole("button", { name: "chooseLearning" }));
+    expect(within(screen.getByRole("group", { name: "chooseLearning" })).getAllByRole("button").slice(0, 4).map(button => button.textContent)).toEqual(["English", "Vietnamese", "French", "Spanish"]);
+  });
   it("starts with Vietnamese and lets guests change their practice level", () => {
     render(<Form />);
     expect(screen.getByText("Vietnamese")).toBeVisible();
