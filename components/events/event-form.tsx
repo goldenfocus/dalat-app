@@ -774,10 +774,9 @@ export function EventForm({
       let query = supabase
         .from("events")
         .select("id")
-        .eq("series_id", seriesId)
-        .eq("is_exception", false);
+        .eq("series_id", seriesId);
       if (scope === "future") {
-        query = query.gt("starts_at", new Date().toISOString());
+        query = query.gte("starts_at", event?.starts_at ?? new Date().toISOString());
       }
       const { data: seriesEvents, error: seriesEventsError } = await query;
       if (seriesEventsError) {
