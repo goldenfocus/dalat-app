@@ -1,3 +1,4 @@
+import { canEditEvent } from "@/lib/events/editor-access";
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { noStoreJson } from "@/lib/http/no-store-json";
@@ -23,9 +24,12 @@ export async function GET(request: NextRequest) {
     if (!target) return noStoreJson({ error: "Event not found" }, { status: 404 });
     if (target.created_by !== user.id) {
       const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
-      if (!profile || !["admin", "superadmin"].includes(profile.role)) return noStoreJson({ error: "Forbidden" }, { status: 403 });
-    }
-    ownerId = target.created_by;
+      if (!profile || !["admin", "superadmin"].includes(profile.role)) {
+        if (!(await canEditEvent(supabase, eventId))) return noStoreJson({ error: "Forbidden" }, { status: 403 });
+        // A venue editor may reuse their own music, never another creator's library.
+        ownerId = user.id;
+      } else ownerId = target.created_by;
+    } else ownerId = target.created_by;
   }
   let query = supabase.from("event_playlists")
     .select("id, title, events!inner(id, title, starts_at, created_by), playlist_tracks(id, title, artist, duration_seconds, sort_order)")

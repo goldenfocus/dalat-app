@@ -1,3 +1,4 @@
+import { canEditSeries } from "@/lib/events/editor-access";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -35,7 +36,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
   // Check if current user is owner
   const { data: { user } } = await supabase.auth.getUser();
-  const isOwner = user?.id === series.created_by;
+  const isOwner = !!user && (user.id === series.created_by || await canEditSeries(supabase, series.id));
 
   return NextResponse.json({
     promo: promo || [],
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditSeries(supabase, series.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
@@ -178,7 +179,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditSeries(supabase, series.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

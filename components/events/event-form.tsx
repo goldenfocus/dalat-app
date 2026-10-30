@@ -811,6 +811,9 @@ export function EventForm({
     startTransition(async () => {
       try {
         if (isEditing) {
+          // Persist selected/generated artwork before saving either an occurrence
+          // or its series. Preview data/blob URLs cannot be stored as covers.
+          const savedImageUrl = await uploadImage(event.id);
           // Check if we should update via series API (for "future" or "all" scope)
           if (isSeriesEvent && seriesEditScope !== "this" && event.series_id) {
             // Use series API to update template + events
@@ -840,13 +843,25 @@ export function EventForm({
               body: JSON.stringify({
                 title,
                 description: normalizedDescription,
-                image_url: imageUrl,
+                image_url: savedImageUrl,
                 location_name: locationName || null,
                 address: address || null,
                 google_maps_url: googleMapsUrl || null,
                 external_chat_url: externalChatUrl || null,
                 capacity,
                 update_scope: seriesEditScope, // "future" or "all"
+                from_event_id: event.id,
+                ...(time !== getDateTimeInDaLat(event.starts_at).time && { starts_at_time: `${time}:00` }),
+                is_online: isOnline,
+                online_link: isOnline ? normalizedOnlineLink : null,
+                image_fit: imageFit,
+                focal_point: focalPoint,
+                latitude,
+                longitude,
+                price_type: priceType,
+                ticket_tiers: ticketTiers.length > 0 ? ticketTiers : null,
+                organizer_id: organizerId,
+                ai_tags: selectedTags,
               }),
             });
 
@@ -878,7 +893,11 @@ export function EventForm({
             const updateData: Record<string, unknown> = {
               title,
               description: normalizedDescription,
-              image_url: imageUrl,
+              image_url: savedImageUrl,
+              ...(savedImageUrl !== event.image_url && {
+                image_alt: null, image_description: null, image_keywords: null,
+                image_colors: null, cover_moment_id: null,
+              }),
               starts_at: startsAt,
               location_name: isSecret
                 ? publicLabel.trim() || null

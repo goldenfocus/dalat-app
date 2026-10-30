@@ -3980,6 +3980,8 @@
     "open": "Abrir foto: {alt}"
   },
   "venueClaim": {
+    "venueName": "Nombre del lugar",
+    "editVenue": "Editar lugar",
     "eventEditorHint": "Edita el título, la descripción, el horario y el aforo.",
     "singleOccurrence": "Solo se modificará esta fecha del evento recurrente.",
     "eventConflict": "El evento cambió mientras lo editabas. Recarga antes de guardar.",

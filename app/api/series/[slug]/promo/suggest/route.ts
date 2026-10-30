@@ -1,3 +1,4 @@
+import { canEditSeries } from "@/lib/events/editor-access";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import type { AISuggestedPromoMoment } from "@/lib/types";
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditSeries(supabase, series.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

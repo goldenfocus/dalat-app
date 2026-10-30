@@ -3980,6 +3980,8 @@
     "open": "Open photo: {alt}"
   },
   "venueClaim": {
+    "venueName": "Venue name",
+    "editVenue": "Edit venue",
     "eventEditorHint": "Edit the title, description, schedule and capacity.",
     "singleOccurrence": "This changes only this occurrence of the recurring event.",
     "eventConflict": "This event changed while you were editing. Reload before saving.",

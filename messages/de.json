@@ -3980,6 +3980,8 @@
     "open": "Foto öffnen: {alt}"
   },
   "venueClaim": {
+    "venueName": "Name des Veranstaltungsorts",
+    "editVenue": "Veranstaltungsort bearbeiten",
     "eventEditorHint": "Titel, Beschreibung, Termin und Kapazität bearbeiten.",
     "singleOccurrence": "Nur dieser Termin der wiederkehrenden Veranstaltung wird geändert.",
     "eventConflict": "Die Veranstaltung wurde inzwischen geändert. Bitte vor dem Speichern neu laden.",

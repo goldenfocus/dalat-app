@@ -3980,6 +3980,8 @@
     "open": "写真を開く: {alt}"
   },
   "venueClaim": {
+    "venueName": "会場名",
+    "editVenue": "会場を編集",
     "eventEditorHint": "タイトル、説明、日時、定員を編集できます。",
     "singleOccurrence": "定期イベントの今回の開催分のみ変更されます。",
     "eventConflict": "編集中にイベントが変更されました。保存前に再読み込みしてください。",

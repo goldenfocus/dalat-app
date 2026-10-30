@@ -4,11 +4,8 @@ import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
-import { venueEventEditor } from "@/lib/venues/event-editor";
-import { VenueEventForm } from "@/components/venues/venue-event-form";
-import { formatInDaLatAsync } from "@/lib/timezone";
+import { canEditEvent } from "@/lib/events/editor-access";
 import { getTranslations } from "next-intl/server";
-import type { Locale } from "@/lib/types";
 import { EventForm } from "@/components/events/event-form";
 import { hasRoleLevel, type Event, type EventPrivateDetails, type Sponsor, type EventSponsor, type EventSettings, type UserRole, type EventMaterial } from "@/lib/types";
 
@@ -71,19 +68,10 @@ export default async function EditEventPage({ params }: PageProps) {
   const isCreator = event.created_by === user.id;
   const isAdmin = profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false;
 
-  if (!isCreator && !isAdmin) {
-    const editor = await venueEventEditor(canonicalSlug);
-    if (!editor) redirect(`/${locale}/events/${canonicalSlug}`);
-    const t = await getTranslations("eventForm");
-    const [date, time] = await Promise.all([
-      formatInDaLatAsync(editor.event.starts_at, "yyyy-MM-dd", locale as Locale),
-      formatInDaLatAsync(editor.event.starts_at, "HH:mm", locale as Locale),
-    ]);
-    return <main className="mx-auto max-w-2xl space-y-6 px-4 py-8">
-      <h1 className="text-2xl font-bold">{t("editEvent")}</h1>
-      <VenueEventForm event={editor.event} date={date} time={time} />
-    </main>;
+  if (!isCreator && !isAdmin && !(await canEditEvent(supabase, event.id))) {
+    redirect(`/${locale}/events/${canonicalSlug}`);
   }
+  const t = await getTranslations("eventForm");
 
   // Fetch the real location for secret events (RLS: host/admin only)
   let privateDetails: EventPrivateDetails | null = null;
@@ -149,7 +137,7 @@ export default async function EditEventPage({ params }: PageProps) {
   return (
     <main className="min-h-screen">
       <div className="container max-w-2xl mx-auto px-4 py-8">
-        <h1 className="text-2xl font-bold mb-8">Edit Event</h1>
+        <h1 className="text-2xl font-bold mb-8">{t("editEvent")}</h1>
         <EventForm
           userId={user.id}
           userRole={(profile?.role as UserRole) ?? "user"}

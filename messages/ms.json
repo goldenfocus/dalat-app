@@ -3980,6 +3980,8 @@
     "open": "Buka foto: {alt}"
   },
   "venueClaim": {
+    "venueName": "Nama tempat",
+    "editVenue": "Edit tempat",
     "eventEditorHint": "Edit tajuk, penerangan, jadual dan kapasiti.",
     "singleOccurrence": "Hanya sesi ini bagi acara berulang akan diubah.",
     "eventConflict": "Acara ini berubah semasa anda mengedit. Muat semula sebelum menyimpan.",

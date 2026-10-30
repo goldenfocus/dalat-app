@@ -3980,6 +3980,8 @@
     "open": "Ouvrir la photo : {alt}"
   },
   "venueClaim": {
+    "venueName": "Nom du lieu",
+    "editVenue": "Modifier le lieu",
     "eventEditorHint": "Modifiez le titre, la description, les horaires et la capacité.",
     "singleOccurrence": "Seule cette occurrence de l’événement récurrent sera modifiée.",
     "eventConflict": "Cet événement a changé pendant votre modification. Rechargez avant d’enregistrer.",

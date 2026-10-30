@@ -1,3 +1,4 @@
+import { canEditEvent } from "@/lib/events/editor-access";
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -48,7 +49,7 @@ export async function DELETE(request: Request, { params }: Params) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditEvent(supabase, event.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

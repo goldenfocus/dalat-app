@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { venueEditor } from "@/lib/venues/access";
@@ -7,6 +8,7 @@ const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const day = z.union([z.literal("closed"), z.object({ open: time, close: time })]);
 const url = z.string().trim().url().max(500).refine((u) => /^https?:\/\//.test(u)).nullable();
 const body = z.object({
+  name: z.string().trim().min(1).max(200),
   description: z.string().trim().max(4000).nullable(),
   phone: z.string().trim().max(40).nullable(),
   email: z.string().trim().email().max(200).nullable(),
@@ -36,6 +38,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     .from("venues")
     .update({ ...clean, updated_at: new Date().toISOString() })
     .eq("id", id);
+  if (!error) { revalidatePath("/[locale]/[slug]", "page"); revalidatePath("/[locale]/venues/manage", "page"); revalidatePath("/[locale]/venues", "page"); }
   return error
     ? NextResponse.json({ error: "save_failed" }, { status: 503 })
     : NextResponse.json({ ok: true });

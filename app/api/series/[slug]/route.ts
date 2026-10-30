@@ -1,3 +1,4 @@
+import { canEditSeries } from "@/lib/events/editor-access";
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -114,7 +115,7 @@ export async function PATCH(request: Request, { params }: Params) {
   // Get series and check ownership
   const { data: series, error: fetchError } = await supabase
     .from("event_series")
-    .select("id, created_by, title, description, rrule, first_occurrence, starts_at_time, duration_minutes")
+    .select("id, created_by, title, description, image_url, rrule, first_occurrence, starts_at_time, duration_minutes")
     .eq(isUUID ? "id" : "slug", slug)
     .single();
 
@@ -134,12 +135,19 @@ export async function PATCH(request: Request, { params }: Params) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditSeries(supabase, series.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 
   const body = await request.json();
-  const { update_scope, ...updateData } = body;
+  const { update_scope, from_event_id, ...updateData } = body;
+  let scopeStart = new Date().toISOString();
+  if (from_event_id) {
+    const { data: anchor } = await supabase.from("events").select("starts_at")
+      .eq("id", from_event_id).eq("series_id", series.id).maybeSingle();
+    if (!anchor) return NextResponse.json({ error: "Invalid series occurrence" }, { status: 400 });
+    scopeStart = anchor.starts_at;
+  }
   const textContentChanged =
     ("title" in updateData && String(updateData.title ?? "").trim() !== series.title.trim()) ||
     ("description" in updateData &&
@@ -166,7 +174,8 @@ export async function PATCH(request: Request, { params }: Params) {
     "duration_minutes",
     "rrule_until",
     "rrule_count",
-    "status",
+    "status", "is_online", "online_link", "title_position", "image_fit", "focal_point",
+    "latitude", "longitude", "price_type", "ticket_tiers", "organizer_id",
   ];
 
   const seriesUpdate: Record<string, unknown> = {};
@@ -200,7 +209,8 @@ export async function PATCH(request: Request, { params }: Params) {
       "address",
       "google_maps_url",
       "external_chat_url",
-      "capacity",
+      "capacity", "is_online", "online_link", "title_position", "image_fit", "focal_point",
+      "latitude", "longitude", "price_type", "ticket_tiers", "organizer_id", "ai_tags",
     ];
 
     const eventUpdate: Record<string, unknown> = {};
@@ -212,16 +222,22 @@ export async function PATCH(request: Request, { params }: Params) {
     if (textContentChanged) {
       eventUpdate.source_locale = null;
     }
+    if ("image_url" in updateData && updateData.image_url !== series.image_url) {
+      Object.assign(eventUpdate, { image_alt: null, image_description: null,
+        image_keywords: null, image_colors: null, cover_moment_id: null });
+    }
 
     if (Object.keys(eventUpdate).length > 0) {
       let query = supabase
         .from("events")
         .update(eventUpdate)
-        .eq("series_id", series.id)
-        .eq("is_exception", false); // Don't update manually modified instances
+        .eq("series_id", series.id);
+      // Explicit occurrence scopes include that date and any previously edited
+      // dates. The standalone series editor keeps its exception-preserving mode.
+      if (!from_event_id) query = query.eq("is_exception", false);
 
       if (update_scope === "future") {
-        query = query.gt("starts_at", new Date().toISOString());
+        query = query.gte("starts_at", scopeStart);
       }
 
       const { error: eventsError } = await query;
@@ -239,12 +255,11 @@ export async function PATCH(request: Request, { params }: Params) {
       const newDuration = updateData.duration_minutes || series.duration_minutes;
 
       // Get future events to update
-      const { data: eventsToUpdate } = await supabase
-        .from("events")
-        .select("id, series_instance_date")
-        .eq("series_id", series.id)
-        .eq("is_exception", false)
-        .gt("starts_at", new Date().toISOString());
+      let timeQuery = supabase.from("events").select("id, series_instance_date")
+        .eq("series_id", series.id);
+      if (!from_event_id) timeQuery = timeQuery.eq("is_exception", false);
+      if (update_scope === "future") timeQuery = timeQuery.gte("starts_at", scopeStart);
+      const { data: eventsToUpdate } = await timeQuery;
 
       if (eventsToUpdate) {
         for (const event of eventsToUpdate) {
@@ -321,7 +336,7 @@ export async function DELETE(request: Request, { params }: Params) {
     isAdmin = profile?.role === "admin" || profile?.role === "superadmin";
   }
 
-  if (!isCreator && !isAdmin) {
+  if (!isCreator && !isAdmin && !(await canEditSeries(supabase, series.id))) {
     return NextResponse.json({ error: "Not authorized" }, { status: 403 });
   }
 

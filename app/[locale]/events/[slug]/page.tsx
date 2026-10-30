@@ -1,3 +1,4 @@
+import { canEditEvent } from "@/lib/events/editor-access";
 import { eventParticipationVisibility } from "@/lib/events/participation-visibility";
 import { CommunityRsvpProvider, CommunityActionNotice } from "@/components/events/community-rsvp";
 import { ActivitySourceFooter } from "@/components/events/activity-source-footer";
@@ -1161,7 +1162,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   const isAdmin = currentUserRole
     ? hasRoleLevel(currentUserRole, "admin")
     : false;
-  const canManageEvent = isCreator || isAdmin;
+  const canManageEvent = isCreator || isAdmin || (!!currentUserId && await canEditEvent(await createClient(), event.id));
   const isSponsored = (event.sponsor_tier ?? 0) > 0;
 
   const spotsText = event.capacity

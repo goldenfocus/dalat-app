@@ -3980,6 +3980,8 @@
     "open": "사진 열기: {alt}"
   },
   "venueClaim": {
+    "venueName": "장소 이름",
+    "editVenue": "장소 수정",
     "eventEditorHint": "제목, 설명, 일정, 정원을 수정하세요.",
     "singleOccurrence": "반복 행사 중 이번 일정만 변경됩니다.",
     "eventConflict": "수정하는 동안 행사가 변경되었습니다. 저장하기 전에 새로고침하세요.",

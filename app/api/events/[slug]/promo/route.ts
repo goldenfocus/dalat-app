@@ -1,3 +1,4 @@
+import { canEditEvent, canEditSeries } from "@/lib/events/editor-access";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { hasRoleLevel, type EventPromoMedia, type PromoUpdateScope, type UserRole } from "@/lib/types";
@@ -10,7 +11,8 @@ interface RouteContext {
 async function canManageEvent(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
-  createdBy: string | null
+  createdBy: string | null,
+  eventId: string
 ): Promise<boolean> {
   if (userId === createdBy) return true;
   const { data: profile } = await supabase
@@ -18,7 +20,7 @@ async function canManageEvent(
     .select("role")
     .eq("id", userId)
     .single();
-  return profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false;
+  return (profile?.role ? hasRoleLevel(profile.role as UserRole, "admin") : false) || await canEditEvent(supabase, eventId);
 }
 
 // GET /api/events/[slug]/promo - Get promo media with inheritance
@@ -51,7 +53,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   // Check if current user can manage promo (creator or admin+)
   const { data: { user } } = await supabase.auth.getUser();
   const isOwner = user
-    ? await canManageEvent(supabase, user.id, event.created_by)
+    ? await canManageEvent(supabase, user.id, event.created_by, event.id)
     : false;
 
   return NextResponse.json({
@@ -85,7 +87,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
   }
 
   // Check ownership (creator or admin+)
-  if (!(await canManageEvent(supabase, user.id, event.created_by))) {
+  if (!(await canManageEvent(supabase, user.id, event.created_by, event.id))) {
     return NextResponse.json({ error: "Not event owner" }, { status: 403 });
   }
 
@@ -109,6 +111,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
   // Handle scope for series events
   if (event.series_id && scope !== "this_event") {
+    if (!(await canEditSeries(supabase, event.series_id))) {
+      return NextResponse.json({ error: "Not series owner" }, { status: 403 });
+    }
     // Update series promo and clear overrides for affected events
     return handleSeriesPromoUpdate(
       supabase,
@@ -181,7 +186,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   }
 
   // Check ownership (creator or admin+)
-  if (!(await canManageEvent(supabase, user.id, event.created_by))) {
+  if (!(await canManageEvent(supabase, user.id, event.created_by, event.id))) {
     return NextResponse.json({ error: "Not event owner" }, { status: 403 });
   }
 

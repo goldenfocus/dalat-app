@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "@/lib/i18n/routing";
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -10,7 +11,7 @@ import type { OperatingHours } from "@/lib/types";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 type Fields = {
-  description: string; phone: string; email: string; website_url: string;
+  name: string; description: string; phone: string; email: string; website_url: string;
   facebook_url: string; instagram_url: string; logo_url: string;
 };
 
@@ -20,10 +21,11 @@ export function VenueProfileForm({ venue }: {
   const t = useTranslations("venueClaim");
   const tv = useTranslations("venues");
   const locale = useLocale();
+  const router = useRouter();
   const dayLabel = (i: number) =>
     new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i)));
   const [f, setF] = useState<Fields>({
-    description: venue.description || "", phone: venue.phone || "", email: venue.email || "",
+    name: venue.name, description: venue.description || "", phone: venue.phone || "", email: venue.email || "",
     website_url: venue.website_url || "", facebook_url: venue.facebook_url || "",
     instagram_url: venue.instagram_url || "", logo_url: venue.logo_url || "",
   });
@@ -32,7 +34,7 @@ export function VenueProfileForm({ venue }: {
   const field = (key: keyof Fields, label: string, type = "text") => (
     <label className="block space-y-1.5">
       <span className="text-sm font-medium">{label}</span>
-      <Input type={type} value={f[key]} onChange={(e) => setF({ ...f, [key]: e.target.value })} />
+      <Input type={type} required={key === "name"} maxLength={key === "name" ? 200 : undefined} value={f[key]} onChange={(e) => setF({ ...f, [key]: e.target.value })} />
     </label>
   );
   const uploadLogo = async (file?: File) => {
@@ -51,10 +53,12 @@ export function VenueProfileForm({ venue }: {
         body: JSON.stringify({ ...fields, operating_hours: Object.keys(hours).length ? hours : null }),
       });
       setStatus(res.ok ? "saved" : "error");
+      if (res.ok) router.refresh();
     } catch { setStatus("error"); }
   };
   return (
     <form onSubmit={save} className="space-y-5">
+      {field("name", t("venueName"))}
       <div className="flex items-center gap-4">
         {f.logo_url ? (
           // eslint-disable-next-line @next/next/no-img-element

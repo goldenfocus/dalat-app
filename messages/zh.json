@@ -3980,6 +3980,8 @@
     "open": "打开照片：{alt}"
   },
   "venueClaim": {
+    "venueName": "场所名称",
+    "editVenue": "编辑场所",
     "eventEditorHint": "编辑标题、描述、时间和人数上限。",
     "singleOccurrence": "仅更改此重复活动的本次场次。",
     "eventConflict": "编辑期间活动已发生更改。请刷新后再保存。",

@@ -1,3 +1,4 @@
+import { canEditEvent } from "@/lib/events/editor-access";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -31,7 +32,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       .select("role")
       .eq("id", user.id)
       .single();
-    if (!profile || !["admin", "superadmin"].includes(profile.role ?? "")) {
+    if ((!profile || !["admin", "superadmin"].includes(profile.role ?? "")) && !(await canEditEvent(supabase, event.id))) {
       return NextResponse.json({ error: "Not event owner" }, { status: 403 });
     }
   }

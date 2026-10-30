@@ -3980,6 +3980,8 @@
     "open": "Mở ảnh: {alt}"
   },
   "venueClaim": {
+    "venueName": "Tên địa điểm",
+    "editVenue": "Chỉnh sửa địa điểm",
     "eventEditorHint": "Chỉnh sửa tên, mô tả, lịch và số người tham gia.",
     "singleOccurrence": "Thay đổi này chỉ áp dụng cho lần diễn ra này của sự kiện định kỳ.",
     "eventConflict": "Sự kiện đã thay đổi trong lúc bạn chỉnh sửa. Hãy tải lại trước khi lưu.",
