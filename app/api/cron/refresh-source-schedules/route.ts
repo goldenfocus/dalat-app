@@ -38,6 +38,9 @@ export async function GET(request: Request) {
       updated: outcomes.filter((outcome) => outcome.status === "updated"),
       unchanged: count("unchanged"),
       skipped: count("skipped"),
+      sourceRemoved: count("source_removed"),
+      sourceRestored: count("source_restored"),
+      unlisted: outcomes.filter((outcome) => outcome.status === "unlisted"),
       errors: count("error"),
     };
     console.log("[refresh-source-schedules]", JSON.stringify(body));

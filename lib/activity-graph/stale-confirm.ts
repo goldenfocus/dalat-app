@@ -2,6 +2,12 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { fetchSourceText, type FetchedSourceDocument } from "./fetch";
 import { extractDuoiTanAcoustic, extractSchemaOrgEvents } from "./parsers";
 import { freshnessScore } from "./scoring";
+import {
+  httpStatusFromFetchError,
+  isGoneHttpStatus,
+  isHomepageRedirect,
+  SOURCE_REMOVED_UNLIST_WINDOW_HOURS,
+} from "./source-removal";
 import type {
   ActivitySource,
   ExtractedActivity,
@@ -40,19 +46,10 @@ export interface StaleConfirmResult {
   seenSourceUids: string[];
 }
 
-const GONE_HTTP_STATUSES = new Set([404, 410, 451]);
-
-export function httpStatusFromFetchError(error: unknown): number | null {
-  const message = error instanceof Error ? error.message : String(error);
-  const match = message.match(/Source returned HTTP (\d{3})\b/);
-  if (!match) return null;
-  const status = Number(match[1]);
-  return Number.isInteger(status) ? status : null;
-}
-
-export function isGoneHttpStatus(status: number): boolean {
-  return GONE_HTTP_STATUSES.has(status);
-}
+export {
+  httpStatusFromFetchError,
+  isGoneHttpStatus,
+} from "./source-removal";
 
 export function sameSourceResource(
   requestedUrl: string,
@@ -104,6 +101,7 @@ export function decideStaleConfirmation(
         document: FetchedSourceDocument;
         activities: ExtractedActivity[];
       },
+  now: Date = new Date(),
 ): StaleConfirmAction {
   if (candidate.unlist_origin === "admin") {
     return { type: "skip", reason: "admin_unlist" };
@@ -121,6 +119,28 @@ export function decideStaleConfirmation(
       };
     }
     return { type: "skip", reason: "transient_fetch_error" };
+  }
+
+  if (isHomepageRedirect(candidate.source_url, observation.document.url)) {
+    // The homepage is not this activity's page: never ingest or "confirm"
+    // from it. Unlist only once the night is close; until then keep it
+    // published and re-check (a page can be re-posted or restored).
+    if (candidate.status !== "published") {
+      return { type: "skip", reason: "already_unlisted_redirected" };
+    }
+    const startMs = candidate.starts_at ? Date.parse(candidate.starts_at) : NaN;
+    if (
+      Number.isFinite(startMs) &&
+      startMs - now.getTime() >
+        SOURCE_REMOVED_UNLIST_WINDOW_HOURS * 3_600_000
+    ) {
+      return { type: "skip", reason: "source_removed_grace" };
+    }
+    return {
+      type: "unlist",
+      reason:
+        "Automatically unlisted after the source page was removed (redirects to the homepage)",
+    };
   }
 
   if (!sameSourceResource(candidate.source_url, observation.document.url)) {
@@ -308,7 +328,7 @@ export async function confirmOrExpireStaleCandidates(
       observation = { ok: false, error: fetchError };
     }
 
-    const decision = decideStaleConfirmation(candidate, observation);
+    const decision = decideStaleConfirmation(candidate, observation, now);
     if (decision.type === "ingest") {
       await options.ingestActivity(
         supabase,

@@ -7,6 +7,7 @@ import {
   parseSitemap,
 } from "./parsers";
 import { projectActivity, type ProjectionResult } from "./project";
+import { isHomepageRedirect } from "./source-removal";
 import {
   evaluateDalatLocality,
   freshnessScore,
@@ -696,6 +697,15 @@ export async function syncActivitySource(
             item.url,
             fetchBudget(deadlineMs),
           );
+          if (isHomepageRedirect(item.url, document.url)) {
+            // Removed page answered with the homepage: not this item's
+            // evidence. Skip it and hold reconciliation for this run.
+            inventoryComplete = false;
+            result.errors.push(
+              `${item.url}: source page removed (redirects to homepage)`,
+            );
+            continue;
+          }
           const activities = extractSchemaOrgEvents(
             document.text,
             document.url,
