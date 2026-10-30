@@ -8,5 +8,5 @@ import { getMessages } from "next-intl/server";
  */
 export async function MenuIntl({ children }: { children: React.ReactNode }) {
   const messages = await getMessages();
-  return <NextIntlClientProvider messages={{ venueMenu: messages.venueMenu }}>{children}</NextIntlClientProvider>;
+  return <NextIntlClientProvider messages={{ venueMenu: messages.venueMenu, arrival: messages.arrival }}>{children}</NextIntlClientProvider>;
 }

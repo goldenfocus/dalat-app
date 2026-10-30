@@ -12,6 +12,9 @@ type Row = {
   note: string | null;
   phone: string | null;
   created_at: string;
+  is_reservation: boolean;
+  participant_id: string | null;
+  sponsor_status: string;
   events: { slug: string; title: string; starts_at: string } | null;
   profiles: { display_name: string | null; username: string | null } | null;
   event_preorder_items: { name_snapshot: string; qty: number }[];
@@ -25,7 +28,7 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
   const { data, error } = await db
     .from("event_preorders")
     .select(
-      "id,status,total_vnd,note,phone,created_at,events!inner(slug,title,starts_at),profiles!event_preorders_user_id_fkey(display_name,username),event_preorder_items(name_snapshot,qty)",
+      "id,status,total_vnd,note,phone,created_at,is_reservation,participant_id,sponsor_status,events!inner(slug,title,starts_at),profiles!event_preorders_user_id_fkey(display_name,username),event_preorder_items(name_snapshot,qty)",
     )
     .eq("venue_id", venueId)
     .gte("events.starts_at", since)
@@ -55,7 +58,10 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
           {[...byEvent.entries()].map(([slug, g]) => {
             const live = g.rows.filter((r) => r.status !== "cancelled");
             const itemTotals = new Map<string, number>();
-            for (const r of live) for (const i of r.event_preorder_items) itemTotals.set(i.name_snapshot, (itemTotals.get(i.name_snapshot) ?? 0) + i.qty);
+            for (const r of live.filter(r => (r.status === "pending" || r.status === "confirmed") &&
+              (!(r.is_reservation || r.sponsor_status !== "none") || !!r.participant_id))) {
+              for (const i of r.event_preorder_items) itemTotals.set(i.name_snapshot, (itemTotals.get(i.name_snapshot) ?? 0) + i.qty);
+            }
             return (
               <div key={slug} className="rounded-xl border">
                 <div className="border-b p-4">
@@ -95,7 +101,8 @@ export async function PreorderList({ venueId, locale }: { venueId: string; local
                         {r.event_preorder_items.map((i) => `${i.qty}× ${i.name_snapshot}`).join(", ")}
                       </p>
                       {r.note && <p className="text-sm italic">“{r.note}”</p>}
-                      <PreorderStatusButtons id={r.id} status={r.status} />
+                      <PreorderStatusButtons id={r.id} status={r.status} eventSlug={slug}
+                        readyForPreparation={!(r.is_reservation || r.sponsor_status !== "none") || !!r.participant_id} />
                     </li>
                   ))}
                 </ul>
