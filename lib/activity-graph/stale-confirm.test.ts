@@ -220,13 +220,36 @@ describe("decideStaleConfirmation", () => {
     expect(
       decideStaleConfirmation(CANDIDATE, {
         ok: true,
-        document: { ...DOCUMENT, url: "https://maylangthang.com.vn/" },
+        document: {
+          ...DOCUMENT,
+          url: "https://maylangthang.com.vn/shows/other-show",
+        },
         activities: [],
       }),
     ).toEqual({
       type: "unlist",
       reason:
         "Automatically unlisted after the source page no longer hosts this activity",
+    });
+  });
+
+  it("treats a redirect to the homepage as a removed page, with a grace period", () => {
+    const home = {
+      ok: true as const,
+      document: { ...DOCUMENT, url: "https://maylangthang.com.vn/" },
+      activities: [activity()],
+    };
+    // Far from the night: keep published, never ingest the homepage.
+    expect(
+      decideStaleConfirmation(CANDIDATE, home, new Date("2026-09-20T00:00:00Z")),
+    ).toEqual({ type: "skip", reason: "source_removed_grace" });
+    // Within the unlist window: removed page unlists.
+    expect(
+      decideStaleConfirmation(CANDIDATE, home, new Date("2026-09-25T10:00:00Z")),
+    ).toEqual({
+      type: "unlist",
+      reason:
+        "Automatically unlisted after the source page was removed (redirects to the homepage)",
     });
   });
 });

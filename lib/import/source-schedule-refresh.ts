@@ -7,6 +7,11 @@ import {
   scheduleChanged,
   withScheduleChangeLog,
 } from "@/lib/activity-graph/schedule-change";
+import {
+  classifySourcePage,
+  isHomepagePath,
+  shouldUnlistForRemovedSource,
+} from "@/lib/activity-graph/source-removal";
 import type {
   ActivitySource,
   ExtractedActivity,
@@ -15,13 +20,23 @@ import { TRANSLATION_NEEDED_AT_KEY } from "@/lib/translation-sweep";
 import { canonicalizeSourceUrl } from "./safe-url";
 
 /**
- * Daily re-check of published, upcoming, non-series events whose source is a
- * structured ticketing/venue page (schema.org Event JSON-LD: Mây Lang Thang,
- * Nextix, Ticketbox, TicketGo, ...). Activity-graph events are skipped; that
- * sync already refreshes them hourly.
+ * Daily re-check of published, upcoming events whose source is a per-event
+ * ticketing/venue page (schema.org Event JSON-LD: Mây Lang Thang, Nextix,
+ * Ticketbox, TicketGo, ...; LuLuLoLa product pages for removal only).
+ * Activity-graph events are skipped; that sync already refreshes them hourly.
+ * Series instances are included only when they carry their own per-night
+ * source_metadata.source_url (e.g. one LuLuLoLa product page per night).
  *
  * Safety: a fetch error, missing/ambiguous structured data, a non-exact time,
  * or a new date in the past never changes the event and never unpublishes it.
+ *
+ * Removed source pages (404/410/451, or a redirect to the site homepage) are
+ * flagged, not unpublished: source_metadata.source_unavailable_since plus
+ * post_publish_review {reason: "source_page_removed"}. Only when the removal
+ * has persisted (>= SOURCE_REMOVED_MIN_AGE_HOURS) and the night is within
+ * SOURCE_REMOVED_UNLIST_WINDOW_HOURS (the last daily run before ~24h out) is
+ * that night unlisted (status draft, never deleted). A page that comes back
+ * clears the flag.
  */
 
 const LOOKAHEAD_DAYS = 180;
@@ -41,12 +56,16 @@ export interface RefreshableEvent {
   status: string;
   external_chat_url: string | null;
   source_metadata: Record<string, unknown> | null;
+  series_id?: string | null;
 }
 
 export type RefreshOutcome =
   | { eventId: string; status: "unchanged" }
   | { eventId: string; status: "skipped"; reason: string }
   | { eventId: string; status: "error"; reason: string }
+  | { eventId: string; status: "source_removed"; evidence: string }
+  | { eventId: string; status: "unlisted"; evidence: string }
+  | { eventId: string; status: "source_restored" }
   | {
       eventId: string;
       status: "updated";
@@ -59,7 +78,8 @@ export function refreshSourceUrl(event: RefreshableEvent): string | null {
   const metadataUrl = event.source_metadata?.source_url;
   const candidates = [
     typeof metadataUrl === "string" ? metadataUrl : null,
-    event.external_chat_url,
+    // A series instance's chat URL may be the series' generic page.
+    event.series_id ? null : event.external_chat_url,
   ];
   for (const candidate of candidates) {
     if (!candidate) continue;
@@ -68,6 +88,8 @@ export function refreshSourceUrl(event: RefreshableEvent): string | null {
     const url = new URL(canonical);
     if (url.protocol !== "https:") continue;
     if (UNSTRUCTURED_HOSTS.test(url.hostname)) continue;
+    // A homepage is not a per-event page (and is where removed pages land).
+    if (isHomepagePath(url.pathname)) continue;
     return canonical;
   }
   return null;
@@ -195,10 +217,9 @@ export async function refreshPublishedSourceSchedules(
   const { data, error } = await supabase
     .from("events")
     .select(
-      "id,slug,title,description,starts_at,ends_at,status,external_chat_url,source_metadata",
+      "id,slug,title,description,starts_at,ends_at,status,external_chat_url,source_metadata,series_id",
     )
     .eq("status", "published")
-    .is("series_id", null)
     .or("source_platform.is.null,source_platform.neq.activity-graph")
     .gt("starts_at", now.toISOString())
     .lt("starts_at", horizon.toISOString())
@@ -212,24 +233,48 @@ export async function refreshPublishedSourceSchedules(
     if (options.deadlineMs && Date.now() > options.deadlineMs) break;
     const sourceUrl = refreshSourceUrl(event);
     if (!sourceUrl) continue;
-    let occurrence: ExtractedActivity | null;
+    let page: { text: string; url: string } | null = null;
+    let fetchError: unknown = null;
     try {
-      const page = await fetchHtml(sourceUrl);
-      occurrence = pickSourceOccurrence(
-        extractSchemaOrgEvents(page.text, page.url),
-        page.url,
-        event.title,
-      );
-    } catch (fetchError) {
-      // Never unpublish or edit on a fetch failure.
+      page = await fetchHtml(sourceUrl);
+    } catch (error) {
+      fetchError = error;
+    }
+    const pageState = classifySourcePage(
+      sourceUrl,
+      page
+        ? { ok: true, finalUrl: page.url }
+        : { ok: false, error: fetchError },
+    );
+    if (pageState.state === "unknown") {
+      // Never unpublish or edit on a transient fetch failure.
       outcomes.push({
         eventId: event.id,
         status: "error",
-        reason:
-          fetchError instanceof Error ? fetchError.message : String(fetchError),
+        reason: pageState.reason,
       });
       continue;
     }
+    if (pageState.state === "removed") {
+      outcomes.push(
+        await handleRemovedSource(
+          supabase,
+          event,
+          sourceUrl,
+          pageState.evidence,
+          now,
+        ),
+      );
+      continue;
+    }
+    if (event.source_metadata?.[SOURCE_UNAVAILABLE_KEY]) {
+      outcomes.push(await clearRemovedSource(supabase, event, sourceUrl, now));
+    }
+    const occurrence = pickSourceOccurrence(
+      extractSchemaOrgEvents(page!.text, page!.url),
+      page!.url,
+      event.title,
+    );
     if (!occurrence) {
       outcomes.push({
         eventId: event.id,
@@ -322,4 +367,129 @@ export async function refreshPublishedSourceSchedules(
     });
   }
   return outcomes;
+}
+
+export const SOURCE_UNAVAILABLE_KEY = "source_unavailable_since";
+
+function writePublished(
+  supabase: SupabaseClient,
+  event: RefreshableEvent,
+  values: Record<string, unknown>,
+) {
+  return supabase
+    .from("events")
+    .update(values)
+    .eq("id", event.id)
+    .eq("status", "published")
+    .eq("starts_at", event.starts_at)
+    .select("id")
+    .maybeSingle();
+}
+
+/** Flag a removed source page; unlist the night only once it is close. */
+async function handleRemovedSource(
+  supabase: SupabaseClient,
+  event: RefreshableEvent,
+  sourceUrl: string,
+  evidence: string,
+  now: Date,
+): Promise<RefreshOutcome> {
+  const metadata = event.source_metadata ?? {};
+  const nowIso = now.toISOString();
+  const since =
+    typeof metadata[SOURCE_UNAVAILABLE_KEY] === "string"
+      ? (metadata[SOURCE_UNAVAILABLE_KEY] as string)
+      : null;
+  if (
+    shouldUnlistForRemovedSource({
+      unavailableSince: since,
+      startsAt: event.starts_at,
+      now,
+    })
+  ) {
+    const { data, error } = await writePublished(supabase, event, {
+      status: "draft",
+      source_metadata: {
+        ...metadata,
+        source_unavailable_last_checked_at: nowIso,
+        source_unavailable_evidence: evidence,
+        unlisted_at: nowIso,
+        unlisted_reason: `Source page still removed ${Math.round(
+          (Date.parse(event.starts_at) - now.getTime()) / 3_600_000,
+        )}h before the event (${evidence}); unlisted automatically, not deleted`,
+        post_publish_review: {
+          reason: "source_page_removed_unlisted",
+          requested_at: nowIso,
+          detector: DETECTOR,
+          source_url: sourceUrl,
+          unavailable_since: since,
+        },
+      },
+    });
+    if (error || !data) {
+      return {
+        eventId: event.id,
+        status: "error",
+        reason: error?.message ?? "event changed concurrently; not unlisted",
+      };
+    }
+    console.warn("[source-schedule-refresh] unlisted: source page removed", {
+      eventId: event.id,
+      since,
+      evidence,
+    });
+    return { eventId: event.id, status: "unlisted", evidence };
+  }
+  const update: Record<string, unknown> = {
+    ...metadata,
+    source_unavailable_last_checked_at: nowIso,
+    source_unavailable_evidence: evidence,
+  };
+  if (!since) {
+    update[SOURCE_UNAVAILABLE_KEY] = nowIso;
+    update.post_publish_review = {
+      reason: "source_page_removed",
+      requested_at: nowIso,
+      detector: DETECTOR,
+      source_url: sourceUrl,
+    };
+  }
+  const { error } = await writePublished(supabase, event, {
+    source_metadata: update,
+  });
+  if (error) {
+    return { eventId: event.id, status: "error", reason: error.message };
+  }
+  return { eventId: event.id, status: "source_removed", evidence };
+}
+
+/** The source page answers again: drop the removal flag. */
+async function clearRemovedSource(
+  supabase: SupabaseClient,
+  event: RefreshableEvent,
+  sourceUrl: string,
+  now: Date,
+): Promise<RefreshOutcome> {
+  const nowIso = now.toISOString();
+  const metadata = { ...(event.source_metadata ?? {}) };
+  const since = metadata[SOURCE_UNAVAILABLE_KEY];
+  delete metadata[SOURCE_UNAVAILABLE_KEY];
+  delete metadata.source_unavailable_last_checked_at;
+  delete metadata.source_unavailable_evidence;
+  metadata.source_restored_at = nowIso;
+  metadata.post_publish_review = {
+    reason: "source_page_restored",
+    requested_at: nowIso,
+    detector: DETECTOR,
+    source_url: sourceUrl,
+    unavailable_since: since,
+  };
+  const { error } = await writePublished(supabase, event, {
+    source_metadata: metadata,
+  });
+  if (error) {
+    return { eventId: event.id, status: "error", reason: error.message };
+  }
+  event.source_metadata = metadata;
+  return { eventId: event.id, status: "source_restored" };
 }

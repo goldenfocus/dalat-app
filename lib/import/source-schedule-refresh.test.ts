@@ -194,4 +194,148 @@ describe("published source schedule refresh", () => {
       ),
     ).toBeNull();
   });
+
+  it("includes series instances only through their own per-night source URL", () => {
+    expect(
+      refreshSourceUrl(
+        event({
+          series_id: "s1",
+          source_metadata: {},
+          external_chat_url: "https://maylangthang.com.vn/shows/tp-2011",
+        }),
+      ),
+    ).toBeNull();
+    expect(
+      refreshSourceUrl(
+        event({
+          series_id: "s1",
+          source_metadata: { source_url: LULU },
+        }),
+      ),
+    ).toBe(LULU);
+    expect(
+      refreshSourceUrl(
+        event({
+          source_metadata: { source_url: "https://lululola.com.vn/" },
+          external_chat_url: null,
+        }),
+      ),
+    ).toBeNull();
+  });
+
+  it("flags a page that redirects to the homepage instead of parsing the homepage", async () => {
+    const { client, updates, deletes } = db([luluNight()]);
+    const outcomes = await refreshPublishedSourceSchedules(client, {
+      now: NOW,
+      fetchHtml: async () => ({
+        url: "https://lululola.com.vn/",
+        // The homepage lists other shows; it must never move this one.
+        text: page("2026-11-22T17:00:00+07:00", "2026-11-22T19:00:00+07:00"),
+      }),
+    });
+    expect(outcomes).toEqual([
+      {
+        eventId: "e1",
+        status: "source_removed",
+        evidence: "redirects to homepage https://lululola.com.vn/",
+      },
+    ]);
+    expect(updates).toHaveLength(1);
+    expect(updates[0].status).toBeUndefined();
+    expect(updates[0].starts_at).toBeUndefined();
+    const metadata = updates[0].source_metadata as Record<string, unknown>;
+    expect(metadata.source_unavailable_since).toBe(NOW.toISOString());
+    expect(metadata.post_publish_review).toMatchObject({
+      reason: "source_page_removed",
+    });
+    expect(deletes).toHaveLength(0);
+  });
+
+  it("unlists (draft, not delete) a night still removed when it is close", async () => {
+    const night = luluNight({
+      source_metadata: {
+        source_url: LULU,
+        source_unavailable_since: "2026-10-30T10:17:11Z",
+      },
+    });
+    const removed = async () => ({ url: "https://lululola.com.vn/", text: "" });
+    const early = db([night]);
+    const first = await refreshPublishedSourceSchedules(early.client, {
+      now: new Date("2026-10-31T00:40:00Z"),
+      fetchHtml: removed,
+    });
+    expect(first[0].status).toBe("source_removed");
+    expect(early.updates[0].status).toBeUndefined();
+    expect(
+      (early.updates[0].source_metadata as Record<string, unknown>)
+        .source_unavailable_since,
+    ).toBe("2026-10-30T10:17:11Z");
+
+    const late = db([night]);
+    const second = await refreshPublishedSourceSchedules(late.client, {
+      now: new Date("2026-11-01T00:40:00Z"),
+      fetchHtml: removed,
+    });
+    expect(second[0].status).toBe("unlisted");
+    expect(late.updates[0].status).toBe("draft");
+    expect(late.updates[0].source_metadata).toMatchObject({
+      post_publish_review: { reason: "source_page_removed_unlisted" },
+    });
+    expect(late.deletes).toHaveLength(0);
+  });
+
+  it("clears the flag when the page comes back", async () => {
+    const { client, updates } = db([
+      luluNight({
+        source_metadata: {
+          source_url: LULU,
+          source_unavailable_since: "2026-10-30T10:17:11Z",
+        },
+      }),
+    ]);
+    const outcomes = await refreshPublishedSourceSchedules(client, {
+      now: NOW,
+      fetchHtml: async (url) => ({ url, text: "<html>no json-ld</html>" }),
+    });
+    expect(outcomes[0].status).toBe("source_restored");
+    const metadata = updates[0].source_metadata as Record<string, unknown>;
+    expect(metadata.source_unavailable_since).toBeUndefined();
+    expect(metadata.post_publish_review).toMatchObject({
+      reason: "source_page_restored",
+    });
+  });
+
+  it("treats HTTP 404 as removed but 5xx as transient", async () => {
+    const gone = db([luluNight()]);
+    const outcomes = await refreshPublishedSourceSchedules(gone.client, {
+      now: NOW,
+      fetchHtml: async () => {
+        throw new Error("Source returned HTTP 404");
+      },
+    });
+    expect(outcomes[0]).toMatchObject({
+      status: "source_removed",
+      evidence: "HTTP 404",
+    });
+    expect(gone.updates[0].status).toBeUndefined();
+  });
 });
+
+const LULU =
+  "https://lululola.com.vn/acoustic-live-band-02112026-pd680741e1c8a17";
+
+function luluNight(
+  overrides: Partial<RefreshableEvent> = {},
+): RefreshableEvent {
+  return event({
+    slug: "acoustic-live-band-02112026",
+    title: "ACOUSTIC LIVE BAND | 02/11/2026",
+    description: "Acoustic Live Band 02/11/2026 19:30–21:30 ICT.",
+    starts_at: "2026-11-02T12:30:00+00:00",
+    ends_at: "2026-11-02T14:30:00+00:00",
+    external_chat_url: LULU,
+    series_id: "a3b52bf5-397d-4d5c-ad80-9a3f907cf521",
+    source_metadata: { source_url: LULU },
+    ...overrides,
+  });
+}
