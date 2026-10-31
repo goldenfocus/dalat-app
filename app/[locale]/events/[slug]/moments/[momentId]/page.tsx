@@ -315,7 +315,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
         <main className="container max-w-4xl mx-auto px-4 py-6">
           <div className="grid lg:grid-cols-[1fr,320px] gap-6">
             {/* Main content */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               {/* Media display */}
               <div className="relative rounded-xl overflow-hidden bg-muted">
                 {/* YouTube embed */}
@@ -438,18 +438,18 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               </div>
 
               {/* Author and actions */}
-              <div className="flex items-center justify-between">
+              <div className="flex flex-wrap items-center justify-between gap-3">
                 <Link
                   href={moment.credit_venue_slug ? `/venues/${moment.credit_venue_slug}` : `/${profile.username || moment.user_id}`}
-                  className="flex items-center gap-3 group"
+                  className="group flex min-w-0 max-w-full items-center gap-3"
                 >
                   <UserAvatar
                     src={profile.avatar_url}
                     alt={profile.display_name || profile.username || ""}
                     size="md"
                   />
-                  <div>
-                    <p className="font-medium group-hover:underline">
+                  <div className="min-w-0">
+                    <p className="break-words font-medium group-hover:underline">
                       {profile.display_name || profile.username || tCommon("anonymous")}
                     </p>
                     <p className="text-sm text-muted-foreground">{timeAgo}</p>
