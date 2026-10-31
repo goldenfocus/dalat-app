@@ -387,3 +387,13 @@ it("uses localized moment text and its event-scoped canonical in structured data
   expect(schema.url).toBe("https://dalat.app/de/events/truthful-event/moments/moment");
   expect((schema.video as { name: string }).name).toBe(schema.headline);
 });
+
+it("links a venue-credited photo to its organization instead of the importing user", () => {
+  const schema = generateMomentSchema({
+    id: "moment", user_id: "importer", created_at: "2026-10-21T00:00:00Z",
+    content_type: "photo", credit_venue_slug: "social-house-dalat",
+    profiles: { display_name: "Socialhouse Dalat", username: "yan" },
+  } as Parameters<typeof generateMomentSchema>[0], "vi");
+  expect(schema.author).toEqual({ "@type": "Organization", name: "Socialhouse Dalat",
+    url: "https://dalat.app/vi/venues/social-house-dalat" });
+});

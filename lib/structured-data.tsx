@@ -853,9 +853,9 @@ export function generateMomentSchema(
     url: momentUrl,
     datePublished: moment.created_at,
     author: {
-      "@type": "Person",
+      "@type": moment.credit_venue_slug ? "Organization" : "Person",
       name: userName,
-      url: localizedSiteUrl(locale, `/${userIdentifier}`),
+      url: localizedSiteUrl(locale, moment.credit_venue_slug ? `/venues/${moment.credit_venue_slug}` : `/${userIdentifier}`),
     },
     about: eventSlug
       ? {
