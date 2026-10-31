@@ -4310,5 +4310,22 @@
     "allGroups": "Semua pasangan ({count})",
     "loading": "Memuatkan pasangan…",
     "where": "Cari satu sama lain mengikut nama dan duduk bersama."
+  },
+  "eventFollowupEmail": {
+    "subject": "Terima kasih kerana menyertai {eventTitle}",
+    "heading": "Terima kasih kerana meluangkan masa bersama kami pada malam itu!",
+    "intro": "Seronok dapat bersama anda di {eventTitle}. Teruskan berbual dan mencipta kenangan.",
+    "eventLink": "Buka acara di ĐàLạt.app",
+    "albumLink": "Lihat foto dan video",
+    "practiceHeading": "Sedikit latihan untuk minggu ini",
+    "practiceBody": "Berikut ialah dua frasa berguna daripada panduan perbualan EZViet untuk anda berlatih mengikut rentak sendiri.",
+    "practiceLink": "Teruskan berlatih di EZViet",
+    "uploadHeading": "Ada foto atau video?",
+    "uploadBody": "Tambahkan detik kegemaran anda ke dalam album acara supaya semua orang dapat menikmatinya.",
+    "uploadLink": "Muat naik foto dan video",
+    "signoff": "Jumpa lagi di sesi pertukaran bahasa yang seterusnya!",
+    "unsubscribe": "Nyahlanggan kemas kini e-mel",
+    "nextHeading": "Sertai kami lagi",
+    "rsvpLink": "Lihat acara dan sahkan kehadiran"
   }
 }

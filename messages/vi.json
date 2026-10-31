@@ -4310,5 +4310,22 @@
     "allGroups": "Tất cả các cặp ({count})",
     "loading": "Đang tải các cặp…",
     "where": "Tìm nhau theo tên và ngồi cùng nhau."
+  },
+  "eventFollowupEmail": {
+    "subject": "Cảm ơn bạn đã tham gia {eventTitle}",
+    "heading": "Cảm ơn bạn đã dành buổi tối cùng chúng mình!",
+    "intro": "Chúng mình rất vui khi có bạn tại {eventTitle}. Cùng tiếp tục trò chuyện và lưu giữ những kỷ niệm nhé!",
+    "eventLink": "Mở sự kiện trên ĐàLạt.app",
+    "albumLink": "Xem ảnh và video",
+    "practiceHeading": "Luyện tập một chút trong tuần này",
+    "practiceBody": "Dưới đây là hai mẫu câu hữu ích từ cẩm nang hội thoại EZViet để bạn luyện tập theo nhịp độ phù hợp với mình.",
+    "practiceLink": "Tiếp tục luyện tập trên EZViet",
+    "uploadHeading": "Bạn có ảnh hoặc video muốn chia sẻ?",
+    "uploadBody": "Thêm những khoảnh khắc yêu thích của bạn vào album sự kiện để mọi người cùng xem nhé.",
+    "uploadLink": "Tải ảnh và video lên",
+    "signoff": "Hẹn gặp bạn ở buổi giao lưu ngôn ngữ tiếp theo!",
+    "unsubscribe": "Hủy nhận email cập nhật",
+    "nextHeading": "Lần tới lại tham gia cùng chúng mình nhé",
+    "rsvpLink": "Xem sự kiện và đăng ký tham gia"
   }
 }

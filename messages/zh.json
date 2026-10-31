@@ -4310,5 +4310,22 @@
     "allGroups": "全部配对（{count}）",
     "loading": "正在加载配对…",
     "where": "按名字找到彼此，一起坐下。"
+  },
+  "eventFollowupEmail": {
+    "subject": "感谢你参加 {eventTitle}",
+    "heading": "谢谢你和我们共度美好的夜晚！",
+    "intro": "很高兴你能参加 {eventTitle}。让交流继续，让美好回忆延续。",
+    "eventLink": "在 ĐàLạt.app 上查看活动",
+    "albumLink": "查看照片和视频",
+    "practiceHeading": "本周的小练习",
+    "practiceBody": "这里有两个来自 EZViet 会话指南的实用表达，你可以按自己的节奏练习。",
+    "practiceLink": "在 EZViet 上继续练习",
+    "uploadHeading": "拍了照片或视频吗？",
+    "uploadBody": "把你最喜欢的精彩瞬间上传到活动相册，让大家一起欣赏。",
+    "uploadLink": "上传照片和视频",
+    "signoff": "下次语言交流活动见！",
+    "unsubscribe": "退订邮件更新",
+    "nextHeading": "期待与你再次相聚",
+    "rsvpLink": "查看活动并报名"
   }
 }

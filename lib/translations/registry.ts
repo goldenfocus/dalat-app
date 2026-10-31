@@ -5,6 +5,9 @@ import { metadataLabels } from "./metadata-labels";
 // Event arrival nicknames, staff membership and order notes are private operational
 // data: never enqueue them. Arrival menus reuse the public menu_item/menu_section
 // sources below, including their transactional invalidation and original controls.
+// event_followup_settings and event_followup_deliveries are private operational
+// data. Email copy uses the 12-locale eventFollowupEmail catalog; never translate
+// stored delivery payloads or email addresses through the public content worker.
 export const TRANSLATION_SOURCES = [
   {
     type: "venue",

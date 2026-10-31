@@ -4310,5 +4310,22 @@
     "allGroups": "Todas las parejas ({count})",
     "loading": "Cargando parejas…",
     "where": "Busca a tu pareja por su nombre y sentaos juntos."
+  },
+  "eventFollowupEmail": {
+    "subject": "Gracias por acompañarnos en {eventTitle}",
+    "heading": "¡Gracias por compartir la velada con nosotros!",
+    "intro": "Nos encantó tenerte en {eventTitle}. Que sigan las conversaciones y los buenos recuerdos.",
+    "eventLink": "Abrir el evento en ĐàLạt.app",
+    "albumLink": "Ver las fotos y los vídeos",
+    "practiceHeading": "Un poco de práctica para la semana",
+    "practiceBody": "Aquí tienes dos frases útiles de la guía de conversación de EZViet para practicar a tu ritmo.",
+    "practiceLink": "Seguir practicando en EZViet",
+    "uploadHeading": "¿Tienes fotos o vídeos?",
+    "uploadBody": "Añade tus momentos favoritos al álbum del evento para que todos puedan disfrutarlos.",
+    "uploadLink": "Subir fotos y vídeos",
+    "signoff": "¡Nos vemos en el próximo intercambio de idiomas!",
+    "unsubscribe": "Cancelar la suscripción a las novedades por correo electrónico",
+    "nextHeading": "Vuelve a acompañarnos",
+    "rsvpLink": "Ver el evento y confirmar asistencia"
   }
 }

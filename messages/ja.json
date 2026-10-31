@@ -4310,5 +4310,22 @@
     "allGroups": "すべてのペア（{count}）",
     "loading": "ペアを読み込み中…",
     "where": "名前で相手を見つけて、一緒に座りましょう。"
+  },
+  "eventFollowupEmail": {
+    "subject": "{eventTitle}にご参加いただき、ありがとうございました",
+    "heading": "一緒に夜のひとときを過ごしていただき、ありがとうございました！",
+    "intro": "{eventTitle}でお会いできてうれしかったです。これからも会話を楽しみ、思い出を重ねていきましょう。",
+    "eventLink": "ĐàLạt.appでイベントを見る",
+    "albumLink": "写真や動画を見る",
+    "practiceHeading": "今週のちょっとした練習",
+    "practiceBody": "EZVietの会話ガイドから、役立つフレーズを2つご紹介します。ご自分のペースで練習してみてください。",
+    "practiceLink": "EZVietで練習を続ける",
+    "uploadHeading": "写真や動画はありますか？",
+    "uploadBody": "お気に入りの写真や動画をイベントアルバムに追加して、みんなで楽しみましょう。",
+    "uploadLink": "写真や動画をアップロードする",
+    "signoff": "次の言語交流会でまたお会いしましょう！",
+    "unsubscribe": "メール配信を停止する",
+    "nextHeading": "また参加しませんか？",
+    "rsvpLink": "イベントを見て参加を申し込む"
   }
 }

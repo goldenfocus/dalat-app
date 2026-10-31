@@ -66,6 +66,10 @@
     {
       "path": "/api/cron/sync-drive-photos",
       "schedule": "13,43 * * * *"
+    },
+    {
+      "path": "/api/cron/event-followups",
+      "schedule": "*/15 * * * *"
     }
   ]
 }

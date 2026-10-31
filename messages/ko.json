@@ -4310,5 +4310,22 @@
     "allGroups": "전체 짝 ({count})",
     "loading": "짝을 불러오는 중…",
     "where": "이름으로 서로를 찾아 함께 앉으세요."
+  },
+  "eventFollowupEmail": {
+    "subject": "{eventTitle}에 참여해 주셔서 감사해요",
+    "heading": "저녁 시간을 함께 보내 주셔서 감사해요!",
+    "intro": "{eventTitle}에서 함께할 수 있어 즐거웠어요. 나눴던 대화와 소중한 추억을 앞으로도 이어가요.",
+    "eventLink": "ĐàLạt.app에서 모임 보기",
+    "albumLink": "사진과 영상 보기",
+    "practiceHeading": "이번 주에 가볍게 연습해 봐요",
+    "practiceBody": "EZViet 대화 가이드에서 유용한 표현 두 가지를 골라 소개해 드려요. 편한 속도로 연습해 보세요.",
+    "practiceLink": "EZViet에서 계속 연습하기",
+    "uploadHeading": "사진이나 영상이 있으신가요?",
+    "uploadBody": "모두가 함께 즐길 수 있도록 가장 기억에 남는 순간들을 모임 앨범에 올려 주세요.",
+    "uploadLink": "사진과 영상 올리기",
+    "signoff": "다음 언어 교환 모임에서 또 만나요!",
+    "unsubscribe": "이메일 소식 수신 거부",
+    "nextHeading": "다음에도 함께해요",
+    "rsvpLink": "모임 확인하고 참가 신청하기"
   }
 }

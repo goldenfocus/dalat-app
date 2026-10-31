@@ -4310,5 +4310,22 @@
     "allGroups": "Semua pasangan ({count})",
     "loading": "Memuat pasangan…",
     "where": "Cari satu sama lain berdasarkan nama dan duduk bersama."
+  },
+  "eventFollowupEmail": {
+    "subject": "Terima kasih sudah ikut {eventTitle}",
+    "heading": "Terima kasih sudah menghabiskan malam bersama kami!",
+    "intro": "Senang sekali kamu hadir di {eventTitle}. Yuk, teruskan obrolannya dan kenang momen-momen indahnya.",
+    "eventLink": "Buka acara di ĐàLạt.app",
+    "albumLink": "Lihat foto dan video",
+    "practiceHeading": "Sedikit latihan untuk minggu ini",
+    "practiceBody": "Berikut dua ungkapan berguna dari panduan percakapan EZViet yang bisa kamu latih sesuai ritmemu sendiri.",
+    "practiceLink": "Terus berlatih di EZViet",
+    "uploadHeading": "Punya foto atau video?",
+    "uploadBody": "Tambahkan momen favoritmu ke album acara supaya semua orang bisa menikmatinya.",
+    "uploadLink": "Unggah foto dan video",
+    "signoff": "Sampai jumpa di acara pertukaran bahasa berikutnya!",
+    "unsubscribe": "Berhenti berlangganan kabar melalui email",
+    "nextHeading": "Yuk, ikut lagi",
+    "rsvpLink": "Lihat acara dan konfirmasi kehadiran"
   }
 }

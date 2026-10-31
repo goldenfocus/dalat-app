@@ -4310,5 +4310,22 @@
     "allGroups": "Toutes les paires ({count})",
     "loading": "Chargement des paires…",
     "where": "Retrouvez-vous par votre nom et asseyez-vous ensemble."
+  },
+  "eventFollowupEmail": {
+    "subject": "Merci d’avoir participé à {eventTitle}",
+    "heading": "Merci d’avoir passé la soirée avec nous !",
+    "intro": "Nous avons été ravis de vous accueillir à {eventTitle}. Prolongez les échanges et faites vivre les souvenirs.",
+    "eventLink": "Ouvrir l’événement sur ĐàLạt.app",
+    "albumLink": "Voir les photos et les vidéos",
+    "practiceHeading": "Un peu de pratique cette semaine",
+    "practiceBody": "Voici deux expressions utiles tirées du guide de conversation EZViet pour vous entraîner à votre rythme.",
+    "practiceLink": "Continuer à s’entraîner sur EZViet",
+    "uploadHeading": "Vous avez des photos ou des vidéos ?",
+    "uploadBody": "Ajoutez vos moments préférés à l’album de l’événement pour que tout le monde puisse en profiter.",
+    "uploadLink": "Ajouter des photos et des vidéos",
+    "signoff": "Au plaisir de vous retrouver au prochain échange linguistique !",
+    "unsubscribe": "Se désabonner des actualités par e-mail",
+    "nextHeading": "Retrouvons-nous bientôt",
+    "rsvpLink": "Voir l’événement et confirmer sa présence"
   }
 }
