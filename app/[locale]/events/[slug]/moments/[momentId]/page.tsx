@@ -313,7 +313,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
           mimeType={moment.mime_type}
         />
         <main className="container max-w-4xl mx-auto px-4 py-6">
-          <div className="grid lg:grid-cols-[1fr,320px] gap-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr),320px] gap-6">
             {/* Main content */}
             <div className="min-w-0 space-y-4">
               {/* Media display */}
@@ -527,7 +527,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-4">
+            <div className="min-w-0 space-y-4">
               {/* Event card */}
               <Card>
                 <CardContent className="p-4">
