@@ -21,6 +21,10 @@ export async function syncDrivePhotos(apiKey: string) {
   const claimed = await db.rpc("claim_drive_photo_sync", { p_source: SOURCE.id, p_token: token });
   if (claimed.error) throw new Error(`Sync lease unavailable: ${claimed.error.code}`);
   if (!claimed.data) return { state: "not_due_or_running" };
+  const credit = async (id: string) => {
+    const result = await db.from("moment_venue_credits").upsert({ moment_id: id, venue_id: SOURCE.venueId }, { onConflict: "moment_id" });
+    if (result.error) throw new Error(`Import ledger credit failed: ${result.error.code}`);
+  };
   const report = { state: "complete", seen: 0, imported: 0, duplicates: 0, held: 0, failed: 0, remaining: 0 };
   let nextMinutes = 30;
   try {
@@ -92,7 +96,7 @@ export async function syncDrivePhotos(apiKey: string) {
         const id = momentId(file.id); const hash = sha(original);
         const exists = await db.from("moments").select("id").eq("id", id).maybeSingle();
         if (exists.error) throw new Error(`Duplicate lookup failed: ${exists.error.code}`);
-        if (exists.data) { await save("imported", "Recovered existing import",match.event.id,id); report.duplicates++; continue; }
+        if (exists.data) { await credit(id); await save("imported", "Recovered existing import",match.event.id,id); report.duplicates++; continue; }
         const duplicate = await db.from("moments").select("id").eq("event_id",match.event.id).eq("file_hash",hash).limit(1);
         if (duplicate.error) throw new Error(`Hash lookup failed: ${duplicate.error.code}`);
         if (duplicate.data?.length) { await save("duplicate", "Identical photo already in event",match.event.id,duplicate.data[0].id); report.duplicates++; continue; }
@@ -115,6 +119,7 @@ export async function syncDrivePhotos(apiKey: string) {
           const recovery = await db.from("moments").select("id").eq("id",id).maybeSingle();
           if (recovery.error || !recovery.data) throw new Error("Unexpected duplicate constraint; review import");
         }
+        await credit(id);
         await save("imported",null,match.event.id,id); report.imported++;
       } catch (error) {
         // Only controlled messages; decoder/transport errors can include untrusted data or URLs.

@@ -18,6 +18,8 @@ import type { Locale } from "@/lib/i18n/routing";
 import type { Event, MomentContentType, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
+import { withVenueCredits } from "@/lib/moments/venue-credit";
+
 const INITIAL_PAGE_SIZE = 20;
 const VIDEO_PENDING_STATUSES = ["uploading", "processing", "error"] as const;
 
@@ -169,7 +171,7 @@ async function getMomentsWithPendingVideos(
   const totalCount = countResult.count ?? moments.length;
   const hasMore = totalCount > moments.length;
 
-  return { moments: moments.slice(0, pageLimit), hasMore, totalCount };
+  return { moments: await withVenueCredits(supabase, moments.slice(0, pageLimit)), hasMore, totalCount };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {

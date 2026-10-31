@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
+import { withGroupVenueCredits } from "@/lib/moments/venue-credit";
 import { createClient } from "@/lib/supabase/client";
 import { DiscoveryEventMomentsGroup } from "./discovery-event-moments-group";
 import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
@@ -58,7 +59,7 @@ export function InfiniteMomentDiscoveryGrouped({
       return;
     }
 
-    const newGroups = (data ?? []) as DiscoveryEventMomentsGroupType[];
+    const newGroups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroupType[]);
 
     if (newGroups.length < EVENTS_PER_PAGE) {
       setHasMore(false);
@@ -90,7 +91,7 @@ export function InfiniteMomentDiscoveryGrouped({
       return;
     }
 
-    const newGroups = (data ?? []) as DiscoveryEventMomentsGroupType[];
+    const newGroups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroupType[]);
     setGroups(newGroups);
     setOffset(newGroups.length);
     setHasMore(newGroups.length >= EVENTS_PER_PAGE);

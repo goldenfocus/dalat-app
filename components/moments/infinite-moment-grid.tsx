@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo, forwardRef, useImperativeHandle } from "react";
 import { useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
@@ -231,7 +232,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
       return stampA - stampB;
     });
 
-    const newMoments = allMoments.slice(nextOffset, nextOffset + PAGE_SIZE);
+    const newMoments = await withVenueCredits(supabase, allMoments.slice(nextOffset, nextOffset + PAGE_SIZE));
     const totalCount = countResult.count ?? allMoments.length;
 
     if (newMoments.length === 0) {

@@ -952,6 +952,8 @@ export interface EventSettings {
 }
 
 export interface Moment {
+  credit_venue_id?: string;
+  credit_venue_slug?: string;
   id: string;
   event_id: string;
   user_id: string;
@@ -990,6 +992,8 @@ export interface Moment {
 }
 
 export interface MomentWithProfile {
+  credit_venue_id?: string;
+  credit_venue_slug?: string;
   id: string;
   event_id: string;
   user_id: string;
@@ -1036,6 +1040,8 @@ export interface MomentCounts {
 
 // Extended moment type with event data for the content-first feed
 export interface MomentWithEvent {
+  credit_venue_id?: string;
+  credit_venue_slug?: string;
   id: string;
   event_id: string;
   user_id: string;

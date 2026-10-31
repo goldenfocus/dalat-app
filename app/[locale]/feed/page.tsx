@@ -1,3 +1,4 @@
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { MomentsFeed } from "@/components/feed";
@@ -49,7 +50,7 @@ async function getFeedMoments(): Promise<MomentWithEvent[]> {
     return [];
   }
 
-  return (data ?? []) as MomentWithEvent[];
+  return withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
 }
 
 export default async function FeedPage() {

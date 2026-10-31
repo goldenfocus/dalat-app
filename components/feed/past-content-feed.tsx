@@ -1,3 +1,4 @@
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { createClient } from "@/lib/supabase/server";
 import { ContentCarousel } from "./content-carousel";
 import type { MomentWithEvent } from "@/lib/types";
@@ -18,7 +19,7 @@ async function getFeedMoments(): Promise<MomentWithEvent[]> {
     return [];
   }
 
-  return (data ?? []) as MomentWithEvent[];
+  return withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
 }
 
 /**

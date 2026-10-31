@@ -1,4 +1,5 @@
 "use client";
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 
 import { useEffect } from "react";
 import {
@@ -78,7 +79,7 @@ export function useMomentsFeed(
       });
 
       if (error) throw error;
-      return (data ?? []) as MomentWithEvent[];
+      return withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
     },
     initialData: initialData
       ? {

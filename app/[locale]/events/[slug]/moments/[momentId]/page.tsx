@@ -6,6 +6,7 @@ import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -96,7 +97,11 @@ async function getMoment(id: string, expectedSlug?: string): Promise<MomentWithD
     return null; // Will trigger redirect or 404
   }
 
-  return data as MomentWithDetails;
+  const [credited] = await withVenueCredits(supabase, [data]);
+  if (credited.credit_venue_id) {
+    credited.profiles = { ...data.profiles, display_name: credited.display_name, avatar_url: credited.avatar_url };
+  }
+  return credited as MomentWithDetails;
 }
 
 interface AdjacentMoments {
@@ -168,7 +173,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     translatedRecords("moment", [moment.id], locale),
   ]);
   const eventTitle = titles.get(moment.events.id)?.title || moment.events.title;
-  const name = moment.profiles.display_name || moment.profiles.username || tCommon("anonymous");
+  const [credited] = await withVenueCredits(supabase, [moment]);
+  const name = credited.credit_venue_id ? credited.display_name : moment.profiles.display_name || moment.profiles.username || tCommon("anonymous");
   const fields = translated.get(moment.id);
   return generateMomentMetadata(
     {
@@ -434,7 +440,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               {/* Author and actions */}
               <div className="flex items-center justify-between">
                 <Link
-                  href={`/${profile.username || moment.user_id}`}
+                  href={moment.credit_venue_slug ? `/venues/${moment.credit_venue_slug}` : `/${profile.username || moment.user_id}`}
                   className="flex items-center gap-3 group"
                 >
                   <UserAvatar

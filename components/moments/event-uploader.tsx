@@ -10,6 +10,7 @@ import { clearFinished, enqueueFiles, getEmptyUploadSnapshot, getUploadSnapshot,
 import { isFinished, isWorking, type UploadJob } from '@/lib/uploads/types';
 import { loadFile } from '@/lib/uploads/store';
 import { MomentCaptionEditor } from './moment-caption-editor';
+import { useUploadCompletion } from '@/lib/uploads/use-upload-completion';
 
 export function useEventUploads() {
   const state = useSyncExternalStore(subscribeUploads, getUploadSnapshot, getEmptyUploadSnapshot);
@@ -72,6 +73,7 @@ export function EventUploader({ eventId, eventSlug, eventTitle, userId, requires
   const persistent = jobs.every(job => job.durable);
   const saving = state.staging > 0;
   const allDone = jobs.length > 0 && complete === jobs.length && !saving;
+  useUploadCompletion(eventId, eventSlug, saving || jobs.some(job => !isFinished(job.phase)), allDone);
   useEffect(() => { setCanFolder('webkitdirectory' in document.createElement('input') && !/iPhone|iPad|Android/i.test(navigator.userAgent)); }, []);
   useEffect(() => {
     let alive = true;

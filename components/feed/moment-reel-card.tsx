@@ -108,7 +108,7 @@ export function MomentReelCard({
         <div className="bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-24 pb-6 px-4">
           {/* User attribution - now at bottom */}
           <Link
-            href={`/${moment.username || moment.user_id}`}
+            href={moment.credit_venue_slug ? `/venues/${moment.credit_venue_slug}` : `/${moment.username || moment.user_id}`}
             className="inline-flex items-center gap-2.5 mb-3 active:opacity-80 transition-opacity"
           >
             <UserAvatar
@@ -118,7 +118,7 @@ export function MomentReelCard({
               fallbackClassName="bg-white/20"
             />
             <span className="text-white font-medium text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-              @{moment.username || "user"}
+              {moment.credit_venue_id ? moment.display_name : `@${moment.username || "user"}`}
             </span>
           </Link>
 

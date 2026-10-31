@@ -1,3 +1,4 @@
+import { withVenueCredits, withGroupVenueCredits } from "@/lib/moments/venue-credit";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
@@ -40,7 +41,7 @@ async function getMoments(): Promise<MomentWithEvent[]> {
     return [];
   }
 
-  return (data ?? []) as MomentWithEvent[];
+  return withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
 }
 
 // Grouped moments for desktop discovery feed
@@ -66,7 +67,7 @@ async function getMomentsGrouped(): Promise<{
     return { groups: [], hasMore: false };
   }
 
-  const groups = (data ?? []) as DiscoveryEventMomentsGroup[];
+  const groups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroup[]);
   return {
     groups,
     hasMore: groups.length >= INITIAL_EVENTS,

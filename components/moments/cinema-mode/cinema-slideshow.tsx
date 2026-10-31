@@ -95,12 +95,13 @@ export function CinemaSlideshow({
     const seen = new Set<string>();
     return moments
       .filter((m) => {
-        if (!m.user_id || seen.has(m.user_id)) return false;
-        seen.add(m.user_id);
+        const contributorId = m.credit_venue_id || m.user_id;
+        if (!contributorId || seen.has(contributorId)) return false;
+        seen.add(contributorId);
         return true;
       })
       .map((m) => ({
-        id: m.user_id,
+        id: m.credit_venue_id || m.user_id,
         avatar: m.avatar_url,
         name: m.display_name || m.username || "Anonymous",
       }))

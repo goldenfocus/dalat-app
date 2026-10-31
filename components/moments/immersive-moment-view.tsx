@@ -20,6 +20,7 @@ import {
   Camera,
   Sparkles,
 } from "lucide-react";
+import { Link } from "@/lib/i18n/routing";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { MomentVideoPlayer } from "./moment-video-player";
@@ -102,12 +103,13 @@ export function ImmersiveMomentView({
     const seen = new Set<string>();
     return moments
       .filter((m) => {
-        if (!m.user_id || seen.has(m.user_id)) return false;
-        seen.add(m.user_id);
+        const contributorId = m.credit_venue_id || m.user_id;
+        if (!contributorId || seen.has(contributorId)) return false;
+        seen.add(contributorId);
         return true;
       })
       .map((m) => ({
-        id: m.user_id,
+        id: m.credit_venue_id || m.user_id,
         avatar: m.avatar_url,
         name: m.display_name || m.username || common("anonymous"),
       }));
@@ -508,9 +510,9 @@ export function ImmersiveMomentView({
                 size="sm"
               />
               <div>
-                <p className="text-white font-medium text-sm">
+                <Link href={moment.credit_venue_slug ? `/venues/${moment.credit_venue_slug}` : `/${moment.username || moment.user_id}`} className="text-white font-medium text-sm hover:underline">
                   {moment.display_name || moment.username || common("anonymous")}
-                </p>
+                </Link>
                 <p className="text-white/60 text-xs">
                   {format.relativeTime(new Date(moment.created_at), new Date())}
                 </p>

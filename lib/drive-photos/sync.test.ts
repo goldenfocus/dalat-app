@@ -8,6 +8,7 @@ vi.mock("./drive",()=>({DriveClient:class {list=mocks.list;download=mocks.downlo
 vi.mock("@/lib/storage/r2",()=>({R2StorageProvider:class {upload=mocks.upload;}}));
 import {syncDrivePhotos,fingerprint} from "./sync";
 let moments:Record<string,unknown>[];
+let credits:Record<string,unknown>[];
 let ledger:Record<string,unknown>[];
 let event:Record<string,unknown>;
 let failLedgerOnce:boolean;
@@ -28,6 +29,7 @@ function database() {
       if(table==="moments") rows=moments;
       if(table==="drive_photo_imports") rows=ledger;
       if(table==="event_settings") rows=[{moments_enabled:true,moments_require_approval:false}];
+      if(verb==="upsert"&&table==="moment_venue_credits") credits.push(value);
       if(verb==="insert"&&table==="moments") moments.push(value);
       if(verb==="upsert"&&table==="drive_photo_imports") {
         if(failLedgerOnce){failLedgerOnce=false;return resolve({data:null,error:{code:"NETWORK"}});}
@@ -41,7 +43,7 @@ function database() {
 }
 beforeEach(async()=>{
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL","https://example.supabase.co");vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY","test");
-  moments=[];ledger=[];failLedgerOnce=false;
+  moments=[];credits=[];ledger=[];failLedgerOnce=false;
   event={id:"event",slug:"event",starts_at:"2026-01-07T11:00:00Z",ends_at:"2026-01-07T13:00:00Z",venue_id:SOURCE.venueId,series_id:SOURCE.seriesId,created_by:"owner",status:"published",tribe_id:null};
   mocks.db.mockImplementation(database);mocks.upload.mockReset().mockImplementation(async(_bucket,path)=>`https://cdn.example/${path}`);
   mocks.list.mockReset().mockResolvedValue([{id:"photo",name:"IMG.jpg",mimeType:"image/jpeg",names:["2026-01-07","IMG.jpg"]}]);
@@ -51,6 +53,7 @@ describe("photo import recovery and safety",()=>{
   it("imports into the correct existing event and skips a second scan",async()=>{
     expect(await syncDrivePhotos("key")).toMatchObject({imported:1,failed:0});
     expect(moments).toHaveLength(1);expect(moments[0]).toMatchObject({event_id:"event",user_id:"owner",status:"published",content_type:"photo"});
+    expect(credits).toContainEqual({moment_id:moments[0].id,venue_id:SOURCE.venueId});
     expect(ledger[0]).toMatchObject({status:"imported",source_url:"https://drive.google.com/file/d/photo/view"});
     const uploads=mocks.upload.mock.calls.length;
     expect(await syncDrivePhotos("key")).toMatchObject({imported:0});expect(moments).toHaveLength(1);expect(mocks.upload).toHaveBeenCalledTimes(uploads);
@@ -63,7 +66,9 @@ describe("photo import recovery and safety",()=>{
   it("deduplicates a second Drive file containing the same photo",async()=>{
     await syncDrivePhotos("key");
     mocks.list.mockResolvedValue([{id:"copy",name:"copy.jpg",mimeType:"image/jpeg",names:["2026-01-07","copy.jpg"]}]);
+    const creditCount=credits.length;
     expect(await syncDrivePhotos("key")).toMatchObject({duplicates:1,imported:0});expect(moments).toHaveLength(1);
+    expect(credits).toHaveLength(creditCount);
   });
   it("does not move a previously imported source after renaming, even on later retries",async()=>{
     await syncDrivePhotos("key");

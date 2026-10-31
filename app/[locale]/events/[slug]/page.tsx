@@ -1,3 +1,4 @@
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { canEditEvent } from "@/lib/events/editor-access";
 import { eventParticipationVisibility } from "@/lib/events/participation-visibility";
 import { CommunityRsvpProvider, CommunityActionNotice } from "@/components/events/community-rsvp";
@@ -578,7 +579,7 @@ async function getMomentsPreview(
     p_offset: 0,
   });
 
-  return (data ?? []) as MomentWithProfile[];
+  return withVenueCredits(supabase, (data ?? []) as MomentWithProfile[]);
 }
 
 type EventRecap = {

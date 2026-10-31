@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, Loader2 } from "lucide-react";
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { createClient } from "@/lib/supabase/client";
 import { MomentCard } from "./moment-card";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
@@ -46,7 +47,7 @@ export function InfiniteMomentDiscoveryGrid({
       return;
     }
 
-    const newMoments = (data ?? []) as MomentWithEvent[];
+    const newMoments = await withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
     const nextHasMore = newMoments.length === PAGE_SIZE;
 
     if (replace) {
