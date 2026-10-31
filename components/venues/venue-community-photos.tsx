@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { X, ChevronLeft, ChevronRight, Play, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { withVenueCredits } from "@/lib/moments/venue-credit";
 import type { VenueCommunityMoment } from "@/lib/types";
 import { getCfStreamThumbnailUrl } from "@/lib/media-utils";
 import { Link } from "@/lib/i18n/routing";
@@ -43,7 +44,7 @@ export function VenueCommunityPhotos({
         return [];
       }
 
-      return data as VenueCommunityMoment[];
+      return withVenueCredits(supabase, (data ?? []) as VenueCommunityMoment[]);
     },
     [venueId, initialLimit]
   );
