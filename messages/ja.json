@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "無料ドリンクを予約",
       "chooseAtVenue": "お店で選ぶ",
       "chooseDrink": "ドリンクを選ぶ",
+      "drinkSelected": "ドリンク選択済み",
+      "viewDrink": "選んだドリンクを見る",
       "freeDrinkLimit": "無料ドリンクの先着人数",
       "limitHint": "このイベントに適用。0で新規の無料提供を停止します。既存の予約は引き続き対象です。",
       "saveLimit": "上限を保存",

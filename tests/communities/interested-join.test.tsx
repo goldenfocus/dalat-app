@@ -1,5 +1,6 @@
 import {render,screen,fireEvent,waitFor,cleanup,act} from '@testing-library/react';
 import {afterEach,beforeEach,it,expect,vi} from 'vitest';
+vi.mock('@/components/arrival/event-drink-action', () => ({ EventDrinkAction: () => null }));
 const {rpc,refresh}=vi.hoisted(()=>({rpc:vi.fn(),refresh:vi.fn()}));
 vi.mock('next/navigation',()=>({useRouter:()=>({refresh})}));
 vi.mock('next-intl',()=>({useTranslations:()=> (key:string)=>key}));

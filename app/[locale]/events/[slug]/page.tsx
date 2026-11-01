@@ -77,6 +77,7 @@ import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
 import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
+import { getDrinkSelection } from "@/lib/arrival/drink-selection";
 import { StaffDeskEntry } from "@/components/arrival/staff-desk-entry";
 import { EventPractice } from "@/components/practice/event-practice";
 import { Linkify } from "@/lib/linkify";
@@ -1095,6 +1096,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     questionnaire,
     privateDetails,
     recap,
+    drinkSelection,
   ] = await Promise.all([
     getEventCounts(event.id),
     getCurrentUserRsvp(event.id),
@@ -1126,6 +1128,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     getEventQuestionnaireServer(event.id),
     getPrivateDetails(event.id, event.has_private_details),
     getEventRecap(event.id, locale),
+    event.arrival_enabled ? getDrinkSelection(event.id, currentUserId) : Promise.resolve(null),
   ]);
 
   // Fetch past moments for auto-display when no promo exists (pinned, then admin-linked, then series)
@@ -1378,6 +1381,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         <RsvpCardObserver>
           <RsvpButton
             arrivalEnabled={event.arrival_enabled}
+            drinkSelection={drinkSelection}
             eventId={event.id}
             eventSlug={event.slug}
             eventTitle={event.title}
@@ -1808,7 +1812,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {event.arrival_enabled && participation.arrival && <Suspense fallback={null}>
-                <EventArrivalCard slug={event.slug} />
+                <EventArrivalCard slug={event.slug} selection={drinkSelection} />
               </Suspense>}
 
               {/* Sponsors */}

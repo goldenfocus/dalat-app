@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "预订免费饮品",
       "chooseAtVenue": "到店再选",
       "chooseDrink": "选择饮品",
+      "drinkSelected": "已选择饮品",
+      "viewDrink": "查看你的饮品",
       "freeDrinkLimit": "免费饮品：前几位报名者",
       "limitHint": "仅适用于本活动。输入0停止新增免费饮品。已有预订仍由赞助方承担。",
       "saveLimit": "保存限额",

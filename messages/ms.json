@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "Tempah minuman percuma",
       "chooseAtVenue": "Pilih di tempat",
       "chooseDrink": "Pilih minuman anda",
+      "drinkSelected": "Minuman dipilih",
+      "viewDrink": "Lihat minuman anda",
       "freeDrinkLimit": "Minuman percuma: pendaftar pertama",
       "limitHint": "Untuk acara ini. Masukkan 0 untuk menghentikan tuntutan baharu. Tempahan sedia ada masih ditanggung.",
       "saveLimit": "Simpan had",

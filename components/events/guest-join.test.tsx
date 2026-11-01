@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CelebrationProvider, RsvpButton } from './rsvp-button';
 import { FloatingRsvpBar } from './floating-rsvp-bar';
+vi.mock('@/components/arrival/event-drink-action', () => ({ EventDrinkAction: () => null }));
 
 const { startSignupIntent, rpc, router } = vi.hoisted(() => ({ startSignupIntent: vi.fn().mockResolvedValue(undefined), rpc: vi.fn(), router: { refresh: vi.fn() } }));
 vi.mock('next-intl', () => ({ useTranslations: () => (key: string) => key }));

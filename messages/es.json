@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "Reservar mi bebida gratis",
       "chooseAtVenue": "Elegir en el local",
       "chooseDrink": "Elige tu bebida",
+      "drinkSelected": "Bebida elegida",
+      "viewDrink": "Ver tu bebida",
       "freeDrinkLimit": "Bebidas gratis: primeras inscripciones",
       "limitHint": "Solo para este evento. Introduce 0 para detener nuevas bebidas gratis. Las reservas existentes siguen cubiertas.",
       "saveLimit": "Guardar límite",

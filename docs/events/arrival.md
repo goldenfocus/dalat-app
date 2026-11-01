@@ -6,6 +6,13 @@ The Social House language-exchange series is opted in. Other events default off;
 `events.arrival_enabled` controls each occurrence. New occurrences inherit the
 series setting at insertion. This is deliberately independent of publishing.
 
+For signed-in attendees, the event RSVP and welcome card share the saved order
+state. Pending, confirmed and fulfilled orders show **Drink selected**, the saved
+items, and **View your drink**, which opens the existing preparation receipt.
+Cancelled orders return to **Choose your drink**. A failed lookup offers the
+neutral view action without claiming the selection is missing. This is a private,
+request-scoped lookup using the attendee's existing session and order read policy.
+
 The event creator, venue owner/editor and site administrators can open **Team**
 and add an existing account by its exact username. Welcome staff can check guests
 in. Order takers can also take and progress orders. Event managers can assign

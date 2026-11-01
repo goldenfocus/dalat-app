@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "Đặt đồ uống miễn phí",
       "chooseAtVenue": "Chọn khi đến quán",
       "chooseDrink": "Chọn đồ uống",
+      "drinkSelected": "Đã chọn đồ uống",
+      "viewDrink": "Xem đồ uống của bạn",
       "freeDrinkLimit": "Đồ uống miễn phí: số người đăng ký đầu tiên",
       "limitHint": "Áp dụng cho sự kiện này. Nhập 0 để ngừng nhận yêu cầu miễn phí mới. Các đơn đã đặt vẫn được tài trợ.",
       "saveLimit": "Lưu giới hạn",

@@ -1,5 +1,7 @@
 "use client";
 import { useRsvpLanguages } from "@/components/arrival/use-rsvp-languages";
+import { EventDrinkAction } from "@/components/arrival/event-drink-action";
+import type { DrinkSelection } from "@/lib/arrival/drink-selection";
 import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
 import { currentCommunityVisit } from "@/lib/communities/activity";
@@ -78,6 +80,7 @@ export function RsvpCardObserver({ children }: { children: React.ReactNode }) {
 
 interface RsvpButtonProps {
   arrivalEnabled?: boolean;
+  drinkSelection?: DrinkSelection;
   eventId: string;
   eventSlug: string;
   eventTitle?: string;
@@ -350,6 +353,7 @@ export function useRsvpActions(
 
 export function RsvpButton({
   arrivalEnabled = false,
+  drinkSelection,
   eventId,
   eventSlug,
   eventTitle = "",
@@ -371,7 +375,6 @@ export function RsvpButton({
 }: RsvpButtonProps) {
   const router = useRouter();
   const t = useTranslations("rsvp");
-  const arrivalT = useTranslations("arrival");
   const [showCelebration, setShowCelebration] = useState(false);
   const [showQuestionnaire, setShowQuestionnaire] = useState(false);
   const celebration = useCelebration();
@@ -511,7 +514,7 @@ export function RsvpButton({
           <p className="text-sm text-green-600 font-medium text-center">
             {t("youreGoing")}
           </p>
-          {arrivalEnabled && <Button className="min-h-12 w-full" onClick={() => router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`)}>{arrivalT("registration.chooseDrink")}</Button>}
+          {arrivalEnabled && <EventDrinkAction slug={eventSlug} selection={drinkSelection} />}
           <Button
             onClick={handleCancel}
             disabled={isPending}

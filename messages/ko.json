@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "무료 음료 예약",
       "chooseAtVenue": "매장에서 선택",
       "chooseDrink": "음료를 선택하세요",
+      "drinkSelected": "음료 선택 완료",
+      "viewDrink": "선택한 음료 보기",
       "freeDrinkLimit": "무료 음료 선착순 인원",
       "limitHint": "이 행사에 적용됩니다. 0을 입력하면 신규 무료 신청을 중단합니다. 기존 예약은 유지됩니다.",
       "saveLimit": "인원 제한 저장",

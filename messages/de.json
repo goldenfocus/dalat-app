@@ -4272,6 +4272,8 @@
       "reserveFreeDrink": "Gratisgetränk reservieren",
       "chooseAtVenue": "Vor Ort auswählen",
       "chooseDrink": "Wähle dein Getränk",
+      "drinkSelected": "Getränk ausgewählt",
+      "viewDrink": "Dein Getränk ansehen",
       "freeDrinkLimit": "Gratisgetränke: erste Anmeldungen",
       "limitHint": "Gilt für dieses Event. Mit 0 werden neue Gratisgetränke gestoppt. Bestehende Reservierungen bleiben gedeckt.",
       "saveLimit": "Limit speichern",
