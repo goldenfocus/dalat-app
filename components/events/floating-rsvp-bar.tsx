@@ -15,9 +15,11 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import type { Rsvp, QuestionnaireData } from "@/lib/types";
+import type { DrinkSelection } from "@/lib/arrival/drink-selection";
 
 interface FloatingRsvpBarProps {
   arrivalEnabled?: boolean;
+  drinkSelection?: DrinkSelection;
   eventId: string;
   eventSlug: string;
   eventTitle: string;
@@ -39,6 +41,7 @@ interface FloatingRsvpBarProps {
 
 export function FloatingRsvpBar({
   arrivalEnabled = false,
+  drinkSelection,
   eventId,
   eventSlug,
   eventTitle,
@@ -133,8 +136,8 @@ export function FloatingRsvpBar({
   if (!isLoggedIn) {
     actionButton = <Button onClick={handleRsvp} disabled={isPending} className="event-join-action min-h-12 flex-1 text-base">{isPending ? "..." : t("signInToJoin")}</Button>;
   } else if (isGoing) {
-    statusText = t("youreGoing");
-    actionButton = arrivalEnabled ? <Button className="min-h-11" onClick={() => router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`)}>{arrivalT("registration.chooseDrink")}</Button> : (
+    statusText = arrivalEnabled && drinkSelection ? arrivalT("registration.drinkSelected") : t("youreGoing");
+    actionButton = arrivalEnabled ? <Button className="min-h-11" onClick={() => router.push(`${window.location.pathname.replace(/\/$/, "")}/prepare`)}>{arrivalT(drinkSelection === null ? "registration.chooseDrink" : "registration.viewDrink")}</Button> : (
       <Button
         onClick={handleCancel}
         disabled={isPending}

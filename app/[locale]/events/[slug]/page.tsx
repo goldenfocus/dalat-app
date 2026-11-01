@@ -2007,6 +2007,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         {/* Floating RSVP bar for mobile */}
         <FloatingRsvpBar
           arrivalEnabled={event.arrival_enabled}
+          drinkSelection={drinkSelection}
           eventId={event.id}
           eventSlug={event.slug}
           eventTitle={event.title}
