@@ -148,3 +148,71 @@ describe("practice mutations", () => {
     expect(state()?.rounds).toHaveLength(2);
   });
 });
+
+describe("editable pre-start practice drafts", () => {
+  function addPlayers() {
+    rows.event_arrival_participants.push(
+      { id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" },
+      { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" },
+    );
+  }
+  it("uses twenty minutes when duration is omitted but leaves explicit duration intact", async () => {
+    let draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    expect(draft.draft?.minutes).toBe(20);
+    draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+    expect(draft.draft?.minutes).toBe(12);
+  });
+  it("publishes the manually reviewed swap and rejects the original draft ID", async () => {
+    addPlayers();
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    const first = draft.draft!.groups[0][0], second = draft.draft!.groups[1][0];
+    const edited = await mutatePractice(slug, { action: "swap", draftId: draft.draft!.id, participantId: first.id, withParticipantId: second.id, expectedRevision: revision() });
+    expect(edited.draft?.id).not.toBe(draft.draft!.id);
+    expect(edited.draft?.groups[0][0].id).toBe(second.id);
+    expect(edited.draft?.groups[1][0].id).toBe(first.id);
+    expect(edited.draft?.assignments).toEqual(draft.draft!.assignments);
+    expect(edited.round).toBeNull();
+    await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
+    const started = await mutatePractice(slug, { action: "start", draftId: edited.draft!.id, expectedRevision: revision() });
+    expect(started.groups).toEqual(edited.draft!.groups);
+    expect(started.round?.minutes).toBe(20);
+  });
+  it("rejects non-host edits, stale rosters, same-group swaps and concurrent changes", async () => {
+    addPlayers();
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    const payload = { action: "swap" as const, draftId: draft.draft!.id, participantId: draft.draft!.groups[0][0].id, withParticipantId: draft.draft!.groups[1][0].id, expectedRevision: revision() };
+    actor = { id: "a" }; host = false;
+    await expect(mutatePractice(slug, payload)).rejects.toThrow("forbidden");
+    actor = { id: "owner" }; host = true;
+    await expect(mutatePractice(slug, { ...payload, withParticipantId: draft.draft!.groups[0][1].id })).rejects.toThrow("invalid_draft_swap");
+    rejectCompareAndSwap = true;
+    await expect(mutatePractice(slug, payload)).rejects.toThrow("status_conflict");
+    rejectCompareAndSwap = false;
+    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    await expect(mutatePractice(slug, payload)).rejects.toThrow("status_conflict");
+    expect(state()?.draft?.id).toBe(draft.draft!.id);
+  });
+  it("edits the next draft while leaving the running round untouched", async () => {
+    addPlayers();
+    const firstDraft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    await mutatePractice(slug, { action: "start", draftId: firstDraft.draft!.id, expectedRevision: revision() });
+    const originalRound = structuredClone(state()!.rounds[0]);
+    const nextDraft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    await mutatePractice(slug, { action: "swap", draftId: nextDraft.draft!.id, participantId: nextDraft.draft!.groups[0][0].id, withParticipantId: nextDraft.draft!.groups[1][0].id, expectedRevision: revision() });
+    expect(state()?.rounds[0]).toEqual(originalRound);
+  });
+  it("sources avatars only from profile IDs already linked to arrivals, never guest names", async () => {
+    rows.profiles = [
+      { id: "a", role: "user", avatar_url: "https://example.test/player-a.jpg" },
+      { id: "unrelated", role: "user", avatar_url: "https://example.test/unrelated.jpg" },
+    ];
+    rows.event_arrival_participants[2].nickname = "Player A";
+    const view = await readPractice(slug);
+    expect(view.participants?.find(p => p.id === "player-a")?.avatarUrl).toBe("https://example.test/player-a.jpg");
+    expect(view.participants?.find(p => p.id === "player-b")?.avatarUrl).toBeUndefined();
+    expect(view.participants?.find(p => p.id === "player-a")?.participation).toBe("playing");
+    expect(JSON.stringify(view)).not.toContain("unrelated.jpg");
+    rows.profiles[0].avatar_url = "javascript:alert(1)";
+    expect((await readPractice(slug)).participants?.find(p => p.id === "player-a")?.avatarUrl).toBeUndefined();
+  });
+});

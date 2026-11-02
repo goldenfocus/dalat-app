@@ -2,9 +2,11 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import { FlaskConical, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventPractice, type PracticeTransport } from "./event-practice";
 import { createRehearsal, mutateRehearsal, rehearsalView } from "./rehearsal-model";
+import { PracticeLanguage } from "./practice-language";
 
 export function PracticeRehearsal() {
   const t = useTranslations("eventPractice");
@@ -27,16 +29,15 @@ export function PracticeRehearsal() {
     setCount(nextCount); setVersion(v => v + 1);
   }
   return <>
-    <aside className="space-y-3 rounded-xl border-2 border-amber-500/60 bg-amber-50 p-4 text-amber-950 dark:bg-amber-950/30 dark:text-amber-100">
-      <p className="font-bold">{t("rehearsalSample")}</p>
-      <p className="text-sm">{t("rehearsalHint")}</p>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="space-y-1 text-sm font-medium"><span className="block">{t("rehearsalScenario")}</span><select className="min-h-12 w-full rounded-lg border border-amber-700/30 bg-background px-3 text-foreground" value={count} onChange={event => reset(Number(event.target.value))}><option value={10}>{t("rehearsalSmall")}</option><option value={34}>{t("rehearsalLarge")}</option></select></label>
-        <label className="space-y-1 text-sm font-medium"><span className="block">{t("rehearsalView")}</span><select className="min-h-12 w-full rounded-lg border border-amber-700/30 bg-background px-3 text-foreground" value={mode} onChange={event => { const next = event.target.value as "host" | "attendee"; session.current.mode = next; setMode(next); setVersion(v => v + 1); }}><option value="host">{t("rehearsalHost")}</option><option value="attendee">{t("rehearsalAttendee")}</option></select></label>
+    <div className="practice-experience space-y-3">
+      <PracticeLanguage />
+      <div className="flex items-center gap-2">
+        <details className="min-w-0 flex-1 text-xs text-muted-foreground"><summary className="flex min-h-11 cursor-pointer list-none items-center gap-1.5"><FlaskConical aria-hidden className="h-4 w-4" />{t("rehearsalSample")}</summary><p className="py-2 text-sm">{t("rehearsalHint")}</p></details>
+        <label><span className="sr-only">{t("rehearsalScenario")}</span><select className="min-h-11 w-20 rounded-lg border border-border/60 bg-card/60 px-2 text-sm" value={count} onChange={event => reset(Number(event.target.value))}><option value={10}>10</option><option value={34}>34</option></select></label>
+        <Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("rehearsalReset")} title={t("rehearsalReset")} onClick={() => reset()}><RotateCcw aria-hidden className="h-4 w-4" /></Button>
       </div>
-      <Button variant="outline" className="min-h-11 bg-background text-foreground" onClick={() => reset()}>{t("rehearsalReset")}</Button>
-    </aside>
+      <div className="flex gap-1 border-b border-border/60" role="group" aria-label={t("rehearsalView")}>{([['host', 'rehearsalHost'], ['attendee', 'rehearsalAttendee']] as const).map(([value, key]) => <button type="button" key={value} aria-pressed={mode === value} className={`min-h-11 flex-1 border-b-2 px-3 text-sm font-semibold ${mode === value ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`} onClick={() => { session.current.mode = value; setMode(value); setVersion(v => v + 1); }}>{t(key)}</button>)}</div>
+    </div>
     <EventPractice key={`${version}-${mode}`} slug="sample-rehearsal" transport={transport} />
-    <p className="text-sm text-muted-foreground">{t("rehearsalSteps")}</p>
   </>;
 }

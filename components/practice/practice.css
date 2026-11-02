@@ -1,0 +1,52 @@
+.practice-experience,
+body:has(.practice-rehearsal-page) {
+  --background: 220 35% 98%;
+  --foreground: 225 30% 15%;
+  --card: 220 40% 100%;
+  --card-foreground: 225 30% 15%;
+  --popover: 220 35% 99%;
+  --popover-foreground: 225 30% 15%;
+  --primary: 226 75% 53%;
+  --primary-foreground: 0 0% 100%;
+  --muted: 223 25% 94%;
+  --muted-foreground: 222 14% 42%;
+  --accent: 225 65% 94%;
+  --accent-foreground: 226 60% 35%;
+  --border: 222 28% 85%;
+  --input: 222 28% 85%;
+  --ring: 226 75% 53%;
+  color: hsl(var(--foreground));
+}
+.dark .practice-experience,
+.dark body:has(.practice-rehearsal-page) {
+  --background: 226 35% 8%;
+  --foreground: 220 30% 95%;
+  --card: 225 30% 13%;
+  --card-foreground: 220 30% 95%;
+  --popover: 225 30% 13%;
+  --popover-foreground: 220 30% 95%;
+  --primary: 222 95% 76%;
+  --primary-foreground: 226 45% 12%;
+  --muted: 225 25% 18%;
+  --muted-foreground: 221 18% 72%;
+  --accent: 226 32% 22%;
+  --accent-foreground: 221 95% 84%;
+  --border: 225 22% 28%;
+  --input: 225 22% 28%;
+  --ring: 222 95% 76%;
+}
+body:has(.practice-rehearsal-page) {
+  background: radial-gradient(ellipse at 20% 0%, hsl(var(--primary) / .09), transparent 55%), hsl(var(--background));
+}
+.practice-glass {
+  background: hsl(var(--card) / .66);
+  border: 1px solid hsl(var(--border) / .6);
+  border-radius: 24px;
+  backdrop-filter: blur(24px);
+  box-shadow: inset 0 1px 0 hsl(var(--foreground) / .06), 0 16px 60px hsl(var(--primary) / .06);
+}
+.practice-primary { box-shadow: 0 8px 28px hsl(var(--primary) / .18); }
+.practice-language[aria-current="true"] { color: hsl(var(--foreground)); border-bottom: 2px solid hsl(var(--primary)); }
+@media (prefers-contrast: more), (forced-colors: active) {
+  .practice-glass { background: hsl(var(--card)); backdrop-filter: none; border: 1px solid currentColor; box-shadow: none; }
+}

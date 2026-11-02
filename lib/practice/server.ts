@@ -3,13 +3,14 @@ import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { arrivalContext, guestToken, ownReceipt, participantColumns, tokenHash } from "@/lib/arrival/server";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
-import { arrivalPerson, assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
+import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
 import { claimCookieName, signClaim, verifyClaim } from "./claim";
 
 export type PracticeMutation =
   | { action: "participation"; expectedRevision: number; status: Participation; participantId?: string }
   | { action: "settings"; expectedRevision: number; tables: Table[]; floorPolicy: FloorPolicy }
-  | { action: "draft"; expectedRevision: number; minutes: number }
+  | { action: "draft"; expectedRevision: number; minutes?: number }
+  | { action: "swap"; expectedRevision: number; draftId: string; participantId: string; withParticipantId: string }
   | { action: "start"; expectedRevision: number; draftId: string }
   | { action: "pause" | "resume" | "end"; expectedRevision: number }
   | { action: "extend"; expectedRevision: number; seconds: number };
@@ -47,17 +48,30 @@ export async function practiceContext(slug: string) {
   const venue = metadata.data?.venues as unknown as { owner_id: string | null } | null;
   if (venue?.owner_id) staffUsers.add(venue.owner_id);
   const userIds = [...new Set(personUsers.values())];
-  const [managers, privileged] = await Promise.all([
+  const [managers, knownProfiles] = await Promise.all([
     metadata.data?.venue_id
       ? admin.from("venue_managers").select("profile_id").eq("venue_id", metadata.data.venue_id).not("accepted_at", "is", null).in("role", ["owner", "editor"])
       : Promise.resolve({ data: [], error: null }),
     userIds.length
-      ? admin.from("profiles").select("id,role").in("id", userIds).in("role", metadata.data?.venue_id ? ["admin", "superadmin", "moderator"] : ["admin", "superadmin"])
+      ? admin.from("profiles").select("id,role,avatar_url").in("id", userIds)
       : Promise.resolve({ data: [], error: null }),
   ]);
-  for (const result of [managers, privileged]) if (result.error) throw result.error;
+  for (const result of [managers, knownProfiles]) if (result.error) throw result.error;
   for (const row of managers.data || []) staffUsers.add(row.profile_id);
-  for (const row of privileged.data || []) staffUsers.add(row.id);
+  const privilegedRoles = metadata.data?.venue_id ? ["admin", "superadmin", "moderator"] : ["admin", "superadmin"];
+  for (const row of knownProfiles.data || []) {
+    if (privilegedRoles.includes(row.role)) staffUsers.add(row.id);
+    // Only the existing arrival/RSVP user_id relationship selects a profile image.
+    // Guest names, emails and external account text never establish ownership.
+    if (typeof row.avatar_url !== "string") continue;
+    let avatarUrl: string;
+    try {
+      const url = new URL(row.avatar_url);
+      if (!["https:", "http:"].includes(url.protocol)) continue;
+      avatarUrl = url.href;
+    } catch { continue; }
+    for (const person of people) if (personUsers.get(person.id) === row.id) person.avatarUrl = avatarUrl;
+  }
   const staffIds = new Set([...personUsers].filter(([, uid]) => staffUsers.has(uid)).map(([id]) => id));
   if (!ownId) {
     const token = await guestToken(event.id);
@@ -128,12 +142,18 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
     const players = eligiblePeople(state, c.people, c.staffIds);
     const tables = state.tables || DEFAULT_TABLES;
     const floorPolicy = state.floorPolicy || "balanced";
-    const candidate = pairRound(players, state.rounds, mutation.minutes);
+    const candidate = pairRound(players, state.rounds, mutation.minutes ?? DEFAULT_ROUND_MINUTES);
     state = { ...state, draft: {
       id: randomUUID(), round: candidate.number, minutes: candidate.minutes, groups: candidate.groups,
       assignments: assignTables(candidate.groups, tables, floorPolicy),
       rosterFingerprint: rosterFingerprint(players, tables, floorPolicy), createdAt: new Date().toISOString(),
     } };
+  } else if (mutation.action === "swap") {
+    const draft = state.draft;
+    if (!draft || draft.id !== mutation.draftId || draft.round !== state.rounds.length + 1) throw new Error("status_conflict");
+    const players = eligiblePeople(state, c.people, c.staffIds);
+    if (draft.rosterFingerprint !== rosterFingerprint(players, state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced")) throw new Error("status_conflict");
+    state = { ...state, draft: swapDraftParticipants(draft, mutation.participantId, mutation.withParticipantId, randomUUID(), state.tables || DEFAULT_TABLES) };
   } else {
     if (!c.event.isOpen) throw new Error("event_not_open_for_arrival");
     if (mutation.action === "start") {

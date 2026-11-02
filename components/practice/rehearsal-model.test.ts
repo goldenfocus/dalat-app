@@ -37,3 +37,21 @@ describe("isolated host rehearsal", () => {
     expect(rehearsalView(createRehearsal()).round).toBeNull();
   });
 });
+
+it("uses twenty-minute sample defaults and the same private host-only draft swaps", () => {
+  let session = act(createRehearsal(), { action: "draft" });
+  expect(session.state.draft?.minutes).toBe(20);
+  const original = session.state.draft!;
+  const first = original.groups[0][0], second = original.groups[1][0];
+  const payload = { action: "swap", draftId: original.id, participantId: first.id, withParticipantId: second.id };
+  expect(() => act({ ...session, mode: "attendee" }, payload)).toThrow("forbidden");
+  session = act(session, payload);
+  expect(session.state.draft?.id).not.toBe(original.id);
+  expect(session.state.draft?.groups[0][0].id).toBe(second.id);
+  expect(session.state.draft?.assignments).toEqual(original.assignments);
+  expect(rehearsalView({ ...session, mode: "attendee" }).draft).toBeNull();
+  expect(() => act(session, { action: "start", draftId: original.id })).toThrow("status_conflict");
+  session = act(session, { action: "start", draftId: session.state.draft!.id });
+  expect(session.state.rounds[0].minutes).toBe(20);
+  expect(session.state.rounds[0].groups[0][0].id).toBe(second.id);
+});

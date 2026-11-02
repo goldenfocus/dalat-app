@@ -15,7 +15,7 @@ export default async function RehearsalPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, messages] = await Promise.all([getTranslations("eventPractice"), getMessages()]);
-  return <main className="container mx-auto max-w-2xl space-y-4 px-4 py-6 pb-28">
+  return <main className="practice-rehearsal-page container mx-auto max-w-2xl space-y-2 px-4 py-5 pb-28">
     <h1 className="text-2xl font-bold tracking-tight">{t("rehearsalTitle")}</h1>
     <NextIntlClientProvider messages={{ eventPractice: messages.eventPractice }}><PracticeRehearsal /></NextIntlClientProvider>
   </main>;

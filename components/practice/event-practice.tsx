@@ -2,12 +2,16 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { RefreshCw, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/routing";
 import { useViewer } from "@/lib/hooks/use-viewer";
 import type { PracticeView } from "@/lib/practice/model";
 import { PracticeHost } from "./practice-host";
+import { PracticePerson } from "./practice-person";
+import { PracticeParticipation } from "./practice-participation";
+import { PracticeLanguage } from "./practice-language";
+import "./practice.css";
 
 /** Uses server timestamps and a measured clock offset; pausing never advances locally. */
 export function remainingSeconds(round: PracticeView["round"], now: number) {
@@ -81,7 +85,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
       const response = await request({ ...payload, expectedRevision: view.revision });
       if (!response.ok) {
         const failure = await response.json().catch(() => ({}));
-        setActionError(failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && payload.action === "start" ? "draftStale" : "error");
+        setActionError(failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && ["start", "swap"].includes(String(payload.action)) ? "draftStale" : "error");
         void load();
         return;
       }
@@ -111,47 +115,38 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   const clock = `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`;
   const activityUrl = transport ? "https://ezviet.org/challenges?practice=1" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}&practice=1`;
   const challengeUrl = transport ? "https://ezviet.org/challenges" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}`;
-  return <section id="practice" aria-labelledby="practice-heading" className="my-4 scroll-mt-20 space-y-4 rounded-xl border border-primary/30 bg-card p-4 sm:p-6">
-    <h2 id="practice-heading" className="flex items-center gap-3 text-xl font-bold"><Users aria-hidden className="h-5 w-5 shrink-0 text-primary" />{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
+  const assigned = Boolean(view?.myGroup?.length);
+  return <section id="practice" aria-labelledby="practice-heading" className="practice-experience practice-glass my-4 scroll-mt-24 space-y-4 p-4 sm:p-6">
+    {!transport && <PracticeLanguage />}
+    <h2 id="practice-heading" className={view?.me || view?.canStart ? "sr-only" : "text-xl font-semibold"}>{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
     {!view && <p role="status">{t("loading")}</p>}
     {view?.me && <>
-      {view.myTable && <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <p className="text-4xl font-bold tracking-tight">{t("table", { number: view.myTable.tableNumber })}</p>
-        <p className="text-lg font-semibold">{t(view.myTable.floor)}</p>
+      {(!view.canStart || assigned) && <div className="flex items-start justify-between gap-3">
+        <div>{view.myTable && assigned && <>
+          <h3 className="text-3xl font-bold tracking-tight">{t("table", { number: view.myTable.tableNumber })}</h3>
+          <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">{view.myTable.floor === "upstairs" ? <ArrowUp aria-hidden className="h-3.5 w-3.5" /> : <ArrowDown aria-hidden className="h-3.5 w-3.5" />}{t(view.myTable.floor)}</p>
+        </>}</div>
+        {!view.canStart && <PracticeParticipation view={view} busy={busy} act={act} />}
       </div>}
-      {partnerNames.length ? <div className="space-y-1">
-        <p className="break-words text-2xl font-bold leading-tight">{partnerNames.map(person => `${person.name}${person.number ? ` #${person.number}` : ""}`).join(" + ")}</p>
-        <p className="text-sm text-muted-foreground">{t("you", { name: `${view.me.name}${view.me.number ? ` #${view.me.number}` : ""}` })} · {t("group", { number: view.myGroupNumber || 1 })}</p>
-      </div> : <p role="status">{t(view.participation === "playing" ? (view.round ? "joinNext" : "waiting") : "notPlaying")}</p>}
-      {view.round && partnerNames.length > 0 && <div className="flex flex-wrap items-center justify-between gap-3 border-y py-3">
-        <p className="font-medium">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="block text-sm">{t("paused")}</span>}</p>
-        <p aria-label={t("timer")} role="timer" className="text-4xl font-bold tabular-nums">{complete ? t("roundComplete") : clock}</p>
+      {assigned ? <div className="grid grid-cols-2 gap-x-4 gap-y-3 py-1">{view.myGroup!.map(person => <PracticePerson key={person.id} person={person} />)}</div> : !view.canStart && <p role="status" className="py-3 text-lg font-medium">{t(view.participation === "playing" ? view.round ? "nextRoundShort" : "waitingShort" : "notPlayingShort")}</p>}
+      {view.round && assigned && !view.canStart && <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+        <span className="text-sm text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
+        <p aria-label={t("timer")} role="timer" className="text-3xl font-semibold tracking-tight tabular-nums">{complete ? "0:00" : clock}</p>
       </div>}
-      {!complete && view.round && remaining <= view.round.minutes * 30 && partnerNames.length > 0 && <p role="status" className="font-medium">{t("swapNow")}</p>}
-      {partnerNames.length > 0 && <a href={complete ? challengeUrl : activityUrl} className="inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>}
-      {complete && partnerNames.length > 0 && <p className="text-sm text-muted-foreground">{t("changeover")}{changeoverRemaining > 0 && <strong className="ml-2 tabular-nums">{Math.floor(changeoverRemaining / 60)}:{String(changeoverRemaining % 60).padStart(2, "0")}</strong>}</p>}
-      <details>
-        <summary className="min-h-11 cursor-pointer py-2 text-sm font-medium">{t("participation")} · {t(view.participation ?? "visiting")}</summary>
-        <label className="block space-y-2"><span className="sr-only">{t("participation")}</span><select disabled={busy} value={view.participation ?? "visiting"} onChange={event => void act({ action: "participation", status: event.target.value })} className="min-h-12 w-full rounded-lg border bg-background px-3 text-base">
-          {["playing", "visiting", "break", "hosting", "left"].map(status => <option key={status} value={status}>{t(status)}</option>)}
-        </select></label>
-        {view.round && <p className="mt-2 text-sm text-muted-foreground">{t("currentAssignment")}</p>}
-      </details>
-      {view.participation !== "playing" && <Button className="min-h-12 w-full" disabled={busy} onClick={() => void act({ action: "participation", status: "playing" })}>{t("joinPractice")}</Button>}
+      {partnerNames.length > 0 && <a href={complete ? challengeUrl : activityUrl} className="practice-primary inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>}
+      {complete && partnerNames.length > 0 && changeoverRemaining > 0 && <p className="text-center text-sm text-muted-foreground">{t("changeoverShort")} · <span className="tabular-nums">{Math.floor(changeoverRemaining / 60)}:{String(changeoverRemaining % 60).padStart(2, "0")}</span></p>}
     </>}
-    {view && !view.me && !view.canStart && <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">{t("joinHint")}</p>
-      <Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("arrival")}</Link></Button>
-      <details><summary className="min-h-11 cursor-pointer py-2 font-medium">{t("findHint")}</summary>
+    {view && !view.me && !view.canStart && <div className="space-y-2">
+      <Button asChild className="practice-primary min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("arrival")}</Link></Button>
+      <details><summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-muted-foreground">{t("findHint")}</summary>
         <form onSubmit={event => void findPartner(event)} className="space-y-3 pt-2">
-          <label className="block space-y-2"><span className="font-medium">{t("code")}</span><input value={code} onChange={event => setCode(event.target.value.toUpperCase())} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={8} pattern="[a-fA-F0-9]{8}" required className="min-h-12 w-full rounded-lg border bg-background px-3 text-base tracking-widest" /></label>
+          <label className="block space-y-2"><span className="text-sm font-medium">{t("code")}</span><input value={code} onChange={event => setCode(event.target.value.toUpperCase())} autoComplete="off" autoCapitalize="characters" spellCheck={false} maxLength={8} pattern="[a-fA-F0-9]{8}" required className="min-h-12 w-full rounded-lg border bg-background px-3 text-base tracking-widest" /></label>
           <Button type="submit" className="min-h-12 w-full" disabled={busy || code.trim().length !== 8}>{t("find")}</Button>
-          <p className="text-sm text-muted-foreground">{t("askHost")}</p>
           {codeError && <p role="alert">{t("codeError")}</p>}
         </form>
       </details>
     </div>}
     {view?.canStart && <PracticeHost view={view} busy={busy} act={act} remaining={remaining} changeoverRemaining={changeoverRemaining} />}
-    {(error || actionError) && <div role="alert" className="space-y-2"><p>{t(actionError ?? (view ? "stale" : "error"))}</p><Button variant="outline" className="min-h-11" disabled={busy} onClick={() => void load()}><RefreshCw aria-hidden className="mr-2 h-4 w-4" />{t("refresh")}</Button></div>}
+    {(error || actionError) && <div role="alert" className="flex items-center justify-between gap-2 text-sm"><p>{t(actionError ?? (view ? "stale" : "error"))}</p><Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("refresh")} disabled={busy} onClick={() => void load()}><RefreshCw aria-hidden className="h-4 w-4" /></Button></div>}
   </section>;
 }

@@ -4,11 +4,13 @@ export type Participation = "playing" | "visiting" | "break" | "left" | "hosting
 export type FloorPolicy = "balanced" | "downstairs" | "upstairs";
 export type Table = { number: number; floor: "downstairs" | "upstairs"; capacity: number; available: boolean; bar?: boolean };
 export type TableAssignment = { groupIndex: number; tableNumber: number; floor: Table["floor"] };
-export type Person = { id: string; name: string; speaks: string[]; learns: string | null; number?: number; learningLevel?: string | null; speakingLevels?: Record<string, string> };
+export type Person = { id: string; name: string; speaks: string[]; learns: string | null; number?: number; avatarUrl?: string; learningLevel?: string | null; speakingLevels?: Record<string, string> };
 export type Round = { number: number; startedAt: string; minutes: number; groups: Person[][]; endsAt?: string; pausedAt?: string; remainingSeconds?: number; endedAt?: string; changeoverEndsAt?: string; assignments?: TableAssignment[] };
 export type Draft = { id: string; round: number; minutes: number; groups: Person[][]; assignments: TableAssignment[]; rosterFingerprint: string; createdAt: string };
 export type PracticeState = { rounds: Round[]; participation?: Record<string, Participation>; numbers?: Record<string, number>; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
 export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null; myTable?: TableAssignment | null; participation?: Participation | null; participants?: (Person & { participation: Participation })[]; revision?: number; serverNow?: string; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
+
+export const DEFAULT_ROUND_MINUTES = 20;
 
 /** Working furniture inventory, editable by the host. The bar starts unavailable. */
 export const DEFAULT_TABLES: Table[] = [
@@ -53,7 +55,7 @@ export function rosterFingerprint(people: Person[], tables: Table[], floorPolicy
 }
 
 /** Checked-in, playing identities are unique. Unknown language ability stays unknown. */
-export function pairRound(people: Person[], previous: Round[], minutes: number, now = new Date()): Round {
+export function pairRound(people: Person[], previous: Round[], minutes = DEFAULT_ROUND_MINUTES, now = new Date()): Round {
   const roster = [...new Map(people.map(p => [p.id, p])).values()];
   if (roster.length < 2 || roster.length > 150) throw new Error("invalid_roster");
   const met = new Set<string>();
@@ -118,6 +120,31 @@ export function assignTables(groups: Person[][], tables: Table[], policy: FloorP
     assignments.push({ groupIndex, tableNumber: table.number, floor: table.floor });
   }
   return assignments.sort((a, b) => a.groupIndex - b.groupIndex);
+}
+
+/** Host review edit only: exchange existing members without changing seats or live rounds. */
+export function swapDraftParticipants(draft: Draft, participantId: string, withParticipantId: string, newDraftId: string, tables: Table[]): Draft {
+  const members = draft.groups.flat();
+  const first = draft.groups.findIndex(group => group.some(person => person.id === participantId));
+  const second = draft.groups.findIndex(group => group.some(person => person.id === withParticipantId));
+  if (participantId === withParticipantId || first < 0 || second < 0 || first === second ||
+      members.filter(person => person.id === participantId).length !== 1 ||
+      members.filter(person => person.id === withParticipantId).length !== 1 ||
+      !newDraftId || newDraftId === draft.id) throw new Error("invalid_draft_swap");
+  const firstPerson = members.find(person => person.id === participantId)!;
+  const secondPerson = members.find(person => person.id === withParticipantId)!;
+  const groups = draft.groups.map(group => group.map(person => person.id === participantId ? secondPerson : person.id === withParticipantId ? firstPerson : person));
+  const used = new Map<number, number>();
+  if (draft.assignments.length !== groups.length || new Set(draft.assignments.map(a => a.groupIndex)).size !== groups.length) throw new Error("invalid_table_capacity");
+  for (const assignment of draft.assignments) {
+    const group = groups[assignment.groupIndex];
+    const table = tables.find(t => t.number === assignment.tableNumber);
+    if (!group || !table?.available || table.floor !== assignment.floor) throw new Error("invalid_table_capacity");
+    const seats = (used.get(table.number) || 0) + group.length;
+    if (seats > table.capacity) throw new Error("invalid_table_capacity");
+    used.set(table.number, seats);
+  }
+  return { ...draft, id: newDraftId, groups };
 }
 
 export function remainingSeconds(round: Round, now = new Date()): number {

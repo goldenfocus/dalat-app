@@ -133,3 +133,54 @@ describe("persisted authoritative clock", () => {
     expect(anonymous.myTable).toBeNull();
   });
 });
+
+import { DEFAULT_ROUND_MINUTES, swapDraftParticipants, type Draft } from "./model";
+function editableDraft(count = 4): Draft {
+  const groups = pairRound(roster(count), []).groups;
+  return { id: "original-draft", round: 1, minutes: DEFAULT_ROUND_MINUTES, groups,
+    assignments: assignTables(groups, DEFAULT_TABLES, "balanced"), rosterFingerprint: "unchanged-roster", createdAt: "2026-11-04T12:00:00Z" };
+}
+describe("host draft edits", () => {
+  it("defaults new rounds to twenty minutes while preserving explicit durations", () => {
+    expect(pairRound(people, []).minutes).toBe(20);
+    expect(pairRound(people, [], 12).minutes).toBe(12);
+  });
+  it("exchanges two existing members across groups without changing tables, sizes or the original draft", () => {
+    const original = editableDraft();
+    const before = structuredClone(original);
+    const first = original.groups[0][0];
+    const second = original.groups[1][0];
+    const swapped = swapDraftParticipants(original, first.id, second.id, "new-draft", DEFAULT_TABLES);
+    expect(swapped.groups[0][0]).toEqual(second);
+    expect(swapped.groups[1][0]).toEqual(first);
+    expect(swapped.groups.map(group => group.length)).toEqual(original.groups.map(group => group.length));
+    expect(swapped.groups.flat().map(p => p.id).sort()).toEqual(original.groups.flat().map(p => p.id).sort());
+    expect(swapped.assignments).toEqual(original.assignments);
+    expect(swapped.rosterFingerprint).toBe(original.rosterFingerprint);
+    expect(swapped.id).not.toBe(original.id);
+    expect(original).toEqual(before);
+  });
+  it("keeps pairs and an odd trio the same size after a swap", () => {
+    const original = editableDraft(5);
+    const swapped = swapDraftParticipants(original, original.groups[0][0].id, original.groups[1][0].id, "new-draft", DEFAULT_TABLES);
+    expect(swapped.groups.map(group => group.length)).toEqual(original.groups.map(group => group.length));
+    expect(swapped.groups.flat()).toHaveLength(5);
+  });
+  it("rejects the same person, same-group swaps, unknown IDs and reused draft IDs", () => {
+    const draft = editableDraft();
+    const [first, peer] = draft.groups[0];
+    const other = draft.groups[1][0];
+    for (const [a, b] of [[first.id, first.id], [first.id, peer.id], [first.id, "not-in-draft"]]) {
+      expect(() => swapDraftParticipants(draft, a, b, "new-draft", DEFAULT_TABLES)).toThrow("invalid_draft_swap");
+    }
+    expect(() => swapDraftParticipants(draft, first.id, other.id, draft.id, DEFAULT_TABLES)).toThrow("invalid_draft_swap");
+  });
+  it("rejects blocked tables and combined shared-table capacity violations", () => {
+    const draft = editableDraft(6);
+    const ids = [draft.groups[0][0].id, draft.groups[1][0].id];
+    const blocked = DEFAULT_TABLES.map(table => ({ ...table, available: false }));
+    expect(() => swapDraftParticipants(draft, ids[0], ids[1], "new-draft", blocked)).toThrow("invalid_table_capacity");
+    const crowded = { ...draft, assignments: draft.groups.map((_, groupIndex) => ({ groupIndex, tableNumber: 1, floor: "downstairs" as const })) };
+    expect(() => swapDraftParticipants(crowded, ids[0], ids[1], "new-draft", DEFAULT_TABLES)).toThrow("invalid_table_capacity");
+  });
+});

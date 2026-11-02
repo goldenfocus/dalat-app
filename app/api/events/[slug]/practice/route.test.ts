@@ -51,3 +51,14 @@ describe("event practice API", () => {
     expect(mocks.mutate).not.toHaveBeenCalled();
   });
 });
+
+it("uses twenty-minute defaults and accepts only a bounded host draft-swap payload", async () => {
+  mocks.mutate.mockResolvedValue({ revision: 1 });
+  expect((await POST(request({ action: "draft", expectedRevision: 0 }), context)).status).toBe(200);
+  expect(mocks.mutate).toHaveBeenLastCalledWith("language-exchange-social-house-z8oc-20261028", { action: "draft", expectedRevision: 0, minutes: 20 });
+  const swap = { action: "swap", expectedRevision: 1, draftId: "00000000-0000-4000-8000-000000000001", participantId: "player-a", withParticipantId: "player-b" };
+  expect((await POST(request(swap), context)).status).toBe(200);
+  expect(mocks.mutate).toHaveBeenLastCalledWith("language-exchange-social-house-z8oc-20261028", swap);
+  expect((await POST(request({ ...swap, withParticipantId: "" }), context)).status).toBe(400);
+  expect((await POST(request({ ...swap, groups: [] }), context)).status).toBe(400);
+});

@@ -193,3 +193,19 @@ cover table settings, both floors, host/attendee switching and two rounds. It ne
 calls the event API or starts a real session. Cross-device production refresh,
 real venue connectivity, actual table availability and live EZViệt acceptance must
 be verified separately before claiming the complete event journey is live.
+
+
+### Compact practice and host edits (2 November follow-up)
+
+Practice uses visible English/Vietnamese controls and a scoped cool glass surface.
+Names with verified DaLat avatars (or guest initials), table/floor and the clock
+lead the attendee view. Group numbers remain host-only. Participation is a short
+status button, with mid-round opt-in labelled for the next round. Hosts use compact
+clock/utility controls and a 20-minute default for newly drafted rounds; explicitly
+saved durations remain unchanged.
+
+Hosts may swap two existing people across unpublished draft groups by tapping
+them or desktop drag/drop. API action `swap` requires `draftId`, both participant
+IDs, host authority, expected revision and a fresh roster fingerprint. It preserves
+members, group sizes and table capacity and changes the draft ID. Starting an old
+version fails; published groups stay unchanged.

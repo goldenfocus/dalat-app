@@ -7,14 +7,30 @@ It does not call the event practice API, reveal attendees or start a real round.
 Automatic PWA updates do not reload this route mid-rehearsal. A deliberate refresh
 still resets its sample state.
 
+The compact sample toolbar offers ten or 34 players, Host / Mai and reset.
+English and Tiếng Việt stay visible above it. The slate/ice-blue glass treatment is
+scoped to practice, including the rehearsal shell; other app themes are preserved.
+
 Choose ten or 34 sample players. Morgan is a working host and Casey is a visitor;
 both remain out of pairing unless deliberately changed. The full available table
 inventory matches the event model, with the bar unavailable initially. Reset,
 changing sample attendance, or refreshing clears the sample event. Switching Host /
-Attendee preserves it. Nothing persists across tabs or refreshes.
+Attendee preserves it. Nothing persists across tabs or refreshes. Language navigation also starts a new
+sample session. In a real event the server retains published rounds.
+
+Attendees see names/avatars, physical table/floor, countdown and one activity action.
+Visible group numbers and the participation form are removed. A compact status
+button offers Playing or sitting out. Joining during a live round explicitly says
+Play next round and never changes that round. A host sees icon controls for
+pause/resume, +2 minutes and end; table settings, roster and published groups open
+from quiet utility icons. Existing DaLat account relationships provide avatars;
+guests use initials. No external account inference or identity bridge is added.
 
 Rehearse: open table settings, block an occupied table, select a floor preference
 and save. Draft groups, review the proposed physical tables and partners, then start.
+New rounds default to 20 minutes. Tap one person then a person in another group to
+swap them; desktop drag/drop uses the same action. Only unpublished drafts change.
+Each swap generates a new draft ID and retains roster/revision/capacity checks.
 Switch to Attendee (Mai) to find the published table, partner and countdown. Return
 to Host to pause, add two minutes, resume or end. Draft/review/start a second round
 and check Mai's new assignment. A large balanced draft should use both floors.

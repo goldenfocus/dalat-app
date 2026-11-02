@@ -1,4 +1,4 @@
-import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
+import { assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
 
 /** Entirely synthetic, browser-memory-only state. Never reads or writes an event API. */
 export type Rehearsal = { state: PracticeState; revision: number; people: Person[]; mode: "host" | "attendee" };
@@ -25,10 +25,15 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
   else if (payload.action === "settings") state = { ...state, tables: payload.tables as Table[], floorPolicy: payload.floorPolicy as FloorPolicy, draft: null };
   else if (payload.action === "draft") {
     const players = eligiblePeople(state, session.people, new Set(["sample-host"]));
-    const candidate = pairRound(players, state.rounds, Number(payload.minutes), now);
+    const candidate = pairRound(players, state.rounds, payload.minutes === undefined ? DEFAULT_ROUND_MINUTES : Number(payload.minutes), now);
     const tables = state.tables || DEFAULT_TABLES;
     const floor = state.floorPolicy || "balanced";
     state = { ...state, draft: { id: crypto.randomUUID(), round: candidate.number, minutes: candidate.minutes, groups: candidate.groups, assignments: assignTables(candidate.groups, tables, floor), rosterFingerprint: rosterFingerprint(players, tables, floor), createdAt: now.toISOString() } };
+  } else if (payload.action === "swap") {
+    const draft = state.draft;
+    if (!draft || draft.id !== payload.draftId || draft.round !== state.rounds.length + 1) throw new Error("status_conflict");
+    if (draft.rosterFingerprint !== rosterFingerprint(eligiblePeople(state, session.people, new Set(["sample-host"])), state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced")) throw new Error("status_conflict");
+    state = { ...state, draft: swapDraftParticipants(draft, String(payload.participantId), String(payload.withParticipantId), crypto.randomUUID(), state.tables || DEFAULT_TABLES) };
   } else if (payload.action === "start") {
     const draft = state.draft;
     const current = state.rounds.at(-1);

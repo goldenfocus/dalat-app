@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
+import { DEFAULT_ROUND_MINUTES } from "@/lib/practice/model";
 import { mutatePractice, readPractice, recoverPractice } from "@/lib/practice/server";
 
 export const dynamic = "force-dynamic";
@@ -9,7 +10,8 @@ const tableSchema = z.object({ number: z.number().int().min(1).max(99), floor: z
 const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("participation"), expectedRevision: revision, status: z.enum(["playing", "visiting", "break", "left", "hosting"]), participantId: z.string().min(1).max(100).optional() }).strict(),
   z.object({ action: z.literal("settings"), expectedRevision: revision, tables: z.array(tableSchema).min(1).max(30).refine(tables => new Set(tables.map(t => t.number)).size === tables.length), floorPolicy: z.enum(["balanced", "downstairs", "upstairs"]) }).strict(),
-  z.object({ action: z.literal("draft"), expectedRevision: revision, minutes: z.number().int().min(5).max(30) }).strict(),
+  z.object({ action: z.literal("draft"), expectedRevision: revision, minutes: z.number().int().min(5).max(30).default(DEFAULT_ROUND_MINUTES) }).strict(),
+  z.object({ action: z.literal("swap"), expectedRevision: revision, draftId: z.string().uuid(), participantId: z.string().min(1).max(100), withParticipantId: z.string().min(1).max(100) }).strict(),
   z.object({ action: z.literal("start"), expectedRevision: revision, draftId: z.string().uuid() }).strict(),
   z.object({ action: z.literal("pause"), expectedRevision: revision }).strict(),
   z.object({ action: z.literal("resume"), expectedRevision: revision }).strict(),
