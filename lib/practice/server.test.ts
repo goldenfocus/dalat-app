@@ -1,0 +1,150 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocked = vi.hoisted(() => ({ context: vi.fn(), guestToken: vi.fn(), ownReceipt: vi.fn(), cookie: vi.fn() }));
+vi.mock("server-only", () => ({}));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocked.cookie }) }));
+vi.mock("@/lib/arrival/server", () => ({ arrivalContext: mocked.context, guestToken: mocked.guestToken, ownReceipt: mocked.ownReceipt, participantColumns: "id,user_id,nickname", tokenHash: (value: string) => `hash:${value}` }));
+import { mutatePractice, readPractice } from "./server";
+import type { PracticeState } from "./model";
+
+type Row = Record<string, unknown>;
+const slug = "language-exchange-social-house-z8oc-20261104";
+let rows: Record<string, Row[]>;
+let actor: { id: string } | null;
+let host: boolean;
+let rejectCompareAndSwap: boolean;
+let writes: number;
+
+function database() {
+  return {
+    from(table: string) {
+      let filters: ((row: Row) => boolean)[] = [];
+      let update: Row | null = null;
+      let insert: Row | null = null;
+      const execute = () => {
+        const data = (rows[table] || []).filter(row => filters.every(matches => matches(row)));
+        if (insert) {
+          if (table === "event_practice_rooms" && rows[table].length) return { data: null, error: { code: "23505" } };
+          rows[table].push(structuredClone({ revision: 0, ...insert })); writes++;
+          return { data: null, error: null };
+        }
+        if (update) {
+          if (rejectCompareAndSwap) return { data: [], error: null };
+          for (const row of data) Object.assign(row, structuredClone(update));
+          writes += data.length;
+        }
+        return { data: structuredClone(data), error: null };
+      };
+      const query = {
+        select: () => query,
+        eq: (key: string, value: unknown) => { filters.push(row => row[key] === value); return query; },
+        not: (key: string, _operation: string, value: unknown) => { filters.push(row => row[key] !== value); return query; },
+        in: (key: string, values: unknown[]) => { filters.push(row => values.includes(row[key])); return query; },
+        order: () => query,
+        maybeSingle: async () => { const result = execute(); return { ...result, data: result.data?.[0] || null }; },
+        single: async () => { const result = execute(); return { ...result, data: result.data?.[0] || null }; },
+        insert: (value: Row) => { insert = value; return query; },
+        update: (value: Row) => { update = value; return query; },
+        then: <T>(fulfilled: (value: ReturnType<typeof execute>) => T) => Promise.resolve(execute()).then(fulfilled),
+      };
+      return query;
+    },
+  };
+}
+function state() { return rows.event_practice_rooms[0]?.state as PracticeState | undefined; }
+function revision() { return rows.event_practice_rooms[0]?.revision as number ?? -1; }
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  actor = { id: "owner" }; host = true; rejectCompareAndSwap = false; writes = 0;
+  rows = {
+    event_arrival_participants: [
+      { id: "owner-arrival", event_id: "event", user_id: "owner", nickname: "Working owner", checked_in_at: "2026-11-04T11:00Z", practice_language: "english" },
+      { id: "player-a", event_id: "event", user_id: "a", nickname: "Player A", checked_in_at: "2026-11-04T11:01Z", practice_language: "english" },
+      { id: "player-b", event_id: "event", user_id: null, nickname: "Player B", checked_in_at: "2026-11-04T11:02Z", practice_language: "vietnamese" },
+    ],
+    rsvps: [{ id: "no-show", event_id: "event", user_id: "absent", status: "going", checked_in_at: null, profiles: { display_name: "Not arrived" } }],
+    event_practice_rooms: [], event_staff: [],
+    events: [{ id: "event", created_by: "owner", venue_id: "venue", venues: { owner_id: "owner" } }],
+    venue_managers: [], profiles: [],
+  };
+  mocked.context.mockImplementation(async () => ({ admin: database(), user: actor, event: { id: "event", isOpen: true }, access: { canManage: host, canWelcome: host } }));
+  mocked.guestToken.mockResolvedValue(null);
+  mocked.ownReceipt.mockResolvedValue(null);
+  mocked.cookie.mockReturnValue(undefined);
+});
+
+describe("practice mutations", () => {
+  it("excludes working venue owner and no-shows by default; drafting publishes nothing", async () => {
+    const view = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    expect(view.count).toBe(2);
+    expect(view.participants?.find(p => p.id === "owner-arrival")?.participation).toBe("hosting");
+    expect(view.draft?.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b"]);
+    expect(view.round).toBeNull();
+    expect(state()?.rounds).toEqual([]);
+    expect(view.revision).toBe(0);
+  });
+  it("allows a host to opt in and publishes the exact reviewed draft only once", async () => {
+    await mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: -1 });
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(started.groups.flat()).toHaveLength(3);
+    expect(state()?.rounds[0].groups).toEqual(draft.draft?.groups);
+    expect(state()?.rounds[0].assignments).toEqual(draft.draft?.assignments);
+    await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: draft.revision! })).rejects.toThrow("status_conflict");
+    expect(state()?.rounds).toHaveLength(1);
+  });
+  it("rejects a draft when a late arrival changes eligibility without silently reshuffling", async () => {
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
+    expect(state()?.rounds).toHaveLength(0);
+  });
+  it("invalidates draft on participation change and requires a fresh review", async () => {
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    await mutatePractice(slug, { action: "participation", status: "visiting", participantId: "player-a", expectedRevision: revision() });
+    expect(state()?.draft).toBeNull();
+    await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
+  });
+  it("lets a recognized guest change only their own status without re-registering", async () => {
+    actor = null; host = false;
+    mocked.guestToken.mockResolvedValue("receipt");
+    mocked.ownReceipt.mockResolvedValue({ participant: { id: "player-b" } });
+    const view = await mutatePractice(slug, { action: "participation", status: "break", expectedRevision: -1 });
+    expect(view.participation).toBe("break");
+    expect(view.count).toBe(1);
+    expect(rows.event_arrival_participants).toHaveLength(3);
+    await expect(mutatePractice(slug, { action: "participation", status: "left", participantId: "player-a", expectedRevision: revision() })).rejects.toThrow("forbidden");
+    await expect(mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() })).rejects.toThrow("forbidden");
+    expect(view.participants).toBeUndefined();
+  });
+  it("does not let anonymous visitors create attendance or alter the room", async () => {
+    actor = null; host = false;
+    await expect(mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: -1 })).rejects.toThrow("participant_not_found");
+    expect(writes).toBe(0);
+  });
+  it("rejects concurrent writes with compare-and-swap", async () => {
+    await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    rejectCompareAndSwap = true;
+    await expect(mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: revision() })).rejects.toThrow("status_conflict");
+    expect(writes).toBe(1);
+  });
+  it("completes two rounds with persisted pause/extend/end and new partner assignments", async () => {
+    rows.event_arrival_participants.push({ id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" }, { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" });
+    let draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    await mutatePractice(slug, { action: "pause", expectedRevision: revision() });
+    expect((await readPractice(slug)).round?.pausedAt).toBeTruthy();
+    const oldRemaining = state()!.rounds[0].remainingSeconds!;
+    await mutatePractice(slug, { action: "extend", seconds: 120, expectedRevision: revision() });
+    expect(state()!.rounds[0].remainingSeconds).toBe(oldRemaining + 120);
+    await mutatePractice(slug, { action: "resume", expectedRevision: revision() });
+    await mutatePractice(slug, { action: "end", expectedRevision: revision() });
+    draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+    const firstPartner = state()!.rounds[0].groups.find(g => g.some(p => p.id === "player-a"))!.map(p => p.id).sort();
+    const nextPartner = draft.draft!.groups.find(g => g.some(p => p.id === "player-a"))!.map(p => p.id).sort();
+    expect(nextPartner).not.toEqual(firstPartner);
+    await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(state()?.rounds).toHaveLength(2);
+  });
+});

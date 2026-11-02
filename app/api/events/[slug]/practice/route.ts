@@ -1,10 +1,21 @@
 import { z } from "zod";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
-import { readPractice, recoverPractice, startPractice } from "@/lib/practice/server";
+import { mutatePractice, readPractice, recoverPractice } from "@/lib/practice/server";
 
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ slug: string }> };
-const schema = z.object({ expectedRound: z.number().int().min(0), minutes: z.union([z.literal(10), z.literal(15), z.literal(20), z.literal(25), z.literal(30)]) }).strict();
+const revision = z.number().int().min(-1);
+const tableSchema = z.object({ number: z.number().int().min(1).max(99), floor: z.enum(["downstairs", "upstairs"]), capacity: z.number().int().min(1).max(12), available: z.boolean(), bar: z.boolean().optional() }).strict();
+const schema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("participation"), expectedRevision: revision, status: z.enum(["playing", "visiting", "break", "left", "hosting"]), participantId: z.string().min(1).max(100).optional() }).strict(),
+  z.object({ action: z.literal("settings"), expectedRevision: revision, tables: z.array(tableSchema).min(1).max(30).refine(tables => new Set(tables.map(t => t.number)).size === tables.length), floorPolicy: z.enum(["balanced", "downstairs", "upstairs"]) }).strict(),
+  z.object({ action: z.literal("draft"), expectedRevision: revision, minutes: z.number().int().min(5).max(30) }).strict(),
+  z.object({ action: z.literal("start"), expectedRevision: revision, draftId: z.string().uuid() }).strict(),
+  z.object({ action: z.literal("pause"), expectedRevision: revision }).strict(),
+  z.object({ action: z.literal("resume"), expectedRevision: revision }).strict(),
+  z.object({ action: z.literal("end"), expectedRevision: revision }).strict(),
+  z.object({ action: z.literal("extend"), expectedRevision: revision, seconds: z.number().int().min(30).max(600) }).strict(),
+]);
 const recoverySchema = z.object({ action: z.literal("find"), code: z.string().trim().regex(/^[a-f0-9]{8}$/i) }).strict();
 export async function GET(_request: Request, { params }: Context) {
   try { return arrivalJson(await readPractice((await params).slug)); }
@@ -26,6 +37,6 @@ export async function POST(request: Request, { params }: Context) {
   }
   const body = schema.safeParse(raw);
   if (!body.success) return arrivalJson({ code: "invalid_request" }, 400);
-  try { return arrivalJson(await startPractice((await params).slug, body.data.expectedRound, body.data.minutes)); }
+  try { return arrivalJson(await mutatePractice((await params).slug, body.data)); }
   catch (error) { return arrivalFailure(error); }
 }

@@ -40,3 +40,96 @@ describe("practice from event attendance", () => {
     expect(() => pairRound([p], [], 10)).toThrow("invalid_roster");
   });
 });
+
+import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, participantStatus, remainingSeconds, rosterFingerprint, updateClock, type PracticeState } from "./model";
+
+describe("present and playing eligibility", () => {
+  it("retains arrivals without a second check-in but excludes staff, visitors, breaks and departures", () => {
+    const state: PracticeState = { rounds: [], participation: { b: "visiting", c: "break", d: "left" } };
+    expect(eligiblePeople(state, people, new Set(["a"]))).toEqual([]);
+    expect(participantStatus(state, "a", new Set(["a"]))).toBe("hosting");
+    state.participation!.a = "playing";
+    expect(eligiblePeople(state, people, new Set(["a"])).map(p => p.id)).toEqual(["a"]);
+  });
+  it("keeps event numbers after someone leaves and newcomers arrive", () => {
+    const state: PracticeState = { rounds: [], numbers: { a: 4, departed: 9 } };
+    expect(numberPeople(state, [people[0], people[1]]).map(p => p.number)).toEqual([4, 10]);
+  });
+  it("detects roster, ability, floor policy and table changes before publishing", () => {
+    const baseline = rosterFingerprint(people, DEFAULT_TABLES, "balanced");
+    expect(rosterFingerprint([...people].reverse(), [...DEFAULT_TABLES].reverse(), "balanced")).toBe(baseline);
+    expect(rosterFingerprint(people.slice(1), DEFAULT_TABLES, "balanced")).not.toBe(baseline);
+    expect(rosterFingerprint([{ ...people[0], learns: "fr" }, ...people.slice(1)], DEFAULT_TABLES, "balanced")).not.toBe(baseline);
+    expect(rosterFingerprint(people, DEFAULT_TABLES.map(t => t.number === 1 ? { ...t, available: false } : t), "balanced")).not.toBe(baseline);
+    expect(rosterFingerprint(people, DEFAULT_TABLES, "upstairs")).not.toBe(baseline);
+  });
+});
+
+function roster(count: number) { return Array.from({ length: count }, (_, i) => ({ ...people[i % 4], id: `p${i}` })); }
+describe("physical tables", () => {
+  it("keeps a ten-person gathering downstairs and uses small tables first", () => {
+    const groups = pairRound(roster(10), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
+    expect(assigned).toHaveLength(5);
+    expect(assigned.every(a => a.floor === "downstairs")).toBe(true);
+    expect(assigned.some(a => [4, 6, 7].includes(a.tableNumber))).toBe(true);
+    expect(assigned.some(a => a.tableNumber === 5)).toBe(false);
+  });
+  it("spreads a large group across floors without exceeding seats, including shared tables", () => {
+    const groups = pairRound(roster(40), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
+    expect(new Set(assigned.map(a => a.floor)).size).toBe(2);
+    const used = new Map<number, number>();
+    for (const a of assigned) used.set(a.tableNumber, (used.get(a.tableNumber) || 0) + groups[a.groupIndex].length);
+    for (const [number, seats] of used) expect(seats).toBeLessThanOrEqual(DEFAULT_TABLES.find(t => t.number === number)!.capacity);
+    expect(used.has(5)).toBe(false);
+    expect(assigned).toHaveLength(groups.length);
+  });
+  it("handles an odd trio, blocked tables and insufficient capacity", () => {
+    const groups = pairRound(roster(9), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.floor === "upstairs" })), "downstairs");
+    expect(assigned.every(a => a.floor === "upstairs")).toBe(true);
+    const trio = assigned.find(a => groups[a.groupIndex].length === 3)!;
+    expect(DEFAULT_TABLES.find(t => t.number === trio.tableNumber)!.capacity).toBeGreaterThanOrEqual(3);
+    expect(() => assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.number === 4 })), "balanced")).toThrow("invalid_table_capacity");
+  });
+  it("respects an upstairs preference when enough seats are available", () => {
+    const assigned = assignTables(pairRound(roster(10), [], 12).groups, DEFAULT_TABLES, "upstairs");
+    expect(assigned.every(a => a.floor === "upstairs")).toBe(true);
+  });
+});
+
+describe("persisted authoritative clock", () => {
+  const start = new Date("2026-11-04T12:00:00.000Z");
+  it("pauses, extends and resumes identically after reload", () => {
+    const round = pairRound(people, [], 12, start);
+    const paused = updateClock(round, "pause", new Date(start.getTime() + 120_000));
+    expect(remainingSeconds(paused, new Date(start.getTime() + 3_600_000))).toBe(600);
+    const extended = updateClock(JSON.parse(JSON.stringify(paused)), "extend", new Date(start.getTime() + 3_600_000), 120);
+    const resumed = updateClock(extended, "resume", new Date(start.getTime() + 3_600_000));
+    expect(resumed.endsAt).toBe("2026-11-04T13:12:00.000Z");
+    expect(remainingSeconds(resumed, new Date("2026-11-04T13:01:00.000Z"))).toBe(660);
+  });
+  it("ends explicitly without changing partners and persists changeover", () => {
+    const round = pairRound(people, [], 12, start);
+    const ended = updateClock(round, "end", new Date("2026-11-04T12:12:00.000Z"));
+    expect(remainingSeconds(ended, start)).toBe(0);
+    expect(ended.changeoverEndsAt).toBe("2026-11-04T12:13:30.000Z");
+    expect(ended.groups).toEqual(round.groups);
+    expect(() => updateClock(ended, "resume", start)).toThrow("status_conflict");
+  });
+  it("keeps draft and all other assignments private while preserving published partner/table", () => {
+    const round = pairRound(numberPeople({ rounds: [] }, people), [], 12, start);
+    round.assignments = assignTables(round.groups, DEFAULT_TABLES, "balanced");
+    const state: PracticeState = { rounds: [round], draft: { id: "secret", round: 2, groups: [...round.groups].reverse(), minutes: 12, assignments: round.assignments, rosterFingerprint: "private", createdAt: start.toISOString() } };
+    const guest = practiceView(state, people, "a", false);
+    expect(guest.draft).toBeNull();
+    expect(guest.participants).toBeUndefined();
+    expect(guest.round!.assignments).toHaveLength(1);
+    expect(guest.myTable?.groupIndex).toBe(round.groups.findIndex(g => g.some(p => p.id === "a")));
+    const anonymous = practiceView(state, people, null, false);
+    expect(anonymous.myGroup).toEqual([]);
+    expect(anonymous.round?.assignments).toEqual([]);
+    expect(anonymous.myTable).toBeNull();
+  });
+});
