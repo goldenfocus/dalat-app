@@ -4,6 +4,8 @@ Route: `/practice/rehearsal` (or `/<locale>/practice/rehearsal`). Public, no log
 noindex, sample-only. It reuses EventPractice and PracticeHost with an injected
 in-memory response transport and the real pairing, table allocation and clock model.
 It does not call the event practice API, reveal attendees or start a real round.
+Automatic PWA updates do not reload this route mid-rehearsal. A deliberate refresh
+still resets its sample state.
 
 Choose ten or 34 sample players. Morgan is a working host and Casey is a visitor;
 both remain out of pairing unless deliberately changed. The full available table
