@@ -31,13 +31,15 @@ export function ArrivalReceiptView({ receipt, stale, onRefresh }: {
   );
 }
 
-export function ArrivalOrderView({ order }: { order: ArrivalOrder }) {
+export function ArrivalOrderView({ order, compact = false }: { order: ArrivalOrder; compact?: boolean }) {
   const t = useTranslations("arrival");
   const locale = useLocale();
-  const statusKey = { pending: "orderPending", confirmed: "orderConfirmed", fulfilled: "orderServed", cancelled: "orderCancelled" }[order.status];
-  return <div className="border-y border-border py-5">
+  const statusKey = order.ready_for_preparation === false && ["pending", "confirmed"].includes(order.status)
+    ? "sponsorReserved"
+    : { pending: "orderPending", confirmed: "orderConfirmed", fulfilled: "orderServed", cancelled: "orderCancelled" }[order.status];
+  return <div className={compact ? "rounded-xl border border-border p-4" : "border-y border-border py-5"}>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h2 className="text-xl font-semibold text-foreground">{t("orderTitle")}</h2>
+            {!compact && <h2 className="text-xl font-semibold text-foreground">{t("orderTitle")}</h2>}
             <p className="text-sm font-medium text-primary" role="status">{t(statusKey)}</p>
           </div>
           <ul className="mt-4 space-y-3">
@@ -49,8 +51,8 @@ export function ArrivalOrderView({ order }: { order: ArrivalOrder }) {
             ))}
           </ul>
           {order.note && <p className="mt-4 whitespace-pre-wrap text-sm text-muted-foreground">{order.note}</p>}
-          <div className="mt-5"><OrderPaymentSummary order={order} /></div>
-          {order.ready_for_preparation === false && order.status !== "cancelled" && <p className="mt-3 text-sm text-primary">{t("sponsorGuestReserved")}</p>}
-          {!order.paid_at && order.status !== "cancelled" && (order.guest_due_vnd ?? order.total_vnd) > 0 && <p className="mt-2 text-sm text-muted-foreground">{t("payAtVenue")}</p>}
+          <div className={compact ? "mt-4" : "mt-5"}><OrderPaymentSummary order={order} compact={compact} /></div>
+          {!compact && order.ready_for_preparation === false && order.status !== "cancelled" && <p className="mt-3 text-sm text-primary">{t("sponsorGuestReserved")}</p>}
+          {!compact && !order.paid_at && order.status !== "cancelled" && (order.guest_due_vnd ?? order.total_vnd) > 0 && <p className="mt-2 text-sm text-muted-foreground">{t("payAtVenue")}</p>}
         </div>;
 }

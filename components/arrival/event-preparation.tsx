@@ -76,17 +76,17 @@ export function EventPreparation({ slug }: { slug: string }) {
   };
 
   return <main className="mx-auto max-w-xl px-4 pb-32 pt-5">
-    <Link href={`/events/${slug}`} className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" aria-hidden />{common("backToEvent")}</Link>
-    <h1 className="text-3xl font-semibold tracking-tight">{t("prepare")}</h1>
-    {context && <p className="mt-2 text-muted-foreground">{context.event.title}</p>}
+    {step !== "done" && <Link href={`/events/${slug}`} className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" aria-hidden />{common("backToEvent")}</Link>}
+    <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">{step === "done" && <Check className="h-7 w-7 shrink-0 text-primary" aria-hidden />}{t(step === "done" ? "ready" : "prepare")}</h1>
+    {context && <p className="mt-2 text-sm text-muted-foreground">{context.event.title}</p>}
     {loading ? <p className="py-8" role="status">{common("loading")}</p> : !context ? <p className="py-8" role="alert">{common("loadError")}</p> : context.rsvpStatus !== "going" ? <section className="mt-8 space-y-4"><p>{t("rsvpFirst")}</p><Button asChild><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button></section> : <>
-      <div className="my-6 flex items-center gap-3 border-y py-4">
+      {step !== "done" && <div className="my-6 flex items-center gap-3 border-y py-4">
         {profile?.avatar_url && <Image src={profile.avatar_url} alt="" width={48} height={48} className="h-12 w-12 rounded-lg object-cover" />}
         <p className="font-semibold">{context.profile?.name || profile?.display_name || profile?.username}</p>
-      </div>
+      </div>}
       {step === "languages" && <section className="space-y-6"><p className="text-muted-foreground">{t("intro")}</p><LanguageSetup value={preferences} onChange={setPreferences} disabled={busy} /><Button className="min-h-12 w-full" disabled={busy || !languagePreferencesSchema.safeParse(preferences).success} onClick={() => void saveLanguages()}>{common(busy ? "submitting" : "continue")}</Button></section>}
       {step === "menu" && <DrinkMenuSheet context={context} open onLater={() => setStep("done")} busy={busy} failed={failed} quantities={quantities} onChange={setQuantities} selected={selected} onSelect={setSelected} note={note} onNoteChange={setNote} onReserve={() => void reserve()} />}
-      {step === "done" && <section className="space-y-6 py-3"><Check className="h-9 w-9 text-primary" aria-hidden /><h2 className="text-2xl font-semibold">{t("ready")}</h2><p className="text-muted-foreground">{t("prepareAtArrival")}</p>{order && <><ArrivalOrderView order={order} /><ExistingDrinkOffer eligible={context.sponsorEligibility?.eligible} event={context.event} order={order} onClaimed={setOrder} /></>}<Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button>{!order && <Button className="min-h-12 w-full" onClick={() => setStep("menu")}>{t(canChooseFreeDrink(context) ? "chooseFreeDrink" : "chooseFromMenu")}</Button>}<Button variant="ghost" onClick={() => setStep("languages")}>{t("editLanguages")}</Button></section>}
+      {step === "done" && <section className="space-y-4 pt-6">{order && <><ArrivalOrderView order={order} compact /><ExistingDrinkOffer eligible={context.sponsorEligibility?.eligible} event={context.event} order={order} onClaimed={setOrder} /></>}{!order && <Button className="min-h-12 w-full" onClick={() => setStep("menu")}>{t(canChooseFreeDrink(context) ? "chooseFreeDrink" : "chooseFromMenu")}</Button>}<Button asChild className="min-h-12 w-full"><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button><Button variant="ghost" className="min-h-11" onClick={() => setStep("languages")}>{t("editLanguages")}</Button></section>}
     </>}
     {failed && <p className="mt-4 text-destructive" role="alert">{common("errorGeneric")}</p>}
   </main>;

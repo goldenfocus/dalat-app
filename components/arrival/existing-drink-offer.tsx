@@ -1,4 +1,6 @@
 "use client";
+
+import { DrinkSponsorLink } from "./drink-sponsor-link";
 import { useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -26,5 +28,5 @@ export function ExistingDrinkOffer({ event, order, onClaimed, eligible = false }
     } catch { setFailed(true); }
     finally { lock.current = false; setBusy(false); }
   };
-  return <section className="space-y-4 rounded-xl border border-primary/30 p-4"><p className="font-semibold">{t("registration.complimentary")}</p><label className="block space-y-2"><span>{t("registration.chooseCoveredDrink")}</span><select className="min-h-12 w-full rounded-md border bg-background px-3" disabled={busy} value={chosen} onChange={event => setSelected(event.target.value)}>{choices.map(item => <option key={item.menu_item_id} value={item.menu_item_id!}>{item.name_snapshot}</option>)}</select></label><Button className="min-h-12 w-full" disabled={busy} onClick={() => void claim()}>{t(busy ? "submitting" : "continue")}</Button>{failed && <p role="alert" className="text-destructive">{t("errorGeneric")}</p>}</section>;
+  return <section className="space-y-4 rounded-xl border border-primary/30 p-4"><p className="font-semibold"><DrinkSponsorLink>{t("registration.complimentary")}</DrinkSponsorLink></p><label className="block space-y-2"><span>{t("registration.chooseCoveredDrink")}</span><select className="min-h-12 w-full rounded-md border bg-background px-3" disabled={busy} value={chosen} onChange={event => setSelected(event.target.value)}>{choices.map(item => <option key={item.menu_item_id} value={item.menu_item_id!}>{item.name_snapshot}</option>)}</select></label><Button className="min-h-12 w-full" disabled={busy} onClick={() => void claim()}>{t(busy ? "submitting" : "continue")}</Button>{failed && <p role="alert" className="text-destructive">{t("errorGeneric")}</p>}</section>;
 }

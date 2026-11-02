@@ -8,6 +8,8 @@ The three permissions stay distinct: eligibility allows discovery; mutual intere
 
 The original September 17 meetup target has passed. Validate this release with the next suitable meetup rather than encoding that date or a particular organizer.
 
+As of November 1, 2026, event pages no longer display the Meet People sharing control or event People section. The feature is not active enough to justify the extra step in the event experience. Standalone People discovery and profiles remain available; existing event-sharing data and privacy rules are preserved.
+
 ## Repository audit
 
 - Next.js App Router, React, Supabase SSR authentication, next-intl, Tailwind/Radix components. Keep the existing stack.
@@ -32,7 +34,7 @@ Deliver a working slice:
 5. Save edits deliberately; allow immediate opt-out without overwriting unsaved draft text.
 6. Block within Meet People; explain that existing public profiles and event activity are outside that scope. Offer unblocking in the editor.
 7. Report a person privately. Provide an actual staff review queue at `/admin/people-reports`; staff can mark reports reviewed. This queue needs a named human owner before pilot launch.
-8. At an event, a current “going” attendee can explicitly share their People profile with signed-in viewers who can access that event. Leaving the RSVP, disabling People, or becoming private revokes consent; rejoining does not silently restore it.
+8. Event People sharing UI is paused. The retained event-consent implementation requires a current “going” RSVP and explicit sharing with signed-in viewers who can access that event. Leaving the RSVP, disabling People, or becoming private revokes consent; rejoining does not silently restore it.
 
 All UI copy is translated in the 12 existing locales. Help text joins the existing translation worker. Original text remains available while translations are pending. User photos keep the existing R2/CDN path.
 

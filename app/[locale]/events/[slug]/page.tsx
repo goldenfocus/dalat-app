@@ -9,7 +9,6 @@ import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense, cache } from "react";
-import { EventPeople } from "@/components/people/event-people";
 import type { Metadata } from "next";
 
 // Increase serverless function timeout (Vercel Pro required for >10s)
@@ -1852,8 +1851,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                 interested={interested}
                 isPast={isPast}
               />}
-
-              {isLoggedIn && <EventPeople eventId={event.id} locale={locale} />}
 
               {event.source_platform === "activity-graph" && (
                 <ActivitySourceFooter

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import type { Sponsor, EventSponsor } from "@/lib/types";
 
 interface SponsorDisplayProps {
-  sponsors: (EventSponsor & { sponsors: Sponsor })[];
+  sponsors: (Pick<EventSponsor, "sponsor_id" | "sort_order"> & { sponsors: Sponsor })[];
 }
 
 export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
@@ -28,12 +28,12 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
     const content = (
       <div className="flex items-center gap-4 p-4 rounded-xl bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200/50 dark:border-amber-800/30">
         {/* Logo */}
-        <div className="w-16 h-16 rounded-xl overflow-hidden flex-shrink-0 flex items-center justify-center">
+        <div className="w-28 h-14 rounded-lg bg-white p-2 overflow-hidden flex-shrink-0 flex items-center justify-center">
           {sponsor.logo_url ? (
             <img
               src={sponsor.logo_url}
               alt={sponsor.name}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
             />
           ) : (
             <ImageIcon className="w-6 h-6 text-muted-foreground" />
@@ -45,13 +45,7 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
             <Heart className="w-3 h-3 fill-current" />
             {t("supportedBy")}
           </p>
-          <p className="font-semibold text-foreground truncate">{sponsor.name}</p>
-          {sponsor.website_url && (
-            <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-              {t("visitSponsor")}
-              <ExternalLink className="w-3 h-3" />
-            </span>
-          )}
+          <p className="flex items-center gap-2 font-semibold text-foreground"><span className="truncate">{sponsor.name}</span>{sponsor.website_url && <ExternalLink className="h-3 w-3 shrink-0 text-muted-foreground" aria-hidden />}</p>
         </div>
       </div>
     );
@@ -90,12 +84,12 @@ export function SponsorDisplay({ sponsors }: SponsorDisplayProps) {
           const content = (
             <div className="group flex flex-col items-center gap-2 p-3">
               {/* Logo */}
-              <div className="w-14 h-14 rounded-xl overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-md">
+              <div className="w-24 h-14 rounded-lg bg-white p-2 overflow-hidden transition-transform duration-300 group-hover:scale-105 shadow-md">
                 {sponsor.logo_url ? (
                   <img
                     src={sponsor.logo_url}
                     alt={sponsor.name}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="w-full h-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">

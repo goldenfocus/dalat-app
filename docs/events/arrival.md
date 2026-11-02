@@ -30,6 +30,22 @@ Existing orders are shown before staff can accidentally duplicate them. A missin
 refresh is visible with the last successful update time. No online payments,
 newsletter enrollment or cross-app account linking are performed.
 
+Guest-facing EZViet drink sponsorship attributions link to `https://ezviet.org`
+in a new tab. The receipt, sponsored cart and existing-order offer retain their
+localized labels and keep the event and saved drink selection open.
+The preparation confirmation shows one success heading, event name, ordered
+items, sponsor credit and guest amount due, followed by Event details and a
+secondary language-edit action. Repeated instructions, subtotal, profile header
+and reservation explanations are omitted. Cancelled/served status, order notes
+and paid extras remain visible; an unprepared reservation is never labelled as
+sent to the venue.
+
+The Social House language-exchange series also displays EZViet's current
+wordmark as a linked sponsor on the series page and upcoming event pages.
+`series_sponsors` carries that attribution into new occurrences from its
+effective date without changing earlier events or drink accounting. The logo is
+an unchanged copy of `https://ezviet.org/brand/ezviet-wordmark.svg`.
+
 ## Release and security checks
 
 - `bash scripts/test-arrival-sql.sh`: disposable PostgreSQL tests, including real

@@ -20,6 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatInDaLat, loadDateFnsLocale } from "@/lib/timezone";
 import { describeRRule, getShortRRuleLabel } from "@/lib/recurrence";
 import { PromoMediaSection } from "@/components/events/promo-media-section";
+import { SponsorDisplay } from "@/components/events/sponsor-display";
 import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
 import { buildEventSeriesMetadata } from "@/lib/series/seo";
 import { buildAlternates } from "@/lib/metadata";
@@ -31,6 +32,8 @@ import type {
   Organizer,
   Locale,
   EventPromoMedia,
+  EventSponsor,
+  Sponsor,
 } from "@/lib/types";
 
 interface PageProps {
@@ -54,6 +57,10 @@ type EventInstance = Pick<
   | "image_url"
 >;
 
+type SeriesSponsor = Pick<EventSponsor, "sponsor_id" | "sort_order"> & {
+  sponsors: Sponsor;
+};
+
 interface SeriesData {
   series: SeriesWithRelations;
   upcomingEvents: EventInstance[];
@@ -61,6 +68,7 @@ interface SeriesData {
   isSubscribed: boolean;
   isOwner: boolean;
   promo: EventPromoMedia[];
+  sponsors: SeriesSponsor[];
 }
 
 // Generate dynamic OG metadata
@@ -163,10 +171,16 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
     isSubscribed = subscription?.auto_rsvp ?? false;
   }
 
-  // Get series promo media
-  const { data: promo } = await supabase.rpc("get_series_promo_media", {
-    p_series_id: series.id,
-  });
+  // Get public series media and sponsorships together.
+  const [{ data: promo }, { data: sponsors }] = await Promise.all([
+    supabase.rpc("get_series_promo_media", { p_series_id: series.id }),
+    supabase
+      .from("series_sponsors")
+      .select("sponsor_id,sort_order,sponsors(*)")
+      .eq("series_id", series.id)
+      .lte("effective_from", new Date().toISOString())
+      .order("sort_order"),
+  ]);
 
   return {
     series: resolveEventLocation(series as SeriesWithRelations, series.venues as LocationVenue | null),
@@ -175,6 +189,7 @@ async function getSeriesData(slug: string): Promise<SeriesData | null> {
     isSubscribed,
     isOwner: user?.id === series.created_by,
     promo: (promo || []) as EventPromoMedia[],
+    sponsors: (sponsors || []) as unknown as SeriesSponsor[],
   };
 }
 
@@ -200,6 +215,7 @@ export default async function SeriesPage({ params }: PageProps) {
     isSubscribed: _isSubscribed,
     isOwner,
     promo,
+    sponsors,
   } = data;
 
   const recurrenceDescription =
@@ -380,6 +396,8 @@ export default async function SeriesPage({ params }: PageProps) {
             </Button>
           )}
         </div>
+
+        {sponsors.length > 0 && <SponsorDisplay sponsors={sponsors} />}
 
         {/* Promo Media - promotional content for this series */}
         <PromoMediaSection
