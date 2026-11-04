@@ -1,9 +1,9 @@
 // @vitest-environment node
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-const state = vi.hoisted(() => ({ jar: new Map<string,string>(), identity: null as unknown, peerCall: vi.fn(), provision: vi.fn(), signIn: vi.fn(), bind: vi.fn(), insert: vi.fn() }));
+const state = vi.hoisted(() => ({ jar: new Map<string,string>(), identity: null as unknown, peerReady: vi.fn(), peerCall: vi.fn(), provision: vi.fn(), signIn: vi.fn(), bind: vi.fn(), insert: vi.fn() }));
 vi.mock('next/headers', () => ({ cookies: async () => ({ get: (key:string) => state.jar.has(key) ? { value: state.jar.get(key) } : undefined }) }));
 vi.mock('./server', () => ({
-  origin: 'https://dalat.app', peerOrigin: 'https://ezviet.org', enabled: () => true,
+  origin: 'https://dalat.app', peerOrigin: 'https://ezviet.org', enabled: () => true, peerReady: state.peerReady,
   hash: (x:string) => 'hashed-'+x, randomToken: () => 'a'.repeat(64),
   currentIdentity: async () => state.identity, peerCall: state.peerCall, provision: state.provision,
   signIn: state.signIn, bind: state.bind,
@@ -15,8 +15,14 @@ vi.mock('./http', () => ({
 }));
 import { start, authorize, callback, confirm } from './flow';
 const identity = { id: '00000000-0000-4000-8000-000000000001', email: 'qa@example.invalid', name: null, avatar: null };
-beforeEach(() => { vi.clearAllMocks(); state.jar.clear(); state.identity=null; state.insert.mockResolvedValue({ error:null }); });
+beforeEach(() => { vi.clearAllMocks(); state.jar.clear(); state.peerReady.mockResolvedValue(true); state.identity=null; state.insert.mockResolvedValue({ error:null }); });
 describe('browser-bound account handoff', () => {
+  it('stays on the local page until the peer deployment is ready', async () => {
+    state.peerReady.mockResolvedValue(false);
+    const response = await start(new Request('https://dalat.app/auth/deovia/start?next=/meet'));
+    expect(response.headers.get('location')).toBe('https://dalat.app/meet');
+    expect(state.jar.size).toBe(0);
+  });
   it('binds each start to a state and verifier while ignoring external return URLs', async () => {
     const response=await start(new Request('https://dalat.app/auth/deovia/start?next=//evil.example'));
     const target=new URL(response.headers.get('location')!);

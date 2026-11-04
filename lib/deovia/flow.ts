@@ -1,12 +1,12 @@
 import { cookies } from 'next/headers';
-import { admin, bind, currentIdentity, enabled, hash, origin, peerOrigin, peerCall, provision, randomToken, signIn } from './server';
+import { admin, bind, currentIdentity, enabled, hash, origin, peerOrigin, peerCall, provision, randomToken, signIn, peerReady } from './server';
 import { redirect, setCookie } from './http';
 import { safePath, readIdentity, tokenPattern } from './policy';
 import { loginPath, landingPath } from './app';
 const flowCookie = '__Host-deovia_flow';
 export async function start(request: Request) {
   const url = new URL(request.url); const next = safePath(url.searchParams.get('next'));
-  if (!enabled()) return redirect(next);
+  if (!enabled() || !await peerReady()) return redirect(next);
   const state = randomToken(); const verifier = randomToken();
   await setCookie(flowCookie, JSON.stringify({ state, verifier, next, mode: url.searchParams.get('mode') === 'link' ? 'link' : 'auto' }));
   const target = new URL('/auth/deovia/authorize', peerOrigin);
@@ -16,8 +16,9 @@ export async function start(request: Request) {
 }
 export async function authorize(request: Request) {
   const url = new URL(request.url); const state = url.searchParams.get('state') || ''; const challenge = url.searchParams.get('challenge') || '';
-  if (!enabled() || !tokenPattern.test(state) || !tokenPattern.test(challenge)) return redirect('/');
+  if (!tokenPattern.test(state) || !tokenPattern.test(challenge)) return redirect('/');
   const target = new URL('/auth/deovia/callback', peerOrigin); target.searchParams.set('state', state);
+  if (!enabled()) { target.searchParams.set('error', 'unavailable'); return redirect(target.toString()); }
   try {
     const identity = await currentIdentity();
     if (!identity) {

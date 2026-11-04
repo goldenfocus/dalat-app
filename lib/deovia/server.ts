@@ -94,3 +94,10 @@ export async function signIn(localId: string) {
   const { data: verified, error: verifyError } = await session.auth.verifyOtp({ token_hash: data.properties.hashed_token, type: 'magiclink' });
   if (verifyError || verified.user?.id !== localId) throw new Error('Local sign-in required');
 }
+
+export async function peerReady(): Promise<boolean> {
+  try {
+    const response = await fetch(`${peerOrigin}/api/deovia/status`, { cache: 'no-store', redirect: 'error', signal: AbortSignal.timeout(3000) });
+    return response.ok && (await response.json()).available === true;
+  } catch { return false; }
+}

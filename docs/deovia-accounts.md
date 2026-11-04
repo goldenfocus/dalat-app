@@ -17,7 +17,8 @@ Both servers need `DEOVIA_ACCOUNTS_ENABLED=1` and the same random
 hosting project's secret store. Origins are fixed to https://dalat.app and https://ezviet.org;
 preview deployments do not become trusted peers. Apply the additive
 `20261104060000_deovia_accounts.sql` migration in both projects first. Disable the flag
-on both to stop new handoffs without changing existing sessions or data.
+on both to stop new handoffs without changing existing sessions or data. A handoff starts
+only when the peer reports readiness, so deploying one app first does not strand visitors.
 
 Start creates an HttpOnly, Secure, SameSite=Lax browser binding and a random state.
 The source verifies its session with Auth, then issues a 90-second code bound to SHA-256
