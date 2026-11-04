@@ -4,8 +4,9 @@ import { pendingLink } from '@/lib/deovia/flow';
 import { currentIdentity } from '@/lib/deovia/server';
 import { loginPath } from '@/lib/deovia/app';
 export const dynamic = 'force-dynamic';
-export default async function Page() {
-  const t = await getTranslations('auth');
+export default async function Page({ params }: { params: Promise<{ locale: string }> }) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'auth' });
   const pending = await pendingLink(); const identity = await currentIdentity();
   return <main className="mx-auto flex min-h-[70dvh] max-w-sm flex-col justify-center gap-5 px-4 py-12">
     <h1 className="text-2xl font-bold">{t('deoviaTitle')}</h1>

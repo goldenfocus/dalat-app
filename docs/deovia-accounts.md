@@ -44,3 +44,6 @@ Check provisioning in both directions, an existing-email collision, explicit lin
 independently authenticated accounts, reload and cross-site sign-in, cancellation, logout,
 expired/wrong-verifier/replayed codes, anonymous access denial, no permission escalation,
 and 375px light/dark login/confirmation. Delete only disposable test identities afterwards.
+
+Automatic account discovery yields to pointer/keyboard interaction and navigation. It never
+redirects a visitor away after they begin using the page. Explicit account sign-in still works.
