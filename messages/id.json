@@ -460,7 +460,13 @@
       "successDescription": "Instruksi reset kata sandi telah dikirim",
       "successHint": "Jika Anda mendaftar dengan email dan kata sandi, Anda akan menerima email reset kata sandi.",
       "sending": "Mengirim..."
-    }
+    },
+    "deoviaContinue": "Gunakan akun EZViet Anda",
+    "deoviaTitle": "Hubungkan akun Deovia Anda",
+    "deoviaDescription": "Masuk sekali ke akun DaLat.app yang sudah ada untuk mempertahankan pendaftaran acara Anda.",
+    "deoviaSignIn": "Lanjutkan dengan DaLat.app",
+    "deoviaConnect": "Hubungkan akun",
+    "deoviaLater": "Nanti saja"
   },
   "errors": {
     "somethingWentWrong": "Maaf, terjadi kesalahan.",

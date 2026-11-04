@@ -460,7 +460,13 @@
       "successDescription": "パスワードリセットの手順を送信しました",
       "successHint": "メールアドレスとパスワードで登録している場合、パスワードリセットのメールが届きます。",
       "sending": "送信中..."
-    }
+    },
+    "deoviaContinue": "EZVietアカウントを使う",
+    "deoviaTitle": "Deoviaアカウントを連携",
+    "deoviaDescription": "参加登録を引き継ぐため、既存のDaLat.appアカウントに一度ログインしてください。",
+    "deoviaSignIn": "DaLat.appで続ける",
+    "deoviaConnect": "アカウントを連携",
+    "deoviaLater": "後で"
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",

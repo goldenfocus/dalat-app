@@ -102,3 +102,19 @@ describe("Data API grant ratchet", () => {
     expect(problems).toEqual([]);
   });
 });
+
+
+it("recognizes service-only grants and client revokes across multiple tables", () => {
+  const result = analyzeMigrations([{ name: "20261104060000_deovia.sql", sql: `
+    create table public.bridge_a(id uuid);
+    create table public.bridge_b(id uuid);
+    revoke all on public.bridge_a, public.bridge_b from anon, authenticated;
+    grant all on public.bridge_a, public.bridge_b to service_role;
+  ` }]);
+  expect(result.problems).toEqual([]);
+  for (const table of result.tables) {
+    expect([...table.prod.anon]).toEqual([]);
+    expect([...table.prod.authenticated]).toEqual([]);
+    expect([...table.prod.service_role]).toContain("select");
+  }
+});

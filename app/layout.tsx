@@ -1,3 +1,4 @@
+import { AccountBridge } from '@/components/deovia/AccountBridge';
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
@@ -101,7 +102,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/android-chrome-192x192.png" />
       </head>
       {/* System font stack via globals.css — zero webfont bytes, faster FCP */}
-      <body className="antialiased">{children}</body>
+      <body className="antialiased"><AccountBridge />{children}</body>
     </html>
   );
 }

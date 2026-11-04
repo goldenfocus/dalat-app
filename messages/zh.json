@@ -460,7 +460,13 @@
       "successDescription": "密码重置说明已发送",
       "successHint": "如果您使用邮箱和密码注册，您将收到一封密码重置邮件。",
       "sending": "发送中..."
-    }
+    },
+    "deoviaContinue": "使用 EZViet 账号",
+    "deoviaTitle": "关联 Deovia 账号",
+    "deoviaDescription": "登录一次现有的 DaLat.app 账号，即可保留活动报名记录。",
+    "deoviaSignIn": "使用 DaLat.app 继续",
+    "deoviaConnect": "关联账号",
+    "deoviaLater": "暂时不用"
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",

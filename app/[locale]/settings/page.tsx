@@ -1,3 +1,4 @@
+import { PeerSignIn } from '@/components/deovia/PeerSignIn';
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getEffectiveUser } from "@/lib/god-mode";
@@ -87,6 +88,7 @@ export default async function SettingsPage({ params }: Props) {
             userEmail={user.email || ""}
             targetUserId={godMode.isActive ? godMode.targetUserId : null}
           />
+          <PeerSignIn />
           <SignOutButton />
         </CardContent>
       </Card>

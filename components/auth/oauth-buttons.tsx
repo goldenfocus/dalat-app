@@ -1,5 +1,6 @@
 "use client";
 
+import { PeerSignIn } from "@/components/deovia/PeerSignIn";
 import { callbackUrl } from "@/lib/auth/continuation";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
@@ -91,6 +92,7 @@ export function OAuthButtons() {
         <>
           <InAppBrowserWarning className="mb-4" />
           <GoogleButton />
+          <PeerSignIn />
           <Divider text={t("orContinueWith")} />
         </>
       )}

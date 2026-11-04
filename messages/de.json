@@ -460,7 +460,13 @@
       "successDescription": "Anleitung zum Zurücksetzen des Passworts gesendet",
       "successHint": "Wenn du dich mit E-Mail und Passwort registriert hast, bekommst du eine E-Mail zum Zurücksetzen deines Passworts.",
       "sending": "Wird gesendet..."
-    }
+    },
+    "deoviaContinue": "EZViet-Konto verwenden",
+    "deoviaTitle": "Deovia-Konten verbinden",
+    "deoviaDescription": "Melde dich einmal bei deinem bestehenden DaLat.app-Konto an, um deine Anmeldungen zu behalten.",
+    "deoviaSignIn": "Mit DaLat.app fortfahren",
+    "deoviaConnect": "Konten verbinden",
+    "deoviaLater": "Nicht jetzt"
   },
   "errors": {
     "somethingWentWrong": "Entschuldigung, etwas ist schiefgelaufen.",

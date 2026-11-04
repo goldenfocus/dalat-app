@@ -173,7 +173,12 @@ export function analyzeMigrations(files) {
 
   for (const file of files) {
     if (file.sql.includes(BACKFILL_MARKER)) backfillName = file.name;
-    const stripped = stripComments(file.sql);
+    // PostgreSQL permits one GRANT/REVOKE to name several tables. Normalize those
+    // statements so each table participates in the same least-privilege audit.
+    const stripped = stripComments(file.sql).replace(
+      /\b(grant|revoke)\s+([^;]+?)\s+on\s+(?:table\s+)?((?:public\.[a-z_][\w$]*\s*,\s*)+public\.[a-z_][\w$]*)\s+(to|from)\s+([^;]+);/gi,
+      (_statement, operation, privileges, tables, direction, roles) => tables.split(',').map(table => `${operation} ${privileges} on ${table.trim()} ${direction} ${roles};`).join('\n'),
+    );
     const events = [];
     const ddl =
       /\b(create|drop)\s+table\s+(?:if\s+(?:not\s+)?exists\s+)?((?:"[^"]+"|[A-Za-z_][\w$]*)(?:\.(?:"[^"]+"|[A-Za-z_][\w$]*))?)/gi;

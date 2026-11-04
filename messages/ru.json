@@ -460,7 +460,13 @@
       "successDescription": "Инструкции по сбросу пароля отправлены",
       "successHint": "Если вы регистрировались по email и паролю, вам придёт письмо для сброса пароля.",
       "sending": "Отправка..."
-    }
+    },
+    "deoviaContinue": "Использовать аккаунт EZViet",
+    "deoviaTitle": "Свяжите аккаунты Deovia",
+    "deoviaDescription": "Войдите один раз в существующий аккаунт DaLat.app, чтобы сохранить регистрации на мероприятия.",
+    "deoviaSignIn": "Продолжить с DaLat.app",
+    "deoviaConnect": "Связать аккаунты",
+    "deoviaLater": "Не сейчас"
   },
   "errors": {
     "somethingWentWrong": "Извините, что-то пошло не так.",

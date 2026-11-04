@@ -460,7 +460,13 @@
       "successDescription": "Đã gửi hướng dẫn đặt lại mật khẩu",
       "successHint": "Nếu bạn đã đăng ký bằng email và mật khẩu, bạn sẽ nhận được email đặt lại mật khẩu.",
       "sending": "Đang gửi..."
-    }
+    },
+    "deoviaContinue": "Dùng tài khoản EZViet",
+    "deoviaTitle": "Kết nối tài khoản Deovia",
+    "deoviaDescription": "Đăng nhập tài khoản DaLat.app hiện có một lần để giữ lại các lượt đăng ký tham dự.",
+    "deoviaSignIn": "Tiếp tục với DaLat.app",
+    "deoviaConnect": "Kết nối tài khoản",
+    "deoviaLater": "Để sau"
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",

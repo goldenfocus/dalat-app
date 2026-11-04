@@ -460,7 +460,13 @@
       "successDescription": "Instructions de réinitialisation envoyées",
       "successHint": "Si vous êtes inscrit avec votre email et un mot de passe, vous recevrez un email de réinitialisation.",
       "sending": "Envoi..."
-    }
+    },
+    "deoviaContinue": "Utiliser votre compte EZViet",
+    "deoviaTitle": "Associer vos comptes Deovia",
+    "deoviaDescription": "Connectez-vous une fois à votre compte DaLat.app existant pour conserver vos inscriptions.",
+    "deoviaSignIn": "Continuer avec DaLat.app",
+    "deoviaConnect": "Associer les comptes",
+    "deoviaLater": "Pas maintenant"
   },
   "errors": {
     "somethingWentWrong": "Désolé, une erreur s'est produite.",

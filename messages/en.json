@@ -460,7 +460,13 @@
       "successDescription": "Password reset instructions sent",
       "successHint": "If you registered using your email and password, you will receive a password reset email.",
       "sending": "Sending..."
-    }
+    },
+    "deoviaContinue": "Use your EZViet account",
+    "deoviaTitle": "Connect your Deovia accounts",
+    "deoviaDescription": "Sign in to your existing DaLat.app account once to keep your RSVPs.",
+    "deoviaSignIn": "Continue with DaLat.app",
+    "deoviaConnect": "Connect accounts",
+    "deoviaLater": "Not now"
   },
   "errors": {
     "somethingWentWrong": "Sorry, something went wrong.",

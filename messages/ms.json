@@ -460,7 +460,13 @@
       "successDescription": "Arahan set semula kata laluan telah dihantar",
       "successHint": "Jika anda mendaftar menggunakan e-mel dan kata laluan, anda akan menerima e-mel set semula kata laluan.",
       "sending": "Menghantar..."
-    }
+    },
+    "deoviaContinue": "Gunakan akaun EZViet anda",
+    "deoviaTitle": "Pautkan akaun Deovia anda",
+    "deoviaDescription": "Log masuk sekali ke akaun DaLat.app sedia ada untuk mengekalkan pendaftaran acara anda.",
+    "deoviaSignIn": "Teruskan dengan DaLat.app",
+    "deoviaConnect": "Pautkan akaun",
+    "deoviaLater": "Bukan sekarang"
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",

@@ -19,6 +19,7 @@ export function SignOutButton() {
 
   const handleSignOut = async () => {
     setIsLoading(true);
+    document.cookie = "deovia_signed_out=1; Path=/; Max-Age=31536000; SameSite=Lax; Secure";
     try {
       const supabase = createClient();
       await Promise.race([

@@ -9,7 +9,7 @@ export function safeReturnPath(value: string | null | undefined): string {
 }
 export function localizedPath(path: string, locale: string): string {
   const safe = safeReturnPath(path);
-  if (/^\/auth\/(continue|callback)(?:[/?]|$)/.test(safe)) return safe;
+  if (/^\/auth\/(continue|callback|deovia)(?:[/?]|$)/.test(safe)) return safe;
   const first = safe.split('/')[1]?.split('?')[0];
   if (locales.includes(first as typeof locales[number])) return safe;
   return locale === 'en' ? safe : `/${locale}${safe}`;

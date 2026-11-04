@@ -460,7 +460,13 @@
       "successDescription": "ส่งคำแนะนำการรีเซ็ตรหัสผ่านแล้ว",
       "successHint": "ถ้าคุณสมัครด้วยอีเมลและรหัสผ่าน คุณจะได้รับอีเมลสำหรับรีเซ็ตรหัสผ่าน",
       "sending": "กำลังส่ง..."
-    }
+    },
+    "deoviaContinue": "ใช้บัญชี EZViet ของคุณ",
+    "deoviaTitle": "เชื่อมต่อบัญชี Deovia",
+    "deoviaDescription": "เข้าสู่ระบบบัญชี DaLat.app เดิมหนึ่งครั้งเพื่อเก็บข้อมูลการลงทะเบียนเข้าร่วมกิจกรรมของคุณ",
+    "deoviaSignIn": "ดำเนินการต่อด้วย DaLat.app",
+    "deoviaConnect": "เชื่อมต่อบัญชี",
+    "deoviaLater": "ไว้ภายหลัง"
   },
   "errors": {
     "somethingWentWrong": "ขออภัย เกิดข้อผิดพลาด",

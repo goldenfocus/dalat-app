@@ -460,7 +460,13 @@
       "successDescription": "Instrucciones para restablecer la contraseña enviadas",
       "successHint": "Si te registraste con tu correo y contraseña, recibirás un email para restablecerla.",
       "sending": "Enviando..."
-    }
+    },
+    "deoviaContinue": "Usar tu cuenta de EZViet",
+    "deoviaTitle": "Vincula tus cuentas de Deovia",
+    "deoviaDescription": "Inicia sesión una vez en tu cuenta existente de DaLat.app para conservar tus confirmaciones de asistencia.",
+    "deoviaSignIn": "Continuar con DaLat.app",
+    "deoviaConnect": "Vincular cuentas",
+    "deoviaLater": "Ahora no"
   },
   "errors": {
     "somethingWentWrong": "Lo sentimos, algo salió mal.",
