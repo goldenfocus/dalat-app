@@ -29,7 +29,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   const [view, setView] = useState<PracticeView | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [actionError, setActionError] = useState<"draftStale" | "notEnoughSeats" | "presenceRequired" | "error" | null>(null);
+  const [actionError, setActionError] = useState<"draftStale" | "notEnoughSeats" | "error" | null>(null);
   const [now, setNow] = useState(Date.now());
   const [offset, setOffset] = useState(0);
   const [code, setCode] = useState("");
@@ -85,7 +85,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
       const response = await request({ ...payload, expectedRevision: view.revision });
       if (!response.ok) {
         const failure = await response.json().catch(() => ({}));
-        setActionError(failure.code === "invalid_presence_check" ? "presenceRequired" : failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && ["start", "swap"].includes(String(payload.action)) ? "draftStale" : "error");
+        setActionError(failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && ["start", "swap"].includes(String(payload.action)) ? "draftStale" : "error");
         void load();
         return;
       }

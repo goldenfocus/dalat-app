@@ -4404,9 +4404,9 @@
     "markAbsent": "Indiquer l’absence de {name}",
     "present": "Présent",
     "absent": "Absent",
-    "presenceRequired": "Indiquez la présence ou l’absence de chaque personne avant de former les paires.",
     "presenceWaiting": "L’animateur confirmera votre présence",
-    "absentShort": "Absence indiquée — signalez-vous à l’animateur à votre arrivée"
+    "absentShort": "Absence indiquée — signalez-vous à l’animateur à votre arrivée",
+    "presenceHint": "Vous pouvez commencer avec les joueurs dont la présence sur place est confirmée. Les joueurs dont la présence n’est pas confirmée ne participent pas à cette manche."
   },
   "eventFollowupEmail": {
     "subject": "Merci d’avoir participé à {eventTitle}",

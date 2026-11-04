@@ -45,10 +45,6 @@ export function presenceStatus(state: PracticeState, personId: string): Presence
   return state.presence?.[personId] ?? (state.rounds.some(round => round.groups.some(group => group.some(person => person.id === personId))) ? "present" : "pending");
 }
 
-export function pendingPlayers(state: PracticeState, people: Person[], staffIds: ReadonlySet<string> = new Set()): Person[] {
-  return people.filter(person => participantStatus(state, person.id, staffIds) === "playing" && presenceStatus(state, person.id) === "pending");
-}
-
 export function numberPeople(state: PracticeState, people: Person[]): Person[] {
   const numbers = { ...state.numbers };
   let next = Math.max(0, ...Object.values(numbers)) + 1;

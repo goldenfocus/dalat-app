@@ -4404,7 +4404,7 @@
     "markAbsent": "Mark {name} absent",
     "present": "Here",
     "absent": "Absent",
-    "presenceRequired": "Check everyone as here or absent before pairing.",
+    "presenceHint": "You can start with players marked present. Unchecked players stay out of this round.",
     "presenceWaiting": "The host will confirm you're here",
     "absentShort": "Marked absent — ask the host when you arrive"
   },

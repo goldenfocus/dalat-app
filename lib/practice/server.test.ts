@@ -75,19 +75,23 @@ beforeEach(() => {
 });
 
 describe("practice mutations", () => {
-  it("does not pair fresh check-ins until the host has answered roll call for everyone", async () => {
+  it("starts with two confirmed players while leaving unchecked arrivals out of the round", async () => {
     rows.event_practice_rooms = [];
+    rows.event_arrival_participants.push({ id: "unchecked", event_id: "event", user_id: null, nickname: "Unchecked", checked_in_at: "now", practice_language: "english" });
     const initial = await readPractice(slug);
     expect(initial.count).toBe(0);
     expect(initial.participants?.find(person => person.id === "player-a")?.presence).toBe("pending");
-    await expect(mutatePractice(slug, { action: "draft", expectedRevision: -1 })).rejects.toThrow("invalid_presence_check");
+    await expect(mutatePractice(slug, { action: "draft", expectedRevision: -1 })).rejects.toThrow("invalid_roster");
     expect(writes).toBe(0);
     await mutatePractice(slug, { action: "presence", participantId: "player-a", status: "present", expectedRevision: -1 });
-    await expect(mutatePractice(slug, { action: "draft", expectedRevision: revision() })).rejects.toThrow("invalid_presence_check");
+    await expect(mutatePractice(slug, { action: "draft", expectedRevision: revision() })).rejects.toThrow("invalid_roster");
     await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "present", expectedRevision: revision() });
     const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
     expect(draft.draft?.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
-    expect(rows.event_arrival_participants).toHaveLength(3);
+    expect(draft.participants?.find(person => person.id === "unchecked")?.presence).toBe("pending");
+    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(started.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
+    expect(rows.event_arrival_participants).toHaveLength(4);
   });
   it("persists an X, preserves arrivals and invalidates the draft until absence is corrected", async () => {
     const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });

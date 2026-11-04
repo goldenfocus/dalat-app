@@ -4404,9 +4404,9 @@
     "markAbsent": "Đánh dấu {name} vắng mặt",
     "present": "Có mặt",
     "absent": "Vắng mặt",
-    "presenceRequired": "Đánh dấu tất cả mọi người là có mặt hoặc vắng mặt trước khi ghép đôi.",
     "presenceWaiting": "Người tổ chức sẽ xác nhận bạn có mặt",
-    "absentShort": "Đã được đánh dấu vắng mặt — hãy báo với người tổ chức khi bạn đến"
+    "absentShort": "Đã được đánh dấu vắng mặt — hãy báo với người tổ chức khi bạn đến",
+    "presenceHint": "Bạn có thể bắt đầu với những người chơi được đánh dấu là có mặt. Người chơi chưa được xác nhận có mặt sẽ không tham gia vòng này."
   },
   "eventFollowupEmail": {
     "subject": "Cảm ơn bạn đã tham gia {eventTitle}",

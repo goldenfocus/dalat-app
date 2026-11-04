@@ -4404,9 +4404,9 @@
     "markAbsent": "{name} 님을 결석으로 표시",
     "present": "출석",
     "absent": "결석",
-    "presenceRequired": "짝을 정하기 전에 모든 사람을 출석 또는 결석으로 표시하세요.",
     "presenceWaiting": "호스트가 회원님의 출석을 확인할 예정입니다",
-    "absentShort": "결석으로 표시됨 — 도착하면 호스트에게 알려 주세요"
+    "absentShort": "결석으로 표시됨 — 도착하면 호스트에게 알려 주세요",
+    "presenceHint": "현장 참석이 확인된 플레이어로 시작할 수 있습니다. 참석이 확인되지 않은 플레이어는 이번 라운드에 참여하지 않습니다."
   },
   "eventFollowupEmail": {
     "subject": "{eventTitle}에 참여해 주셔서 감사해요",

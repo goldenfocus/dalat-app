@@ -10,9 +10,13 @@ describe("isolated host rehearsal", () => {
   it("requires real roll-call choices and lets only the host undo an X", () => {
     let session = createRehearsal(3);
     expect(rehearsalView(session).count).toBe(0);
-    expect(() => act(session, { action: "draft" })).toThrow("invalid_presence_check");
+    expect(() => act(session, { action: "draft" })).toThrow("invalid_roster");
     session = act(session, { action: "presence", participantId: "sample-1", status: "present" });
     session = act(session, { action: "presence", participantId: "sample-2", status: "present" });
+    const uncheckedDraft = act(session, { action: "draft" });
+    expect(uncheckedDraft.state.draft?.groups.flat()).toHaveLength(2);
+    const started = act(uncheckedDraft, { action: "start", draftId: uncheckedDraft.state.draft!.id });
+    expect(started.state.rounds[0].groups.flat().map(person => person.id)).not.toContain("sample-3");
     session = act(session, { action: "presence", participantId: "sample-3", status: "absent" });
     expect(() => act({ ...session, mode: "attendee" }, { action: "presence", participantId: "sample-3", status: "present" })).toThrow("forbidden");
     session = act(session, { action: "draft" });

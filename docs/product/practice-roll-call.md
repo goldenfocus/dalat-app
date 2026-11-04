@@ -5,7 +5,8 @@ and mark absent players with an X.
 
 The event's host practice panel opens with its existing checked-in players. The
 host confirms each person with a checkmark or marks them absent with X. Pairing is
-disabled until every playing person has an answer and at least two are present.
+available as soon as at least two players are confirmed present. Unchecked players
+do not block drafting or starting and stay out of that round, just like absentees.
 Visitors and working hosts stay outside pairing unless they opt in to play.
 
 Presence is a separate, event-scoped answer in the existing private practice-room
@@ -17,8 +18,9 @@ or inspect anyone else's roll-call answers. An X can be corrected to present lat
 Changing presence clears an unstarted draft so the host reviews the new groups.
 Published rounds stay unchanged. A new arrival after a reviewed draft waits for
 the next pairing; they do not block starting the already-reviewed group. Before
-the next draft, the host confirms the new arrival. Already-published legacy rounds
-remain usable after rollout, while new events begin with unconfirmed presence.
+the next draft, the host can confirm the new arrival to include them. Already
+published legacy rounds remain usable after rollout, while new events begin with
+unconfirmed presence.
 
 The public rehearsal uses the same presence and pairing rules with synthetic people
 in browser memory. All roll-call labels and accessible control names use the twelve
@@ -27,3 +29,7 @@ existing UI catalogs. No private operational records enter public translations.
 Verification: model, mutation authorization/revisions, request validation, locale
 routes, and the host roll-call-to-draft-to-start journey have regression coverage.
 Production and visual verification are recorded in the release receipt.
+
+Updated 4 November 2026: the owner clarified that unchecked people must not hold
+up the game. Removed the all-players-reviewed requirement while preserving the
+rule that only confirmed-present players enter a draft.

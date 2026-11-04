@@ -4404,9 +4404,9 @@
     "markAbsent": "将 {name} 标记为缺席",
     "present": "已到场",
     "absent": "缺席",
-    "presenceRequired": "请先将所有人标记为已到场或缺席，再进行配对。",
     "presenceWaiting": "主持人会确认您已到场",
-    "absentShort": "已标记为缺席 — 到场后请联系主持人"
+    "absentShort": "已标记为缺席 — 到场后请联系主持人",
+    "presenceHint": "你可以与已标记为到场的玩家开始。未确认到场的玩家不参与本轮。"
   },
   "eventFollowupEmail": {
     "subject": "感谢你参加 {eventTitle}",

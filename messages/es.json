@@ -4404,9 +4404,9 @@
     "markAbsent": "Marcar a {name} como ausente",
     "present": "Presente",
     "absent": "Ausente",
-    "presenceRequired": "Marca a cada persona como presente o ausente antes de formar las parejas.",
     "presenceWaiting": "El anfitrión confirmará tu presencia",
-    "absentShort": "Ausencia registrada — avisa al anfitrión cuando llegues"
+    "absentShort": "Ausencia registrada — avisa al anfitrión cuando llegues",
+    "presenceHint": "Puedes empezar con los jugadores marcados como presentes. Los jugadores cuya presencia no esté confirmada quedan fuera de esta ronda."
   },
   "eventFollowupEmail": {
     "subject": "Gracias por acompañarnos en {eventTitle}",

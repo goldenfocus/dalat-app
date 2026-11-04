@@ -15,7 +15,7 @@ const partner = { id: "partner", name: "Alex", number: 2, learns: "vi", speaks: 
 const found: PracticeView = { ...anonymous, me, participation: "playing", groups: [[me, partner]], myGroup: [me, partner], myGroupNumber: 7, myTable: { groupIndex: 6, tableNumber: 4, floor: "downstairs" } };
 function fetchView(view: PracticeView) { vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => view })); }
 describe("event pairing visibility", () => {
-  it("checks everyone before pairing, crosses out absence, and preserves roll call on remount", async () => {
+  it.each(["pending", "absent"])("starts with confirmed players while someone is %s", async status => {
     let session = createRehearsal(3);
     const transport = vi.fn(async (payload?: Record<string, unknown>) => {
       if (payload) session = mutateRehearsal(session, payload);
@@ -27,20 +27,22 @@ describe("event pairing visibility", () => {
     await waitFor(() => expect(screen.getByRole("button", { name: "Confirm Mai is here" })).toHaveAttribute("aria-pressed", "true"));
     fireEvent.click(screen.getByRole("button", { name: "Confirm Alex is here" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Confirm Alex is here" })).toHaveAttribute("aria-pressed", "true"));
-    expect(screen.getByRole("button", { name: en.eventPractice.draft })).toBeDisabled();
-    fireEvent.click(screen.getByRole("button", { name: "Mark Linh absent" }));
-    await waitFor(() => expect(screen.getByRole("button", { name: en.eventPractice.draft })).toBeEnabled());
-    expect(screen.getByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: en.eventPractice.draft })).toBeEnabled();
+    expect(screen.getByText(en.eventPractice.presenceHint)).toBeVisible();
+    if (status === "absent") {
+      fireEvent.click(screen.getByRole("button", { name: "Mark Linh absent" }));
+      await waitFor(() => expect(screen.getByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", "true"));
+    }
     page.unmount();
     render(<EventPractice slug="sample-rehearsal" transport={transport} />);
-    expect(await screen.findByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", "true");
+    expect(await screen.findByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", String(status === "absent"));
     fireEvent.click(screen.getByRole("button", { name: en.eventPractice.draft }));
     expect(await screen.findByRole("button", { name: en.eventPractice.publish })).toBeEnabled();
     expect(session.state.draft?.groups.flat().map(person => person.name).sort()).toEqual(["Alex", "Mai"]);
     fireEvent.click(screen.getByRole("button", { name: en.eventPractice.publish }));
     await waitFor(() => expect(session.state.rounds).toHaveLength(1));
     expect(session.state.rounds[0].groups.flat().map(person => person.name).sort()).toEqual(["Alex", "Mai"]);
-    expect(transport.mock.calls.filter(([payload]) => payload?.action === "presence")).toHaveLength(3);
+    expect(transport.mock.calls.filter(([payload]) => payload?.action === "presence")).toHaveLength(status === "absent" ? 3 : 2);
   });
   it("recovers the existing receipt and leads with the real table, floor, partner and clock", async () => {
     const fetchMock = vi.fn().mockImplementation(async (_url, init) => ({ ok: true, json: async () => init?.method === "POST" ? found : anonymous }));

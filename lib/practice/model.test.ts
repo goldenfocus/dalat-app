@@ -41,13 +41,13 @@ describe("practice from event attendance", () => {
   });
 });
 
-import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, participantStatus, pendingPlayers, presenceStatus, remainingSeconds, rosterFingerprint, updateClock, type PracticeState } from "./model";
+import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, participantStatus, presenceStatus, remainingSeconds, rosterFingerprint, updateClock, type PracticeState } from "./model";
 
 describe("present and playing eligibility", () => {
   it("requires host confirmation, excludes absent people, and keeps answers private", () => {
     const state: PracticeState = { rounds: [], presence: { a: "present", b: "absent" } };
     expect(eligiblePeople(state, people).map(person => person.id)).toEqual(["a"]);
-    expect(pendingPlayers(state, people).map(person => person.id)).toEqual(["c", "d"]);
+    expect(practiceView(state, people, null, true).participants?.filter(person => person.presence === "pending").map(person => person.id)).toEqual(["c", "d"]);
     const guest = practiceView(state, people, "a", false);
     expect(guest.presence).toBe("present");
     expect(guest.participants).toBeUndefined();
