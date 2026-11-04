@@ -14,7 +14,7 @@ export function PracticeRollCall({ participants, busy, act }: {
   const t = useTranslations("eventPractice");
   return <section aria-label={t("rollCall")} className="space-y-2">
     <p className="text-sm text-muted-foreground">{t("rollCallHint")}</p>
-    <ul className="max-h-80 divide-y overflow-y-auto overscroll-contain pr-1">
+    <ul className="divide-y">
       {participants.map(person => <li key={person.id} className="flex items-center justify-between gap-3 py-2">
         <span className={person.presence === "absent" ? "min-w-0 opacity-50 line-through" : "min-w-0"}><PracticePerson person={person} number /></span>
         <div className="flex shrink-0 gap-1">

@@ -7,6 +7,13 @@ It does not call the event practice API, reveal attendees or start a real round.
 Automatic PWA updates do not reload this route mid-rehearsal. A deliberate refresh
 still resets its sample state.
 
+Live event pages and their host/arrival subpages use normal page scrolling. The
+site header, bottom navigation, playback controls and actionable notices stay in
+the document flow. The floating camera shortcut, duplicate mobile RSVP bar and
+completed-upload notification are removed; the page's RSVP and Moments actions
+remain available. The presence roster has no separate scrolling area, so its
+last attendee and the draft action can be reached with the same page scroll.
+
 The compact sample toolbar offers ten or 34 players, Host / Mai and reset.
 English and Tiếng Việt stay visible above it. The slate/ice-blue glass treatment is
 scoped to practice, including the rehearsal shell; other app themes are preserved.

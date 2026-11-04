@@ -35,7 +35,7 @@ function GodModeIndicatorInner({ targetProfile }: GodModeIndicatorProps) {
     (targetProfile.username ? `@${targetProfile.username}` : "User");
 
   return (
-    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-amber-500 text-amber-950 px-4 py-2 rounded-full shadow-lg">
+    <div data-floating-chrome="identity-indicator" className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-3 bg-amber-500 text-amber-950 px-4 py-2 rounded-full shadow-lg">
       <Eye className="w-4 h-4 shrink-0" />
       <span className="text-sm font-medium whitespace-nowrap">
         Viewing as <strong>{displayName}</strong>

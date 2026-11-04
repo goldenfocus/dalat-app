@@ -54,7 +54,6 @@ import {
   CelebrationProvider,
   RsvpCardObserver,
 } from "@/components/events/rsvp-button";
-import { FloatingRsvpBar } from "@/components/events/floating-rsvp-bar";
 import { FeedbackBadge } from "@/components/events/event-feedback";
 import { EventActions } from "@/components/events/event-actions";
 import { EventSettingsSheet } from "@/components/events/event-settings-sheet";
@@ -1375,7 +1374,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
         <hr />
 
-        {/* RSVP button - wrapped in observer to show/hide floating bar */}
+        {/* RSVP remains available in the page instead of a second floating bar. */}
         <CommunityActionNotice status={communityNotice} />
         <RsvpCardObserver>
           <RsvpButton
@@ -1498,7 +1497,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           <ConfirmAttendanceHandler eventId={event.id} />
         </Suspense>
 
-        <div className="container max-w-4xl mx-auto px-4 py-8 pb-24 lg:pb-8">
+        <div className="container max-w-4xl mx-auto px-4 py-8">
           {/* Event actions bar */}
           <div className="flex items-center justify-end gap-1 mb-4 -mt-2">
             <EventShareButton
@@ -2003,30 +2002,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           </div>
         </div>
 
-        {/* Floating RSVP bar for mobile */}
-        <FloatingRsvpBar
-          arrivalEnabled={event.arrival_enabled}
-          drinkSelection={drinkSelection}
-          eventId={event.id}
-          eventSlug={event.slug}
-          eventTitle={event.title}
-          eventDescription={event.description}
-          eventImageUrl={event.image_url}
-          locationName={event.location_name}
-          address={event.address ?? privateDetails?.address ?? null}
-          googleMapsUrl={
-            event.google_maps_url ?? privateDetails?.google_maps_url ?? null
-          }
-          capacity={event.capacity}
-          goingSpots={counts?.going_spots ?? 0}
-          currentRsvp={currentRsvp}
-          isLoggedIn={isLoggedIn}
-          waitlistPosition={waitlistPosition}
-          startsAt={event.starts_at}
-          endsAt={event.ends_at}
-          questionnaire={questionnaire}
-            prepareRegistration={!!event.arrival_enabled}
-        />
       </main>
     </CelebrationProvider>
     </CommunityRsvpProvider>
