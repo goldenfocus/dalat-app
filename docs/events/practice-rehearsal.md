@@ -44,6 +44,19 @@ real host authorization, cross-device refresh, venue connectivity, physical tabl
 availability, identity linking or actual challenge acceptance. Those remain release
 checks on the real event flow. It grants no additional server permission.
 
+## Live event translation boundaries
+
+The event `/host` and `/arrive` pages also render `EventPractice`. Their nested
+`NextIntlClientProvider` message sets must include `eventPractice` alongside
+`arrival`, `menuOptions` and `translations`: a nested message set replaces the
+parent set rather than merging it. Loading the namespace in the route island alone
+does not reach these panels. Both pages ship the practice messages for the request
+locale, including button labels and accessible names, in all 12 supported locales.
+
+`components/practice/route-translations.test.tsx` exercises both page boundaries
+with the real practice panel and language provider, including settings and roster
+controls. Its sample transport does not call or mutate a real event.
+
 ## Local verification, 2 November 2026
 
 At `http://localhost:3215/practice/rehearsal`, Chrome at 375×812:
