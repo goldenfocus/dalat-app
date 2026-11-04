@@ -52,6 +52,7 @@ describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage]] as cons
     );
 
     expect(await screen.findByRole("button", { name: t("draft") })).toBeVisible();
+    expect(screen.getByRole("link", { name: t("openActivity") })).toHaveAttribute("href", "https://ezviet.org/challenges?practice=1");
     expect(screen.getByRole("status")).toHaveTextContent(t("ready", { count: 2 }));
     expect(screen.getByRole("status")).toHaveTextContent(t("minutesShort", { count: 20 }));
     fireEvent.click(screen.getByRole("button", { name: t("settings") }));

@@ -19,6 +19,10 @@ Attendee preserves it. Nothing persists across tabs or refreshes. Language navig
 sample session. In a real event the server retains published rounds.
 
 Attendees see names/avatars, physical table/floor, countdown and one activity action.
+Hosts also see the same activity action before and during rounds, including while
+hosting or before checking themselves in. It opens EZViệt in a separate tab so the
+host can keep the event controls open. Opening the activity does not start a round
+or change pairings; only the reviewed-draft start action does that.
 Visible group numbers and the participation form are removed. A compact status
 button offers Playing or sitting out. Joining during a live round explicitly says
 Play next round and never changes that round. A host sees icon controls for

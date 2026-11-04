@@ -53,6 +53,24 @@ describe("event pairing visibility", () => {
     render(<EventPractice slug="event slug" />);
     expect(await screen.findByRole("link", { name: en.eventPractice.challenge })).toHaveAttribute("href", "https://ezviet.org/challenges?event=event%20slug");
   });
+  it.each(["before check-in", "hosting", "paired"])("lets a host open the activity while %s without starting or changing the round", async status => {
+    const view: PracticeView = status === "paired"
+      ? { ...found, canStart: true }
+      : { ...anonymous, canStart: true, ...(status === "hosting" ? { me, participation: "hosting" as const } : { round: null }) };
+    fetchView(view);
+    render(<EventPractice slug="event slug" />);
+    const link = await screen.findByRole("link", { name: en.eventPractice.openActivity });
+    expect(link).toHaveAttribute("href", "https://ezviet.org/challenges?event=event%20slug&practice=1");
+    expect(link).toHaveAttribute("target", "_blank");
+    expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    expect(screen.getAllByRole("link", { name: en.eventPractice.openActivity })).toHaveLength(1);
+    expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it("keeps the weekly challenge available to a host after the round ends", async () => {
+    fetchView({ ...anonymous, canStart: true, me, participation: "hosting", round: { ...anonymous.round!, endedAt: now } });
+    render(<EventPractice slug="test" />);
+    expect(await screen.findByRole("link", { name: en.eventPractice.challenge })).toHaveAttribute("href", "https://ezviet.org/challenges?event=test");
+  });
   it("requires host draft review before publishing a round", async () => {
     const host: PracticeView = { ...anonymous, canStart: true, round: null, participants: [{ ...me, participation: "playing" }, { ...partner, participation: "playing" }] };
     const drafted: PracticeView = { ...host, revision: 2, draft: { id: "draft-one", round: 1, minutes: 12, groups: [[me, partner]], assignments: [{ groupIndex: 0, tableNumber: 4, floor: "downstairs" }], rosterFingerprint: "current", createdAt: now } };

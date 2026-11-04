@@ -116,6 +116,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   const activityUrl = transport ? "https://ezviet.org/challenges?practice=1" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}&practice=1`;
   const challengeUrl = transport ? "https://ezviet.org/challenges" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}`;
   const assigned = Boolean(view?.myGroup?.length);
+  const activityLink = <a href={complete ? challengeUrl : activityUrl} target={view?.canStart ? "_blank" : undefined} rel={view?.canStart ? "noopener noreferrer" : undefined} className="practice-primary inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>;
   return <section id="practice" aria-labelledby="practice-heading" className="practice-experience practice-glass my-4 scroll-mt-24 space-y-4 p-4 sm:p-6">
     {!transport && <PracticeLanguage />}
     <h2 id="practice-heading" className={view?.me || view?.canStart ? "sr-only" : "text-xl font-semibold"}>{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
@@ -133,9 +134,10 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
         <span className="text-sm text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
         <p aria-label={t("timer")} role="timer" className="text-3xl font-semibold tracking-tight tabular-nums">{complete ? "0:00" : clock}</p>
       </div>}
-      {partnerNames.length > 0 && <a href={complete ? challengeUrl : activityUrl} className="practice-primary inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>}
+      {partnerNames.length > 0 && activityLink}
       {complete && partnerNames.length > 0 && changeoverRemaining > 0 && <p className="text-center text-sm text-muted-foreground">{t("changeoverShort")} · <span className="tabular-nums">{Math.floor(changeoverRemaining / 60)}:{String(changeoverRemaining % 60).padStart(2, "0")}</span></p>}
     </>}
+    {view?.canStart && partnerNames.length === 0 && activityLink}
     {view && !view.me && !view.canStart && <div className="space-y-2">
       <Button asChild className="practice-primary min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("arrival")}</Link></Button>
       <details><summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-muted-foreground">{t("findHint")}</summary>
