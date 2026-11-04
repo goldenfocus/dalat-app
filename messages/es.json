@@ -466,7 +466,8 @@
     "deoviaDescription": "Inicia sesión una vez en tu cuenta existente de DaLat.app para conservar tus confirmaciones de asistencia.",
     "deoviaSignIn": "Continuar con DaLat.app",
     "deoviaConnect": "Vincular cuentas",
-    "deoviaLater": "Ahora no"
+    "deoviaLater": "Ahora no",
+    "deoviaReplace": "Sustituye las conexiones anteriores. Los datos guardados permanecen en cada cuenta."
   },
   "errors": {
     "somethingWentWrong": "Lo sentimos, algo salió mal.",

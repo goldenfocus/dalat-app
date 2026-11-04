@@ -466,7 +466,8 @@
     "deoviaDescription": "Войдите один раз в существующий аккаунт DaLat.app, чтобы сохранить регистрации на мероприятия.",
     "deoviaSignIn": "Продолжить с DaLat.app",
     "deoviaConnect": "Связать аккаунты",
-    "deoviaLater": "Не сейчас"
+    "deoviaLater": "Не сейчас",
+    "deoviaReplace": "Заменяет прежние связи. Сохранённые данные остаются в каждом аккаунте."
   },
   "errors": {
     "somethingWentWrong": "Извините, что-то пошло не так.",

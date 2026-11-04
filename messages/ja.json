@@ -466,7 +466,8 @@
     "deoviaDescription": "参加登録を引き継ぐため、既存のDaLat.appアカウントに一度ログインしてください。",
     "deoviaSignIn": "DaLat.appで続ける",
     "deoviaConnect": "アカウントを連携",
-    "deoviaLater": "後で"
+    "deoviaLater": "後で",
+    "deoviaReplace": "以前の連携を置き換えます。保存データは各アカウントに残ります。"
   },
   "errors": {
     "somethingWentWrong": "申し訳ありません、問題が発生しました。",

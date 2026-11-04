@@ -12,6 +12,7 @@ export default async function Page() {
     <p className="text-muted-foreground">{t('deoviaDescription')}</p>
     {!pending || !identity ? <Link className="flex min-h-11 items-center underline" href={loginPath('/auth/deovia/link')}>{t('deoviaSignIn')}</Link> : <form method="post" action="/api/deovia/confirm" className="space-y-3">
       <p className="break-all text-sm text-muted-foreground">{identity.email}</p>
+      <p className="text-sm text-muted-foreground">{t('deoviaReplace')}</p>
       <input type="hidden" name="token" value={pending.token} />
       <button className="min-h-11 w-full rounded-lg bg-primary px-4 py-3 font-semibold text-primary-foreground" type="submit">{t('deoviaConnect')}</button>
     </form>}

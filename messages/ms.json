@@ -466,7 +466,8 @@
     "deoviaDescription": "Log masuk sekali ke akaun DaLat.app sedia ada untuk mengekalkan pendaftaran acara anda.",
     "deoviaSignIn": "Teruskan dengan DaLat.app",
     "deoviaConnect": "Pautkan akaun",
-    "deoviaLater": "Bukan sekarang"
+    "deoviaLater": "Bukan sekarang",
+    "deoviaReplace": "Menggantikan pautan terdahulu. Data yang disimpan kekal dalam setiap akaun."
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",

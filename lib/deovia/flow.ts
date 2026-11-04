@@ -1,5 +1,5 @@
 import { cookies } from 'next/headers';
-import { admin, bind, currentIdentity, enabled, hash, origin, peerOrigin, peerCall, provision, randomToken, signIn, peerReady } from './server';
+import { admin, currentIdentity, enabled, hash, origin, peerOrigin, peerCall, provision, randomToken, signIn, peerReady } from './server';
 import { redirect, setCookie } from './http';
 import { safePath, readIdentity, tokenPattern } from './policy';
 import { loginPath, landingPath } from './app';
@@ -80,9 +80,11 @@ export async function confirm(request: Request) {
   const form = await request.formData();
   if (form.get('token') !== pending.token) return redirect('/auth/deovia/link');
   try {
-    // Each side enforces one-to-one mappings; an existing mapping is never overwritten.
-    await bind(identity.id, pending.peer_user_id);
-    await peerCall('bind', { localId: pending.peer_user_id, peerId: identity.id });
+    // Explicit consent plus authentication of both accounts authorizes replacing
+    // previous connections. No profiles, auth users or learning/event data move.
+    await peerCall('reconnect', { localId: pending.peer_user_id, peerId: identity.id });
+    const { error } = await admin().rpc('deovia_reconnect', { p_local_id: identity.id, p_peer_id: pending.peer_user_id });
+    if (error) throw new Error('Reconnect unavailable');
     await admin().from('deovia_pending_links').delete().eq('token_hash', hash(pending.token));
     await setCookie('__Host-deovia_link', '', 0);
     return redirect(pending.next_path);

@@ -10,11 +10,16 @@ export async function internal(request: Request, action: string) {
       if (!identity) return reply({ error: 'Invalid request' }, 400);
       return reply(await provision(identity));
     }
-    if (action === 'bind') {
+    if (action === 'bind' || action === 'reconnect') {
       if (typeof body.localId !== 'string' || typeof body.peerId !== 'string' || !uuidPattern.test(body.localId) || !uuidPattern.test(body.peerId)) return reply({ error: 'Invalid request' }, 400);
       const { data } = await admin().auth.admin.getUserById(body.localId);
       if (!data.user) return reply({ error: 'Invalid account' }, 400);
-      await bind(body.localId, body.peerId);
+      if (action === 'reconnect') {
+        const { eligible } = await import('./server');
+        if (!eligible(data.user)) return reply({ error: 'Local sign-in required' }, 403);
+        const { error } = await admin().rpc('deovia_reconnect', { p_local_id: body.localId, p_peer_id: body.peerId });
+        if (error) throw new Error('Reconnect unavailable');
+      } else await bind(body.localId, body.peerId);
       return reply({ ok: true });
     }
     if (action === 'exchange') {

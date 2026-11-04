@@ -8,5 +8,6 @@ export function PeerSignIn() {
   if (!enabled) return null;
   const query = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search);
   const next = query.get('redirectTo') || query.get('next') || (location.pathname.includes('login') ? '/' : location.pathname + location.search);
+  if (next.startsWith('/auth/deovia/')) return null;
   return <a className="mt-4 flex min-h-11 items-center justify-center text-sm underline underline-offset-4" href={`/auth/deovia/start?mode=link&next=${encodeURIComponent(next)}`}>{t('deoviaContinue')}</a>;
 }

@@ -466,7 +466,8 @@
     "deoviaDescription": "Sign in to your existing DaLat.app account once to keep your RSVPs.",
     "deoviaSignIn": "Continue with DaLat.app",
     "deoviaConnect": "Connect accounts",
-    "deoviaLater": "Not now"
+    "deoviaLater": "Not now",
+    "deoviaReplace": "Replaces previous connections. Saved data stays in each account."
   },
   "errors": {
     "somethingWentWrong": "Sorry, something went wrong.",

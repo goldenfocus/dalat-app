@@ -466,7 +466,8 @@
     "deoviaDescription": "登录一次现有的 DaLat.app 账号，即可保留活动报名记录。",
     "deoviaSignIn": "使用 DaLat.app 继续",
     "deoviaConnect": "关联账号",
-    "deoviaLater": "暂时不用"
+    "deoviaLater": "暂时不用",
+    "deoviaReplace": "替换之前的关联。已保存的数据仍保留在各自账号中。"
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",

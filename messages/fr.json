@@ -466,7 +466,8 @@
     "deoviaDescription": "Connectez-vous une fois à votre compte DaLat.app existant pour conserver vos inscriptions.",
     "deoviaSignIn": "Continuer avec DaLat.app",
     "deoviaConnect": "Associer les comptes",
-    "deoviaLater": "Pas maintenant"
+    "deoviaLater": "Pas maintenant",
+    "deoviaReplace": "Remplace les connexions précédentes. Les données restent dans chaque compte."
   },
   "errors": {
     "somethingWentWrong": "Désolé, une erreur s'est produite.",

@@ -16,7 +16,7 @@ Both servers need `DEOVIA_ACCOUNTS_ENABLED=1` and the same random
 `DEOVIA_ACCOUNTS_SECRET` (at least 64 characters). Keep the secret server-only in each
 hosting project's secret store. Origins are fixed to https://dalat.app and https://ezviet.org;
 preview deployments do not become trusted peers. Apply the additive
-`20261104060000_deovia_accounts.sql` migration in both projects first. Disable the flag
+`20261104060000_deovia_accounts.sql` and `20261104070000_deovia_reconnect.sql` migrations in both projects first. Disable the flag
 on both to stop new handoffs without changing existing sessions or data. A handoff starts
 only when the peer reports readiness, so deploying one app first does not strand visitors.
 
@@ -28,7 +28,8 @@ establish a session only for the linked local user. Session tokens, passwords an
 links never go into redirects. Responses are private/no-store and suppress referrers.
 
 The three private tables and two lookup/consume functions are service-role only. Links
-are one-to-one and never overwritten. Onboarding still runs on each product when needed.
+are one-to-one. A member who authenticates both accounts and confirms the pair can
+replace their previous connections, without deleting the old accounts or moving their data. Onboarding still runs on each product when needed.
 Sign-out suppresses automatic sign-in on that site until the user deliberately signs in.
 Local logout does not log out the other site. Accounts with verified MFA factors use their
 normal local sign-in; this bridge does not bypass MFA. Expired or unavailable handoffs

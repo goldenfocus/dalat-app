@@ -466,7 +466,8 @@
     "deoviaDescription": "행사 참가 신청을 유지하려면 기존 DaLat.app 계정에 한 번 로그인하세요.",
     "deoviaSignIn": "DaLat.app으로 계속",
     "deoviaConnect": "계정 연결",
-    "deoviaLater": "나중에"
+    "deoviaLater": "나중에",
+    "deoviaReplace": "이전 연결을 대체합니다. 저장된 데이터는 각 계정에 유지됩니다."
   },
   "errors": {
     "somethingWentWrong": "죄송합니다, 문제가 발생했습니다.",

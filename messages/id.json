@@ -466,7 +466,8 @@
     "deoviaDescription": "Masuk sekali ke akun DaLat.app yang sudah ada untuk mempertahankan pendaftaran acara Anda.",
     "deoviaSignIn": "Lanjutkan dengan DaLat.app",
     "deoviaConnect": "Hubungkan akun",
-    "deoviaLater": "Nanti saja"
+    "deoviaLater": "Nanti saja",
+    "deoviaReplace": "Menggantikan hubungan sebelumnya. Data tersimpan tetap ada di setiap akun."
   },
   "errors": {
     "somethingWentWrong": "Maaf, terjadi kesalahan.",

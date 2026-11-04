@@ -466,7 +466,8 @@
     "deoviaDescription": "Đăng nhập tài khoản DaLat.app hiện có một lần để giữ lại các lượt đăng ký tham dự.",
     "deoviaSignIn": "Tiếp tục với DaLat.app",
     "deoviaConnect": "Kết nối tài khoản",
-    "deoviaLater": "Để sau"
+    "deoviaLater": "Để sau",
+    "deoviaReplace": "Thay kết nối trước đó. Dữ liệu vẫn ở từng tài khoản."
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",
