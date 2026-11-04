@@ -14,7 +14,7 @@ import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
 import { ItemOrderControl } from "./item-order-control";
 import { cartLines, cartTotal } from "@/components/arrival/arrival-cart";
-import { selectionKey } from "@/lib/menu/options";
+import { optionPrice, selectionKey } from "@/lib/menu/options";
 import { formatVnd } from "@/lib/menu/format";
 import type { MenuSection } from "@/lib/menu/types";
 
@@ -67,7 +67,7 @@ export function PreorderPanel({
   );
   const orderable = (id: string) => !!itemsById.get(id) && !itemsById.get(id)!.is_sold_out;
   const lines = cartLines(sections, qty);
-  const dropped = (existing?.items ?? []).some(i => !i.menu_item_id || !orderable(i.menu_item_id));
+  const dropped = (existing?.items ?? []).some(i => !i.menu_item_id || !orderable(i.menu_item_id) || optionPrice(itemsById.get(i.menu_item_id)!, i.selected_options || {}) === null);
   const count = lines.reduce((sum, line) => sum + line.qty, 0);
   const total = cartTotal(sections, qty);
 
