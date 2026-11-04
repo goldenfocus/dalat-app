@@ -2,6 +2,8 @@ import { metadataLabels } from "./metadata-labels";
 /** Every public text surface must declare its source here and render an OriginalText control. */
 // Legacy language-exchange preferences, reusable event language profiles and
 // per-arrival language snapshots are private.
+// Host account searches and exact-email lookups are private, event-scoped operations.
+// Search terms, email addresses and results must never enter public translations.
 // Event arrival nicknames, staff membership and order notes are private operational
 // data: never enqueue them. Arrival menus reuse the public menu_item/menu_section
 // Menu option_groups contain only stable menuOptions catalog keys and numeric prices;

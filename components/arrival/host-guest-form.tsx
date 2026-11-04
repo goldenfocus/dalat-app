@@ -45,7 +45,7 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
       const response = await fetch(`/api/events/${encodeURIComponent(slug)}/arrival`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...payload, requestId: request.current.id }) });
       if (!response.ok) {
         const result = await response.json().catch(() => ({})) as { code?: string };
-        setError(t(result.code === "item_unavailable" ? "errorSoldOut" : ["existing_order", "status_conflict", "request_conflict"].includes(result.code || "") ? "hostConflict" : ["event_not_open_for_arrival", "event_not_open_for_preorder"].includes(result.code || "") ? "errorClosed" : "errorGeneric"));
+        setError(t(result.code === "event_full" ? "hostEventFull" : result.code === "item_unavailable" ? "errorSoldOut" : ["existing_order", "status_conflict", "request_conflict"].includes(result.code || "") ? "hostConflict" : ["event_not_open_for_arrival", "event_not_open_for_preorder"].includes(result.code || "") ? "errorClosed" : "errorGeneric"));
         return;
       }
       request.current = null;

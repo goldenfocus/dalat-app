@@ -19,6 +19,21 @@ in. Order takers can also take and progress orders. Event managers can assign
 roles. All access is event-scoped and uses each person's own login.
 
 At the door, open **Arrivals**, show the QR, or find an RSVP/add a walk-in.
+The same search field finds existing accounts by username (with or without `@`),
+partial display name, or exact email address. Name matching ignores case and
+Vietnamese accents. Select the matching account, confirm their name/languages,
+and check them in; the guest does not need to log in or RSVP first. Saved language
+choices are reused, and the account-backed arrival joins the existing practice
+roster. People without an account still use **Add walk-in**.
+
+Account search is limited to signed-in staff with this event's welcome authority,
+returns at most ten non-ghost accounts, and never returns email addresses. Partial
+name searches respect profile discoverability; an exact username/email can locate
+a person at the door. Queries use a private, rate-limited POST, not URL parameters.
+Assisted registration and check-in commit together, preserve existing RSVPs/orders,
+reject full or closed events, and use the existing idempotent receipt. No invitation
+email is sent by this action. Search results show people already checked in.
+
 The QR leads only to the public guest flow and grants no staff access. A guest
 can finish without creating an account. Arrival opens six hours before the event
 and closes two hours after its end. Keep a paper list when connectivity fails;
@@ -209,3 +224,15 @@ them or desktop drag/drop. API action `swap` requires `draftId`, both participan
 IDs, host authority, expected revision and a fresh roster fingerprint. It preserves
 members, group sizes and table capacity and changes the draft ID. Starting an old
 version fails; published groups stay unchanged.
+
+### Host account check-in verification (4 November 2026)
+
+Account search, assisted registration and check-in passed the disposable PostgreSQL
+security suite and a rolled-back transaction against the current production schema.
+The production-schema check found an existing unregistered account, resolved it by
+username and exact email, registered and checked it in, then repeated the request
+without duplication. The transaction was rolled back; no test attendance remained.
+API/component tests cover session authority, cross-origin requests, rate limiting,
+stale search responses and already-arrived results. All twelve new UI catalog
+entries were independently reviewed. Private operational text remains excluded
+from the public translation worker.

@@ -34,6 +34,8 @@ docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_r
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/event-language-profiles.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/drink-sponsorship.sql"
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/sponsored-menu-sync.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261129_001_host_account_checkin.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/host-account-checkin.sql"
 # Independent sessions contend on one request. Both must receive the same receipt.
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
 INSERT INTO auth.users(id) VALUES('81000000-0000-4000-8000-000000000001');

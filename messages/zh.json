@@ -4285,7 +4285,13 @@
       "limitHint": "仅适用于本活动。输入0停止新增免费饮品。已有预订仍由赞助方承担。",
       "saveLimit": "保存限额",
       "saveFailed": "保存失败，请重试。"
-    }
+    },
+    "hostAccountSearch": "姓名、@用户名或完整邮箱地址",
+    "hostMatchingAccounts": "匹配的账号",
+    "hostSearching": "正在搜索账号…",
+    "hostSearchFailed": "搜索失败，请修改搜索内容后重试。",
+    "hostNoAccounts": "未找到账号。请尝试输入来宾的完整邮箱地址，或添加未提前报名的现场来宾。",
+    "hostEventFull": "活动人数已满。"
   },
   "eventPractice": {
     "title": "一起练习",

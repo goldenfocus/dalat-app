@@ -4285,7 +4285,13 @@
       "limitHint": "이 행사에 적용됩니다. 0을 입력하면 신규 무료 신청을 중단합니다. 기존 예약은 유지됩니다.",
       "saveLimit": "인원 제한 저장",
       "saveFailed": "저장하지 못했습니다. 다시 시도해 주세요."
-    }
+    },
+    "hostAccountSearch": "이름, @사용자명 또는 전체 이메일 주소",
+    "hostMatchingAccounts": "일치하는 계정",
+    "hostSearching": "계정 검색 중…",
+    "hostSearchFailed": "검색에 실패했어요. 검색어를 바꿔 다시 시도해 주세요.",
+    "hostNoAccounts": "계정을 찾지 못했어요. 게스트의 이메일 주소를 정확히 모두 입력하거나 사전 등록 없이 방문한 참가자를 추가해 주세요.",
+    "hostEventFull": "이 행사는 정원이 찼어요."
   },
   "eventPractice": {
     "title": "함께 연습해요",

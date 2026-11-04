@@ -4285,7 +4285,13 @@
       "limitHint": "Gilt für dieses Event. Mit 0 werden neue Gratisgetränke gestoppt. Bestehende Reservierungen bleiben gedeckt.",
       "saveLimit": "Limit speichern",
       "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen."
-    }
+    },
+    "hostAccountSearch": "Name, @Benutzername oder vollständige E-Mail-Adresse",
+    "hostMatchingAccounts": "Passende Konten",
+    "hostSearching": "Konten werden gesucht…",
+    "hostSearchFailed": "Suche fehlgeschlagen. Ändere die Eingabe und versuche es erneut.",
+    "hostNoAccounts": "Kein Konto gefunden. Gib die vollständige E-Mail-Adresse des Gastes ein oder füge einen Gast ohne vorherige Anmeldung hinzu.",
+    "hostEventFull": "Diese Veranstaltung ist ausgebucht."
   },
   "eventPractice": {
     "title": "Gemeinsam üben",

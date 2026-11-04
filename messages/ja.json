@@ -4285,7 +4285,13 @@
       "limitHint": "このイベントに適用。0で新規の無料提供を停止します。既存の予約は引き続き対象です。",
       "saveLimit": "上限を保存",
       "saveFailed": "保存できませんでした。再度お試しください。"
-    }
+    },
+    "hostAccountSearch": "名前、@ユーザー名、メールアドレス（完全一致）",
+    "hostMatchingAccounts": "一致するアカウント",
+    "hostSearching": "アカウントを検索中…",
+    "hostSearchFailed": "検索できませんでした。検索内容を変更して、もう一度お試しください。",
+    "hostNoAccounts": "アカウントが見つかりません。ゲストのメールアドレスを省略せず正確に入力するか、事前登録のない当日参加者を追加してください。",
+    "hostEventFull": "このイベントは定員に達しています。"
   },
   "eventPractice": {
     "title": "一緒に練習しよう",

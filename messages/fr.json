@@ -4285,7 +4285,13 @@
       "limitHint": "Pour cet événement. Saisissez 0 pour arrêter les nouvelles offres. Les réservations existantes restent prises en charge.",
       "saveLimit": "Enregistrer la limite",
       "saveFailed": "Enregistrement impossible. Réessayez."
-    }
+    },
+    "hostAccountSearch": "Nom, @pseudo ou adresse e-mail complète",
+    "hostMatchingAccounts": "Comptes correspondants",
+    "hostSearching": "Recherche de comptes…",
+    "hostSearchFailed": "Échec de la recherche. Modifiez votre saisie pour réessayer.",
+    "hostNoAccounts": "Aucun compte trouvé. Saisissez l’adresse e-mail complète de la personne ou ajoutez une personne non inscrite.",
+    "hostEventFull": "Cet événement est complet."
   },
   "eventPractice": {
     "title": "Pratiquons ensemble",

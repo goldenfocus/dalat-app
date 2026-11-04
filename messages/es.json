@@ -4285,7 +4285,13 @@
       "limitHint": "Solo para este evento. Introduce 0 para detener nuevas bebidas gratis. Las reservas existentes siguen cubiertas.",
       "saveLimit": "Guardar límite",
       "saveFailed": "No se pudo guardar. Inténtalo de nuevo."
-    }
+    },
+    "hostAccountSearch": "Nombre, @usuario o dirección de correo completa",
+    "hostMatchingAccounts": "Cuentas coincidentes",
+    "hostSearching": "Buscando cuentas…",
+    "hostSearchFailed": "La búsqueda falló. Modifica la búsqueda y vuelve a intentarlo.",
+    "hostNoAccounts": "No se encontró ninguna cuenta. Introduce la dirección de correo completa de la persona o añade a un asistente sin inscripción previa.",
+    "hostEventFull": "Este evento tiene el aforo completo."
   },
   "eventPractice": {
     "title": "Practicar juntos",

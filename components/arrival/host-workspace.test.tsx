@@ -26,6 +26,28 @@ describe("arrival staff permissions in the UI", () => {
     expect(screen.queryByText("menuTitle")).toBeNull();
   });
 
+  it("checks in a searched account without an RSVP using its saved language choices", async () => {
+    const account = {
+      id: "account:new-user", user_id: "new-user", displayName: "Mai", username: "mai",
+      checked_in_at: null, preferences: { practiceLanguage: "english", englishLevel: "starting", vietnameseLevel: "native" },
+    };
+    const fetchMock = vi.fn().mockImplementation(async (url: string, init?: RequestInit) => ({
+      ok: true,
+      json: async () => url.endsWith("/search") ? { accounts: [account] } : init?.method === "POST" ? {} : fixture,
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+    render(<HostWorkspace slug="test" />);
+    fireEvent.change(await screen.findByRole("searchbox", { name: "hostAccountSearch" }), { target: { value: "mai@example.test" } });
+    fireEvent.click(await screen.findByRole("button", { name: "checkIn" }));
+    expect(screen.getByLabelText("nickname")).toHaveValue("Mai");
+    expect(screen.getByLabelText("languageTitle")).toHaveValue("english");
+    expect(screen.getByLabelText("englishLevel")).toHaveValue("starting");
+    fireEvent.click(screen.getByRole("button", { name: "checkIn" }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => url === "/api/events/test/arrival" && init?.method === "POST")).toBe(true));
+    const [, init] = fetchMock.mock.calls.find(([url, options]) => url === "/api/events/test/arrival" && options?.method === "POST")!;
+    expect(JSON.parse(init.body)).toMatchObject({ userId: "new-user", staffEntry: true, nickname: "Mai", practiceLanguage: "english", englishLevel: "starting", vietnameseLevel: "native", items: [] });
+  });
+
   it("shows the kitchen queue to order staff and retains a stale-order conflict after refreshing", async () => {
     const data: StaffArrivalContext = {
       ...fixture, access: { canWelcome: false, canOrder: true, canManage: false },

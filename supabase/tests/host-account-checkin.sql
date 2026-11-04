@@ -1,0 +1,34 @@
+BEGIN;
+CREATE FUNCTION pg_temp.check_ok(ok boolean,label text) RETURNS void LANGUAGE plpgsql AS $$ BEGIN IF ok IS DISTINCT FROM true THEN RAISE EXCEPTION 'FAIL: %',label; END IF; END $$;
+INSERT INTO auth.users(id,email) SELECT ('91000000-0000-4000-8000-00000000000'||n)::uuid,'host-search-'||n||'@example.test' FROM generate_series(1,5)n;
+INSERT INTO profiles(id,username,display_name,discoverable,is_ghost) SELECT id,'host_search_'||right(id::text,1),CASE right(id::text,1) WHEN '2' THEN 'Mai Nguyễn Đặng' WHEN '3' THEN 'Private Person' ELSE 'Other Person' END,right(id::text,1)<>'3',right(id::text,1)='5' FROM auth.users WHERE id::text LIKE '91000000%';
+INSERT INTO events(id,created_by,status,starts_at,ends_at,arrival_enabled) VALUES('93000000-0000-4000-8000-000000000001','91000000-0000-4000-8000-000000000001','published',now(),now()+interval '2 hours',true);
+SELECT pg_temp.check_ok(NOT has_function_privilege('authenticated','arrival_search_accounts(uuid,uuid,text)','execute'),'browser cannot impersonate staff');
+SELECT pg_temp.check_ok(NOT has_function_privilege('authenticated','arrival_staff_checkin(uuid,uuid,text,uuid,jsonb)','execute'),'browser cannot invoke registration');
+DO $$
+DECLARE e uuid:='93000000-0000-4000-8000-000000000001'; host uuid:='91000000-0000-4000-8000-000000000001'; target uuid:='91000000-0000-4000-8000-000000000002'; request uuid:=gen_random_uuid(); payload jsonb; a jsonb; b jsonb;
+BEGIN
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM arrival_search_accounts(e,host,'nguyen dang')),'unaccented Vietnamese name search');
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM arrival_search_accounts(e,host,'@HOST_SEARCH_2')),'case-insensitive username');
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM arrival_search_accounts(e,host,'HOST-SEARCH-3@EXAMPLE.TEST')),'private profile exact email');
+ PERFORM pg_temp.check_ok((SELECT count(*)=0 FROM arrival_search_accounts(e,host,'Private Person')),'private name not discoverable');
+ PERFORM pg_temp.check_ok((SELECT count(*)=0 FROM arrival_search_accounts(e,host,'@example.test')),'partial email does not enumerate');
+ PERFORM pg_temp.check_ok((SELECT count(*)=0 FROM arrival_search_accounts(e,host,'%%')),'wildcards are literal');
+ PERFORM pg_temp.check_ok((SELECT count(*)=0 FROM arrival_search_accounts(e,host,'host-search-5@example.test')),'ghost excluded');
+ BEGIN PERFORM arrival_search_accounts(e,target,'Mai'); RAISE EXCEPTION 'unauthorized search succeeded'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ payload:=jsonb_build_object('staffEntry',true,'userId',target,'nickname','Mai','practiceLanguage','english');
+ a:=arrival_staff_checkin(e,host,repeat('a',64),request,payload);
+ b:=arrival_staff_checkin(e,host,repeat('a',64),request,payload);
+ PERFORM pg_temp.check_ok(a=b,'retry is idempotent');
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM rsvps WHERE event_id=e AND user_id=target AND status='going' AND checked_in_at IS NOT NULL AND checked_in_by=host),'unregistered account registered and checked in');
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM event_arrival_participants WHERE event_id=e AND user_id=target),'one account-backed arrival');
+ PERFORM arrival_staff_checkin(e,host,repeat('b',64),gen_random_uuid(),payload);
+ PERFORM pg_temp.check_ok((SELECT count(*)=1 FROM event_arrival_participants WHERE event_id=e AND user_id=target),'second request cannot duplicate arrival');
+ BEGIN PERFORM arrival_staff_checkin(e,target,repeat('c',64),gen_random_uuid(),payload); RAISE EXCEPTION 'unauthorized check-in succeeded'; EXCEPTION WHEN insufficient_privilege THEN NULL; END;
+ BEGIN PERFORM arrival_staff_checkin(e,host,repeat('d',64),gen_random_uuid(),payload||jsonb_build_object('userId','91000000-0000-4000-8000-000000000004','practiceLanguage','bad')); RAISE EXCEPTION 'invalid check-in succeeded'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+ PERFORM pg_temp.check_ok(NOT EXISTS(SELECT 1 FROM rsvps WHERE event_id=e AND user_id='91000000-0000-4000-8000-000000000004'),'failed check-in rolls registration back');
+ UPDATE events SET capacity=1 WHERE id=e;
+ BEGIN PERFORM arrival_staff_checkin(e,host,repeat('e',64),gen_random_uuid(),payload||jsonb_build_object('userId','91000000-0000-4000-8000-000000000004')); RAISE EXCEPTION 'full check-in succeeded'; EXCEPTION WHEN invalid_parameter_value THEN NULL; END;
+ PERFORM pg_temp.check_ok(NOT EXISTS(SELECT 1 FROM rsvps WHERE event_id=e AND user_id='91000000-0000-4000-8000-000000000004'),'capacity preserved');
+END $$;
+ROLLBACK;

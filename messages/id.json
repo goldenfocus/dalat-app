@@ -4285,7 +4285,13 @@
       "limitHint": "Berlaku untuk acara ini. Masukkan 0 untuk menghentikan klaim baru. Pesanan yang sudah ada tetap ditanggung.",
       "saveLimit": "Simpan batas",
       "saveFailed": "Gagal menyimpan. Coba lagi."
-    }
+    },
+    "hostAccountSearch": "Nama, @nama_pengguna atau alamat email lengkap",
+    "hostMatchingAccounts": "Akun yang cocok",
+    "hostSearching": "Mencari akun…",
+    "hostSearchFailed": "Pencarian gagal. Ubah kata pencarian dan coba lagi.",
+    "hostNoAccounts": "Akun tidak ditemukan. Masukkan alamat email lengkap tamu atau tambahkan tamu yang datang tanpa mendaftar terlebih dahulu.",
+    "hostEventFull": "Acara ini sudah penuh."
   },
   "eventPractice": {
     "title": "Berlatih bersama",

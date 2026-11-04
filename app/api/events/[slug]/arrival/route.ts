@@ -66,7 +66,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     // guest already holding this receipt. Account linking is a separate action.
     const guest = !payload.staffEntry ? await ownReceipt(event.id, undefined, hash) : null;
     const actorId = guest && !guest.participant.user_id ? null : user?.id || null;
-    const { data, error } = await admin.rpc("arrival_submit", {
+    const { data, error } = await admin.rpc(payload.staffEntry && payload.userId && !payload.participantId ? "arrival_staff_checkin" : "arrival_submit", {
       p_event_id: event.id, p_actor_id: actorId, p_token_hash: hash,
       p_request_id: payload.requestId, p_payload: payload,
     });

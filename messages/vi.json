@@ -4285,7 +4285,13 @@
       "limitHint": "Áp dụng cho sự kiện này. Nhập 0 để ngừng nhận yêu cầu miễn phí mới. Các đơn đã đặt vẫn được tài trợ.",
       "saveLimit": "Lưu giới hạn",
       "saveFailed": "Không lưu được. Vui lòng thử lại."
-    }
+    },
+    "hostAccountSearch": "Tên, @tên_người_dùng hoặc địa chỉ email đầy đủ",
+    "hostMatchingAccounts": "Tài khoản phù hợp",
+    "hostSearching": "Đang tìm tài khoản…",
+    "hostSearchFailed": "Tìm kiếm không thành công. Hãy thay đổi nội dung tìm kiếm rồi thử lại.",
+    "hostNoAccounts": "Không tìm thấy tài khoản. Hãy nhập địa chỉ email đầy đủ của khách hoặc thêm khách chưa đăng ký.",
+    "hostEventFull": "Sự kiện đã đủ người."
   },
   "eventPractice": {
     "title": "Cùng luyện tập",
