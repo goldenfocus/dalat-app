@@ -4396,7 +4396,17 @@
     "swapWith": "Intercambiar a {name} con…",
     "cancelSwap": "Cancelar intercambio",
     "swapPerson": "Cambiar de sitio a {name}",
-    "swapHint": "Toca a dos personas para intercambiar sus sitios"
+    "swapHint": "Toca a dos personas para intercambiar sus sitios",
+    "rollCall": "Control de asistencia",
+    "rollCallHint": "Confirma quién está presente. Marca con X a quienes estén ausentes.",
+    "rollCallProgress": "{checked}/{total} revisados",
+    "confirmPresent": "Confirmar que {name} está aquí",
+    "markAbsent": "Marcar a {name} como ausente",
+    "present": "Presente",
+    "absent": "Ausente",
+    "presenceRequired": "Marca a cada persona como presente o ausente antes de formar las parejas.",
+    "presenceWaiting": "El anfitrión confirmará tu presencia",
+    "absentShort": "Ausencia registrada — avisa al anfitrión cuando llegues"
   },
   "eventFollowupEmail": {
     "subject": "Gracias por acompañarnos en {eventTitle}",

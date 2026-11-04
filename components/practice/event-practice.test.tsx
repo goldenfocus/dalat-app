@@ -6,6 +6,7 @@ vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => (key
 vi.mock("@/lib/hooks/use-viewer", () => ({ useViewer: () => ({ profile: null }) }));
 vi.mock("@/lib/i18n/routing", () => ({ usePathname: () => "/events/test", useRouter: () => ({ replace: vi.fn() }), Link: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
 import { EventPractice, remainingSeconds } from "./event-practice";
+import { createRehearsal, mutateRehearsal, rehearsalView } from "./rehearsal-model";
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 const now = "2026-11-04T12:00:00.000Z";
 const anonymous: PracticeView = { canStart: false, count: 2, me: null, revision: 1, serverNow: now, tables: [{ number: 4, floor: "downstairs", capacity: 2, available: true }], floorPolicy: "balanced", draft: null, participation: null, myTable: null, round: { number: 1, startedAt: now, endsAt: "2026-11-04T12:12:00.000Z", minutes: 12, groups: [] }, groups: [], myGroup: [], myGroupNumber: null };
@@ -14,6 +15,33 @@ const partner = { id: "partner", name: "Alex", number: 2, learns: "vi", speaks: 
 const found: PracticeView = { ...anonymous, me, participation: "playing", groups: [[me, partner]], myGroup: [me, partner], myGroupNumber: 7, myTable: { groupIndex: 6, tableNumber: 4, floor: "downstairs" } };
 function fetchView(view: PracticeView) { vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => view })); }
 describe("event pairing visibility", () => {
+  it("checks everyone before pairing, crosses out absence, and preserves roll call on remount", async () => {
+    let session = createRehearsal(3);
+    const transport = vi.fn(async (payload?: Record<string, unknown>) => {
+      if (payload) session = mutateRehearsal(session, payload);
+      return new Response(JSON.stringify(rehearsalView(session)), { status: 200 });
+    });
+    const page = render(<EventPractice slug="sample-rehearsal" transport={transport} />);
+    expect(await screen.findByRole("button", { name: en.eventPractice.draft })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Confirm Mai is here" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Confirm Mai is here" })).toHaveAttribute("aria-pressed", "true"));
+    fireEvent.click(screen.getByRole("button", { name: "Confirm Alex is here" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Confirm Alex is here" })).toHaveAttribute("aria-pressed", "true"));
+    expect(screen.getByRole("button", { name: en.eventPractice.draft })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Mark Linh absent" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: en.eventPractice.draft })).toBeEnabled());
+    expect(screen.getByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", "true");
+    page.unmount();
+    render(<EventPractice slug="sample-rehearsal" transport={transport} />);
+    expect(await screen.findByRole("button", { name: "Mark Linh absent" })).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(screen.getByRole("button", { name: en.eventPractice.draft }));
+    expect(await screen.findByRole("button", { name: en.eventPractice.publish })).toBeEnabled();
+    expect(session.state.draft?.groups.flat().map(person => person.name).sort()).toEqual(["Alex", "Mai"]);
+    fireEvent.click(screen.getByRole("button", { name: en.eventPractice.publish }));
+    await waitFor(() => expect(session.state.rounds).toHaveLength(1));
+    expect(session.state.rounds[0].groups.flat().map(person => person.name).sort()).toEqual(["Alex", "Mai"]);
+    expect(transport.mock.calls.filter(([payload]) => payload?.action === "presence")).toHaveLength(3);
+  });
   it("recovers the existing receipt and leads with the real table, floor, partner and clock", async () => {
     const fetchMock = vi.fn().mockImplementation(async (_url, init) => ({ ok: true, json: async () => init?.method === "POST" ? found : anonymous }));
     vi.stubGlobal("fetch", fetchMock);
@@ -72,7 +100,7 @@ describe("event pairing visibility", () => {
     expect(await screen.findByRole("link", { name: en.eventPractice.challenge })).toHaveAttribute("href", "https://ezviet.org/challenges?event=test");
   });
   it("requires host draft review before publishing a round", async () => {
-    const host: PracticeView = { ...anonymous, canStart: true, round: null, participants: [{ ...me, participation: "playing" }, { ...partner, participation: "playing" }] };
+    const host: PracticeView = { ...anonymous, canStart: true, round: null, participants: [{ ...me, participation: "playing", presence: "present" }, { ...partner, participation: "playing", presence: "present" }] };
     const drafted: PracticeView = { ...host, revision: 2, draft: { id: "draft-one", round: 1, minutes: 12, groups: [[me, partner]], assignments: [{ groupIndex: 0, tableNumber: 4, floor: "downstairs" }], rosterFingerprint: "current", createdAt: now } };
     const fetchMock = vi.fn().mockImplementation(async (_url, init) => ({ ok: true, json: async () => init?.method === "POST" ? drafted : host }));
     vi.stubGlobal("fetch", fetchMock);

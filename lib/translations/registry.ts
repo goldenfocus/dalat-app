@@ -9,6 +9,8 @@ import { metadataLabels } from "./metadata-labels";
 // Menu option_groups contain only stable menuOptions catalog keys and numeric prices;
 // option labels are localized by next-intl, not sent to the content worker.
 // sources below, including their transactional invalidation and original controls.
+// Practice roll-call answers are private event operations too. Keep presence and
+// the host-only roster out of public translation storage; UI uses eventPractice.
 // event_followup_settings and event_followup_deliveries are private operational
 // data. Email copy uses the 12-locale eventFollowupEmail catalog; never translate
 // stored delivery payloads or email addresses through the public content worker.

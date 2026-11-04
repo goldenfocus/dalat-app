@@ -29,7 +29,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   const [view, setView] = useState<PracticeView | null>(null);
   const [error, setError] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [actionError, setActionError] = useState<"draftStale" | "notEnoughSeats" | "error" | null>(null);
+  const [actionError, setActionError] = useState<"draftStale" | "notEnoughSeats" | "presenceRequired" | "error" | null>(null);
   const [now, setNow] = useState(Date.now());
   const [offset, setOffset] = useState(0);
   const [code, setCode] = useState("");
@@ -85,7 +85,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
       const response = await request({ ...payload, expectedRevision: view.revision });
       if (!response.ok) {
         const failure = await response.json().catch(() => ({}));
-        setActionError(failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && ["start", "swap"].includes(String(payload.action)) ? "draftStale" : "error");
+        setActionError(failure.code === "invalid_presence_check" ? "presenceRequired" : failure.code === "invalid_table_capacity" ? "notEnoughSeats" : response.status === 409 && ["start", "swap"].includes(String(payload.action)) ? "draftStale" : "error");
         void load();
         return;
       }
@@ -129,7 +129,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
         </>}</div>
         {!view.canStart && <PracticeParticipation view={view} busy={busy} act={act} />}
       </div>}
-      {assigned ? <div className="grid grid-cols-2 gap-x-4 gap-y-3 py-1">{view.myGroup!.map(person => <PracticePerson key={person.id} person={person} />)}</div> : !view.canStart && <p role="status" className="py-3 text-lg font-medium">{t(view.participation === "playing" ? view.round ? "nextRoundShort" : "waitingShort" : "notPlayingShort")}</p>}
+      {assigned ? <div className="grid grid-cols-2 gap-x-4 gap-y-3 py-1">{view.myGroup!.map(person => <PracticePerson key={person.id} person={person} />)}</div> : !view.canStart && <p role="status" className="py-3 text-lg font-medium">{t(view.participation === "playing" ? view.presence === "absent" ? "absentShort" : view.presence === "pending" ? "presenceWaiting" : view.round ? "nextRoundShort" : "waitingShort" : "notPlayingShort")}</p>}
       {view.round && assigned && !view.canStart && <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
         <span className="text-sm text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
         <p aria-label={t("timer")} role="timer" className="text-3xl font-semibold tracking-tight tabular-nums">{complete ? "0:00" : clock}</p>

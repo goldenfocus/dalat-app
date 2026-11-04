@@ -31,7 +31,7 @@ const host: PracticeView = {
   tables: [{ number: 4, floor: "downstairs", capacity: 2, available: true }],
   floorPolicy: "balanced", draft: null, participation: null, myTable: null,
   round: null, groups: [], myGroup: [], myGroupNumber: null,
-  participants: [{ id: "sample", name: "Mai", number: 1, speaks: ["vi"], learns: "en", participation: "playing" }],
+  participants: [{ id: "sample", name: "Mai", number: 1, speaks: ["vi"], learns: "en", participation: "playing", presence: "present" }],
 };
 const transport = async () => new Response(JSON.stringify(host), { status: 200 });
 
@@ -55,6 +55,9 @@ describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage]] as cons
     expect(screen.getByRole("link", { name: t("openActivity") })).toHaveAttribute("href", "https://ezviet.org/challenges?practice=1");
     expect(screen.getByRole("status")).toHaveTextContent(t("ready", { count: 2 }));
     expect(screen.getByRole("status")).toHaveTextContent(t("minutesShort", { count: 20 }));
+    expect(screen.getByRole("region", { name: t("rollCall") })).toHaveTextContent(t("rollCallHint"));
+    expect(screen.getByRole("button", { name: t("confirmPresent", { name: "Mai" }) })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: t("markAbsent", { name: "Mai" }) })).toHaveAttribute("aria-pressed", "false");
     fireEvent.click(screen.getByRole("button", { name: t("settings") }));
     expect(screen.getByLabelText(t("duration"))).toBeVisible();
     expect(screen.getByRole("button", { name: t("saveSettings") })).toBeVisible();

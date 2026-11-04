@@ -4396,7 +4396,17 @@
     "swapWith": "Tukar posisi {name} dengan…",
     "cancelSwap": "Batalkan pertukaran",
     "swapPerson": "Tukar posisi {name}",
-    "swapHint": "Ketuk dua orang untuk menukar posisi mereka"
+    "swapHint": "Ketuk dua orang untuk menukar posisi mereka",
+    "rollCall": "Cek kehadiran",
+    "rollCallHint": "Konfirmasi siapa yang hadir. Tandai yang tidak hadir dengan X.",
+    "rollCallProgress": "{checked}/{total} sudah diperiksa",
+    "confirmPresent": "Konfirmasi bahwa {name} hadir",
+    "markAbsent": "Tandai {name} sebagai tidak hadir",
+    "present": "Hadir",
+    "absent": "Tidak hadir",
+    "presenceRequired": "Tandai semua orang sebagai hadir atau tidak hadir sebelum membentuk pasangan.",
+    "presenceWaiting": "Tuan rumah akan mengonfirmasi kehadiran Anda",
+    "absentShort": "Ditandai sebagai tidak hadir — beri tahu tuan rumah saat Anda tiba"
   },
   "eventFollowupEmail": {
     "subject": "Terima kasih sudah ikut {eventTitle}",

@@ -4396,7 +4396,17 @@
     "swapWith": "สลับตำแหน่ง {name} กับ…",
     "cancelSwap": "ยกเลิกการสลับ",
     "swapPerson": "สลับตำแหน่ง {name}",
-    "swapHint": "แตะสองคนเพื่อสลับตำแหน่ง"
+    "swapHint": "แตะสองคนเพื่อสลับตำแหน่ง",
+    "rollCall": "เช็กชื่อ",
+    "rollCallHint": "ยืนยันว่าใครมาแล้วบ้าง ทำเครื่องหมาย X สำหรับผู้ที่ไม่มา",
+    "rollCallProgress": "เช็กชื่อแล้ว {checked}/{total} คน",
+    "confirmPresent": "ยืนยันว่า {name} มาแล้ว",
+    "markAbsent": "ทำเครื่องหมายว่า {name} ไม่มา",
+    "present": "มาแล้ว",
+    "absent": "ไม่มา",
+    "presenceRequired": "ระบุให้ครบทุกคนว่ามาแล้วหรือไม่มาก่อนจับคู่",
+    "presenceWaiting": "โฮสต์จะยืนยันว่าคุณมาแล้ว",
+    "absentShort": "ถูกทำเครื่องหมายว่าไม่มา — แจ้งโฮสต์เมื่อคุณมาถึง"
   },
   "eventFollowupEmail": {
     "subject": "ขอบคุณที่มาร่วมงาน {eventTitle}",

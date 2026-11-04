@@ -4396,7 +4396,17 @@
     "swapWith": "{name}さんと入れ替える相手…",
     "cancelSwap": "入れ替えをキャンセル",
     "swapPerson": "{name}さんの位置を入れ替え",
-    "swapHint": "2人をタップして入れ替え"
+    "swapHint": "2人をタップして入れ替え",
+    "rollCall": "出欠確認",
+    "rollCallHint": "誰が来ているか確認してください。欠席者には X を付けてください。",
+    "rollCallProgress": "{checked}/{total}人の確認済み",
+    "confirmPresent": "{name}さんの出席を確認",
+    "markAbsent": "{name}さんを欠席として記録",
+    "present": "出席",
+    "absent": "欠席",
+    "presenceRequired": "ペアを組む前に、全員を出席または欠席として記録してください。",
+    "presenceWaiting": "ホストがあなたの出席を確認します",
+    "absentShort": "欠席として記録されています — 到着したらホストに声をかけてください"
   },
   "eventFollowupEmail": {
     "subject": "{eventTitle}にご参加いただき、ありがとうございました",

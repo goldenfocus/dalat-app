@@ -4396,7 +4396,17 @@
     "swapWith": "Échanger la place de {name} avec…",
     "cancelSwap": "Annuler l’échange",
     "swapPerson": "Échanger la place de {name}",
-    "swapHint": "Touchez deux personnes pour échanger leurs places"
+    "swapHint": "Touchez deux personnes pour échanger leurs places",
+    "rollCall": "Appel",
+    "rollCallHint": "Confirmez qui est présent. Marquez les absents d’un X.",
+    "rollCallProgress": "Vérification : {checked}/{total}",
+    "confirmPresent": "Confirmer la présence de {name}",
+    "markAbsent": "Indiquer l’absence de {name}",
+    "present": "Présent",
+    "absent": "Absent",
+    "presenceRequired": "Indiquez la présence ou l’absence de chaque personne avant de former les paires.",
+    "presenceWaiting": "L’animateur confirmera votre présence",
+    "absentShort": "Absence indiquée — signalez-vous à l’animateur à votre arrivée"
   },
   "eventFollowupEmail": {
     "subject": "Merci d’avoir participé à {eventTitle}",

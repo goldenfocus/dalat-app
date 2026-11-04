@@ -41,11 +41,29 @@ describe("practice from event attendance", () => {
   });
 });
 
-import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, participantStatus, remainingSeconds, rosterFingerprint, updateClock, type PracticeState } from "./model";
+import { assignTables, DEFAULT_TABLES, eligiblePeople, numberPeople, participantStatus, pendingPlayers, presenceStatus, remainingSeconds, rosterFingerprint, updateClock, type PracticeState } from "./model";
 
 describe("present and playing eligibility", () => {
+  it("requires host confirmation, excludes absent people, and keeps answers private", () => {
+    const state: PracticeState = { rounds: [], presence: { a: "present", b: "absent" } };
+    expect(eligiblePeople(state, people).map(person => person.id)).toEqual(["a"]);
+    expect(pendingPlayers(state, people).map(person => person.id)).toEqual(["c", "d"]);
+    const guest = practiceView(state, people, "a", false);
+    expect(guest.presence).toBe("present");
+    expect(guest.participants).toBeUndefined();
+    expect(JSON.stringify(guest)).not.toContain("absent");
+    expect(practiceView(state, people, null, true).participants?.find(person => person.id === "b")?.presence).toBe("absent");
+  });
+  it("preserves legacy published rounds but never infers presence for new arrivals", () => {
+    const state: PracticeState = { rounds: [pairRound(people.slice(0, 2), [])] };
+    expect(presenceStatus(state, "a")).toBe("present");
+    expect(presenceStatus(state, "c")).toBe("pending");
+    state.presence = { a: "absent" };
+    expect(presenceStatus(state, "a")).toBe("absent");
+    expect(eligiblePeople(state, people).map(person => person.id)).toEqual(["b"]);
+  });
   it("retains arrivals without a second check-in but excludes staff, visitors, breaks and departures", () => {
-    const state: PracticeState = { rounds: [], participation: { b: "visiting", c: "break", d: "left" } };
+    const state: PracticeState = { rounds: [], participation: { b: "visiting", c: "break", d: "left" }, presence: { a: "present" } };
     expect(eligiblePeople(state, people, new Set(["a"]))).toEqual([]);
     expect(participantStatus(state, "a", new Set(["a"]))).toBe("hosting");
     state.participation!.a = "playing";

@@ -3,11 +3,12 @@ import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { arrivalContext, guestToken, ownReceipt, participantColumns, tokenHash } from "@/lib/arrival/server";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
-import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
+import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, pendingPlayers, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
 import { claimCookieName, signClaim, verifyClaim } from "./claim";
 
 export type PracticeMutation =
   | { action: "participation"; expectedRevision: number; status: Participation; participantId?: string }
+  | { action: "presence"; expectedRevision: number; status: "present" | "absent"; participantId: string }
   | { action: "settings"; expectedRevision: number; tables: Table[]; floorPolicy: FloorPolicy }
   | { action: "draft"; expectedRevision: number; minutes?: number }
   | { action: "swap"; expectedRevision: number; draftId: string; participantId: string; withParticipantId: string }
@@ -136,9 +137,13 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
     return persist(c, state);
   }
   if (!c.user || !c.canStart) throw new Error("forbidden");
-  if (mutation.action === "settings") {
+  if (mutation.action === "presence") {
+    if (!c.people.some(person => person.id === mutation.participantId)) throw new Error("participant_not_found");
+    state = { ...state, presence: { ...state.presence, [mutation.participantId]: mutation.status }, draft: null };
+  } else if (mutation.action === "settings") {
     state = { ...state, tables: mutation.tables, floorPolicy: mutation.floorPolicy, draft: null };
   } else if (mutation.action === "draft") {
+    if (pendingPlayers(state, c.people, c.staffIds).length) throw new Error("invalid_presence_check");
     const players = eligiblePeople(state, c.people, c.staffIds);
     const tables = state.tables || DEFAULT_TABLES;
     const floorPolicy = state.floorPolicy || "balanced";

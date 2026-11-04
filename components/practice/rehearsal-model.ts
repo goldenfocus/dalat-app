@@ -1,4 +1,4 @@
-import { assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
+import { assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, pendingPlayers, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
 
 /** Entirely synthetic, browser-memory-only state. Never reads or writes an event API. */
 export type Rehearsal = { state: PracticeState; revision: number; people: Person[]; mode: "host" | "attendee" };
@@ -22,8 +22,15 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
     if (!session.people.some(p => p.id === id) || !host && id !== session.people[0].id) throw new Error("forbidden");
     state = { ...state, participation: { ...state.participation, [id]: payload.status as Participation }, draft: null };
   } else if (!host) throw new Error("forbidden");
+  else if (payload.action === "presence") {
+    const id = String(payload.participantId);
+    if (!session.people.some(person => person.id === id)) throw new Error("participant_not_found");
+    if (payload.status !== "present" && payload.status !== "absent") throw new Error("invalid_request");
+    state = { ...state, presence: { ...state.presence, [id]: payload.status }, draft: null };
+  }
   else if (payload.action === "settings") state = { ...state, tables: payload.tables as Table[], floorPolicy: payload.floorPolicy as FloorPolicy, draft: null };
   else if (payload.action === "draft") {
+    if (pendingPlayers(state, session.people, new Set(["sample-host"])).length) throw new Error("invalid_presence_check");
     const players = eligiblePeople(state, session.people, new Set(["sample-host"]));
     const candidate = pairRound(players, state.rounds, payload.minutes === undefined ? DEFAULT_ROUND_MINUTES : Number(payload.minutes), now);
     const tables = state.tables || DEFAULT_TABLES;
@@ -38,7 +45,8 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
     const draft = state.draft;
     const current = state.rounds.at(-1);
     if (!draft || draft.id !== payload.draftId || current && !current.endedAt && (current.pausedAt || remainingSeconds(current, now) > 0)) throw new Error("status_conflict");
-    if (draft.rosterFingerprint !== rosterFingerprint(eligiblePeople(state, session.people, new Set(["sample-host"])), state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced")) throw new Error("status_conflict");
+    const draftedIds = new Set(draft.groups.flat().map(person => person.id));
+    if (draft.rosterFingerprint !== rosterFingerprint(eligiblePeople(state, session.people, new Set(["sample-host"])).filter(person => draftedIds.has(person.id)), state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced")) throw new Error("status_conflict");
     state = { ...state, rounds: [...state.rounds, { number: draft.round, minutes: draft.minutes, groups: draft.groups, assignments: draft.assignments, startedAt: now.toISOString(), endsAt: new Date(now.getTime() + draft.minutes * 60_000).toISOString() }], draft: null };
   } else if (["pause", "resume", "end", "extend"].includes(String(payload.action))) {
     const current = state.rounds.at(-1);

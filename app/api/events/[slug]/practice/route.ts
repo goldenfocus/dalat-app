@@ -8,6 +8,7 @@ type Context = { params: Promise<{ slug: string }> };
 const revision = z.number().int().min(-1);
 const tableSchema = z.object({ number: z.number().int().min(1).max(99), floor: z.enum(["downstairs", "upstairs"]), capacity: z.number().int().min(1).max(12), available: z.boolean(), bar: z.boolean().optional() }).strict();
 const schema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("presence"), expectedRevision: revision, status: z.enum(["present", "absent"]), participantId: z.string().min(1).max(100) }).strict(),
   z.object({ action: z.literal("participation"), expectedRevision: revision, status: z.enum(["playing", "visiting", "break", "left", "hosting"]), participantId: z.string().min(1).max(100).optional() }).strict(),
   z.object({ action: z.literal("settings"), expectedRevision: revision, tables: z.array(tableSchema).min(1).max(30).refine(tables => new Set(tables.map(t => t.number)).size === tables.length), floorPolicy: z.enum(["balanced", "downstairs", "upstairs"]) }).strict(),
   z.object({ action: z.literal("draft"), expectedRevision: revision, minutes: z.number().int().min(5).max(30).default(DEFAULT_ROUND_MINUTES) }).strict(),
