@@ -128,6 +128,16 @@ DO $$ BEGIN
 END $$;
 SQL
 echo 'Event arrival PostgreSQL authorization, idempotency, tampering and legacy preorder tests passed.'
+
+# Menu options must survive reservations/check-in and be priced in SQL.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261129_001_menu_options.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/menu-options.sql"
+
+# Time-based eligibility is independent of arrival time and RSVP rank.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/drink-registration-cutoff-fixture.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261130_001_drink_registration_cutoff.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/drink-registration-cutoff.sql"
+
 # Simultaneous RSVP inserts must not both receive the last free-drink position.
 docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
 INSERT INTO auth.users(id) VALUES('ba000000-0000-4000-8000-000000000001'),('ba000000-0000-4000-8000-000000000002');
@@ -154,6 +164,3 @@ DO $$ BEGIN
 END $$;
 SQL
 echo 'Concurrent RSVP free-drink cutoff passed.'
-# Menu options must survive reservations/check-in and be priced in SQL.
-docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261129_001_menu_options.sql"
-docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/menu-options.sql"

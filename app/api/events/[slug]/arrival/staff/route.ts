@@ -1,3 +1,4 @@
+import { withinRegistrationCutoff } from "@/lib/arrival/sponsorship";
 import type { NextRequest } from "next/server";
 import { arrivalContext, mapOrder, orderColumns, participantColumns } from "@/lib/arrival/server";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
@@ -41,15 +42,15 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
     const languageByUser = new Map((savedLanguages.data || []).map(row => [row.user_id, row.preferences as LanguagePreferences]));
 
     const positions = event.sponsorship && rsvpUserIds.length
-      ? await admin.from("language_exchange_rsvp_positions").select("user_id,position").eq("event_id", event.id).in("user_id", rsvpUserIds)
+      ? await admin.from("language_exchange_rsvp_positions").select("user_id,position,registered_at").eq("event_id", event.id).in("user_id", rsvpUserIds)
       : { data: [], error: null };
     if (positions.error) throw positions.error;
-    const positionsByUser = new Map((positions.data || []).map(row => [row.user_id, row.position]));
+    const positionsByUser = new Map((positions.data || []).map(row => [row.user_id, row]));
     const rsvps = (rsvpsResult.data || []).map((row) => {
       const profile = row.profiles as unknown as Profile | null;
       const name = profile?.display_name || profile?.username || "";
       userNames.set(row.user_id, name);
-      return { sponsorEligible: !!event.sponsorship && (positionsByUser.get(row.user_id) ?? Infinity) <= (event.sponsorship.rsvpLimit ?? 100), preferences: preferencesByUser.get(row.user_id) || null, languagePreferences: languageByUser.get(row.user_id) || null, id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
+      return { sponsorEligible: !!event.sponsorship && (positionsByUser.get(row.user_id)?.position ?? Infinity) <= (event.sponsorship.rsvpLimit ?? 100) && withinRegistrationCutoff(positionsByUser.get(row.user_id)?.registered_at, event.sponsorship.registrationCutoffAt), preferences: preferencesByUser.get(row.user_id) || null, languagePreferences: languageByUser.get(row.user_id) || null, id: row.id, user_id: row.user_id, checked_in_at: row.checked_in_at, displayName: name, username: profile?.username || null };
     });
     // Include names for preorders placed before check-in, even on order-only screens.
     const missingUsers = [...new Set((ordersResult.data || []).map((row) => row.user_id).filter((id): id is string => !!id && !userNames.has(id)))];
