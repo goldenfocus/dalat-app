@@ -1,4 +1,4 @@
-import { LOCATION_VENUE_FIELDS, resolveEventLocation } from "@/lib/events/location";
+import { LOCATION_VENUE_FIELDS, getCalendarLocation, resolveEventLocation } from "@/lib/events/location";
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { format, parseISO } from "date-fns";
@@ -72,18 +72,13 @@ export async function GET(request: Request, { params }: Params) {
     .eq("series_id", series.id)
     .eq("exception_type", "cancelled");
 
-  // Build location string
-  let location = "";
-  if (series.address) {
-    location = series.address;
-  } else if (series.location_name) {
-    location = `${series.location_name}, Đà Lạt, Vietnam`;
-  }
+  const place = getCalendarLocation(series);
+  const location = place.text;
 
   // Build description
   let description = series.description || "";
-  if (series.google_maps_url) {
-    description += `\\n\\nLocation: ${series.google_maps_url}`;
+  if (place.mapUrl) {
+    description += `\\n\\nLocation: ${place.mapUrl}`;
   }
   description += `\\n\\nSeries page: https://dalat.app/series/${series.slug}`;
 

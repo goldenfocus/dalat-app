@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { getCalendarLocation } from '@/lib/events/location';
 import { createClient } from '@/lib/supabase/server';
 
 // Types for the invitation data from the RPC function
@@ -88,9 +89,7 @@ function generateICS(event: {
   };
 
   // Build location string
-  const location = [event.location_name, event.address]
-    .filter(Boolean)
-    .join(', ');
+  const location = getCalendarLocation(event).text;
 
   // Build description with URL
   const description = [

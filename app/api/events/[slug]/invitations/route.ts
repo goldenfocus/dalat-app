@@ -1,3 +1,4 @@
+import { getEventMapUrl } from '@/lib/events/map-url';
 import { NextResponse, after } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { createClient as createServiceRoleClient } from '@supabase/supabase-js';
@@ -268,7 +269,7 @@ export async function POST(
         endsAt: event.ends_at,
         locationName: event.location_name,
         address: event.address,
-        googleMapsUrl: event.google_maps_url,
+        googleMapsUrl: await getEventMapUrl(supabase, event.id),
         inviterName,
         token: existingInvitation.token,
       });

@@ -9,6 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { getCalendarLocation } from "@/lib/events/location";
 import { formatInDaLat, DALAT_TIMEZONE } from "@/lib/timezone";
 
 interface AddToCalendarProps {
@@ -17,6 +18,8 @@ interface AddToCalendarProps {
   locationName?: string | null;
   address?: string | null;
   googleMapsUrl?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   startsAt: string;
   endsAt?: string | null;
   url: string;
@@ -47,6 +50,8 @@ function generateGoogleCalendarUrl({
   locationName,
   address,
   googleMapsUrl,
+  latitude,
+  longitude,
   startsAt,
   endsAt,
   url,
@@ -54,19 +59,17 @@ function generateGoogleCalendarUrl({
   // Default to 2 hours if no end time
   const endTime = endsAt || addTwoHours(startsAt);
 
-  // Use full address if available (best for Google Calendar search)
-  // Otherwise use location name with Đà Lạt suffix
-  let location = "";
-  if (address) {
-    location = address;
-  } else if (locationName) {
-    location = `${locationName}, Đà Lạt, Vietnam`;
-  }
+  const place = getCalendarLocation({
+    location_name: locationName,
+    address,
+    google_maps_url: googleMapsUrl,
+    latitude,
+    longitude,
+  });
 
-  // Build description with optional maps link
   let details = description || "";
-  if (googleMapsUrl) {
-    details += `\n\nLocation: ${googleMapsUrl}`;
+  if (place.mapUrl) {
+    details += `\n\nLocation: ${place.mapUrl}`;
   }
   details += `\n\nEvent page: ${url}`;
 
@@ -75,7 +78,7 @@ function generateGoogleCalendarUrl({
     text: title,
     dates: `${formatDateForGoogle(startsAt)}/${formatDateForGoogle(endTime)}`,
     details: details.trim(),
-    location,
+    location: place.text,
     ctz: DALAT_TIMEZONE, // Display in Đà Lạt timezone
   });
 
@@ -88,6 +91,8 @@ function generateICSContent({
   locationName,
   address,
   googleMapsUrl,
+  latitude,
+  longitude,
   startsAt,
   endsAt,
   url,
@@ -96,17 +101,14 @@ function generateICSContent({
   const endTime = endsAt || addTwoHours(startsAt);
   const nowFormatted = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
-  // For ICS, prefer address, then location name with maps URL
-  let location = "";
-  if (address) {
-    location = address;
-  } else if (locationName) {
-    location = googleMapsUrl
-      ? `${locationName} - ${googleMapsUrl}`
-      : locationName;
-  } else if (googleMapsUrl) {
-    location = googleMapsUrl;
-  }
+  const place = getCalendarLocation({
+    location_name: locationName,
+    address,
+    google_maps_url: googleMapsUrl,
+    latitude,
+    longitude,
+  });
+  const mapLine = place.mapUrl ? `\\n\\nLocation: ${place.mapUrl}` : "";
 
   // ICS with timezone (TZID parameter tells calendar app the local time)
   const icsContent = [
@@ -121,8 +123,9 @@ function generateICSContent({
     `DTSTAMP:${nowFormatted}Z`,
     `UID:${new Date(startsAt).getTime()}@dalat.app`,
     `SUMMARY:${title}`,
-    `DESCRIPTION:${(description || "").replace(/\n/g, "\\n")}\\n\\nEvent page: ${url}`,
-    `LOCATION:${location}`,
+    `DESCRIPTION:${(description || "").replace(/\n/g, "\\n")}${mapLine}\\n\\nEvent page: ${url}`,
+    `LOCATION:${place.text}`,
+    ...(place.geo ? [`GEO:${place.geo}`] : []),
     `URL:${url}`,
     "END:VEVENT",
     "END:VCALENDAR",

@@ -1,3 +1,4 @@
+import { getEventMapUrl } from '@/lib/events/map-url';
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { notifyWaitlistPromotion, notifyWaitlistPositionUpdate } from '@/lib/notifications';
@@ -67,7 +68,7 @@ export async function POST(request: Request) {
       startsAt: event.starts_at,
       endsAt: event.ends_at,
       locationName: event.location_name,
-      googleMapsUrl: event.google_maps_url,
+      googleMapsUrl: await getEventMapUrl(supabase, eventId),
     });
 
     // Notify remaining waitlisted users of their new position

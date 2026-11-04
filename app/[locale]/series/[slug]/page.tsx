@@ -369,6 +369,8 @@ export default async function SeriesPage({ params }: PageProps) {
                 locationName={series.location_name}
                 address={series.address}
                 googleMapsUrl={series.google_maps_url}
+                latitude={series.latitude}
+                longitude={series.longitude}
                 startsAt={nextEvent.starts_at}
                 endsAt={nextEvent.ends_at}
                 url={`https://dalat.app/series/${series.slug}`}
@@ -381,6 +383,8 @@ export default async function SeriesPage({ params }: PageProps) {
                 locationName={series.location_name}
                 address={series.address}
                 googleMapsUrl={series.google_maps_url}
+                latitude={series.latitude}
+                longitude={series.longitude}
                 startsAt={new Date().toISOString()}
                 url={`https://dalat.app/series/${series.slug}`}
                 seriesSlug={series.slug}

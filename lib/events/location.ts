@@ -66,3 +66,21 @@ export function resolveEventLocation<T extends EventLocation>(
   };
   return { ...location, google_maps_url: getLocationMapLinks(location).map };
 }
+
+/**
+ * Single source for calendar exports (Google link, .ics, series .ics).
+ * `text` always carries the place name with the address: an address alone
+ * makes Google Calendar re-geocode it to the wrong pin. `mapUrl` is the same
+ * link the event page uses, so every surface opens the same place.
+ */
+export function getCalendarLocation(location: EventLocation) {
+  const parts = [location.location_name, location.address].filter(
+    (part, i, all): part is string => !!part && all.indexOf(part) === i,
+  );
+  const text = parts.join(", ") || (location.google_maps_url ?? "");
+  return {
+    text,
+    mapUrl: getLocationMapLinks(location).map,
+    geo: hasCoordinates(location) ? `${location.latitude};${location.longitude}` : null,
+  };
+}

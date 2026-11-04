@@ -1428,6 +1428,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               privateDetails?.google_maps_url ??
               null
             }
+            latitude={event.latitude}
+            longitude={event.longitude}
             startsAt={event.starts_at}
             endsAt={event.ends_at}
             url={`https://dalat.app/events/${event.slug}`}

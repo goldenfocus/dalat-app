@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getLocationMapLinks, resolveEventLocation, type LocationVenue } from "./location";
+import { getCalendarLocation, getLocationMapLinks, resolveEventLocation, type LocationVenue } from "./location";
 
 const venue: LocationVenue = {
   id: "social-house", slug: "social-house-dalat", name: "Social House Dalat",
@@ -52,5 +52,19 @@ describe("canonical venue locations", () => {
   it("accepts zero coordinates and rejects invalid coordinate pairs", () => {
     expect(getLocationMapLinks({ latitude: 0, longitude: 0 }).directions).toContain("destination=0,0");
     for (const latitude of [NaN, Infinity, 91]) expect(getLocationMapLinks({ latitude, longitude: 108 }).directions).toBeNull();
+  });
+});
+
+describe("getCalendarLocation", () => {
+  const social = { location_name: "Social House", address: "184 Tô Ngọc Vân", latitude: 11.9467648, longitude: 108.4341887 };
+  it("includes the place name so the address is not re-geocoded to another pin", () => {
+    expect(getCalendarLocation(social).text).toBe("Social House, 184 Tô Ngọc Vân");
+  });
+  it("uses the same map link as the event page", () => {
+    expect(getCalendarLocation(social).mapUrl).toBe(getLocationMapLinks(social).map);
+    expect(getCalendarLocation(social).geo).toBe("11.9467648;108.4341887");
+  });
+  it("does not duplicate a name equal to the address", () => {
+    expect(getCalendarLocation({ location_name: "X", address: "X" }).text).toBe("X");
   });
 });
