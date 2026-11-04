@@ -4408,5 +4408,23 @@
     "unsubscribe": "Se désabonner des actualités par e-mail",
     "nextHeading": "Retrouvons-nous bientôt",
     "rsvpLink": "Voir l’événement et confirmer sa présence"
+  },
+  "menuOptions": {
+    "choose": "Choisir une option",
+    "temperature": "Température",
+    "milk": "Lait",
+    "beans": "Grains de café",
+    "flavour": "Saveur du biscuit",
+    "side": "Accompagnement",
+    "hot": "Chaud",
+    "iced": "Glacé",
+    "standard": "Recette classique",
+    "oat": "Lait d’avoine",
+    "house": "Grains maison",
+    "wineRobusta": "Robusta fermenté au vin",
+    "chocolate": "Chocolat",
+    "matchaChocolate": "Matcha chocolat",
+    "kimchi": "Kimchi maison",
+    "salad": "Salade"
   }
 }

@@ -4408,5 +4408,23 @@
     "unsubscribe": "E-Mail-Updates abbestellen",
     "nextHeading": "Sei wieder dabei",
     "rsvpLink": "Veranstaltung ansehen und zusagen"
+  },
+  "menuOptions": {
+    "choose": "Option wählen",
+    "temperature": "Temperatur",
+    "milk": "Milch",
+    "beans": "Kaffeebohnen",
+    "flavour": "Kekssorte",
+    "side": "Beilage",
+    "hot": "Heiß",
+    "iced": "Mit Eis",
+    "standard": "Standardrezept",
+    "oat": "Hafermilch",
+    "house": "Hausmischung",
+    "wineRobusta": "Weinfermentierter Robusta",
+    "chocolate": "Schokolade",
+    "matchaChocolate": "Matcha-Schokolade",
+    "kimchi": "Hausgemachtes Kimchi",
+    "salad": "Salat"
   }
 }

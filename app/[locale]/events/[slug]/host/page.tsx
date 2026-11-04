@@ -28,7 +28,7 @@ export default async function HostPage({ params }: Props) {
   }
   const messages = await getMessages();
   return (
-    <NextIntlClientProvider messages={{ arrival: messages.arrival, translations: messages.translations }}>
+    <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations }}>
       <HostWorkspace slug={slug} />
     </NextIntlClientProvider>
   );

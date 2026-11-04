@@ -4408,5 +4408,23 @@
     "unsubscribe": "Hủy nhận email cập nhật",
     "nextHeading": "Lần tới lại tham gia cùng chúng mình nhé",
     "rsvpLink": "Xem sự kiện và đăng ký tham gia"
+  },
+  "menuOptions": {
+    "choose": "Chọn một tùy chọn",
+    "temperature": "Nóng hoặc đá",
+    "milk": "Sữa",
+    "beans": "Hạt cà phê",
+    "flavour": "Vị bánh quy",
+    "side": "Món ăn kèm",
+    "hot": "Nóng",
+    "iced": "Đá",
+    "standard": "Công thức gốc",
+    "oat": "Sữa yến mạch",
+    "house": "Hạt cà phê thường",
+    "wineRobusta": "Robusta lên men rượu vang",
+    "chocolate": "Sô cô la",
+    "matchaChocolate": "Matcha sô cô la",
+    "kimchi": "Kimchi nhà làm",
+    "salad": "Salad"
   }
 }

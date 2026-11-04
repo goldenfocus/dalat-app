@@ -19,6 +19,7 @@ export async function MenuSections({
   showNav?: boolean;
 }) {
   const t = await getTranslations("venueMenu");
+  const options = await getTranslations("menuOptions");
 
   return (
     <div className="space-y-10">
@@ -97,6 +98,7 @@ export async function MenuSections({
                         {item.description}
                       </p>
                     )}
+                    {(item.option_groups || []).map(group => <p key={group.id} className="mt-1 text-sm text-muted-foreground">{options(group.id)}: {group.choices.map(choice => `${options(choice.id)}${choice.price_vnd ? ` (+${formatVnd(choice.price_vnd, locale)})` : ""}`).join(" / ")}</p>)}
                     {(tags.length > 0 || item.is_sold_out) && (
                       <div className="mt-1.5 flex flex-wrap gap-1.5">
                         {item.is_sold_out && (

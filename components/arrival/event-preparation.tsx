@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { LanguageSetup } from "./language-setup";
 import { DEFAULT_LANGUAGE_PREFERENCES, languagePreferencesSchema, type LanguagePreferences } from "@/lib/arrival/languages";
 import type { ArrivalContext, ArrivalOrder } from "@/lib/arrival/types";
+import { readSelection } from "@/lib/menu/options";
 import { cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView } from "./arrival-receipt";
 import { DrinkMenuSheet, canChooseFreeDrink, reservationQuantities } from "./drink-menu-sheet";
@@ -65,7 +66,7 @@ export function EventPreparation({ slug }: { slug: string }) {
     if (lock.current || !context) return;
     lock.current = true; setBusy(true); setFailed(false);
     const freeDrink = canChooseFreeDrink(context) ? selected : null;
-    const body = JSON.stringify({ items: cartLines(context.menu, reservationQuantities(quantities, freeDrink)), note, sponsoredItemId: freeDrink || undefined });
+    const body = JSON.stringify({ items: cartLines(context.menu, reservationQuantities(quantities, freeDrink)), note, sponsoredItemId: freeDrink ? readSelection(freeDrink).item_id : undefined });
     if (pending.current?.body !== body) pending.current = { body, id: crypto.randomUUID() };
     try {
       const response = await fetch(`${endpoint}/reserve`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...JSON.parse(body), requestId: pending.current.id }) });

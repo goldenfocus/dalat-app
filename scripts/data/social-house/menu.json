@@ -7,11 +7,253 @@
       "title": "Coffee",
       "note": "Beans from Zanya, Lang Biang. Wine-fermented Robusta +10,000 · Oat milk +5,000",
       "items": [
-        { "name": "Black Coffee", "description": "Hot or iced", "price_vnd": 34000, "tags": ["hot", "iced"] },
-        { "name": "Milk Coffee", "description": "Hot or iced", "price_vnd": 39000, "tags": ["hot", "iced"] },
-        { "name": "White Coffee", "description": "Hot or iced", "price_vnd": 48000, "tags": ["hot", "iced"] },
-        { "name": "Salted Cream Coffee", "description": "Iced, topped with our homemade farmer-cheese cream", "price_vnd": 58000, "tags": ["iced", "favourite"] },
-        { "name": "Egg Coffee", "description": "Hot or iced", "price_vnd": 58000, "tags": ["hot", "iced"] }
+        {
+          "name": "Black Coffee",
+          "description": "Hot or iced",
+          "price_vnd": 40000,
+          "tags": [
+            "hot",
+            "iced"
+          ],
+          "option_groups": [
+            {
+              "id": "temperature",
+              "choices": [
+                {
+                  "id": "hot",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "iced",
+                  "price_vnd": 0
+                }
+              ]
+            },
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Milk Coffee",
+          "description": "Hot or iced",
+          "price_vnd": 44000,
+          "tags": [
+            "hot",
+            "iced"
+          ],
+          "option_groups": [
+            {
+              "id": "temperature",
+              "choices": [
+                {
+                  "id": "hot",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "iced",
+                  "price_vnd": 0
+                }
+              ]
+            },
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "White Coffee",
+          "description": "Hot or iced",
+          "price_vnd": 49000,
+          "tags": [
+            "hot",
+            "iced"
+          ],
+          "option_groups": [
+            {
+              "id": "temperature",
+              "choices": [
+                {
+                  "id": "hot",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "iced",
+                  "price_vnd": 0
+                }
+              ]
+            },
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Salted Cream Coffee",
+          "description": "Iced, topped with our homemade farmer-cheese cream",
+          "price_vnd": 58000,
+          "tags": [
+            "iced",
+            "favourite"
+          ],
+          "option_groups": [
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Egg Coffee",
+          "description": "Hot or iced",
+          "price_vnd": 58000,
+          "tags": [
+            "hot",
+            "iced"
+          ],
+          "option_groups": [
+            {
+              "id": "temperature",
+              "choices": [
+                {
+                  "id": "hot",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "iced",
+                  "price_vnd": 0
+                }
+              ]
+            },
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        }
       ]
     },
     {
@@ -19,22 +261,239 @@
       "title": "Cold Brew",
       "note": null,
       "items": [
-        { "name": "Original Cold Brew", "description": null, "price_vnd": 58000, "tags": ["iced"] },
-        { "name": "Cold Brew Cold Foam", "description": null, "price_vnd": 65000, "tags": ["iced"] },
-        { "name": "Orange Cold Brew Tonic", "description": null, "price_vnd": 65000, "tags": ["iced"] },
-        { "name": "Orange Cold Brew Cold Foam", "description": null, "price_vnd": 70000, "tags": ["iced", "favourite"] },
-        { "name": "Seasonal Jam Cold Brew Cold Foam", "description": "Cold brew with our homemade seasonal jam and cold foam", "price_vnd": 85000, "tags": ["iced"] }
+        {
+          "name": "Original Cold Brew",
+          "description": null,
+          "price_vnd": 58000,
+          "tags": [
+            "iced"
+          ]
+        },
+        {
+          "name": "Cold Brew Cold Foam",
+          "description": null,
+          "price_vnd": 65000,
+          "tags": [
+            "iced"
+          ]
+        },
+        {
+          "name": "Orange Cold Brew Tonic",
+          "description": null,
+          "price_vnd": 65000,
+          "tags": [
+            "iced"
+          ]
+        },
+        {
+          "name": "Orange Cold Brew Cold Foam",
+          "description": null,
+          "price_vnd": 70000,
+          "tags": [
+            "iced",
+            "favourite"
+          ]
+        },
+        {
+          "name": "Strawberry Cold Brew Cold Foam",
+          "description": null,
+          "price_vnd": 84000,
+          "tags": [
+            "iced"
+          ]
+        }
       ]
+    },
+    {
+      "slug": "moka-pot",
+      "title": "Moka Pot",
+      "note": "Wine-fermented Robusta +10,000 · Oat milk +5,000",
+      "items": [
+        {
+          "name": "Moka Original",
+          "description": null,
+          "price_vnd": 45000,
+          "tags": [],
+          "option_groups": [
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Orange Moka",
+          "description": null,
+          "price_vnd": 55000,
+          "tags": [],
+          "option_groups": [
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Moka Latte",
+          "description": null,
+          "price_vnd": 55000,
+          "tags": [],
+          "option_groups": [
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        },
+        {
+          "name": "Chocolate Moka Latte",
+          "description": null,
+          "price_vnd": 75000,
+          "tags": [],
+          "option_groups": [
+            {
+              "id": "milk",
+              "choices": [
+                {
+                  "id": "standard",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "oat",
+                  "price_vnd": 5000
+                }
+              ],
+              "default": "standard"
+            },
+            {
+              "id": "beans",
+              "choices": [
+                {
+                  "id": "house",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "wineRobusta",
+                  "price_vnd": 10000
+                }
+              ],
+              "default": "house"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "pour-over",
+      "title": "Pour-over",
+      "note": "Price varies by bean selection - ask us what’s in today. 1–2 servings (15 g coffee) or 2–4 servings (30 g coffee). Order at the venue.",
+      "items": []
     },
     {
       "slug": "matcha",
       "title": "Matcha",
       "note": "Matcha from Lạc Yên Trà, Thái Nguyên.",
       "items": [
-        { "name": "Matcha Latte", "description": null, "price_vnd": 55000, "tags": [] },
-        { "name": "Matcha Cloud Latte", "description": null, "price_vnd": 70000, "tags": [] },
-        { "name": "Coconut Matcha Cloud", "description": null, "price_vnd": 75000, "tags": ["favourite"] },
-        { "name": "Strawberry Matcha", "description": "With homemade jam and cold foam", "price_vnd": 84000, "tags": ["favourite"] }
+        {
+          "name": "Matcha Latte",
+          "description": null,
+          "price_vnd": 55000,
+          "tags": []
+        },
+        {
+          "name": "Matcha Cloud Latte",
+          "description": null,
+          "price_vnd": 70000,
+          "tags": []
+        },
+        {
+          "name": "Coconut Matcha Cloud",
+          "description": null,
+          "price_vnd": 75000,
+          "tags": [
+            "favourite"
+          ]
+        },
+        {
+          "name": "Strawberry Matcha",
+          "description": "With homemade jam and cold foam",
+          "price_vnd": 84000,
+          "tags": [
+            "favourite"
+          ]
+        }
       ]
     },
     {
@@ -42,17 +501,102 @@
       "title": "Chocolate",
       "note": "Melted from a 70% Zanya chocolate bar – whole cacao beans grown on Đắk Lắk farms, processed in Lang Biang, Đà Lạt.",
       "items": [
-        { "name": "Hot Chocolate", "description": null, "price_vnd": 95000, "tags": ["hot", "favourite"] },
-        { "name": "Hot Chocolate with “heaven” whipped cream", "description": null, "price_vnd": 110000, "tags": ["hot"] }
+        {
+          "name": "Hot Chocolate",
+          "description": null,
+          "price_vnd": 95000,
+          "tags": [
+            "hot",
+            "favourite"
+          ]
+        },
+        {
+          "name": "Hot Chocolate with “heaven” whipped cream",
+          "description": null,
+          "price_vnd": 110000,
+          "tags": [
+            "hot"
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "non-caffeine",
+      "title": "Non-caffeine",
+      "note": null,
+      "items": [
+        {
+          "name": "Fresh Orange",
+          "description": null,
+          "price_vnd": 42000,
+          "tags": []
+        },
+        {
+          "name": "Fresh Lemon",
+          "description": null,
+          "price_vnd": 35000,
+          "tags": []
+        },
+        {
+          "name": "Coconut Cloud",
+          "description": null,
+          "price_vnd": 65000,
+          "tags": []
+        },
+        {
+          "name": "Hot Tea Pot",
+          "description": "With lemon, ginger and homemade jam",
+          "price_vnd": 60000,
+          "tags": []
+        }
       ]
     },
     {
       "slug": "homemade-sweets",
       "title": "Homemade Sweets",
-      "note": "All pastries are homemade. Ask about today’s muffins & cakes – and our Viennese Sachertorte in high season.",
+      "note": "All pastries are homemade. Ask about today’s muffins & cakes.",
       "items": [
-        { "name": "Cookies", "description": "Chocolate or matcha chocolate", "price_vnd": 55000, "tags": ["favourite", "vegetarian"] },
-        { "name": "Chocolate Brownie", "description": "So fudgy it melts your heart", "price_vnd": 55000, "tags": ["favourite", "vegetarian"] }
+        {
+          "name": "Cookies",
+          "description": "Chocolate or matcha chocolate",
+          "price_vnd": 55000,
+          "tags": [
+            "favourite",
+            "vegetarian"
+          ],
+          "option_groups": [
+            {
+              "id": "flavour",
+              "choices": [
+                {
+                  "id": "chocolate",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "matchaChocolate",
+                  "price_vnd": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Chocolate Brownie",
+          "description": "So fudgy it melts your heart",
+          "price_vnd": 55000,
+          "tags": [
+            "favourite",
+            "vegetarian"
+          ]
+        },
+        {
+          "name": "Sachertorte",
+          "description": "Traditional Austrian chocolate cake with whipped cream - while it lasts",
+          "price_vnd": 110000,
+          "tags": [
+            "favourite"
+          ]
+        }
       ]
     },
     {
@@ -60,8 +604,50 @@
       "title": "Socialhouse Burrito",
       "note": "50% whole-wheat house-made tortilla with homemade farmer cheese sauce. Served with homemade kimchi or salad.",
       "items": [
-        { "name": "Chicken Burrito", "description": "Grilled chicken, scrambled eggs, avocado, pickled vegetables", "price_vnd": 115000, "tags": [] },
-        { "name": "Vegetable Burrito", "description": "Grilled lemongrass tofu, mushrooms, scrambled eggs, avocado, pickled vegetables", "price_vnd": 115000, "tags": ["vegetarian"] }
+        {
+          "name": "Chicken Burrito",
+          "description": "Grilled chicken, scrambled eggs, avocado, pickled vegetables",
+          "price_vnd": 115000,
+          "tags": [],
+          "option_groups": [
+            {
+              "id": "side",
+              "choices": [
+                {
+                  "id": "kimchi",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "salad",
+                  "price_vnd": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Vegetable Burrito",
+          "description": "Grilled lemongrass tofu, mushrooms, scrambled eggs, avocado, pickled vegetables",
+          "price_vnd": 115000,
+          "tags": [
+            "vegetarian"
+          ],
+          "option_groups": [
+            {
+              "id": "side",
+              "choices": [
+                {
+                  "id": "kimchi",
+                  "price_vnd": 0
+                },
+                {
+                  "id": "salad",
+                  "price_vnd": 0
+                }
+              ]
+            }
+          ]
+        }
       ]
     },
     {
@@ -69,8 +655,20 @@
       "title": "Mama Noodle Soup",
       "note": "Warm, soulful bowls cooked by mom – feel like home.",
       "items": [
-        { "name": "Chicken Soup", "description": "Nourishing chicken broth, shredded chicken, egg on top", "price_vnd": 65000, "tags": [] },
-        { "name": "Mushroom Soup", "description": "Vegetable broth, fresh mushrooms, tofu, egg on top", "price_vnd": 65000, "tags": ["vegetarian"] }
+        {
+          "name": "Chicken Soup",
+          "description": "Nourishing chicken broth, shredded chicken, egg on top",
+          "price_vnd": 65000,
+          "tags": []
+        },
+        {
+          "name": "Mushroom Soup",
+          "description": "Vegetable broth, fresh mushrooms, tofu, egg on top",
+          "price_vnd": 65000,
+          "tags": [
+            "vegetarian"
+          ]
+        }
       ]
     },
     {
@@ -78,7 +676,12 @@
       "title": "Family Dinner",
       "note": null,
       "items": [
-        { "name": "Family Dinner by Mom", "description": "Home-cooked dinner, per person, including one drink", "price_vnd": 180000, "tags": [] }
+        {
+          "name": "Family Dinner by Mom",
+          "description": "Home-cooked dinner, per person, including one drink",
+          "price_vnd": 180000,
+          "tags": []
+        }
       ]
     },
     {
@@ -86,10 +689,32 @@
       "title": "Pancakes & French toast",
       "note": null,
       "items": [
-        { "name": "Pancakes with homemade jam", "description": "Homemade seasonal jam and fresh fruit, finished with chocolate, salted caramel and honey", "price_vnd": 115000, "tags": ["vegetarian"] },
-        { "name": "French toast", "description": "With creamy scrambled egg and homemade strawberry jam", "price_vnd": 115000, "tags": ["vegetarian"] },
-        { "name": "Pancake Tacos", "description": "For two. With creamy scrambled egg and homemade strawberry jam on top", "price_vnd": 255000, "tags": ["vegetarian"] }
+        {
+          "name": "Pancakes with homemade jam",
+          "description": "Homemade seasonal jam and fresh fruit, finished with chocolate, salted caramel and honey",
+          "price_vnd": 115000,
+          "tags": [
+            "vegetarian"
+          ]
+        },
+        {
+          "name": "French toast",
+          "description": "2 thick-cut slices of bread in rich egg batter, pan-fried. Served with scrambled eggs, fresh fruit and homemade jam - crunchy crust, fluffy middle",
+          "price_vnd": 125000,
+          "tags": [
+            "vegetarian"
+          ]
+        },
+        {
+          "name": "Pancake Tacos",
+          "description": "Fluffy pancake shells, each fully loaded with toppings - made for sharing between 2 people",
+          "price_vnd": 255000,
+          "tags": [
+            "vegetarian"
+          ]
+        }
       ]
     }
-  ]
+  ],
+  "verified_at": "2026-11-04"
 }

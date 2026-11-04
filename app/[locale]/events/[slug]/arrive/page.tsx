@@ -25,7 +25,7 @@ export default async function ArrivalPage({ params }: Props) {
   const { locale, slug } = await params;
   const messages = await getMessages({ locale });
   return (
-    <NextIntlClientProvider messages={{ arrival: messages.arrival, translations: messages.translations }}>
+    <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations }}>
       <GuestArrival slug={slug} />
     </NextIntlClientProvider>
   );

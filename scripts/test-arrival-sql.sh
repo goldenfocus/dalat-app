@@ -154,3 +154,6 @@ DO $$ BEGIN
 END $$;
 SQL
 echo 'Concurrent RSVP free-drink cutoff passed.'
+# Menu options must survive reservations/check-in and be priced in SQL.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/migrations/20261129_001_menu_options.sql"
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/supabase/tests/menu-options.sql"

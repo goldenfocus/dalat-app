@@ -3,14 +3,18 @@
 import { useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { OriginalText } from "@/components/ui/original-text";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Link } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/client";
+import { ItemOrderControl } from "./item-order-control";
+import { cartLines, cartTotal } from "@/components/arrival/arrival-cart";
+import { selectionKey } from "@/lib/menu/options";
 import { formatVnd } from "@/lib/menu/format";
 import type { MenuSection } from "@/lib/menu/types";
 
@@ -20,7 +24,7 @@ export type ExistingPreorder = {
   total_vnd: number;
   note: string | null;
   phone: string | null;
-  items: { menu_item_id: string | null; qty: number }[];
+  items: { menu_item_id: string | null; qty: number; selected_options?: Record<string, string> }[];
 };
 
 /** Maps the RPC's raise-exception text to a translated message key. */
@@ -51,7 +55,7 @@ export function PreorderPanel({
 
   const [open, setOpen] = useState(false);
   const [qty, setQty] = useState<Record<string, number>>(() =>
-    Object.fromEntries((existing?.items ?? []).filter((i) => i.menu_item_id).map((i) => [i.menu_item_id!, i.qty])),
+    Object.fromEntries((existing?.items ?? []).filter((i) => i.menu_item_id).map((i) => [selectionKey(i.menu_item_id!, i.selected_options), i.qty])),
   );
   const [note, setNote] = useState(existing?.note ?? "");
   const [phone, setPhone] = useState(existing?.phone ?? "");
@@ -62,21 +66,17 @@ export function PreorderPanel({
     [sections],
   );
   const orderable = (id: string) => !!itemsById.get(id) && !itemsById.get(id)!.is_sold_out;
-  const lines = Object.entries(qty).filter(([id, n]) => n > 0 && orderable(id));
-  // lines from an earlier preorder whose item has since sold out or been unlisted
-  const dropped = (existing?.items ?? []).some((i) => !i.menu_item_id || !orderable(i.menu_item_id));
-  const count = lines.reduce((sum, [, n]) => sum + n, 0);
-  const total = lines.reduce((sum, [id, n]) => sum + itemsById.get(id)!.price_vnd * n, 0);
-
-  const bump = (id: string, delta: number) =>
-    setQty((q) => ({ ...q, [id]: Math.min(20, Math.max(0, (q[id] ?? 0) + delta)) }));
+  const lines = cartLines(sections, qty);
+  const dropped = (existing?.items ?? []).some(i => !i.menu_item_id || !orderable(i.menu_item_id));
+  const count = lines.reduce((sum, line) => sum + line.qty, 0);
+  const total = cartTotal(sections, qty);
 
   const submit = async () => {
     setBusy(true);
     const db = createClient();
     const { error } = await db.rpc("create_event_preorder", {
       p_event_id: eventId,
-      p_items: lines.map(([item_id, n]) => ({ item_id, qty: n })),
+      p_items: lines,
       p_note: note || null,
       p_phone: phone || null,
     });
@@ -138,50 +138,13 @@ export function PreorderPanel({
               <h3 className="font-semibold">{s.title}</h3>
               {s.note && <p className="text-xs text-muted-foreground">{s.note}</p>}
               <ul className="mt-2 divide-y">
-                {s.items.map((i) => {
-                  const n = qty[i.id] ?? 0;
-                  return (
-                    <li key={i.id} className="flex items-center gap-3 py-2.5">
-                      <div className="min-w-0 flex-1">
-                        <p className={`text-sm font-medium ${i.is_sold_out ? "text-muted-foreground line-through" : ""}`}>
-                          {i.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground tabular-nums">
-                          {i.is_sold_out ? t("soldOut") : formatVnd(i.price_vnd, locale)}
-                        </p>
-                      </div>
-                      {!i.is_sold_out && (
-                        <div className="flex items-center gap-1">
-                          {n > 0 && (
-                            <>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="icon"
-                                className="h-11 w-11"
-                                aria-label={t("remove", { name: i.name })}
-                                onClick={() => bump(i.id, -1)}
-                              >
-                                <Minus />
-                              </Button>
-                              <span className="w-6 text-center text-sm font-semibold tabular-nums">{n}</span>
-                            </>
-                          )}
-                          <Button
-                            type="button"
-                            variant={n > 0 ? "default" : "outline"}
-                            size="icon"
-                            className="h-11 w-11"
-                            aria-label={t("add", { name: i.name })}
-                            onClick={() => bump(i.id, 1)}
-                          >
-                            <Plus />
-                          </Button>
-                        </div>
-                      )}
-                    </li>
-                  );
-                })}
+                {s.items.map(i => <li key={i.id} className="py-4">
+                  <p className="font-medium">{i.name}</p>
+                  {i.description && <p className="text-sm text-muted-foreground">{i.description}</p>}
+                  <p className="text-sm text-muted-foreground tabular-nums">{formatVnd(i.price_vnd, locale)}</p>
+                  {i.originalName && (i.name !== i.originalName || i.description !== i.originalDescription) && <OriginalText text={[i.originalName, i.originalDescription].filter(Boolean).join("\n")} />}
+                  <ItemOrderControl item={i} quantities={qty} onChange={setQty} disabled={busy} />
+                </li>)}
               </ul>
             </section>
           ))}

@@ -4408,5 +4408,23 @@
     "unsubscribe": "Cancelar la suscripción a las novedades por correo electrónico",
     "nextHeading": "Vuelve a acompañarnos",
     "rsvpLink": "Ver el evento y confirmar asistencia"
+  },
+  "menuOptions": {
+    "choose": "Elige una opción",
+    "temperature": "Temperatura",
+    "milk": "Leche",
+    "beans": "Granos de café",
+    "flavour": "Sabor de galleta",
+    "side": "Guarnición",
+    "hot": "Caliente",
+    "iced": "Con hielo",
+    "standard": "Receta original",
+    "oat": "Leche de avena",
+    "house": "Granos de la casa",
+    "wineRobusta": "Robusta fermentado con vino",
+    "chocolate": "Chocolate",
+    "matchaChocolate": "Matcha con chocolate",
+    "kimchi": "Kimchi casero",
+    "salad": "Ensalada"
   }
 }

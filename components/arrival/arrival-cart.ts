@@ -1,17 +1,18 @@
 import type { MenuSection } from "@/lib/menu/types";
-
+import { optionPrice, readSelection } from "@/lib/menu/options";
 export type ArrivalQuantities = Record<string, number>;
-
-/** Build orders from the current menu only, never stale or unavailable selections. */
+/** Resolve current menu prices and reject incomplete, stale or unavailable choices. */
 export function cartLines(sections: MenuSection[], quantities: ArrivalQuantities) {
-  return sections.flatMap(section => section.items).flatMap(item => {
-    const requested = quantities[item.id] ?? 0;
+  const menu = new Map(sections.flatMap(s => s.items).map(i => [i.id, i]));
+  return Object.entries(quantities).flatMap(([key, requested]) => {
+    const line = readSelection(key);
+    const item = menu.get(line.item_id);
     const qty = Number.isFinite(requested) ? Math.min(20, Math.max(0, Math.floor(requested))) : 0;
-    return item.is_sold_out || qty === 0 ? [] : [{ item_id: item.id, qty }];
+    if (!item || item.is_sold_out || !qty || optionPrice(item, line.selected_options) === null) return [];
+    return [{ item_id: line.item_id, qty, ...(Object.keys(line.selected_options).length ? { selected_options: line.selected_options } : {}) }];
   });
 }
-
 export function cartTotal(sections: MenuSection[], quantities: ArrivalQuantities) {
-  const prices = new Map(sections.flatMap(section => section.items).map(item => [item.id, item.price_vnd]));
-  return cartLines(sections, quantities).reduce((sum, item) => sum + (prices.get(item.item_id) ?? 0) * item.qty, 0);
+  const menu = new Map(sections.flatMap(s => s.items).map(i => [i.id, i]));
+  return cartLines(sections, quantities).reduce((sum, line) => sum + optionPrice(menu.get(line.item_id)!, line.selected_options || {})! * line.qty, 0);
 }

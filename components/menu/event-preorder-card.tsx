@@ -46,7 +46,7 @@ export async function EventPreorderCard({
   if (auth.user) {
     const { data, error } = await db
       .from("event_preorders")
-      .select("id,status,total_vnd,note,phone,event_preorder_items(menu_item_id,qty)")
+      .select("id,status,total_vnd,note,phone,event_preorder_items(menu_item_id,qty,selected_options)")
       .eq("event_id", eventId)
       .eq("user_id", auth.user.id)
       .in("status", ["pending", "confirmed"])

@@ -26,8 +26,9 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
   const userId = participant?.user_id || rsvp?.user_id;
   const sponsorEligible = Boolean(userId && data.rsvps.some(person => person.user_id === userId && person.sponsorEligible === true)
     && !data.orders.some(order => order.user_id === userId && (order.sponsored_vnd ?? 0) > 0));
+  const selectedItemIds = new Set(cartLines(data.menu, quantities).map(line => line.item_id));
   const sponsorItems = sponsorEligible ? data.menu.flatMap(section => section.items).filter(item =>
-    (quantities[item.id] ?? 0) > 0 && data.event.sponsorship?.eligibleItemIds.includes(item.id)) : [];
+    selectedItemIds.has(item.id) && data.event.sponsorship?.eligibleItemIds.includes(item.id)) : [];
   const sponsoredItemId = sponsorChoice === null ? sponsorItems[0]?.id : sponsorItems.find(item => item.id === sponsorChoice)?.id;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

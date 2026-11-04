@@ -1,4 +1,6 @@
+export type MenuOptionGroup = { id: string; choices: { id: string; price_vnd: number }[]; default?: string };
 export type MenuItem = {
+  option_groups?: MenuOptionGroup[];
   originalName?: string;
   originalDescription?: string | null;
   id: string;
@@ -22,6 +24,7 @@ export type MenuSection = {
 
 /** Raw rows as stored (with per-locale overrides) — used by the manager UI. */
 export type MenuItemRow = {
+  option_groups?: MenuOptionGroup[];
   id: string;
   section_id: string;
   name: string;

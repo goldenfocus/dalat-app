@@ -4408,5 +4408,23 @@
     "unsubscribe": "Berhenti berlangganan kabar melalui email",
     "nextHeading": "Yuk, ikut lagi",
     "rsvpLink": "Lihat acara dan konfirmasi kehadiran"
+  },
+  "menuOptions": {
+    "choose": "Pilih opsi",
+    "temperature": "Suhu",
+    "milk": "Susu",
+    "beans": "Biji kopi",
+    "flavour": "Rasa kukis",
+    "side": "Pendamping",
+    "hot": "Panas",
+    "iced": "Es",
+    "standard": "Resep standar",
+    "oat": "Susu oat",
+    "house": "Biji kopi standar",
+    "wineRobusta": "Robusta fermentasi anggur",
+    "chocolate": "Cokelat",
+    "matchaChocolate": "Matcha cokelat",
+    "kimchi": "Kimchi buatan sendiri",
+    "salad": "Salad"
   }
 }

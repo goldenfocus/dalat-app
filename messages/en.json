@@ -4408,5 +4408,23 @@
     "unsubscribe": "Unsubscribe from email updates",
     "nextHeading": "Join us again",
     "rsvpLink": "View event and RSVP"
+  },
+  "menuOptions": {
+    "choose": "Choose an option",
+    "temperature": "Temperature",
+    "milk": "Milk",
+    "beans": "Coffee beans",
+    "flavour": "Cookie flavour",
+    "side": "Side",
+    "hot": "Hot",
+    "iced": "Iced",
+    "standard": "Standard recipe",
+    "oat": "Oat milk",
+    "house": "House beans",
+    "wineRobusta": "Wine-fermented Robusta",
+    "chocolate": "Chocolate",
+    "matchaChocolate": "Matcha chocolate",
+    "kimchi": "Homemade kimchi",
+    "salad": "Salad"
   }
 }

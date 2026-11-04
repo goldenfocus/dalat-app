@@ -1,8 +1,7 @@
 "use client";
 
-import { Minus, Plus } from "lucide-react";
+import { ItemOrderControl } from "@/components/menu/item-order-control";
 import { useLocale, useTranslations } from "next-intl";
-import { Button } from "@/components/ui/button";
 import { OriginalText } from "@/components/ui/original-text";
 import { Textarea } from "@/components/ui/textarea";
 import { formatVnd } from "@/lib/menu/format";
@@ -24,10 +23,7 @@ export interface ArrivalMenuProps {
 export function ArrivalMenu({ sections, quantities, onChange, note, onNoteChange, disabled = false }: ArrivalMenuProps) {
   const t = useTranslations("arrival");
   const locale = useLocale();
-  const bump = (id: string, delta: number) => onChange({
-    ...quantities,
-    [id]: Math.max(0, Math.min(20, (quantities[id] ?? 0) + delta)),
-  });
+
 
   if (sections.length === 0) return <p className="text-muted-foreground">{t("noMenu")}</p>;
 
@@ -51,7 +47,6 @@ export function ArrivalMenu({ sections, quantities, onChange, note, onNoteChange
           )}
           <ul className="mt-3 divide-y divide-border">
             {section.items.map(item => {
-              const qty = quantities[item.id] ?? 0;
               return (
                 <li key={item.id} className="py-4">
                   <div className="flex items-start justify-between gap-3">
@@ -68,19 +63,7 @@ export function ArrivalMenu({ sections, quantities, onChange, note, onNoteChange
                   {item.originalName && (item.name !== item.originalName || item.description !== item.originalDescription) && (
                     <OriginalText text={[item.originalName, item.originalDescription].filter(Boolean).join("\n")} />
                   )}
-                  <div className="mt-2 flex items-center justify-end gap-2">
-                    {item.is_sold_out ? <span className="py-3 text-sm text-muted-foreground">{t("soldOut")}</span> : (
-                      <>
-                        {qty > 0 && (
-                          <>
-                            <Button type="button" size="icon" variant="ghost" className="scroll-mb-28 h-11 w-11" disabled={disabled} aria-label={t("remove", { name: item.name })} onClick={() => bump(item.id, -1)}><Minus aria-hidden="true" /></Button>
-                            <output aria-label={t("quantity", { name: item.name, count: qty })} className="min-w-6 text-center font-semibold tabular-nums text-foreground">{qty}</output>
-                          </>
-                        )}
-                        <Button type="button" size="icon" variant="outline" className="scroll-mb-28 h-11 w-11" disabled={disabled || qty >= 20} aria-label={t("add", { name: item.name })} onClick={() => bump(item.id, 1)}><Plus aria-hidden="true" /></Button>
-                      </>
-                    )}
-                  </div>
+                  <ItemOrderControl item={item} quantities={quantities} onChange={onChange} disabled={disabled} />
                 </li>
               );
             })}

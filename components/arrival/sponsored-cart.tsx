@@ -2,12 +2,14 @@
 import { useLocale, useTranslations } from "next-intl";
 import { formatVnd } from "@/lib/menu/format";
 import type { MenuSection } from "@/lib/menu/types";
-import { cartTotal, type ArrivalQuantities } from "./arrival-cart";
+import { cartLines, cartTotal, type ArrivalQuantities } from "./arrival-cart";
+import { readSelection } from "@/lib/menu/options";
 import { DrinkSponsorLink } from "./drink-sponsor-link";
 
 export function sponsoredItemId(sections: MenuSection[], quantities: ArrivalQuantities, eligible: string[], selected: string | null) {
-  const choices = sections.flatMap(section => section.items).filter(item => eligible.includes(item.id) && !item.is_sold_out && (quantities[item.id] || 0) > 0);
-  return choices.find(item => item.id === selected)?.id || choices[0]?.id || null;
+  const selectedIds = new Set(cartLines(sections, quantities).map(line => line.item_id));
+  const choices = sections.flatMap(section => section.items).filter(item => eligible.includes(item.id) && !item.is_sold_out && selectedIds.has(item.id));
+  return choices.find(item => item.id === readSelection(selected || "").item_id)?.id || choices[0]?.id || null;
 }
 export function SponsoredCart({ sections, quantities, eligible, selected, onSelect }: {
   sections: MenuSection[]; quantities: ArrivalQuantities; eligible: string[]; selected: string | null; onSelect: (id: string) => void;
@@ -15,7 +17,8 @@ export function SponsoredCart({ sections, quantities, eligible, selected, onSele
   const t = useTranslations("arrival.registration");
   const locale = useLocale();
   const id = sponsoredItemId(sections, quantities, eligible, selected);
-  const choices = sections.flatMap(section => section.items).filter(item => eligible.includes(item.id) && (quantities[item.id] || 0) > 0 && !item.is_sold_out);
+  const selectedIds = new Set(cartLines(sections, quantities).map(line => line.item_id));
+  const choices = sections.flatMap(section => section.items).filter(item => eligible.includes(item.id) && selectedIds.has(item.id) && !item.is_sold_out);
   const covered = choices.find(item => item.id === id)?.price_vnd || 0;
   return <section className="space-y-3 rounded-xl border border-primary/30 bg-primary/5 p-4">
     <p className="font-semibold"><DrinkSponsorLink>{t("complimentary")}</DrinkSponsorLink></p>

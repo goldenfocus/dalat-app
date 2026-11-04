@@ -4408,5 +4408,23 @@
     "unsubscribe": "退订邮件更新",
     "nextHeading": "期待与你再次相聚",
     "rsvpLink": "查看活动并报名"
+  },
+  "menuOptions": {
+    "choose": "请选择",
+    "temperature": "温度",
+    "milk": "奶类",
+    "beans": "咖啡豆",
+    "flavour": "饼干口味",
+    "side": "配菜",
+    "hot": "热饮",
+    "iced": "冰饮",
+    "standard": "原配方",
+    "oat": "燕麦奶",
+    "house": "店选咖啡豆",
+    "wineRobusta": "葡萄酒发酵罗布斯塔",
+    "chocolate": "巧克力",
+    "matchaChocolate": "抹茶巧克力",
+    "kimchi": "自制泡菜",
+    "salad": "沙拉"
   }
 }

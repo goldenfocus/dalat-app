@@ -4,7 +4,7 @@ import { pickLocalized, currentOverrides } from "./format";
 import type { MenuSection, MenuSectionRow, MenuItemRow } from "./types";
 
 const ITEM_COLS =
-  "id,section_id,name,name_i18n,name_i18n_sources,description,description_i18n,description_i18n_sources,price_vnd,tags,image_url,is_available,is_sold_out,sort";
+  "id,section_id,name,name_i18n,name_i18n_sources,description,description_i18n,description_i18n_sources,price_vnd,option_groups,tags,image_url,is_available,is_sold_out,sort";
 const SECTION_COLS =
   "id,slug,title,title_i18n,title_i18n_sources,note,note_i18n,note_i18n_sources,sort,is_visible";
 
@@ -84,6 +84,7 @@ export async function getPublicMenu(
               originalName: i.name,
               originalDescription: i.description,
               price_vnd: i.price_vnd,
+              option_groups: i.option_groups || [],
               tags: i.tags || [],
               image_url: i.image_url,
               is_sold_out: i.is_sold_out,
@@ -91,7 +92,7 @@ export async function getPublicMenu(
           }),
       };
     })
-    .filter((s) => s.items.length > 0);
+    .filter((s) => s.items.length > 0 || Boolean(s.note));
 }
 
 /** Everything, including hidden/unavailable rows — for the manager UI (RLS gates it). */

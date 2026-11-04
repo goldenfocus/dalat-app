@@ -2,6 +2,9 @@ import { z } from "zod";
 
 import { languageLevelSchema } from "./legacy-languages";
 
+const orderItem = z.object({ item_id: z.uuid(), qty: z.number().int().min(1).max(20), selected_options: z.record(z.string().max(40), z.string().max(40)).refine(v => Object.keys(v).length <= 8).optional() }).strict();
+const orderKey = (item: z.infer<typeof orderItem>) => item.item_id + JSON.stringify(Object.entries(item.selected_options || {}).sort());
+
 const level = languageLevelSchema.nullable().optional();
 export const arrivalSchema = z.object({
   requestId: z.uuid(),
@@ -9,7 +12,7 @@ export const arrivalSchema = z.object({
   practiceLanguage: z.enum(["english", "vietnamese", "both"]),
   englishLevel: level,
   vietnameseLevel: level,
-  items: z.array(z.object({ item_id: z.uuid(), qty: z.number().int().min(1).max(20) }).strict()).max(30).default([]),
+  items: z.array(orderItem).max(30).default([]),
   note: z.string().trim().max(500).optional().default(""),
   sponsoredItemId: z.uuid().optional(),
   staffEntry: z.boolean().optional().default(false),
@@ -19,17 +22,17 @@ export const arrivalSchema = z.object({
   if (!value.staffEntry && (value.userId || value.participantId)) {
     ctx.addIssue({ code: "custom", message: "invalid_identity" });
   }
-  if (new Set(value.items.map((item) => item.item_id)).size !== value.items.length) {
+  if (new Set(value.items.map(orderKey)).size !== value.items.length) {
     ctx.addIssue({ code: "custom", message: "duplicate_items" });
   }
 });
 
 export const reservationSchema = z.object({
   requestId: z.uuid(),
-  items: z.array(z.object({ item_id: z.uuid(), qty: z.number().int().min(1).max(20) }).strict()).min(1).max(30),
+  items: z.array(orderItem).min(1).max(30),
   note: z.string().trim().max(500).optional().default(""),
   sponsoredItemId: z.uuid().optional(),
-}).strict().refine((value) => new Set(value.items.map((item) => item.item_id)).size === value.items.length, "duplicate_items");
+}).strict().refine((value) => new Set(value.items.map(orderKey)).size === value.items.length, "duplicate_items");
 
 export const staffActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("setOrderStatus"), orderId: z.uuid(), status: z.enum(["pending", "confirmed", "fulfilled", "cancelled"]), expectedStatus: z.enum(["pending", "confirmed", "fulfilled", "cancelled"]) }).strict(),

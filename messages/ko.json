@@ -4408,5 +4408,23 @@
     "unsubscribe": "이메일 소식 수신 거부",
     "nextHeading": "다음에도 함께해요",
     "rsvpLink": "모임 확인하고 참가 신청하기"
+  },
+  "menuOptions": {
+    "choose": "옵션 선택",
+    "temperature": "온도",
+    "milk": "우유",
+    "beans": "커피 원두",
+    "flavour": "쿠키 맛",
+    "side": "곁들임",
+    "hot": "따뜻하게",
+    "iced": "아이스",
+    "standard": "기본 레시피",
+    "oat": "오트 밀크",
+    "house": "기본 원두",
+    "wineRobusta": "와인 발효 로부스타",
+    "chocolate": "초콜릿",
+    "matchaChocolate": "말차 초콜릿",
+    "kimchi": "수제 김치",
+    "salad": "샐러드"
   }
 }

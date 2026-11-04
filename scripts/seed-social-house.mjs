@@ -155,9 +155,9 @@ const menuSql = [
     s.items.map((it, ii) => {
       const tr = menuI18n.items?.[it.name] ?? {};
       const sec = `(select id from venue_menu_sections where venue_id = ${venueSub} and slug = ${q(s.slug)})`;
-      return `insert into venue_menu_items (venue_id, section_id, name, name_i18n, description, description_i18n, price_vnd, tags, image_url, sort)
+      return `insert into venue_menu_items (venue_id, section_id, name, name_i18n, description, description_i18n, price_vnd, tags, image_url, option_groups, sort)
         select ${venueSub}, ${sec}, ${q(it.name)}, ${j(tr.name ?? {})}, ${q(it.description)}, ${j(tr.description ?? {})}, ${it.price_vnd},
-          ${q(`{${it.tags.join(",")}}`)}::text[], ${q(itemImages[it.name] ?? null)}, ${ii * 10}
+          ${q(`{${it.tags.join(",")}}`)}::text[], ${q(itemImages[it.name] ?? null)}, ${j(it.option_groups ?? [])}, ${ii * 10}
         where not exists (select 1 from venue_menu_items x where x.section_id = ${sec} and x.name = ${q(it.name)});
       update venue_menu_items set name_i18n=${j(tr.name ?? {})}, description_i18n=${j(tr.description ?? {})}
         where section_id = ${sec} and name = ${q(it.name)};`;

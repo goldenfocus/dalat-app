@@ -4408,5 +4408,23 @@
     "unsubscribe": "メール配信を停止する",
     "nextHeading": "また参加しませんか？",
     "rsvpLink": "イベントを見て参加を申し込む"
+  },
+  "menuOptions": {
+    "choose": "選択してください",
+    "temperature": "温度",
+    "milk": "ミルク",
+    "beans": "コーヒー豆",
+    "flavour": "クッキーの味",
+    "side": "付け合わせ",
+    "hot": "ホット",
+    "iced": "アイス",
+    "standard": "通常のレシピ",
+    "oat": "オーツミルク",
+    "house": "通常の豆",
+    "wineRobusta": "ワイン発酵ロブスタ",
+    "chocolate": "チョコレート",
+    "matchaChocolate": "抹茶チョコレート",
+    "kimchi": "自家製キムチ",
+    "salad": "サラダ"
   }
 }

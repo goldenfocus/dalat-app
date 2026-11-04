@@ -1,5 +1,7 @@
 "use client";
 
+import { ItemOptions } from "@/components/menu/item-options";
+import { readSelection, selectionKey, optionPrice } from "@/lib/menu/options";
 import { useViewer } from "@/lib/hooks/use-viewer";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
@@ -28,7 +30,14 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
   const { isGodMode } = useViewer();
   const free = canChooseFreeDrink(context);
   const drinks = context.menu.flatMap(section => section.items).filter(item => !item.is_sold_out && context.event.sponsorship?.eligibleItemIds.includes(item.id));
-  const drink = drinks.find(item => item.id === selected);
+  const drink = drinks.find(item => item.id === readSelection(selected || "").item_id);
+  const drinkPrice = drink ? optionPrice(drink, readSelection(selected || "").selected_options) : null;
+  const selectionReady = Boolean(drink && drinkPrice !== null);
+  const guestTotal = cartTotal(context.menu, reservationQuantities(quantities, selectionReady ? selected : null)) - (selectionReady ? drink!.price_vnd : 0);
+  const selectDrink = (key: string | null) => {
+    onSelect(key);
+    if (key && (quantities[key] || 0) > 19) onChange({ ...quantities, [key]: 19 });
+  };
   const hasExtras = Object.values(quantities).some(qty => qty > 0);
   return <Sheet open={open} onOpenChange={next => { if (!next && !busy) onLater(); }}>
     <SheetContent side="bottom" className="mx-auto flex max-h-[88dvh] max-w-xl flex-col gap-0 rounded-t-xl p-0">
@@ -39,13 +48,14 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
       <div className="min-h-0 overflow-y-auto px-5 py-4">
         {free ? <div className="space-y-4">
           <label className="block space-y-2"><span className="text-sm font-medium">{t("drink")}</span>
-            <select value={selected || ""} onChange={event => { const id = event.target.value || null; onSelect(id); if (id && (quantities[id] || 0) > 19) onChange({ ...quantities, [id]: 19 }); }} disabled={busy} className="min-h-12 w-full rounded-lg border border-input bg-background px-3 text-base">
+            <select value={readSelection(selected || "").item_id} onChange={event => { const item = drinks.find(i => i.id === event.target.value); selectDrink(item ? selectionKey(item.id, Object.fromEntries((item.option_groups || []).filter(g => g.default).map(g => [g.id, g.default!]))) : null); }} disabled={busy} className="min-h-12 w-full rounded-lg border border-input bg-background px-3 text-base">
               <option value="">{t("chooseFreeDrink")}</option>
               {drinks.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
             </select>
           </label>
           {drink && <div className="space-y-2 rounded-lg bg-muted p-3">
             {drink.description && <p className="text-sm">{drink.description}</p>}
+            <ItemOptions item={drink} value={readSelection(selected || "").selected_options} onChange={value => selectDrink(selectionKey(drink.id, value))} disabled={busy} />
             <p className="flex items-center gap-3"><span className="text-sm text-muted-foreground line-through">{formatVnd(drink.price_vnd, locale)}</span><strong>{formatVnd(0, locale)}</strong></p>
             {drink.originalName && (drink.originalName !== drink.name || drink.originalDescription !== drink.description) && <OriginalText text={[drink.originalName, drink.originalDescription].filter(Boolean).join("\n")} />}
           </div>}
@@ -56,8 +66,8 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
       </div>
       <div className={`shrink-0 space-y-2 border-t bg-background px-5 pt-3 ${isGodMode ? "pb-20" : "pb-[max(1rem,env(safe-area-inset-bottom))]"}`}>
         {failed && <p role="alert" className="text-sm text-destructive">{common("errorGeneric")}</p>}
-        {(drink || hasExtras) && <p className="flex justify-between text-sm"><span>{t("youPay")}</span><strong>{formatVnd(cartTotal(context.menu, quantities), locale)}</strong></p>}
-        <Button className="min-h-12 w-full" loading={busy} disabled={busy || (!drink && !hasExtras)} onClick={onReserve}>{confirmLabel || t(drink && !hasExtras ? "reserveFreeDrink" : "reserve")}</Button>
+        {(drink || hasExtras) && <p className="flex justify-between text-sm"><span>{t("youPay")}</span><strong>{formatVnd(guestTotal, locale)}</strong></p>}
+        <Button className="min-h-12 w-full" loading={busy} disabled={busy || (!drink && !hasExtras) || Boolean(drink && !selectionReady)} onClick={onReserve}>{confirmLabel || t(drink && !hasExtras ? "reserveFreeDrink" : "reserve")}</Button>
         <Button variant="ghost" className="min-h-11 w-full" disabled={busy} onClick={onLater}>{t("chooseAtVenue")}</Button>
       </div>
     </SheetContent>

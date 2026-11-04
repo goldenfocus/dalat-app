@@ -4408,5 +4408,23 @@
     "unsubscribe": "Nyahlanggan kemas kini e-mel",
     "nextHeading": "Sertai kami lagi",
     "rsvpLink": "Lihat acara dan sahkan kehadiran"
+  },
+  "menuOptions": {
+    "choose": "Pilih pilihan",
+    "temperature": "Suhu",
+    "milk": "Susu",
+    "beans": "Biji kopi",
+    "flavour": "Perisa biskut",
+    "side": "Hidangan sampingan",
+    "hot": "Panas",
+    "iced": "Ais",
+    "standard": "Resipi asal",
+    "oat": "Susu oat",
+    "house": "Biji kopi biasa",
+    "wineRobusta": "Robusta ditapai dengan wain",
+    "chocolate": "Coklat",
+    "matchaChocolate": "Matcha coklat",
+    "kimchi": "Kimchi buatan sendiri",
+    "salad": "Salad"
   }
 }
