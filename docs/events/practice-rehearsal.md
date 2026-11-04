@@ -31,6 +31,9 @@ and save. Draft groups, review the proposed physical tables and partners, then s
 New rounds default to 20 minutes. Tap one person then a person in another group to
 swap them; desktop drag/drop uses the same action. Only unpublished drafts change.
 Each swap generates a new draft ID and retains roster/revision/capacity checks.
+In a real event, arrivals after a draft do not block starting its reviewed groups.
+Those arrivals wait for the next draft; existing participants, tables and language
+preferences must still match the reviewed draft before it can start.
 Switch to Attendee (Mai) to find the published table, partner and countdown. Return
 to Host to pause, add two minutes, resume or end. Draft/review/start a second round
 and check Mai's new assignment. A large balanced draft should use both floors.

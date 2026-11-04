@@ -159,7 +159,10 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
     if (mutation.action === "start") {
       const draft = state.draft;
       if (!draft || draft.id !== mutation.draftId || draft.round !== state.rounds.length + 1) throw new Error("status_conflict");
-      const players = eligiblePeople(state, c.people, c.staffIds);
+      // Start the exact reviewed groups. New arrivals wait for the next draft;
+      // they must not prevent the host from starting everyone already paired.
+      const draftedIds = new Set(draft.groups.flat().map(person => person.id));
+      const players = eligiblePeople(state, c.people, c.staffIds).filter(person => draftedIds.has(person.id));
       if (draft.rosterFingerprint !== rosterFingerprint(players, state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced")) throw new Error("status_conflict");
       const current = state.rounds.at(-1);
       if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current) > 0)) throw new Error("status_conflict");

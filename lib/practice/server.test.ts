@@ -94,9 +94,30 @@ describe("practice mutations", () => {
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: draft.revision! })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(1);
   });
-  it("rejects a draft when a late arrival changes eligibility without silently reshuffling", async () => {
+  it("starts the reviewed groups after a late arrival and includes that arrival in the next draft", async () => {
     const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
-    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: "late-user", nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(started.count).toBe(3);
+    expect(started.groups).toEqual(draft.draft!.groups);
+    expect(started.round?.assignments).toEqual(draft.draft!.assignments);
+    expect(started.round?.minutes).toBe(12);
+    expect(state()?.rounds).toHaveLength(1);
+    actor = { id: "late-user" }; host = false;
+    const waiting = await readPractice(slug);
+    expect(waiting.me?.id).toBe("late");
+    expect(waiting.myGroup).toEqual([]);
+    expect(waiting.groups).toEqual([]);
+    actor = { id: "owner" }; host = true;
+    const next = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    expect(next.draft?.groups.flat().map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+  });
+  it.each(["departure", "language", "tables", "floor"])("still rejects a reviewed draft after a %s change", async change => {
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    if (change === "departure") rows.event_arrival_participants = rows.event_arrival_participants.filter(person => person.id !== "player-a");
+    if (change === "language") rows.event_arrival_participants[1].practice_language = "vietnamese";
+    if (change === "tables") state()!.tables = [];
+    if (change === "floor") state()!.floorPolicy = "upstairs";
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(0);
   });
