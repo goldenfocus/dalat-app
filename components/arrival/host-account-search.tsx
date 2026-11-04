@@ -39,6 +39,7 @@ export function HostAccountSearch({ query, slug, data, onSelect }: { query: stri
       : !current.accounts.length ? <p role="status" className="py-3 text-sm text-muted-foreground">{t("hostNoAccounts")}</p>
       : <ul className="divide-y border-y">{current.accounts.map(account => {
         const rsvp = data.rsvps.find(person => person.user_id === account.user_id);
+        const order = data.orders.find(item => ["pending", "confirmed"].includes(item.status) && item.user_id === account.user_id);
         const arrived = data.participants.some(person => person.user_id === account.user_id) || !!rsvp?.checked_in_at;
         return <li key={account.user_id} className="flex items-center justify-between gap-3 py-3">
           <div className="flex min-w-0 items-center gap-3">
@@ -46,7 +47,7 @@ export function HostAccountSearch({ query, slug, data, onSelect }: { query: stri
               // eslint-disable-next-line @next/next/no-img-element
               <img src={account.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
             )}
-            <div className="min-w-0"><p className="truncate font-medium">{account.displayName || account.username || t("hostGuest")}</p>{account.username && <p className="truncate text-sm text-muted-foreground">@{account.username}</p>}</div>
+            <div className="min-w-0"><p className="truncate font-medium">{account.displayName || account.username || t("hostGuest")}</p>{account.username && <p className="truncate text-sm text-muted-foreground">@{account.username}</p>}{order && <p className="mt-1 text-sm text-muted-foreground">{t("orderTitle")}: {order.items.map(item => `${item.qty} × ${item.name_snapshot}`).join(", ")}</p>}</div>
           </div>
           {arrived ? <span className="flex shrink-0 items-center gap-1 text-sm"><Check aria-hidden className="h-4 w-4" />{t("hostAlreadyHere")}</span>
             : <button type="button" onClick={() => onSelect(rsvp || account)} className="min-h-12 shrink-0 rounded-lg border px-4 font-medium">{t("checkIn")}</button>}

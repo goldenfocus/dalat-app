@@ -92,7 +92,7 @@ describe("staff sponsored drink selection", () => {
   it("attaches one selected eligible drink to a registered attendee's check-in", async () => {
     const fetchMock = vi.fn().mockResolvedValue({ ok: true });
     vi.stubGlobal("fetch", fetchMock);
-    render(<HostGuestForm data={data} slug="test" rsvp={rsvp} onSaved={vi.fn().mockResolvedValue(undefined)} onCancel={vi.fn()} />);
+    render(<HostGuestForm data={data} slug="test" rsvp={rsvp} orderMode onSaved={vi.fn().mockResolvedValue(undefined)} onCancel={vi.fn()} />);
     fireEvent.change(screen.getByLabelText("languageTitle"), { target: { value: "vietnamese" } });
     fireEvent.change(screen.getByLabelText("englishLevel"), { target: { value: "comfortable" } });
     fireEvent.change(screen.getByLabelText("vietnameseLevel"), { target: { value: "starting" } });
@@ -128,8 +128,8 @@ describe("staff sponsored drink selection", () => {
     expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toMatchObject({ englishLevel: "native", vietnameseLevel: "advanced", practiceLanguage: "vietnamese" });
   });
 
-  it("does not offer a sponsored drink to an anonymous walk-in", () => {
-    render(<HostGuestForm data={data} slug="test" onSaved={vi.fn().mockResolvedValue(undefined)} onCancel={vi.fn()} />);
+  it("does not offer a sponsored drink to an anonymous walk-in ordering explicitly", () => {
+    render(<HostGuestForm data={data} slug="test" orderMode onSaved={vi.fn().mockResolvedValue(undefined)} onCancel={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "add" }));
     expect(screen.queryByLabelText("sponsorStaffChoose")).toBeNull();
   });
