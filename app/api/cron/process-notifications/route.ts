@@ -1,3 +1,4 @@
+import { getLocationMapLinks } from '@/lib/events/location';
 import { NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { notify } from '@/lib/notifications';
@@ -59,7 +60,7 @@ async function sendAddressReveal(
 
   const { data: details, error: detailsError } = await supabase
     .from('event_private_details')
-    .select('address, google_maps_url, arrival_notes')
+    .select('address, google_maps_url, latitude, longitude, arrival_notes')
     .eq('event_id', eventId)
     .maybeSingle();
 
@@ -109,7 +110,7 @@ async function sendAddressReveal(
       eventTitle: event.title,
       eventTime,
       address: details.address,
-      googleMapsUrl: details.google_maps_url,
+      googleMapsUrl: getLocationMapLinks(details).map,
       arrivalNotes: details.arrival_notes,
     });
     if (result.success) {
