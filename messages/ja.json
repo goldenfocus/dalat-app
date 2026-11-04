@@ -2654,15 +2654,15 @@
     "noEventsOnThisDay": "この日のイベントはありません"
   },
   "upcomingEvents": {
-    "title": "ダラットの今後のイベント",
-    "titlePage": "今後のイベント - ページ {page}",
-    "description": "ベトナム・ダラットで開催予定のイベント、ワークショップ、集まりをすべてご覧ください。",
-    "breadcrumb": "今後のイベント",
+    "title": "ダラットで開催中・今後開催のイベント",
+    "titlePage": "開催中・今後開催のイベント - {page}ページ",
+    "description": "ベトナム・ダラットで開催中、または今後開催されるイベントを探しましょう。",
+    "breadcrumb": "イベント",
     "backToHome": "戻る",
-    "noEvents": "今後のイベントはまだありません",
-    "eventCount": "{count, plural, one {# 件の今後のイベント} other {# 件の今後のイベント}}",
+    "noEvents": "現在、開催中または今後開催のイベントはありません",
+    "eventCount": "{count}件のイベント",
     "createEvent": "イベントを作成",
-    "seeAll": "今後のイベントをすべて見る",
+    "seeAll": "すべてのイベントを見る",
     "moreDates": "ほか {count} 日程"
   },
   "eventTags": {

@@ -27,6 +27,8 @@ describe("isLiveDataPath", () => {
     expect(isLiveDataPath("/")).toBe(true);
     expect(isLiveDataPath("/vi")).toBe(true);
     expect(isLiveDataPath("/events/some-event")).toBe(true);
+    expect(isLiveDataPath("/events/upcoming")).toBe(true);
+    expect(isLiveDataPath("/vi/events/upcoming/2")).toBe(true);
     expect(isLiveDataPath("/fr/map")).toBe(true);
     expect(isLiveDataPath("/venues/some-venue")).toBe(true);
   });

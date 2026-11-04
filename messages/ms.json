@@ -2654,15 +2654,15 @@
     "noEventsOnThisDay": "Tiada acara pada hari ini"
   },
   "upcomingEvents": {
-    "title": "Acara Akan Datang di Đà Lạt",
-    "titlePage": "Acara Akan Datang - Halaman {page}",
-    "description": "Lihat semua acara, bengkel, dan perhimpunan akan datang di Đà Lạt, Vietnam.",
-    "breadcrumb": "Acara Akan Datang",
+    "title": "Acara Sedang Berlangsung & Akan Datang di Đà Lạt",
+    "titlePage": "Acara Sedang Berlangsung & Akan Datang - Halaman {page}",
+    "description": "Temui acara yang sedang berlangsung dan akan datang di Đà Lạt, Vietnam.",
+    "breadcrumb": "Acara",
     "backToHome": "Kembali",
-    "noEvents": "Tiada acara akan datang lagi",
-    "eventCount": "{count, plural, one {# acara akan datang} other {# acara akan datang}}",
+    "noEvents": "Tiada acara sedang berlangsung atau akan datang buat masa ini",
+    "eventCount": "{count} acara",
     "createEvent": "Cipta acara",
-    "seeAll": "Lihat semua acara akan datang",
+    "seeAll": "Lihat semua acara",
     "moreDates": "+{count} tarikh lagi"
   },
   "eventTags": {

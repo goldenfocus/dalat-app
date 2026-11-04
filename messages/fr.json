@@ -2540,15 +2540,15 @@
     "older": "Plus ancien"
   },
   "upcomingEvents": {
-    "title": "Événements à venir à Đà Lạt",
-    "titlePage": "Événements à venir - Page {page}",
-    "description": "Parcourez tous les événements, ateliers et rassemblements à venir à Đà Lạt, Vietnam.",
-    "breadcrumb": "Événements à venir",
+    "title": "Événements en cours et à venir à Đà Lạt",
+    "titlePage": "Événements en cours et à venir - Page {page}",
+    "description": "Découvrez les événements en cours et à venir à Đà Lạt, au Vietnam.",
+    "breadcrumb": "Événements",
     "backToHome": "Retour",
-    "noEvents": "Pas encore d'événements à venir",
-    "eventCount": "{count, plural, one {# événement à venir} other {# événements à venir}}",
+    "noEvents": "Aucun événement en cours ou à venir pour le moment",
+    "eventCount": "{count, plural, one {# événement} other {# événements}}",
     "createEvent": "Créer un événement",
-    "seeAll": "Voir tous les événements à venir",
+    "seeAll": "Voir tous les événements",
     "moreDates": "{count, plural, one {+# autre date} other {+# autres dates}}"
   },
   "streaming": {

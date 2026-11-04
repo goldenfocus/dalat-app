@@ -2526,15 +2526,15 @@
     "older": "Trước đó"
   },
   "upcomingEvents": {
-    "title": "Sự kiện sắp tới tại Đà Lạt",
-    "titlePage": "Sự kiện sắp tới - Trang {page}",
-    "description": "Xem tất cả sự kiện, workshop và hoạt động sắp tới tại Đà Lạt, Việt Nam.",
-    "breadcrumb": "Sự kiện sắp tới",
+    "title": "Sự kiện đang diễn ra và sắp tới ở Đà Lạt",
+    "titlePage": "Sự kiện đang diễn ra và sắp tới - Trang {page}",
+    "description": "Khám phá các sự kiện đang diễn ra và sắp tới ở Đà Lạt, Việt Nam.",
+    "breadcrumb": "Sự kiện",
     "backToHome": "Quay lại",
-    "noEvents": "Chưa có sự kiện sắp tới",
-    "eventCount": "{count, plural, one {# sự kiện sắp tới} other {# sự kiện sắp tới}}",
+    "noEvents": "Hiện chưa có sự kiện đang diễn ra hoặc sắp tới",
+    "eventCount": "{count} sự kiện",
     "createEvent": "Tạo sự kiện",
-    "seeAll": "Xem tất cả sự kiện sắp tới",
+    "seeAll": "Xem tất cả sự kiện",
     "moreDates": "+{count} ngày diễn khác"
   },
   "streaming": {

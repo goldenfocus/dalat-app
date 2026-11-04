@@ -10,10 +10,8 @@ import { Pagination } from "@/components/ui/pagination";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { getEventTranslationsBatch } from "@/lib/translations";
-import {
-  groupRecurringChoices,
-  type RecurringChoiceGroup,
-} from "@/lib/events/recurring-choices";
+import type { RecurringChoiceGroup } from "@/lib/events/recurring-choices";
+import { activeEventListingFilter, eventListingLifecycle, groupActiveEventChoices } from "@/lib/events/listing";
 import type { MoreAtVenueHomeLinkData } from "@/components/events/more-at-venue-home-link";
 import type { Event, EventCounts, ContentLocale } from "@/lib/types";
 import type { Metadata } from "next";
@@ -68,18 +66,18 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 }
 
-// Upcoming published rows read before grouping. PostgREST caps a response at
+// Live and upcoming published rows read before grouping. PostgREST caps a response at
 // 1000 rows; Đà Lạt has a few hundred upcoming rows at most.
-const UPCOMING_ROW_LIMIT = 1000;
+const ACTIVE_ROW_LIMIT = 1000;
 const FALLBACK_MORE_DATES_HREF = "/calendar";
 
 /**
- * Every upcoming published row, grouped into distinct choices: a recurring
+ * Every live or upcoming published row, grouped into distinct choices: a recurring
  * show (a series, or standalone nightly rows with the same title at the same
- * venue) is one choice shown at its soonest date. Pagination and the total
+ * venue) is one choice, with a live occurrence preferred. Pagination and the total
  * count both run over these choices, so one nightly show cannot flood a page.
  */
-async function getUpcomingChoices(): Promise<RecurringChoiceGroup<Event>[]> {
+async function getActiveChoices(now: Date): Promise<RecurringChoiceGroup<Event>[]> {
   const supabase = createStaticClient();
   if (!supabase) {
     console.error("[upcoming] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty page");
@@ -90,16 +88,16 @@ async function getUpcomingChoices(): Promise<RecurringChoiceGroup<Event>[]> {
     .from("events")
     .select("*")
     .eq("status", "published")
-    .gt("starts_at", new Date().toISOString())
+    .or(activeEventListingFilter(now))
     .order("starts_at", { ascending: true })
-    .limit(UPCOMING_ROW_LIMIT);
+    .limit(ACTIVE_ROW_LIMIT);
 
   if (error) {
     console.error("Error fetching upcoming events:", error);
     return [];
   }
 
-  return groupRecurringChoices((data as Event[]) || []);
+  return groupActiveEventChoices((data as Event[]) || [], now);
 }
 
 /** Where "+N more dates" points: the venue page, else the series page, else the calendar. */
@@ -192,13 +190,17 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
   const page = getPageNumber(pageParam);
   const offset = (page - 1) * EVENTS_PER_PAGE;
 
-  const [choices, t] = await Promise.all([
-    getUpcomingChoices(),
+  const now = new Date();
+  const [choices, t, tHome] = await Promise.all([
+    getActiveChoices(now),
     getTranslations("upcomingEvents"),
+    getTranslations("home"),
   ]);
   const totalCount = choices.length;
   const pageChoices = choices.slice(offset, offset + EVENTS_PER_PAGE);
   const events = pageChoices.map((choice) => choice.event);
+  const liveEvents = events.filter(event => eventListingLifecycle(event, now) === "live");
+  const upcomingEvents = events.filter(event => eventListingLifecycle(event, now) === "upcoming");
 
   const totalPages = Math.ceil(totalCount / EVENTS_PER_PAGE);
 
@@ -286,13 +288,19 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
 
           {/* Events grid */}
           {events.length > 0 ? (
-            <EventGrid
-              events={events}
-              counts={counts}
-              social={social}
-              eventTranslations={eventTranslations}
-              moreAtVenue={moreDates}
-            />
+            <div className="space-y-8">
+              {liveEvents.length > 0 && <section aria-labelledby="events-live-heading">
+                <h2 id="events-live-heading" className="mb-4 flex items-center gap-2 text-lg font-semibold">
+                  <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                  {tHome("happeningNow.title")}
+                </h2>
+                <EventGrid events={liveEvents} counts={counts} social={social} eventTranslations={eventTranslations} moreAtVenue={moreDates} />
+              </section>}
+              {upcomingEvents.length > 0 && <section aria-labelledby="events-upcoming-heading">
+                <h2 id="events-upcoming-heading" className="mb-4 text-lg font-semibold">{tHome("tabs.upcoming")}</h2>
+                <EventGrid events={upcomingEvents} counts={counts} social={social} eventTranslations={eventTranslations} moreAtVenue={moreDates} />
+              </section>}
+            </div>
           ) : (
             <div className="text-center py-12 text-muted-foreground">
               <p className="mb-4">{t("noEvents")}</p>
