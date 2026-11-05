@@ -1,14 +1,15 @@
 import type { ArrivalParticipant } from "@/lib/arrival/types";
 
 export type Participation = "playing" | "visiting" | "break" | "left" | "hosting";
+export type Presence = "pending" | "present" | "absent";
 export type FloorPolicy = "balanced" | "downstairs" | "upstairs";
 export type Table = { number: number; floor: "downstairs" | "upstairs"; capacity: number; available: boolean; bar?: boolean };
 export type TableAssignment = { groupIndex: number; tableNumber: number; floor: Table["floor"] };
 export type Person = { id: string; name: string; speaks: string[]; learns: string | null; number?: number; avatarUrl?: string; learningLevel?: string | null; speakingLevels?: Record<string, string> };
 export type Round = { number: number; startedAt: string; minutes: number; groups: Person[][]; endsAt?: string; pausedAt?: string; remainingSeconds?: number; endedAt?: string; changeoverEndsAt?: string; assignments?: TableAssignment[] };
 export type Draft = { id: string; round: number; minutes: number; groups: Person[][]; assignments: TableAssignment[]; rosterFingerprint: string; createdAt: string };
-export type PracticeState = { rounds: Round[]; participation?: Record<string, Participation>; numbers?: Record<string, number>; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
-export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null; myTable?: TableAssignment | null; participation?: Participation | null; participants?: (Person & { participation: Participation })[]; revision?: number; serverNow?: string; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
+export type PracticeState = { rounds: Round[]; participation?: Record<string, Participation>; presence?: Record<string, Exclude<Presence, "pending">>; numbers?: Record<string, number>; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
+export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null; myTable?: TableAssignment | null; participation?: Participation | null; presence?: Presence | null; participants?: (Person & { participation: Participation; presence?: Presence })[]; revision?: number; serverNow?: string; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
 
 export const DEFAULT_ROUND_MINUTES = 20;
 
@@ -39,6 +40,11 @@ export function participantStatus(state: PracticeState, personId: string, staffI
   return state.participation?.[personId] || (staffIds.has(personId) ? "hosting" : "playing");
 }
 
+/** A check-in is history, not a roll-call answer. Preserve already-running games. */
+export function presenceStatus(state: PracticeState, personId: string): Presence {
+  return state.presence?.[personId] ?? (state.rounds.some(round => round.groups.some(group => group.some(person => person.id === personId))) ? "present" : "pending");
+}
+
 export function numberPeople(state: PracticeState, people: Person[]): Person[] {
   const numbers = { ...state.numbers };
   let next = Math.max(0, ...Object.values(numbers)) + 1;
@@ -46,7 +52,7 @@ export function numberPeople(state: PracticeState, people: Person[]): Person[] {
 }
 
 export function eligiblePeople(state: PracticeState, people: Person[], staffIds: ReadonlySet<string> = new Set()): Person[] {
-  return numberPeople(state, people).filter(p => participantStatus(state, p.id, staffIds) === "playing");
+  return numberPeople(state, people).filter(p => participantStatus(state, p.id, staffIds) === "playing" && presenceStatus(state, p.id) === "present");
 }
 
 /** Comparing a draft to fresh arrival data also catches changed language preferences. */
@@ -178,6 +184,7 @@ export function practiceView(state: PracticeState, people: Person[], ownId: stri
     canStart, revision, serverNow: now.toISOString(),
     count: eligiblePeople(state, people, staffIds).length, me: numbered.find(p => p.id === ownId) || null,
     participation: ownId && people.some(p => p.id === ownId) ? participantStatus(state, ownId, staffIds) : null,
+    presence: ownId && people.some(p => p.id === ownId) ? presenceStatus(state, ownId) : null,
     round: current ? { ...current, groups: [], assignments: canStart ? current.assignments : current.assignments?.filter(a => a.groupIndex === myGroupIndex) } : null,
     groups: canStart ? groups : groups.filter(g => g.some(p => p.id === ownId)),
     myGroup: myGroupIndex < 0 ? [] : groups[myGroupIndex],
@@ -185,6 +192,6 @@ export function practiceView(state: PracticeState, people: Person[], ownId: stri
     myTable: current?.assignments?.find(a => a.groupIndex === myGroupIndex) || null,
     tables: state.tables || DEFAULT_TABLES, floorPolicy: state.floorPolicy || "balanced",
     draft: canStart ? state.draft || null : null,
-    ...(canStart ? { participants: numbered.map(p => ({ ...p, participation: participantStatus(state, p.id, staffIds) })) } : {}),
+    ...(canStart ? { participants: numbered.map(p => ({ ...p, participation: participantStatus(state, p.id, staffIds), presence: presenceStatus(state, p.id) })) } : {}),
   };
 }

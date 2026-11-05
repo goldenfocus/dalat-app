@@ -26,9 +26,9 @@ export default async function HostPage({ params }: Props) {
     const returnTo = `${locale === "en" ? "" : `/${locale}`}/events/${encodeURIComponent(slug)}/host`;
     redirect(`/auth/login?next=${encodeURIComponent(returnTo)}`);
   }
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
   return (
-    <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations }}>
+    <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations, eventPractice: messages.eventPractice }}>
       <HostWorkspace slug={slug} />
     </NextIntlClientProvider>
   );

@@ -4396,7 +4396,17 @@
     "swapWith": "Swap {name} with…",
     "cancelSwap": "Cancel swap",
     "swapPerson": "Swap {name}",
-    "swapHint": "Tap two people to swap"
+    "swapHint": "Tap two people to swap",
+    "rollCall": "Roll call",
+    "rollCallHint": "Confirm who is here. Mark anyone absent with X.",
+    "rollCallProgress": "{checked}/{total} checked",
+    "confirmPresent": "Confirm {name} is here",
+    "markAbsent": "Mark {name} absent",
+    "present": "Here",
+    "absent": "Absent",
+    "presenceHint": "You can start with players marked present. Unchecked players stay out of this round.",
+    "presenceWaiting": "The host will confirm you're here",
+    "absentShort": "Marked absent — ask the host when you arrive"
   },
   "eventFollowupEmail": {
     "subject": "Thanks for joining {eventTitle}",

@@ -7,6 +7,13 @@ It does not call the event practice API, reveal attendees or start a real round.
 Automatic PWA updates do not reload this route mid-rehearsal. A deliberate refresh
 still resets its sample state.
 
+Live event pages and their host/arrival subpages use normal page scrolling. The
+site header, bottom navigation, playback controls and actionable notices stay in
+the document flow. The floating camera shortcut, duplicate mobile RSVP bar and
+completed-upload notification are removed; the page's RSVP and Moments actions
+remain available. The presence roster has no separate scrolling area, so its
+last attendee and the draft action can be reached with the same page scroll.
+
 The compact sample toolbar offers ten or 34 players, Host / Mai and reset.
 English and Tiếng Việt stay visible above it. The slate/ice-blue glass treatment is
 scoped to practice, including the rehearsal shell; other app themes are preserved.
@@ -19,6 +26,10 @@ Attendee preserves it. Nothing persists across tabs or refreshes. Language navig
 sample session. In a real event the server retains published rounds.
 
 Attendees see names/avatars, physical table/floor, countdown and one activity action.
+Hosts also see the same activity action before and during rounds, including while
+hosting or before checking themselves in. It opens EZViệt in a separate tab so the
+host can keep the event controls open. Opening the activity does not start a round
+or change pairings; only the reviewed-draft start action does that.
 Visible group numbers and the participation form are removed. A compact status
 button offers Playing or sitting out. Joining during a live round explicitly says
 Play next round and never changes that round. A host sees icon controls for
@@ -31,6 +42,9 @@ and save. Draft groups, review the proposed physical tables and partners, then s
 New rounds default to 20 minutes. Tap one person then a person in another group to
 swap them; desktop drag/drop uses the same action. Only unpublished drafts change.
 Each swap generates a new draft ID and retains roster/revision/capacity checks.
+In a real event, arrivals after a draft do not block starting its reviewed groups.
+Those arrivals wait for the next draft; existing participants, tables and language
+preferences must still match the reviewed draft before it can start.
 Switch to Attendee (Mai) to find the published table, partner and countdown. Return
 to Host to pause, add two minutes, resume or end. Draft/review/start a second round
 and check Mai's new assignment. A large balanced draft should use both floors.
@@ -43,6 +57,19 @@ This page proves UI and model behavior with synthetic data. It cannot establish
 real host authorization, cross-device refresh, venue connectivity, physical table
 availability, identity linking or actual challenge acceptance. Those remain release
 checks on the real event flow. It grants no additional server permission.
+
+## Live event translation boundaries
+
+The event `/host` and `/arrive` pages also render `EventPractice`. Their nested
+`NextIntlClientProvider` message sets must include `eventPractice` alongside
+`arrival`, `menuOptions` and `translations`: a nested message set replaces the
+parent set rather than merging it. Loading the namespace in the route island alone
+does not reach these panels. Both pages ship the practice messages for the request
+locale, including button labels and accessible names, in all 12 supported locales.
+
+`components/practice/route-translations.test.tsx` exercises both page boundaries
+with the real practice panel and language provider, including settings and roster
+controls. Its sample transport does not call or mutate a real event.
 
 ## Local verification, 2 November 2026
 

@@ -1,0 +1,64 @@
+/* Scoped by the server-rendered event layout, including arrival and host pages. */
+body:has([data-event-page]) [data-floating-chrome] {
+  position: static;
+  inset: auto;
+  transform: none;
+  z-index: auto;
+  animation: none;
+  backdrop-filter: none;
+}
+
+body:has([data-event-page]) [data-floating-chrome="upload-fab"],
+body:has([data-event-page]) [data-floating-chrome="upload-tray"][data-upload-complete="true"] {
+  display: none;
+}
+
+body:has([data-event-page]) [data-floating-chrome="upload-tray"],
+body:has([data-event-page]) [data-floating-chrome="locale-prompt"],
+body:has([data-event-page]) [data-floating-chrome="install-prompt"],
+body:has([data-event-page]) [data-floating-chrome="identity-indicator"] {
+  width: calc(100% - 2rem);
+  max-width: 48rem;
+  margin: 1rem auto;
+  box-shadow: none;
+}
+
+body:has([data-event-page]) [data-app-content] {
+  padding-bottom: 0;
+}
+
+body:has([data-event-page]) [data-app-footer] {
+  margin-bottom: 0;
+}
+
+/* Keep actionable notices, but place them in the document instead of over it. */
+body:has([data-event-page]) [data-sonner-toaster] {
+  position: static;
+  inset: auto;
+  transform: none;
+  width: calc(100% - 2rem);
+  max-width: 48rem;
+  margin: 0 auto;
+  z-index: auto;
+}
+
+body:has([data-event-page]) [data-sonner-toast] {
+  position: relative;
+  inset: auto;
+  transform: none;
+  width: 100%;
+  height: auto;
+  margin: 0.5rem 0;
+  touch-action: auto;
+}
+
+body:has([data-event-page]) [data-sonner-toast][data-visible="false"] {
+  display: none;
+}
+
+body:has([data-event-page]) [data-sonner-toast] [data-close-button] {
+  position: static;
+  transform: none;
+  margin-inline-start: auto;
+  order: 1;
+}

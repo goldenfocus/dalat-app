@@ -7,6 +7,9 @@ import { R2StorageProvider } from "@/lib/storage/r2";
 import { DriveClient, type DriveFile } from "./drive";
 import { SOURCE, resolveCaptureTime, matchPhoto, type PhotoEvent } from "./matching";
 
+const SCAN_INTERVAL_MINUTES = 5;
+const MAX_PHOTOS_PER_RUN = 24;
+
 const sha = (value: string | Buffer) => createHash("sha256").update(value).digest("hex");
 function momentId(fileId: string) {
   const hex = sha(`${SOURCE.id}:${fileId}`);
@@ -26,7 +29,7 @@ export async function syncDrivePhotos(apiKey: string) {
     if (result.error) throw new Error(`Import ledger credit failed: ${result.error.code}`);
   };
   const report = { state: "complete", seen: 0, imported: 0, duplicates: 0, held: 0, failed: 0, remaining: 0 };
-  let nextMinutes = 30;
+  let nextMinutes = SCAN_INTERVAL_MINUTES;
   try {
     const drive = new DriveClient(apiKey);
     const files = await drive.list(SOURCE.folderId); report.seen = files.length;
@@ -34,9 +37,6 @@ export async function syncDrivePhotos(apiKey: string) {
       .eq("venue_id", SOURCE.venueId).eq("series_id", SOURCE.seriesId).eq("status", "published").order("starts_at", {ascending: true}).limit(1000);
     if (eventsResult.error) throw new Error(`Event lookup failed: ${eventsResult.error.code}`);
     const events = (eventsResult.data || []).filter(e => !e.tribe_id || e.tribe_visibility === "public") as PhotoEvent[];
-    // Stay attentive for one week after events; otherwise do a daily full-tree sweep.
-    const recentlyEnded = events.some(e => Date.parse(e.ends_at || e.starts_at) <= started && Date.parse(e.ends_at || e.starts_at) > started - 7*86400000);
-    nextMinutes = recentlyEnded ? 30 : 24*60;
     const ledger = new Map<string, {fingerprint:string;status:string;checked_at:string;moment_id:string|null;event_id:string|null}>();
     for (let offset=0;;offset+=1000) {
       const rows = await db.from("drive_photo_imports").select("file_id,fingerprint,status,checked_at,moment_id,event_id").eq("source_id", SOURCE.id).order("file_id").range(offset,offset+999);
@@ -52,7 +52,7 @@ export async function syncDrivePhotos(apiKey: string) {
     let storage: R2StorageProvider | undefined;
     let attempted = 0;
     for (const file of pending) {
-      if (attempted >= 12 || Date.now() - started > 190000) break;
+      if (attempted >= MAX_PHOTOS_PER_RUN || Date.now() - started > 190000) break;
       attempted++;
       const fp = fingerprint(file); const prior = ledger.get(file.id);
       const save = async (status: "imported"|"duplicate"|"held"|"failed", reason: string | null, eventId: string | null = null, id: string | null = null) => {
@@ -129,14 +129,19 @@ export async function syncDrivePhotos(apiKey: string) {
       }
     }
     report.remaining = pending.length - attempted;
-    if (report.remaining || report.failed) nextMinutes = 30;
     return report;
   } catch (error) {
     report.state = "failed"; report.failed++;
+    nextMinutes = 30;
     throw error;
   } finally {
+    const intervalMs = nextMinutes * 60_000;
+    // Align regular scans to cron slots so execution time cannot skip the next trigger.
+    const nextScanAt = nextMinutes === SCAN_INTERVAL_MINUTES
+      ? started - (started % intervalMs) + intervalMs
+      : Date.now() + intervalMs;
     const result = await db.from("drive_photo_sync_state").update({ lease_token:null, lease_until:null, last_scan_at: new Date().toISOString(), last_report:report,
-      next_scan_at:new Date(Date.now()+nextMinutes*60000).toISOString() }).eq("source_id",SOURCE.id).eq("lease_token",token);
+      next_scan_at:new Date(nextScanAt).toISOString() }).eq("source_id",SOURCE.id).eq("lease_token",token);
     if (result.error) console.error("[drive-photos] heartbeat write failed",result.error.code);
   }
 }

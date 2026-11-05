@@ -8,6 +8,15 @@ function request(body: unknown, origin = "https://dalat.app") {
 }
 beforeEach(() => vi.resetAllMocks());
 describe("event practice API", () => {
+  it("accepts explicit host presence answers but rejects pending, missing IDs and cross-site changes", async () => {
+    const answer = { action: "presence", participantId: "player-a", status: "absent", expectedRevision: 0 };
+    mocks.mutate.mockResolvedValue({ revision: 1 });
+    expect((await POST(request(answer), context)).status).toBe(200);
+    expect(mocks.mutate).toHaveBeenCalledWith("language-exchange-social-house-z8oc-20261028", answer);
+    expect((await POST(request({ ...answer, status: "pending" }), context)).status).toBe(400);
+    expect((await POST(request({ ...answer, participantId: "" }), context)).status).toBe(400);
+    expect((await POST(request(answer, "https://other.example"), context)).status).toBe(403);
+  });
   it("rejects cross-site starts, invalid durations and the old direct-start bypass", async () => {
     expect((await POST(request({ action: "draft", minutes: 12, expectedRevision: 0 }, "https://other.example"), context)).status).toBe(403);
     expect((await POST(request({ action: "draft", minutes: 0, expectedRevision: 0 }), context)).status).toBe(400);

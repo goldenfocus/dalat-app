@@ -4396,7 +4396,17 @@
     "swapWith": "Đổi chỗ {name} với…",
     "cancelSwap": "Hủy đổi chỗ",
     "swapPerson": "Đổi chỗ {name}",
-    "swapHint": "Chạm vào hai người để đổi chỗ"
+    "swapHint": "Chạm vào hai người để đổi chỗ",
+    "rollCall": "Điểm danh",
+    "rollCallHint": "Xác nhận ai có mặt. Đánh dấu X cho những người vắng mặt.",
+    "rollCallProgress": "Đã điểm danh {checked}/{total}",
+    "confirmPresent": "Xác nhận {name} có mặt",
+    "markAbsent": "Đánh dấu {name} vắng mặt",
+    "present": "Có mặt",
+    "absent": "Vắng mặt",
+    "presenceWaiting": "Người tổ chức sẽ xác nhận bạn có mặt",
+    "absentShort": "Đã được đánh dấu vắng mặt — hãy báo với người tổ chức khi bạn đến",
+    "presenceHint": "Bạn có thể bắt đầu với những người chơi được đánh dấu là có mặt. Người chơi chưa được xác nhận có mặt sẽ không tham gia vòng này."
   },
   "eventFollowupEmail": {
     "subject": "Cảm ơn bạn đã tham gia {eventTitle}",

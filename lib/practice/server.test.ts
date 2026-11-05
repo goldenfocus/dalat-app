@@ -64,7 +64,7 @@ beforeEach(() => {
       { id: "player-b", event_id: "event", user_id: null, nickname: "Player B", checked_in_at: "2026-11-04T11:02Z", practice_language: "vietnamese" },
     ],
     rsvps: [{ id: "no-show", event_id: "event", user_id: "absent", status: "going", checked_in_at: null, profiles: { display_name: "Not arrived" } }],
-    event_practice_rooms: [], event_staff: [],
+    event_practice_rooms: [{ event_id: "event", revision: 0, state: { rounds: [], presence: { "owner-arrival": "present", "player-a": "present", "player-b": "present" } } }], event_staff: [],
     events: [{ id: "event", created_by: "owner", venue_id: "venue", venues: { owner_id: "owner" } }],
     venue_managers: [], profiles: [],
   };
@@ -75,17 +75,68 @@ beforeEach(() => {
 });
 
 describe("practice mutations", () => {
+  it("starts with two confirmed players while leaving unchecked arrivals out of the round", async () => {
+    rows.event_practice_rooms = [];
+    rows.event_arrival_participants.push({ id: "unchecked", event_id: "event", user_id: null, nickname: "Unchecked", checked_in_at: "now", practice_language: "english" });
+    const initial = await readPractice(slug);
+    expect(initial.count).toBe(0);
+    expect(initial.participants?.find(person => person.id === "player-a")?.presence).toBe("pending");
+    await expect(mutatePractice(slug, { action: "draft", expectedRevision: -1 })).rejects.toThrow("invalid_roster");
+    expect(writes).toBe(0);
+    await mutatePractice(slug, { action: "presence", participantId: "player-a", status: "present", expectedRevision: -1 });
+    await expect(mutatePractice(slug, { action: "draft", expectedRevision: revision() })).rejects.toThrow("invalid_roster");
+    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "present", expectedRevision: revision() });
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    expect(draft.draft?.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
+    expect(draft.participants?.find(person => person.id === "unchecked")?.presence).toBe("pending");
+    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(started.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
+    expect(rows.event_arrival_participants).toHaveLength(4);
+  });
+  it("persists an X, preserves arrivals and invalidates the draft until absence is corrected", async () => {
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "absent", expectedRevision: revision() });
+    const refreshed = await readPractice(slug);
+    expect(refreshed.count).toBe(1);
+    expect(refreshed.participants?.find(person => person.id === "player-b")?.presence).toBe("absent");
+    expect(refreshed.draft).toBeNull();
+    expect(rows.event_arrival_participants).toHaveLength(3);
+    await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
+    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "present", expectedRevision: revision() });
+    expect((await mutatePractice(slug, { action: "draft", expectedRevision: revision() })).count).toBe(2);
+  });
+  it("restricts presence answers to hosts and enforces revision checks", async () => {
+    actor = { id: "a" }; host = false;
+    await expect(mutatePractice(slug, { action: "presence", participantId: "player-a", status: "present", expectedRevision: revision() })).rejects.toThrow("forbidden");
+    actor = { id: "owner" }; host = true;
+    await expect(mutatePractice(slug, { action: "presence", participantId: "missing", status: "absent", expectedRevision: revision() })).rejects.toThrow("participant_not_found");
+    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "absent", expectedRevision: revision() });
+    await expect(mutatePractice(slug, { action: "presence", participantId: "player-b", status: "present", expectedRevision: 0 })).rejects.toThrow("status_conflict");
+    actor = null; host = false;
+    mocked.guestToken.mockResolvedValue("receipt");
+    mocked.ownReceipt.mockResolvedValue({ participant: { id: "player-b" } });
+    await mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: revision() });
+    expect((await readPractice(slug)).presence).toBe("absent");
+  });
+  it("keeps a published round fixed when the host marks someone absent", async () => {
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    const published = structuredClone(state()!.rounds[0]);
+    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "absent", expectedRevision: revision() });
+    expect(state()!.rounds[0]).toEqual(published);
+    expect((await readPractice(slug)).count).toBe(1);
+  });
   it("excludes working venue owner and no-shows by default; drafting publishes nothing", async () => {
-    const view = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    const view = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     expect(view.count).toBe(2);
     expect(view.participants?.find(p => p.id === "owner-arrival")?.participation).toBe("hosting");
     expect(view.draft?.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b"]);
     expect(view.round).toBeNull();
     expect(state()?.rounds).toEqual([]);
-    expect(view.revision).toBe(0);
+    expect(view.revision).toBe(1);
   });
   it("allows a host to opt in and publishes the exact reviewed draft only once", async () => {
-    await mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: -1 });
+    await mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: revision() });
     const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
     expect(started.groups.flat()).toHaveLength(3);
@@ -94,14 +145,36 @@ describe("practice mutations", () => {
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: draft.revision! })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(1);
   });
-  it("rejects a draft when a late arrival changes eligibility without silently reshuffling", async () => {
-    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
-    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "english" });
+  it("starts the reviewed groups after a late arrival and includes that arrival in the next draft", async () => {
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+    rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: "late-user", nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+    expect(started.count).toBe(2);
+    expect(started.groups).toEqual(draft.draft!.groups);
+    expect(started.round?.assignments).toEqual(draft.draft!.assignments);
+    expect(started.round?.minutes).toBe(12);
+    expect(state()?.rounds).toHaveLength(1);
+    actor = { id: "late-user" }; host = false;
+    const waiting = await readPractice(slug);
+    expect(waiting.me?.id).toBe("late");
+    expect(waiting.myGroup).toEqual([]);
+    expect(waiting.groups).toEqual([]);
+    actor = { id: "owner" }; host = true;
+    await mutatePractice(slug, { action: "presence", participantId: "late", status: "present", expectedRevision: revision() });
+    const next = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    expect(next.draft?.groups.flat().map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+  });
+  it.each(["departure", "language", "tables", "floor"])("still rejects a reviewed draft after a %s change", async change => {
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+    if (change === "departure") rows.event_arrival_participants = rows.event_arrival_participants.filter(person => person.id !== "player-a");
+    if (change === "language") rows.event_arrival_participants[1].practice_language = "vietnamese";
+    if (change === "tables") state()!.tables = [];
+    if (change === "floor") state()!.floorPolicy = "upstairs";
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(0);
   });
   it("invalidates draft on participation change and requires a fresh review", async () => {
-    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     await mutatePractice(slug, { action: "participation", status: "visiting", participantId: "player-a", expectedRevision: revision() });
     expect(state()?.draft).toBeNull();
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
@@ -110,7 +183,7 @@ describe("practice mutations", () => {
     actor = null; host = false;
     mocked.guestToken.mockResolvedValue("receipt");
     mocked.ownReceipt.mockResolvedValue({ participant: { id: "player-b" } });
-    const view = await mutatePractice(slug, { action: "participation", status: "break", expectedRevision: -1 });
+    const view = await mutatePractice(slug, { action: "participation", status: "break", expectedRevision: revision() });
     expect(view.participation).toBe("break");
     expect(view.count).toBe(1);
     expect(rows.event_arrival_participants).toHaveLength(3);
@@ -120,18 +193,19 @@ describe("practice mutations", () => {
   });
   it("does not let anonymous visitors create attendance or alter the room", async () => {
     actor = null; host = false;
-    await expect(mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: -1 })).rejects.toThrow("participant_not_found");
+    await expect(mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: revision() })).rejects.toThrow("participant_not_found");
     expect(writes).toBe(0);
   });
   it("rejects concurrent writes with compare-and-swap", async () => {
-    await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     rejectCompareAndSwap = true;
     await expect(mutatePractice(slug, { action: "participation", status: "playing", expectedRevision: revision() })).rejects.toThrow("status_conflict");
     expect(writes).toBe(1);
   });
   it("completes two rounds with persisted pause/extend/end and new partner assignments", async () => {
     rows.event_arrival_participants.push({ id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" }, { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" });
-    let draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present" };
+    let draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
     await mutatePractice(slug, { action: "pause", expectedRevision: revision() });
     expect((await readPractice(slug)).round?.pausedAt).toBeTruthy();
@@ -151,20 +225,21 @@ describe("practice mutations", () => {
 
 describe("editable pre-start practice drafts", () => {
   function addPlayers() {
+    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present" };
     rows.event_arrival_participants.push(
       { id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" },
       { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" },
     );
   }
   it("uses twenty minutes when duration is omitted but leaves explicit duration intact", async () => {
-    let draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    let draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
     expect(draft.draft?.minutes).toBe(20);
     draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     expect(draft.draft?.minutes).toBe(12);
   });
   it("publishes the manually reviewed swap and rejects the original draft ID", async () => {
     addPlayers();
-    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
     const first = draft.draft!.groups[0][0], second = draft.draft!.groups[1][0];
     const edited = await mutatePractice(slug, { action: "swap", draftId: draft.draft!.id, participantId: first.id, withParticipantId: second.id, expectedRevision: revision() });
     expect(edited.draft?.id).not.toBe(draft.draft!.id);
@@ -179,7 +254,7 @@ describe("editable pre-start practice drafts", () => {
   });
   it("rejects non-host edits, stale rosters, same-group swaps and concurrent changes", async () => {
     addPlayers();
-    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: -1 });
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
     const payload = { action: "swap" as const, draftId: draft.draft!.id, participantId: draft.draft!.groups[0][0].id, withParticipantId: draft.draft!.groups[1][0].id, expectedRevision: revision() };
     actor = { id: "a" }; host = false;
     await expect(mutatePractice(slug, payload)).rejects.toThrow("forbidden");
@@ -189,12 +264,13 @@ describe("editable pre-start practice drafts", () => {
     await expect(mutatePractice(slug, payload)).rejects.toThrow("status_conflict");
     rejectCompareAndSwap = false;
     rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "english" });
+    state()!.presence = { ...state()!.presence, late: "present" };
     await expect(mutatePractice(slug, payload)).rejects.toThrow("status_conflict");
     expect(state()?.draft?.id).toBe(draft.draft!.id);
   });
   it("edits the next draft while leaving the running round untouched", async () => {
     addPlayers();
-    const firstDraft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: -1 });
+    const firstDraft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     await mutatePractice(slug, { action: "start", draftId: firstDraft.draft!.id, expectedRevision: revision() });
     const originalRound = structuredClone(state()!.rounds[0]);
     const nextDraft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });

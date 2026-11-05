@@ -4396,7 +4396,17 @@
     "swapWith": "{name} mit … tauschen",
     "cancelSwap": "Tausch abbrechen",
     "swapPerson": "Platz von {name} tauschen",
-    "swapHint": "Tippe zwei Personen an, um ihre Plätze zu tauschen"
+    "swapHint": "Tippe zwei Personen an, um ihre Plätze zu tauschen",
+    "rollCall": "Anwesenheitskontrolle",
+    "rollCallHint": "Bestätige, wer da ist. Markiere Abwesende mit X.",
+    "rollCallProgress": "{checked}/{total} überprüft",
+    "confirmPresent": "Bestätigen, dass {name} da ist",
+    "markAbsent": "{name} als abwesend markieren",
+    "present": "Anwesend",
+    "absent": "Abwesend",
+    "presenceWaiting": "Der Gastgeber wird deine Anwesenheit bestätigen",
+    "absentShort": "Als abwesend markiert — melde dich beim Gastgeber, wenn du ankommst",
+    "presenceHint": "Du kannst mit den als anwesend markierten Spielern starten. Spieler ohne bestätigte Anwesenheit nehmen an dieser Runde nicht teil."
   },
   "eventFollowupEmail": {
     "subject": "Danke, dass du bei {eventTitle} dabei warst",

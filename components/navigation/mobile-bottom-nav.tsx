@@ -80,6 +80,7 @@ export function MobileBottomNav() {
     // re-composite the bar while the address bar collapses mid-scroll, which
     // reads as the bar jumping. Height is fixed (4rem + safe area), never vh.
     <nav
+      data-floating-chrome="bottom-nav"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tNav("primary")}
     >

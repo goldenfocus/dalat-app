@@ -4396,7 +4396,17 @@
     "swapWith": "{name} 님과 자리를 바꿀 사람…",
     "cancelSwap": "자리 교환 취소",
     "swapPerson": "{name} 님 자리 바꾸기",
-    "swapHint": "두 사람을 눌러 자리를 바꾸세요"
+    "swapHint": "두 사람을 눌러 자리를 바꾸세요",
+    "rollCall": "출석 확인",
+    "rollCallHint": "누가 왔는지 확인하세요. 결석자는 X로 표시하세요.",
+    "rollCallProgress": "{checked}/{total}명 확인 완료",
+    "confirmPresent": "{name} 님의 출석 확인",
+    "markAbsent": "{name} 님을 결석으로 표시",
+    "present": "출석",
+    "absent": "결석",
+    "presenceWaiting": "호스트가 회원님의 출석을 확인할 예정입니다",
+    "absentShort": "결석으로 표시됨 — 도착하면 호스트에게 알려 주세요",
+    "presenceHint": "현장 참석이 확인된 플레이어로 시작할 수 있습니다. 참석이 확인되지 않은 플레이어는 이번 라운드에 참여하지 않습니다."
   },
   "eventFollowupEmail": {
     "subject": "{eventTitle}에 참여해 주셔서 감사해요",

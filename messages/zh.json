@@ -4396,7 +4396,17 @@
     "swapWith": "将{name}与…互换位置",
     "cancelSwap": "取消互换",
     "swapPerson": "调换{name}的位置",
-    "swapHint": "点选两人以互换位置"
+    "swapHint": "点选两人以互换位置",
+    "rollCall": "点名",
+    "rollCallHint": "确认谁已到场。用 X 标记缺席者。",
+    "rollCallProgress": "已确认 {checked}/{total} 人",
+    "confirmPresent": "确认 {name} 已到场",
+    "markAbsent": "将 {name} 标记为缺席",
+    "present": "已到场",
+    "absent": "缺席",
+    "presenceWaiting": "主持人会确认您已到场",
+    "absentShort": "已标记为缺席 — 到场后请联系主持人",
+    "presenceHint": "你可以与已标记为到场的玩家开始。未确认到场的玩家不参与本轮。"
   },
   "eventFollowupEmail": {
     "subject": "感谢你参加 {eventTitle}",

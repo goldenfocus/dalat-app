@@ -4396,7 +4396,17 @@
     "swapWith": "Tukar tempat {name} dengan…",
     "cancelSwap": "Batalkan pertukaran",
     "swapPerson": "Tukar tempat {name}",
-    "swapHint": "Ketik dua orang untuk menukar tempat mereka"
+    "swapHint": "Ketik dua orang untuk menukar tempat mereka",
+    "rollCall": "Semakan kehadiran",
+    "rollCallHint": "Sahkan siapa yang hadir. Tandakan mereka yang tidak hadir dengan X.",
+    "rollCallProgress": "{checked}/{total} telah disemak",
+    "confirmPresent": "Sahkan {name} hadir",
+    "markAbsent": "Tandakan {name} sebagai tidak hadir",
+    "present": "Hadir",
+    "absent": "Tidak hadir",
+    "presenceWaiting": "Hos akan mengesahkan kehadiran anda",
+    "absentShort": "Ditandakan sebagai tidak hadir — maklumkan kepada hos apabila anda tiba",
+    "presenceHint": "Anda boleh bermula dengan pemain yang ditandakan sebagai hadir. Pemain yang belum disahkan hadir tidak akan menyertai pusingan ini."
   },
   "eventFollowupEmail": {
     "subject": "Terima kasih kerana menyertai {eventTitle}",

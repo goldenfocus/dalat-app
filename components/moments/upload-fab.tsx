@@ -151,6 +151,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
     <>
       {/* FAB Button */}
       <button
+        data-floating-chrome="upload-fab"
         onClick={handleFabClick}
         className={cn(
           "fixed z-40 flex items-center justify-center",

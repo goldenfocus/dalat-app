@@ -8,6 +8,7 @@ import { DEFAULT_ROUND_MINUTES, type PracticeView } from "@/lib/practice/model";
 import { PracticeDraft } from "./practice-draft";
 import { PracticePerson } from "./practice-person";
 import { PracticeParticipation } from "./practice-participation";
+import { PracticeRollCall } from "./practice-roll-call";
 
 type Props = { view: PracticeView; busy: boolean; remaining: number; changeoverRemaining: number; act: (payload: Record<string, unknown>) => Promise<void> };
 export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }: Props) {
@@ -15,9 +16,16 @@ export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }
   const [minutes, setMinutes] = useState(DEFAULT_ROUND_MINUTES);
   const [availability, setAvailability] = useState<Record<number, boolean>>({});
   const [floorPolicy, setFloorPolicy] = useState<string | null>(null);
-  const [tool, setTool] = useState<"settings" | "people" | "groups" | null>(null);
+  const [tool, setTool] = useState<"settings" | "people" | "groups" | "presence" | null>(null);
   const activeRound = view.round && !view.round.endedAt;
   const draft = view.draft;
+  const players = view.participants?.filter(person => person.participation === "playing") ?? [];
+  const pending = players.filter(person => person.presence !== "present" && person.presence !== "absent").length;
+  const draftedIds = new Set(draft?.groups.flat().map(person => person.id));
+  const draftPending = players.some(person => draftedIds.has(person.id) && person.presence !== "present");
+  const needsRollCall = (!view.round && !draft) || draftPending || (!draft && pending > 0);
+  const showRollCall = Boolean(view.participants && (needsRollCall || tool === "presence"));
+  const rollCallHeading = <><span>{t("rollCall")}</span><span className="text-xs font-normal text-muted-foreground">{t("rollCallProgress", { checked: players.length - pending, total: players.length })}</span></>;
   return <div className="space-y-4">
     <div className="flex items-center justify-between gap-3">
       <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground" role="status"><Users aria-hidden className="h-4 w-4" />{t("ready", { count: view.count })}{!activeRound && <span className="text-xs">· {t("minutesShort", { count: draft?.minutes ?? minutes })}</span>}</p>
@@ -32,8 +40,12 @@ export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }
       </div>
     </div>}
     {!activeRound && changeoverRemaining > 0 && <p className="flex items-center justify-between text-sm text-muted-foreground">{t("changeoverShort")}<span className="font-medium tabular-nums">{Math.floor(changeoverRemaining / 60)}:{String(changeoverRemaining % 60).padStart(2, "0")}</span></p>}
-    {draft ? <PracticeDraft key={draft.id} draft={draft} busy={busy} locked={Boolean(activeRound && (remaining > 0 || view.round?.pausedAt))} act={act} redraft={() => void act({ action: "draft", minutes })} /> : <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "draft", minutes })}>{t(view.round ? "draftNext" : "draft")}</Button>}
-    {view.count < 2 && <p className="text-sm text-muted-foreground">{t("needTwo")}</p>}
+    {view.participants && players.length > 0 && <div className="space-y-2">
+      {needsRollCall ? <h3 className="flex min-h-11 items-center justify-between gap-2 text-sm font-semibold">{rollCallHeading}</h3> : <button type="button" className="flex min-h-11 w-full items-center justify-between gap-2 text-left text-sm font-semibold" aria-expanded={showRollCall} onClick={() => setTool(showRollCall ? null : "presence")}>{rollCallHeading}</button>}
+      {showRollCall && <PracticeRollCall participants={players} busy={busy} act={act} />}
+    </div>}
+    {draft ? <PracticeDraft key={draft.id} draft={draft} busy={busy} locked={Boolean(draftPending || activeRound && (remaining > 0 || view.round?.pausedAt))} act={act} redraft={() => void act({ action: "draft", minutes })} /> : <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "draft", minutes })}>{t(view.round ? "draftNext" : "draft")}</Button>}
+    {view.count < 2 ? <p className="text-sm text-muted-foreground">{t("needTwo")}</p> : !draft && pending > 0 && <p className="text-sm text-muted-foreground">{t("presenceHint")}</p>}
     <div className="flex items-center gap-1 border-t border-border/60 pt-1">
       <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("settings")} title={t("settings")} aria-expanded={tool === "settings"} onClick={() => setTool(tool === "settings" ? null : "settings")}><Settings2 aria-hidden className="h-4 w-4" /></Button>
       {view.participants && <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("hostParticipants")} title={t("hostParticipants")} aria-expanded={tool === "people"} onClick={() => setTool(tool === "people" ? null : "people")}><Users aria-hidden className="h-4 w-4" /></Button>}
