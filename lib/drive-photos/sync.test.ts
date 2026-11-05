@@ -12,6 +12,7 @@ let credits:Record<string,unknown>[];
 let ledger:Record<string,unknown>[];
 let event:Record<string,unknown>;
 let failLedgerOnce:boolean;
+let syncState:Record<string,unknown>;
 function database() {
   return {rpc:vi.fn().mockResolvedValue({data:true,error:null}),from(table:string){
     let verb="select",value:Record<string,unknown>,single=false;
@@ -35,6 +36,7 @@ function database() {
         if(failLedgerOnce){failLedgerOnce=false;return resolve({data:null,error:{code:"NETWORK"}});}
         ledger=ledger.filter(r=>r.file_id!==value.file_id);ledger.push(value);
       }
+      if (verb === "update" && table === "drive_photo_sync_state") syncState = value;
       const data=rows.filter(r=>Object.entries(filters).every(([k,v])=>r[k]===v));
       return resolve({data:single?(data[0]||null):data,error:null});
     };
@@ -43,13 +45,30 @@ function database() {
 }
 beforeEach(async()=>{
   vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL","https://example.supabase.co");vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY","test");
-  moments=[];credits=[];ledger=[];failLedgerOnce=false;
+  moments=[];credits=[];ledger=[];failLedgerOnce=false;syncState={};
   event={id:"event",slug:"event",starts_at:"2026-01-07T11:00:00Z",ends_at:"2026-01-07T13:00:00Z",venue_id:SOURCE.venueId,series_id:SOURCE.seriesId,created_by:"owner",status:"published",tribe_id:null};
   mocks.db.mockImplementation(database);mocks.upload.mockReset().mockImplementation(async(_bucket,path)=>`https://cdn.example/${path}`);
   mocks.list.mockReset().mockResolvedValue([{id:"photo",name:"IMG.jpg",mimeType:"image/jpeg",names:["2026-01-07","IMG.jpg"]}]);
   mocks.download.mockResolvedValue(await sharp({create:{width:8,height:8,channels:3,background:"red"}}).jpeg().toBuffer());
 });
 describe("photo import recovery and safety",()=>{
+  it("makes the next cron slot eligible even when an active scan finishes late", async () => {
+    vi.useFakeTimers({toFake: ["Date"]});
+    try {
+      vi.setSystemTime(new Date("2026-01-08T12:00:09Z"));
+      mocks.list.mockImplementationOnce(async () => {
+        vi.setSystemTime(new Date("2026-01-08T12:01:20Z"));
+        return [];
+      });
+      await syncDrivePhotos("key");
+      expect(syncState).toMatchObject({
+        last_scan_at: "2026-01-08T12:01:20.000Z",
+        next_scan_at: "2026-01-08T12:05:00.000Z",
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
   it("imports into the correct existing event and skips a second scan",async()=>{
     expect(await syncDrivePhotos("key")).toMatchObject({imported:1,failed:0});
     expect(moments).toHaveLength(1);expect(moments[0]).toMatchObject({event_id:"event",user_id:"owner",status:"published",content_type:"photo"});
