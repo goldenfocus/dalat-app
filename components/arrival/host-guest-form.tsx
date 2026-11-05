@@ -9,11 +9,11 @@ import { legacyLanguageChoices } from "@/lib/arrival/language-compat";
 import { ArrivalMenu, cartLines } from "./arrival-menu";
 import type { HostData, HostParticipant, HostRsvp, LanguageLevel, PracticeLanguage } from "./host-types";
 
-export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved }: { data: HostData; slug: string; participant?: HostParticipant; rsvp?: HostRsvp; onCancel: () => void; onSaved: () => Promise<void> }) {
+export function HostGuestForm({ data, slug, participant, rsvp, orderMode = false, onCancel, onSaved }: { data: HostData; slug: string; participant?: HostParticipant; rsvp?: HostRsvp; orderMode?: boolean; onCancel: () => void; onSaved: () => Promise<void> }) {
   const t = useTranslations("arrival");
   const submitting = useRef(false);
   const existingOrder = data.orders.find(order => ["pending", "confirmed"].includes(order.status) && ((participant && order.participant_id === participant.id) || ((participant?.user_id || rsvp?.user_id) && order.user_id === (participant?.user_id || rsvp?.user_id))));
-  const viewOnly = Boolean(existingOrder && (participant || rsvp?.checked_in_at));
+  const viewOnly = orderMode && Boolean(existingOrder && (participant || rsvp?.checked_in_at));
   const savedLanguages = participant?.language_preferences || rsvp?.languagePreferences;
   const defaults = savedLanguages ? legacyLanguageChoices(savedLanguages) : null;
   const [nickname, setNickname] = useState(participant?.nickname || rsvp?.displayName || rsvp?.username || "");
@@ -37,7 +37,7 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
     event.preventDefault();
     if (submitting.current) return;
     submitting.current = true;
-    const payload = { nickname: nickname.trim(), practiceLanguage, englishLevel, vietnameseLevel, items: !existingOrder && data.access.canOrder && data.event.orderingEnabled ? cartLines(data.menu, quantities) : [], note: note.trim(), staffEntry: true, ...(sponsoredItemId ? { sponsoredItemId } : {}), ...(participant ? { participantId: participant.id } : rsvp ? { userId: rsvp.user_id } : {}) };
+    const payload = { nickname: nickname.trim(), practiceLanguage, englishLevel, vietnameseLevel, items: orderMode && !existingOrder && data.access.canOrder && data.event.orderingEnabled ? cartLines(data.menu, quantities) : [], note: orderMode ? note.trim() : "", staffEntry: true, ...(orderMode && sponsoredItemId ? { sponsoredItemId } : {}), ...(participant ? { participantId: participant.id } : rsvp ? { userId: rsvp.user_id } : {}) };
     const fingerprint = JSON.stringify(payload);
     if (request.current?.fingerprint !== fingerprint) request.current = { fingerprint, id: crypto.randomUUID() };
     setBusy(true); setError(null);
@@ -55,7 +55,7 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
   };
   const levelSelect = (id: string, value: LanguageLevel | "", setValue: (next: LanguageLevel | "") => void, label: string) => <label className="block space-y-2" htmlFor={id}><span className="text-sm font-medium">{label}</span><select id={id} required value={value} onChange={event => setValue(event.target.value as LanguageLevel | "")} className="min-h-12 w-full rounded-lg border bg-background px-3"><option value="" disabled>{t("hostChoose")}</option>{LANGUAGE_LEVELS.map(level => <option key={level} value={level}>{t(`level_${level}`)}</option>)}</select></label>;
   return <form onSubmit={submit} className="space-y-5 rounded-lg border bg-card p-4">
-    <h2 className="text-xl font-semibold">{t(existingOrder ? "hostViewOrder" : participant ? "hostAddOrder" : "hostGuestCheckIn")}</h2>
+    <h2 className="text-xl font-semibold">{t(!orderMode ? "hostGuestCheckIn" : existingOrder ? "hostViewOrder" : "hostAddOrder")}</h2>
     {viewOnly && <p className="font-medium">{participant?.nickname || rsvp?.displayName || rsvp?.username}</p>}
     {!viewOnly && <>
     <label className="block space-y-2" htmlFor="guest-name"><span className="text-sm font-medium">{t("nickname")}</span><input id="guest-name" required maxLength={80} autoComplete="off" value={nickname} onChange={event => setNickname(event.target.value)} className="min-h-12 w-full rounded-lg border bg-background px-3" /></label>
@@ -64,8 +64,8 @@ export function HostGuestForm({ data, slug, participant, rsvp, onCancel, onSaved
     <div className="grid gap-4 sm:grid-cols-2">{levelSelect("guest-english", englishLevel, setEnglishLevel, t("englishLevel"))}{levelSelect("guest-vietnamese", vietnameseLevel, setVietnameseLevel, t("vietnameseLevel"))}</div></>}
     </>}
     {existingOrder && <ArrivalOrderView order={existingOrder} />}
-    {!existingOrder && data.access.canOrder && data.event.orderingEnabled && <div className="border-t pt-4"><h3 className="mb-4 font-semibold">{t("menuTitle")}</h3><ArrivalMenu sections={data.menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />{sponsorItems.length > 0 && <label className="mt-4 block space-y-2"><span className="text-sm font-medium">{t("sponsorStaffChoose")}</span><select aria-label={t("sponsorStaffChoose")} value={sponsoredItemId || ""} onChange={event => setSponsorChoice(event.target.value)} disabled={busy} className="min-h-12 w-full rounded-lg border bg-background px-3"><option value="">{t("sponsorStaffNone")}</option>{sponsorItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><span className="block text-sm text-muted-foreground">{t("sponsorNoCollect")}</span></label>}</div>}
+    {orderMode && !existingOrder && data.access.canOrder && data.event.orderingEnabled && <div className="border-t pt-4"><h3 className="mb-4 font-semibold">{t("menuTitle")}</h3><ArrivalMenu sections={data.menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />{sponsorItems.length > 0 && <label className="mt-4 block space-y-2"><span className="text-sm font-medium">{t("sponsorStaffChoose")}</span><select aria-label={t("sponsorStaffChoose")} value={sponsoredItemId || ""} onChange={event => setSponsorChoice(event.target.value)} disabled={busy} className="min-h-12 w-full rounded-lg border bg-background px-3"><option value="">{t("sponsorStaffNone")}</option>{sponsorItems.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select><span className="block text-sm text-muted-foreground">{t("sponsorNoCollect")}</span></label>}</div>}
     {error && <p role="alert" className="border-l-2 border-destructive pl-3 text-sm">{error}</p>}
-    <div className="flex flex-col gap-2 sm:flex-row">{!viewOnly && <button disabled={busy || !nickname.trim() || Boolean(participant && !Object.values(quantities).some(Boolean))} className="min-h-12 flex-1 rounded-lg bg-primary px-4 font-medium text-primary-foreground disabled:opacity-50">{t(busy ? "hostSaving" : Object.values(quantities).some(Boolean) ? "hostSaveAndOrder" : "checkIn")}</button>}<button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-lg border px-5">{t(viewOnly ? "back" : "hostCancel")}</button></div>
+    <div className="flex flex-col gap-2 sm:flex-row">{!viewOnly && <button disabled={busy || !nickname.trim() || Boolean(orderMode && participant && !Object.values(quantities).some(Boolean))} className="min-h-12 flex-1 rounded-lg bg-primary px-4 font-medium text-primary-foreground disabled:opacity-50">{t(busy ? "hostSaving" : Object.values(quantities).some(Boolean) ? "hostSaveAndOrder" : "checkIn")}</button>}<button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-lg border px-5">{t(viewOnly ? "back" : "hostCancel")}</button></div>
   </form>;
 }

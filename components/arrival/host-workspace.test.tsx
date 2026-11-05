@@ -39,10 +39,7 @@ describe("arrival staff permissions in the UI", () => {
     render(<HostWorkspace slug="test" />);
     fireEvent.change(await screen.findByRole("searchbox", { name: "hostAccountSearch" }), { target: { value: "mai@example.test" } });
     fireEvent.click(await screen.findByRole("button", { name: "checkIn" }));
-    expect(screen.getByLabelText("nickname")).toHaveValue("Mai");
-    expect(screen.getByLabelText("languageTitle")).toHaveValue("english");
-    expect(screen.getByLabelText("englishLevel")).toHaveValue("starting");
-    fireEvent.click(screen.getByRole("button", { name: "checkIn" }));
+    expect(screen.queryByLabelText("nickname")).toBeNull();
     await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => url === "/api/events/test/arrival" && init?.method === "POST")).toBe(true));
     const [, init] = fetchMock.mock.calls.find(([url, options]) => url === "/api/events/test/arrival" && options?.method === "POST")!;
     expect(JSON.parse(init.body)).toMatchObject({ userId: "new-user", staffEntry: true, nickname: "Mai", practiceLanguage: "english", englishLevel: "starting", vietnameseLevel: "native", items: [] });
