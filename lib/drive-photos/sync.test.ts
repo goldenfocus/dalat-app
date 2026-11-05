@@ -52,18 +52,18 @@ beforeEach(async()=>{
   mocks.download.mockResolvedValue(await sharp({create:{width:8,height:8,channels:3,background:"red"}}).jpeg().toBuffer());
 });
 describe("photo import recovery and safety",()=>{
-  it("makes the next cron slot eligible even when an active scan finishes late", async () => {
+  it("makes the next cron slot eligible even weeks after the latest event", async () => {
     vi.useFakeTimers({toFake: ["Date"]});
     try {
-      vi.setSystemTime(new Date("2026-01-08T12:00:09Z"));
+      vi.setSystemTime(new Date("2026-02-08T12:00:09Z"));
       mocks.list.mockImplementationOnce(async () => {
-        vi.setSystemTime(new Date("2026-01-08T12:01:20Z"));
+        vi.setSystemTime(new Date("2026-02-08T12:01:20Z"));
         return [];
       });
       await syncDrivePhotos("key");
       expect(syncState).toMatchObject({
-        last_scan_at: "2026-01-08T12:01:20.000Z",
-        next_scan_at: "2026-01-08T12:05:00.000Z",
+        last_scan_at: "2026-02-08T12:01:20.000Z",
+        next_scan_at: "2026-02-08T12:05:00.000Z",
       });
     } finally {
       vi.useRealTimers();
