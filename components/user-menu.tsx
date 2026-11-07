@@ -16,6 +16,7 @@ import {
 import type { UserRole } from "@/lib/types";
 import { exitGodMode } from "@/lib/hooks/use-viewer";
 import { TierBadge } from "@/components/loyalty/tier-badge";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 interface UserMenuProps {
   avatarUrl: string | null;
@@ -88,18 +89,15 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus:outline-none group">
-        {avatarUrl ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            className="w-9 h-9 rounded-full ring-2 ring-border/50 group-hover:ring-primary/50 group-hover:scale-105 transition-all duration-200 ease-out"
-          />
-        ) : (
-          <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center ring-2 ring-border/50 group-hover:ring-primary/50 group-hover:scale-105 transition-all duration-200 ease-out">
-            <User className="w-5 h-5 text-muted-foreground" />
-          </div>
-        )}
+      <DropdownMenuTrigger
+        className="focus:outline-none group"
+        aria-label={displayName || username || tCommon("user")}
+      >
+        <UserAvatar
+          src={avatarUrl}
+          alt={displayName || username || tCommon("user")}
+          className="w-9 h-9 ring-2 ring-border/50 group-hover:ring-primary/50 group-hover:scale-105 transition-all duration-200 ease-out"
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         {/* Profile header with avatar */}
@@ -108,17 +106,10 @@ export function UserMenu({ avatarUrl, displayName, username, role, isGodMode = f
             href={username ? `/@${username}` : "/settings/profile"}
             className="flex items-center gap-3 group/profile"
           >
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                className="w-10 h-10 rounded-full ring-2 ring-border/50"
-              />
-            ) : (
-              <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center ring-2 ring-border/50">
-                <User className="w-5 h-5 text-muted-foreground" />
-              </div>
-            )}
+            <UserAvatar
+              src={avatarUrl}
+              className="w-10 h-10 ring-2 ring-border/50"
+            />
             <div className="flex-1 min-w-0">
               <p className="font-semibold truncate group-hover/profile:text-primary transition-colors">
                 {displayName || username || tCommon("user")}

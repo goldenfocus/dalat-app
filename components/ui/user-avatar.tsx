@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { User } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { ImageLightbox } from "@/components/ui/image-lightbox";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
@@ -37,11 +38,32 @@ export function UserAvatar({
   expandable = false,
 }: UserAvatarProps) {
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const optimizedSrc = optimizedImageUrl(src, imagePresets.avatar);
+  const [failedOptimizedSrc, setFailedOptimizedSrc] = useState<string | null>(null);
+  const imageSrc = optimizedSrc === failedOptimizedSrc ? src : optimizedSrc;
+  const initials = alt.trim().split(/\s+/).filter(Boolean).slice(0, 2)
+    .map((part) => Array.from(part)[0]).join("").toLocaleUpperCase();
 
   const avatar = (
-    <Avatar className={cn(sizeClasses[size], className)}>
-      {src && <AvatarImage src={optimizedImageUrl(src, imagePresets.avatar) || src} alt={alt} />}
-      <AvatarFallback className={cn("bg-primary/20", fallbackClassName)} />
+    <Avatar key={imageSrc ?? "empty"} className={cn(sizeClasses[size], className)}>
+      {imageSrc && (
+        <AvatarImage
+          key={imageSrc}
+          src={imageSrc}
+          alt={alt}
+          className="object-cover"
+          onLoadingStatusChange={(status) => {
+            // Radix preloads off-DOM, so its status callback also catches failures
+            // before an <img> exists. Retry the original only once.
+            if (status === "error" && imageSrc !== src) {
+              setFailedOptimizedSrc(optimizedSrc);
+            }
+          }}
+        />
+      )}
+      <AvatarFallback className={cn("bg-primary/20", fallbackClassName)}>
+        {initials || <User className="h-1/2 w-1/2 text-muted-foreground" aria-hidden="true" />}
+      </AvatarFallback>
     </Avatar>
   );
 
