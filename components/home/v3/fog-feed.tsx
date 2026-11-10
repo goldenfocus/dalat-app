@@ -14,7 +14,7 @@ import { FogFeaturedCard } from "./fog-featured-card";
 import { getPastProof, shouldShowGoingCount } from "@/lib/events/social-proof";
 import { getHomeFeed } from "@/lib/events/home-feed";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
-import { formatInDaLatAsync } from "@/lib/timezone";
+import { formatInDaLatAsync, loadDateFnsLocale } from "@/lib/timezone";
 import type {
   CardEvent,
   ContentLocale,
@@ -115,6 +115,9 @@ export async function FogFeed({
     getTranslations("events"),
     getTranslations("feed"),
     getHomeFeed(happeningCount > 0),
+    // Cards format dates with the sync helper, which falls back to English
+    // until the locale is cached. Warm it for a cold render.
+    loadDateFnsLocale(locale),
   ]);
   const { featured, happeningEvents, upcomingEvents, hasMoreUpcoming } = feed;
   const visibleEvents = [
