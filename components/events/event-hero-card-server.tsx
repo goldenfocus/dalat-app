@@ -68,8 +68,12 @@ export function EventHeroCardServer({
     : `${goingSpots}`;
 
   return (
+    // prefetch off: a viewport prefetch replays the event page's own image
+    // preload hint here, competing with this card's LCP photo. Speculation
+    // rules in the locale layout still prerender the page on hover/touch.
     <Link
       href={`/events/${event.slug}`}
+      prefetch={false}
       className="fog-scoop-lg fog-shadow group relative isolate block aspect-[4/5] max-h-[36rem] w-full overflow-hidden bg-[hsl(169_35%_6%)] text-white sm:aspect-[16/9] lg:aspect-[2/1]"
     >
       {coverUrl && imageIsVideo ? (

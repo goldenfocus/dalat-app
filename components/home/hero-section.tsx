@@ -16,8 +16,11 @@ export async function HeroSection() {
           <p className="mt-2 text-sm text-muted-foreground lg:text-base">
             {t("subtitle")}
           </p>
+          {/* prefetch off: that page's hero-image preload hint would otherwise
+              fire on every home view and compete with the LCP photo */}
           <Link
             href="/things-to-do-in-dalat"
+            prefetch={false}
             className="fog-cap inline-flex min-h-11 items-center gap-1.5 text-primary underline-offset-4 hover:underline"
           >
             {t("thingsToDo")}
