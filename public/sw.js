@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.100';
+const SW_VERSION = '1.0.101';
 
 const APP_URL = self.location.origin;
 
@@ -29,13 +29,6 @@ const isCacheablePage = (pathname) => {
     return false;
   }
   return path === '/' || /^\/(?:events|venues|map|moments)(?:\/|$)/.test(path);
-};
-
-// Event details are factual, time-sensitive records. Cache them for offline
-// use, but always ask the network first so updated official hero images win.
-const isEventDetailPage = (pathname) => {
-  const path = pathname.replace(/^\/[a-z]{2}(?=\/|$)/, '');
-  return /^\/events\/[^/]+\/?$/.test(path);
 };
 
 // Never cache page HTML on localhost — dev server HTML must stay fresh
@@ -156,57 +149,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Stale-while-revalidate for page navigations (instant shell on repeat visits)
+  // Always load online HTML from the network. A stale shell can reference
+  // bundles removed by a deployment, leaving visitors on a broken/404 screen.
+  // Keep only successful public HTML as a fallback for an actual network failure.
   if (
     request.mode === 'navigate' &&
     !IS_LOCAL_DEV &&
     url.origin === self.location.origin &&
     isCacheablePage(url.pathname)
   ) {
-    if (isEventDetailPage(url.pathname)) {
-      event.respondWith(
-        fetch(request)
-          .then(response => {
-            if (response.ok && !response.redirected) {
-              event.waitUntil(
-                caches.open(PAGES_CACHE).then(cache => putPage(cache, request, response.clone()))
-              );
-            }
-            return response;
-          })
-          .catch(() =>
-            caches.open(PAGES_CACHE).then(cache =>
-              cache.match(request).then(cached => cached || Response.error())
-            )
-          )
-      );
-      return;
-    }
-
     event.respondWith(
-      caches.open(PAGES_CACHE).then(cache =>
-        cache.match(request).then(cached => {
-          const fetchPromise = fetch(request).then(response => {
-            if (response.ok && !response.redirected) {
-              event.waitUntil(putPage(cache, request, response.clone()));
-            } else {
-              // Redirect/non-OK (e.g. logged out) — the cached copy is stale
-              event.waitUntil(cache.delete(request));
-            }
-            return response;
-          });
-          if (cached) {
-            // Serve cached HTML immediately, revalidate in the background
-            event.waitUntil(
-              fetchPromise.catch((err) => {
-                console.warn('[SW] page revalidation failed:', url.pathname, err);
-              })
-            );
-            return cached;
-          }
-          return fetchPromise;
+      fetch(request)
+        .then(response => {
+          const cacheControl = response.headers.get('cache-control') || '';
+          const canStore = response.ok && !response.redirected &&
+            response.headers.get('content-type')?.includes('text/html') &&
+            !/\b(?:private|no-store)\b/i.test(cacheControl);
+          event.waitUntil(
+            caches.open(PAGES_CACHE).then(cache => canStore
+              ? putPage(cache, request, response.clone())
+              : cache.delete(request))
+          );
+          // Preserve real HTTP errors; never mask a 404 or security denial.
+          return response;
         })
-      )
+        .catch(() =>
+          caches.open(PAGES_CACHE).then(cache =>
+            cache.match(request).then(cached => cached || Response.error())
+          )
+        )
     );
     return;
   }
