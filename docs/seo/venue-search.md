@@ -28,6 +28,16 @@ This audit proves delivery from the auditing machine, not real crawler access or
 
 ## Content advantage over an owner's social page
 
+Venue Share and Copy link actions send one canonical, locale-aware venue URL.
+Native sharing omits the optional title and text fields because receivers such as
+Zalo can concatenate them into malformed links. The page's existing Open Graph
+metadata supplies the preview name and image. `localeUrl` already returns an
+absolute URL; never prepend the site origin again.
+
+Street-level geocodes (`osm_street`) must not be shown as precise venue pins or
+published as venue GeoCoordinates. Directions and map actions use the supplied
+Google listing until a precise pin is available.
+
 Prioritize owner-confirmed, fresh information that answers real decisions: menu and prices, full opening/closed days, precise directions, accessibility facts, upcoming events, recurring activities, and attributed authentic community photos. Add original venue-specific reporting or helpful answers only when evidence supports them. Owner submissions and corrections should feed this same canonical page, with source and verification provenance retained.
 
 Connect each venue to relevant city/category guides, its organizer, recurring series and individual events using descriptive crawlable links. Keep category guides curated and useful; do not create empty keyword combinations, copied social feeds, fabricated FAQs, doorway pages, paid-link schemes or an indiscriminate AI article flood. A bilingual or multilingual page must add usable access, not merely multiply URLs.

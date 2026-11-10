@@ -432,7 +432,8 @@ export function generateLocalBusinessSchema(
       addressRegion: "Lâm Đồng",
       addressCountry: "VN",
     },
-    ...(typeof venue.latitude === "number" &&
+    ...(venue.geocode_source !== "osm_street" &&
+      typeof venue.latitude === "number" &&
       Number.isFinite(venue.latitude) &&
       Math.abs(venue.latitude) <= 90 &&
       typeof venue.longitude === "number" &&

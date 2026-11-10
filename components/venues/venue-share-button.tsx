@@ -5,8 +5,8 @@ import { useTranslations } from "next-intl";
 import { useShare } from "@/lib/hooks/use-share";
 
 interface VenueShareButtonProps {
-  name: string;
-  shareText: string;
+  name?: string;
+  shareText?: string;
   url: string;
   label: string;
 }
@@ -24,13 +24,14 @@ export function VenueShareButton({
     <div className="flex flex-wrap gap-2">
       <button
         type="button"
-        onClick={() =>
-          share({
-            title: `${name} — ĐàLạt.app`,
-            text: shareText,
-            url,
-          })
-        }
+        // Venue callers supply only the URL: Zalo can concatenate optional
+        // title/text fields without separators. Keep metadata opt-in for
+        // existing organizer callers of this shared component.
+        onClick={() => share({
+          ...(name && { title: `${name} — ĐàLạt.app` }),
+          ...(shareText && { text: shareText }),
+          url,
+        })}
         className="inline-flex min-h-11 items-center gap-2 px-3 py-2 rounded-lg border border-border text-sm font-medium hover:bg-muted active:scale-95 transition-all"
       >
         <Share2 className="w-4 h-4" />

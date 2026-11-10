@@ -301,6 +301,7 @@ export interface Venue {
   address: string | null;
   google_maps_url: string | null;
   google_place_id: string | null;
+  geocode_source?: "google" | "osm" | "osm_street" | null;
 
   // Contact
   website_url: string | null;

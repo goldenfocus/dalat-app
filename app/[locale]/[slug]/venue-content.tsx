@@ -328,7 +328,10 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       ? placePhoto(venue.google_photos![0].name, 1600)
       : gallery[0].src
     : null;
-  const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+  const approximateLocation = venue.geocode_source === "osm_street";
+  const directionsUrl = approximateLocation && venue.google_maps_url
+    ? venue.google_maps_url
+    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
     [venue.name, venue.address].filter(Boolean).join(", "),
   )}${venue.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
   const mapsUrl =
@@ -612,9 +615,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
         <div className="mb-4">
           <VenueShareButton
-            name={venue.name}
-            shareText={venue.name}
-            url={`https://dalat.app${localeUrl(locale as Locale, `/${venue.slug}`)}`}
+            url={localeUrl(locale as Locale, `/${venue.slug}`)}
             label={t("shareVenue")}
           />
         </div>
@@ -1075,6 +1076,8 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               longitude={venue.longitude}
               name={venue.name}
               address={translatedAddress}
+              googleMapsUrl={venue.google_maps_url}
+              approximate={approximateLocation}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
               locale={locale}
@@ -1114,12 +1117,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               </p>
               <div className="flex flex-wrap justify-center gap-3">
                 <VenueShareButton
-                  name={venue.name}
-                  shareText={t("shareVenueText", {
-                    name: venue.name,
-                    address: translatedAddress || venue.address || "",
-                  })}
-                  url={`https://dalat.app${localeUrl(locale as Locale, `/${venue.slug}`)}`}
+                  url={localeUrl(locale as Locale, `/${venue.slug}`)}
                   label={t("shareVenue")}
                 />
                 {venue.website_url && (

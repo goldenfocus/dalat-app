@@ -483,9 +483,7 @@ export default async function VenuePage({ params }: PageProps) {
         {/* Action buttons - icon-only, min-h-11 ensures 44px touch targets */}
         <div className="flex flex-wrap gap-2 mb-6">
           <VenueShareButton
-            name={venue.name}
-            shareText={venue.name}
-            url={`https://dalat.app${locale === "en" ? "" : `/${locale}`}/venues/${venue.slug}`}
+            url={`https://dalat.app${locale === "en" ? "" : `/${locale}`}/${venue.slug}`}
             label={common("share")}
           />
           {venue.phone && (
@@ -809,6 +807,8 @@ export default async function VenuePage({ params }: PageProps) {
               longitude={venue.longitude}
               name={venue.name}
               address={venue.address}
+              googleMapsUrl={venue.google_maps_url}
+              approximate={venue.geocode_source === "osm_street"}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
               locale={locale}
