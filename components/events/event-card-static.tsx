@@ -80,7 +80,7 @@ export function EventCardStatic({
           {/* Capacity badge - shows spots when event has a cap */}
           {event.capacity ? (
             <div
-              className={`absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1 ${
+              className={`absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-sm flex items-center gap-1 ${
                 isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm"
               }`}
             >
@@ -90,7 +90,7 @@ export function EventCardStatic({
           ) : (
             /* Popular badge for events with 20+ RSVPs, no cap */
             (counts?.going_spots ?? 0) >= 20 && (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-sm">
                 {labels.popular}
               </div>
             )

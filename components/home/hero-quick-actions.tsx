@@ -28,7 +28,7 @@ export function HeroQuickActions({ labels }: HeroQuickActionsProps) {
             key={action.key}
             href={action.href}
             onClick={() => triggerHaptic("selection")}
-            className="inline-flex items-center gap-2 rounded-full bg-muted px-5 py-3 text-sm font-medium text-foreground transition-all hover:bg-amber-500/10 hover:text-amber-700 active:scale-95 dark:hover:bg-amber-400/20 dark:hover:text-amber-300"
+            className="inline-flex items-center gap-2 rounded-sm bg-muted px-5 py-3 text-sm font-medium text-foreground transition-all hover:bg-amber-500/10 hover:text-amber-700 active:scale-95 dark:hover:bg-amber-400/20 dark:hover:text-amber-300"
           >
             <Icon className="h-4 w-4" />
             <span>{labels[action.key]}</span>

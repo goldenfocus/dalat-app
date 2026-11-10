@@ -754,7 +754,7 @@ export function EventMediaUpload({
             )}
             {/* Focal point editing hint */}
             {isEditingFocalPoint && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-full text-sm">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-sm text-sm">
                 {t("clickToSetFocalPoint")}
               </div>
             )}
@@ -805,7 +805,7 @@ export function EventMediaUpload({
             {/* Version count badge */}
             {versionCount > 0 && (
               <div
-                className="flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/90 text-white text-xs font-medium cursor-default"
+                className="flex items-center gap-1 px-2 py-1 rounded-sm bg-blue-500/90 text-white text-xs font-medium cursor-default"
                 title={`${versionCount} previous version${versionCount > 1 ? "s" : ""}`}
               >
                 <History className="w-3 h-3" />
@@ -899,7 +899,7 @@ export function EventMediaUpload({
                     }}
                     disabled={isGenerating}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-full border transition-colors",
+                      "px-3 py-1.5 text-sm rounded-sm border transition-colors",
                       selectedPreset === preset.id
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background hover:bg-muted border-input"

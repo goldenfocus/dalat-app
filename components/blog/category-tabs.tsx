@@ -21,7 +21,7 @@ export function CategoryTabs({ categories, activeCategory, allLabel = "All" }: C
       <Link
         href={baseUrl}
         className={cn(
-          "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+          "px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-all",
           "active:scale-95",
           !activeCategory
             ? "bg-primary text-primary-foreground"
@@ -37,7 +37,7 @@ export function CategoryTabs({ categories, activeCategory, allLabel = "All" }: C
           key={category.id}
           href={`${baseUrl}?category=${category.slug}`}
           className={cn(
-            "px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all",
+            "px-4 py-2 rounded-sm text-sm font-medium whitespace-nowrap transition-all",
             "active:scale-95",
             activeCategory === category.slug
               ? "bg-primary text-primary-foreground"

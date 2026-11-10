@@ -72,7 +72,7 @@ export default async function Experiences({
       <nav className="flex gap-2 flex-wrap">
         <Link
           href={tag ? topicHref(tag) : "/experiences"}
-          className="rounded-full border px-4 py-2"
+          className="rounded-sm border px-4 py-2"
         >
           {t("all")}
         </Link>
@@ -80,7 +80,7 @@ export default async function Experiences({
           <Link
             key={c}
             href={tag ? topicHref(tag, c) : `/experiences?category=${c}`}
-            className={`rounded-full border px-4 py-2 ${category === c ? "bg-primary text-primary-foreground" : ""}`}
+            className={`rounded-sm border px-4 py-2 ${category === c ? "bg-primary text-primary-foreground" : ""}`}
           >
             {t(c)}
           </Link>

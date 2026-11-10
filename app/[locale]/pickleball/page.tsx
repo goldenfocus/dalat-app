@@ -265,9 +265,9 @@ export default async function PickleballPage({ params }: PageProps) {
             <h2 className="text-lg font-semibold mb-3">{t("aboutTitle")}</h2>
             <p className="text-muted-foreground mb-4">{t("aboutContent")}</p>
             <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm">Tennis</span>
-              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm">Badminton</span>
-              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-full text-sm">{t("paddleSports")}</span>
+              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-sm text-sm">Tennis</span>
+              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-sm text-sm">Badminton</span>
+              <span className="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 rounded-sm text-sm">{t("paddleSports")}</span>
             </div>
           </div>
 

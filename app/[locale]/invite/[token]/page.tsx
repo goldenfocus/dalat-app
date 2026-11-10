@@ -196,7 +196,7 @@ export default async function InvitePage({ params, searchParams }: PageProps) {
             {/* RSVP section */}
             {hasResponded ? (
               <div className="text-center space-y-4">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-muted">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-sm bg-muted">
                   {invitation.rsvp_status === "going" && (
                     <>
                       <Check className="w-5 h-5 text-green-600" />

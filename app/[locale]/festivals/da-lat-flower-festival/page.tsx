@@ -143,7 +143,7 @@ export default async function DaLatFlowerFestivalPage({ params }: PageProps) {
               </div>
 
               <div className="max-w-3xl pb-4">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-background/85 px-3 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-sm border border-white/20 bg-background/85 px-3 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
                   <Flower2 className="h-4 w-4" aria-hidden="true" />
                   {t("overview.badge")}
                 </div>

@@ -18,7 +18,7 @@ export function EventLifecycleBadge({
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-medium",
           variant === "floating"
             ? "bg-red-500/90 text-white backdrop-blur-sm"
             : "bg-red-500/10 text-red-600 dark:text-red-400",
@@ -35,7 +35,7 @@ export function EventLifecycleBadge({
     return (
       <span
         className={cn(
-          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-xs font-medium",
           variant === "floating"
             ? "bg-black/50 text-white/80 backdrop-blur-sm"
             : "bg-muted text-muted-foreground",

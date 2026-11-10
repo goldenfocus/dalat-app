@@ -232,7 +232,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
               </div>
 
               <div className="max-w-3xl pb-4">
-                <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/20 bg-background/85 px-3 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
+                <div className="mb-4 inline-flex items-center gap-2 rounded-sm border border-white/20 bg-background/85 px-3 py-1.5 text-sm font-medium text-primary backdrop-blur-sm">
                   <CalendarClock className="h-4 w-4" aria-hidden="true" />
                   {t("edition2026.badge")}
                 </div>
@@ -299,7 +299,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
                           sizes="(min-width: 768px) 30vw, 100vw"
                           className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                         />
-                        <span className="absolute left-3 top-3 rounded-full bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+                        <span className="absolute left-3 top-3 rounded-sm bg-black/70 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
                           {t("edition2026.pastGallery.archiveLabel", {
                             year: photo.year,
                           })}
@@ -377,7 +377,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
               <ul className="mt-7 grid gap-4 sm:grid-cols-2">
                 {programs.map(({ key, timed }) => (
                   <li key={key} className="rounded-2xl border bg-card p-5">
-                    <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    <div className="mb-3 inline-flex items-center gap-1.5 rounded-sm bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
                       {timed ? (
                         <BadgeCheck className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                       ) : (

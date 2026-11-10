@@ -215,7 +215,7 @@ export default async function OrganizerDashboard() {
                     </div>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full ${
+                    className={`text-xs px-2 py-1 rounded-sm ${
                       event.status === "published"
                         ? "bg-green-500/10 text-green-600"
                         : "bg-yellow-500/10 text-yellow-600"

@@ -207,16 +207,16 @@ async function HikingContent({ locale }: { locale: Locale }) {
           {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/outdoor" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/outdoor" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.outdoor")}
           </Link>
-          <Link href="/parks" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/parks" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.parks")}
           </Link>
-          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.cafes")}
           </Link>
-          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.allVenues")}
           </Link>
         </div>

@@ -161,7 +161,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
 
       {/* Popular badge - top right */}
       {goingSpots >= 20 && (
-        <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+        <div className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-amber-500/90 text-white text-xs font-medium rounded-sm">
           {t("popular")}
         </div>
       )}
@@ -169,7 +169,7 @@ export const EventImmersiveCard = memo(function EventImmersiveCard({
       {/* Photographer credit for fallback covers */}
       {isFallbackCover && social?.fallback_photo_credit && (
         <div
-          className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full"
+          className="absolute top-3 right-3 z-10 px-2.5 py-1 bg-black/50 backdrop-blur-sm text-white text-xs rounded-sm"
           style={goingSpots >= 20 ? { top: "3.25rem" } : undefined}
         >
           {t("photoBy", { name: social.fallback_photo_credit })}

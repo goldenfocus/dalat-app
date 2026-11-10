@@ -101,7 +101,7 @@ export async function PeopleProfileSection({
               {interests.map((value) => (
                 <span
                   key={value}
-                  className="rounded-full bg-muted px-3 py-1 text-sm text-muted-foreground"
+                  className="rounded-sm bg-muted px-3 py-1 text-sm text-muted-foreground"
                 >
                   {t(`interestOptions.${value}`)}
                 </span>

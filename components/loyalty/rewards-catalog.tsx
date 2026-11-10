@@ -167,7 +167,7 @@ export function RewardsCatalog({ userId }: { userId: string | null }) {
             key={key}
             onClick={() => setActiveCategory(key)}
             className={cn(
-              "shrink-0 rounded-full px-4 py-2 text-sm font-medium transition-all active:scale-95",
+              "shrink-0 rounded-sm px-4 py-2 text-sm font-medium transition-all active:scale-95",
               activeCategory === key
                 ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"

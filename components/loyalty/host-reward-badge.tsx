@@ -73,7 +73,7 @@ export function HostRewardBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
+        "inline-flex items-center gap-1.5 rounded-sm border px-2.5 py-1 text-xs font-medium transition-colors",
         isActive
           ? cn(config.color, config.bg, config.border)
           : "border-muted bg-muted/50 text-muted-foreground grayscale",

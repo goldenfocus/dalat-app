@@ -201,13 +201,13 @@ async function CommunityCentersContent({ locale }: { locale: Locale }) {
           {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/coworking" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/coworking" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.coworking")}
           </Link>
-          <Link href="/galleries" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/galleries" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.galleries")}
           </Link>
-          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
             {tp("shared.chips.allVenues")}
           </Link>
         </div>

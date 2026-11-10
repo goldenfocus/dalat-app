@@ -1775,7 +1775,7 @@ export function EventForm({
                 <Tag className="h-4 w-4" />
                 {t("activityTags") || "Activity Type"}
                 {selectedTags.length > 0 && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-full">
+                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-sm">
                     {selectedTags.length}
                   </span>
                 )}
@@ -1816,7 +1816,7 @@ export function EventForm({
                           setSelectedTags([...selectedTags, tag]);
                         }
                       }}
-                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                      className={`px-3 py-1.5 rounded-sm text-sm font-medium transition-all ${
                         isSelected
                           ? config.color
                           : "bg-muted text-muted-foreground hover:bg-muted/80"

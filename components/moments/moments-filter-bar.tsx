@@ -34,7 +34,7 @@ export function MomentsFilterBar({
               triggerHaptic("selection");
               onChange(option.key);
             }}
-            className={`px-3 py-1.5 rounded-full text-sm whitespace-nowrap transition-all active:scale-95 ${
+            className={`px-3 py-1.5 rounded-sm text-sm whitespace-nowrap transition-all active:scale-95 ${
               isDark
                 ? isActive
                   ? "bg-white text-black"

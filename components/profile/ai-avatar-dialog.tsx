@@ -456,7 +456,7 @@ Important:
                         type="button"
                         onClick={() => handleRefine(preset.prompt)}
                         disabled={isGenerating}
-                        className="px-3 py-1.5 text-xs rounded-full border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                        className="px-3 py-1.5 text-xs rounded-sm border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       >
                         {t(`avatarDialog.refinements.${preset.labelKey}`)}
                       </button>
@@ -602,7 +602,7 @@ Important:
                         type="button"
                         onClick={() => handleRefine(preset.prompt)}
                         disabled={isGenerating}
-                        className="px-3 py-1.5 text-xs rounded-full border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
+                        className="px-3 py-1.5 text-xs rounded-sm border border-violet-500/30 bg-violet-500/10 hover:bg-violet-500/20 text-violet-400 transition-colors disabled:opacity-50 disabled:pointer-events-none"
                       >
                         {t(`avatarDialog.refinements.${preset.labelKey}`)}
                       </button>

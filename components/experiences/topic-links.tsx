@@ -20,7 +20,7 @@ export function TopicLinks({
         <Link
           key={value}
           href={topicHref(value)}
-          className="rounded-full border px-3 py-2 text-sm hover:bg-muted"
+          className="rounded-sm border px-3 py-2 text-sm hover:bg-muted"
         >
           #{value}
         </Link>

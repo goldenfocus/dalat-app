@@ -172,7 +172,7 @@ export function InstantSearch({
       {/* Search Input */}
       <div
         className={cn(
-          "flex items-center gap-2 rounded-full border px-4 py-2 transition-all",
+          "flex items-center gap-2 rounded-sm border px-4 py-2 transition-all",
           isOverlay
             ? "bg-black/30 border-white/20 backdrop-blur-sm focus-within:bg-black/40 focus-within:border-white/40"
             : "bg-muted border-border focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/20"

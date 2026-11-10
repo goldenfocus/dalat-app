@@ -28,7 +28,7 @@ function LikeButton({ mediaId, userId, count, liked, onChange }: {
     <button
       onClick={toggle}
       aria-pressed={liked}
-      className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20 active:scale-95 transition"
+      className="inline-flex items-center gap-1.5 rounded-sm bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20 active:scale-95 transition"
     >
       <Heart className={`h-4 w-4 ${liked ? "fill-red-500 text-red-500" : ""}`} />
       {count > 0 ? count : t("like")}
@@ -96,7 +96,7 @@ export function ExperiencePhotoGallery({ experienceId, title, authorId, userId, 
               <Maximize2 className="h-4 w-4" />
             </span>
             {(likes[p.id]?.count || 0) > 0 && (
-              <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-full bg-black/50 px-2 py-1 text-xs text-white">
+              <span className="absolute bottom-3 right-3 inline-flex items-center gap-1 rounded-sm bg-black/50 px-2 py-1 text-xs text-white">
                 <Heart className="h-3 w-3 fill-white" /> {likes[p.id].count}
               </span>
             )}
