@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { triggerHaptic } from "@/lib/haptics";
 
 interface ShareOptions {
-  title: string;
+  title?: string;
   text?: string;
   url: string;
 }
@@ -15,7 +15,7 @@ interface ShareOptions {
  * We intentionally do NOT share image files via navigator.share().
  * On Android, passing `files` causes apps (WhatsApp, Telegram, etc.)
  * to treat the share as an "image share" — the URL gets buried or
- * dropped entirely. Instead, we share text + url only. The receiving
+ * dropped entirely. Instead, we share the URL with optional title/text. The receiving
  * app fetches the OG image from the URL's meta tags automatically,
  * giving a proper link preview card with the image.
  */
@@ -62,7 +62,7 @@ export function useShare() {
   );
 
   /**
-   * Share via native Web Share API (text + url only).
+   * Share a URL via the native Web Share API, with optional title/text.
    * Falls back to clipboard copy if unavailable or on error.
    */
   const share = useCallback(
@@ -72,7 +72,7 @@ export function useShare() {
       if (canShare) {
         try {
           await navigator.share({
-            title,
+            ...(title && { title }),
             ...(text && { text }),
             url,
           });

@@ -9,6 +9,8 @@ interface VenueMapProps {
   longitude: number;
   name: string;
   address?: string | null;
+  googleMapsUrl?: string | null;
+  approximate?: boolean;
   directionsLabel: string;
   viewOnMapLabel: string;
   locale?: string;
@@ -19,6 +21,8 @@ export function VenueMap({
   longitude,
   name,
   address,
+  googleMapsUrl,
+  approximate = false,
   directionsLabel,
   viewOnMapLabel,
   locale,
@@ -28,14 +32,21 @@ export function VenueMap({
   // Google Static Maps API URL — pass language param so labels match page locale
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const langParam = locale ? `&language=${locale}` : "";
-  const mapUrl = apiKey
+  const mapUrl = apiKey && !approximate
     ? `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=640x360&scale=2&markers=color:red%7C${latitude},${longitude}${langParam}&region=VN&key=${apiKey}`
     : null;
 
   // Google Maps links
-  const { map: mapsLink, directions: directionsLink } = getLocationMapLinks({
-    latitude, longitude, location_name: name, address,
+  const links = getLocationMapLinks({
+    latitude: approximate ? null : latitude,
+    longitude: approximate ? null : longitude,
+    google_maps_url: googleMapsUrl,
+    location_name: name, address,
   });
+  // A street-level geocode is not a restaurant entrance. Open the supplied
+  // listing instead of asking Google to route to a guessed coordinate.
+  const mapsLink = links.map;
+  const directionsLink = links.directions || links.map;
 
   return (
     <div className="rounded-xl overflow-hidden border border-border">

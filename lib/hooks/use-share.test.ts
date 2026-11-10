@@ -20,3 +20,15 @@ describe('share clipboard feedback',()=>{
   expect(document.querySelector('textarea')).toBeNull();
  });
 });
+
+describe('native share fields',()=>{
+ it('preserves title and text for callers that request them',async()=>{
+  const nativeShare=vi.fn().mockResolvedValue(undefined);
+  Object.defineProperty(navigator,'share',{configurable:true,value:nativeShare});
+  const {result}=renderHook(()=>useShare());
+  const options={title:'An event',text:'Join us this week',url:'https://dalat.app/events/example'};
+  await act(()=>result.current.share(options));
+  expect(nativeShare).toHaveBeenCalledWith(options);
+  Reflect.deleteProperty(navigator,'share');
+ });
+});

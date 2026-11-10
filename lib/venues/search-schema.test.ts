@@ -23,6 +23,10 @@ const venue = {
   updated_at: "2026-10-20T00:00:00Z",
 } as unknown as Venue;
 describe("venue search entity graph", () => {
+  it("does not publish an approximate street point as the venue coordinates", () => {
+    const schema = generateLocalBusinessSchema({ ...venue, geocode_source: "osm_street" }, "en");
+    expect(schema).not.toHaveProperty("geo");
+  });
   it("joins localized pages to one place, using actual canonical URLs and visible facts", () => {
     const de = generateVenuePageSchema(venue, "de", {
       venuesLabel: "Veranstaltungsorte",
