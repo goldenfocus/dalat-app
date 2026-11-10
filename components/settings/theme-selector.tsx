@@ -14,9 +14,9 @@ const themes = [
     descKey: "themeMorningMistDesc",
     icon: Sun,
     preview: {
-      bg: "hsl(40 25% 98%)",
-      card: "hsl(40 20% 97%)",
-      accent: "hsl(158 35% 32%)",
+      bg: "hsl(135 12% 93%)",
+      card: "hsl(120 12% 97%)",
+      accent: "hsl(161 50% 25%)",
     },
   },
   {
@@ -25,9 +25,9 @@ const themes = [
     descKey: "themeEveningCafeDesc",
     icon: Moon,
     preview: {
-      bg: "hsl(30 20% 7%)",
-      card: "hsl(30 18% 11%)",
-      accent: "hsl(158 40% 45%)",
+      bg: "hsl(169 35% 6%)",
+      card: "hsl(167 30% 9%)",
+      accent: "hsl(156 41% 56%)",
     },
   },
   {
@@ -120,10 +120,21 @@ const themes = [
   },
 ] as const;
 
+const THEME_SWITCH_MS = 350;
+
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const t = useTranslations("userMenu");
+
+  // Colour transitions run only while the switch is in flight (see
+  // .theme-switching in globals.css), so they never tax normal interaction.
+  const switchTheme = (value: string) => {
+    const root = document.documentElement;
+    root.classList.add("theme-switching");
+    setTheme(value);
+    window.setTimeout(() => root.classList.remove("theme-switching"), THEME_SWITCH_MS);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -155,7 +166,7 @@ export function ThemeSelector() {
         return (
           <button
             key={themeItem.value}
-            onClick={() => setTheme(themeItem.value)}
+            onClick={() => switchTheme(themeItem.value)}
             className={cn(
               "flex flex-col gap-2 p-3 rounded-xl border-2 transition-all duration-200 text-left",
               "active:scale-[0.98]",

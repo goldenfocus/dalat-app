@@ -1,11 +1,13 @@
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import { MapPin, Users, Clock, Radio } from "lucide-react";
+import { ArrowUpRight, Clock, Users } from "lucide-react";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
+import { FogCanvas } from "@/components/home/fog-canvas";
+import { eventImageAlt } from "@/lib/events/image-alt";
+import { HERO_IMAGE_SIZES, heroImageSources } from "@/lib/events/hero-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
-import { optimizedImageUrl } from "@/lib/image-cdn";
 import { decodeUnicodeEscapes } from "@/lib/utils";
 import {
   getCardCoverUrl,
@@ -20,8 +22,10 @@ const BLUR_DATA_URL =
 const DEFAULT_IMAGE_URL = "/images/defaults/event-default-desktop.png";
 
 export interface EventHeroCardLabels {
-  live: string;
-  tapToJoin: string;
+  /** Set only while the event is underway; shows the LIVE chip. */
+  live?: string;
+  /** Call to action on the card, e.g. "Tap to join" */
+  cta: string;
   going: string;
   /** Pre-resolved time line, e.g. "Started 12 min ago" */
   timeDisplay: string;
@@ -36,8 +40,10 @@ interface EventHeroCardServerProps {
 }
 
 /**
- * Server-rendered "Happening Now" hero — no card-level hydration.
- * Resolves CDN URLs on the server (no next/image loader fn across Link).
+ * Server-rendered homepage featured card: one full-bleed photo, one action.
+ * No card-level hydration; only the fog canvas (and a video cover, when the
+ * event has one) are client islands.
+ * Image sources come from heroImageSources so the page's LCP preload matches.
  */
 export function EventHeroCardServer({
   event,
@@ -47,129 +53,113 @@ export function EventHeroCardServer({
   labels,
 }: EventHeroCardServerProps) {
   const coverUrl = getCardCoverUrl(event.image_url, social);
-  const hasCustomImage = !!coverUrl;
+  const isFallbackCover = !!coverUrl && coverUrl !== event.image_url;
   const imageIsVideo = isVideoUrl(coverUrl);
   const displayTitle = translatedTitle || event.title;
   const goingSpots = counts?.going_spots ?? 0;
-
-  const resolvedCover =
-    coverUrl && !imageIsVideo
-      ? optimizedImageUrl(coverUrl, { width: 1080, quality: 70 }) || coverUrl
-      : null;
-
+  const sources = coverUrl && !imageIsVideo ? heroImageSources(coverUrl) : null;
+  const fillsFrame = event.image_fit === "cover";
+  const focalStyle =
+    fillsFrame && event.focal_point
+      ? { objectPosition: event.focal_point }
+      : undefined;
   const spotsText = event.capacity
-    ? `${counts?.going_spots ?? 0}/${event.capacity}`
-    : `${counts?.going_spots ?? 0}`;
+    ? `${goingSpots}/${event.capacity}`
+    : `${goingSpots}`;
 
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="group block relative w-full rounded-2xl overflow-hidden bg-gradient-to-br from-rose-500/10 via-purple-500/10 to-indigo-500/10"
+      className="fog-scoop-lg fog-shadow group relative isolate block aspect-[4/5] max-h-[36rem] w-full overflow-hidden bg-[hsl(169_35%_6%)] text-white sm:aspect-[16/9] lg:aspect-[2/1]"
     >
-      <div className="absolute -inset-[1px] rounded-2xl bg-gradient-to-r from-rose-500 via-purple-500 to-indigo-500 opacity-75 blur-sm group-hover:opacity-100 transition-opacity animate-pulse" />
+      {coverUrl && imageIsVideo ? (
+        <LazyVideoCover
+          src={coverUrl}
+          eager
+          preload="metadata"
+          className={`absolute inset-0 h-full w-full ${fillsFrame ? "object-cover" : "object-contain"}`}
+          style={focalStyle}
+        />
+      ) : sources ? (
+        <>
+          {!fillsFrame && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={sources.src}
+              alt=""
+              className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl"
+              aria-hidden="true"
+            />
+          )}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            {...sources}
+            alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
+            className={`absolute inset-0 h-full w-full ${fillsFrame ? "fog-drift object-cover" : "object-contain"}`}
+            style={focalStyle}
+            fetchPriority="high"
+            loading="eager"
+            decoding="async"
+          />
+        </>
+      ) : event.source_platform !== "activity-graph" ? (
+        <Image
+          src={DEFAULT_IMAGE_URL}
+          alt={displayTitle}
+          fill
+          sizes={HERO_IMAGE_SIZES}
+          className="object-cover"
+          priority
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
+        />
+      ) : null}
 
-      <div className="relative bg-background rounded-2xl overflow-hidden">
-        <div className="flex flex-col sm:flex-row">
-          <div className="relative w-full sm:w-2/5 aspect-[16/9] sm:aspect-auto sm:min-h-[200px]">
-            {hasCustomImage ? (
-              imageIsVideo ? (
-                <LazyVideoCover
-                  src={coverUrl!}
-                  eager
-                  preload="metadata"
-                  className={`absolute inset-0 w-full h-full ${event.image_fit === "cover" ? "object-cover" : "object-contain bg-black"}`}
-                  style={
-                    event.image_fit === "cover" && event.focal_point
-                      ? { objectPosition: event.focal_point }
-                      : undefined
-                  }
-                />
-              ) : (
-                <>
-                  {event.image_fit !== "cover" && resolvedCover && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={resolvedCover}
-                      alt=""
-                      className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
-                      aria-hidden="true"
-                    />
-                  )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={resolvedCover!}
-                    alt={displayTitle}
-                    className={`absolute inset-0 w-full h-full group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
-                    style={
-                      event.image_fit === "cover" && event.focal_point
-                        ? { objectPosition: event.focal_point }
-                        : undefined
-                    }
-                    fetchPriority="high"
-                    loading="eager"
-                    decoding="async"
-                  />
-                </>
-              )
-            ) : event.source_platform !== "activity-graph" ? (
-              <Image
-                src={DEFAULT_IMAGE_URL}
-                alt={displayTitle}
-                fill
-                sizes="(max-width: 640px) 100vw, 40vw"
-                className="object-cover"
-                priority
-                placeholder="blur"
-                blurDataURL={BLUR_DATA_URL}
-              />
-            ) : null}
+      <FogCanvas />
+      <span className="fog-scrim" aria-hidden="true" />
+      <span className="fog-frame-line" aria-hidden="true" />
 
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent sm:hidden" />
-          </div>
+      <div className="absolute inset-x-5 top-5 z-[5] flex flex-wrap gap-1.5 sm:inset-x-7 sm:top-7">
+        {labels.live && (
+          <span className="fog-chip fog-chip-live">
+            <span
+              className="h-1.5 w-1.5 animate-pulse rounded-full bg-current"
+              aria-hidden="true"
+            />
+            {labels.live}
+          </span>
+        )}
+        <span className="fog-chip fog-chip-glass">
+          <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+          {labels.timeDisplay}
+        </span>
+      </div>
 
-          <div className="relative flex-1 p-5 sm:p-6 flex flex-col justify-center">
-            <div className="absolute top-4 right-4 sm:top-5 sm:right-5">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500 text-white text-sm font-semibold rounded-full shadow-lg shadow-red-500/30">
-                <Radio className="w-3.5 h-3.5 animate-pulse" />
-                <span>{labels.live}</span>
-              </div>
-            </div>
-
-            <h3 className="text-xl sm:text-2xl font-bold leading-tight line-clamp-2 pr-20 sm:pr-24 mb-3">
-              {displayTitle}
-            </h3>
-
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4" />
-                <span className="text-foreground font-medium">
-                  {labels.timeDisplay}
-                </span>
-              </div>
-
-              {event.location_name && (
-                <div className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4" />
-                  <span className="line-clamp-1">
-                    {decodeUnicodeEscapes(event.location_name)}
-                  </span>
-                </div>
-              )}
-
-              {shouldShowGoingCount(goingSpots) && (
-                <div className="flex items-center gap-1.5">
-                  <Users className="w-4 h-4" />
-                  <span>
-                    {spotsText} {labels.going}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="mt-4 text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-              {labels.tapToJoin} →
-            </div>
-          </div>
+      <div className="absolute inset-x-0 bottom-0 z-[5] grid gap-2.5 p-6 sm:p-9">
+        {event.location_name && (
+          <p className="fog-cap line-clamp-1 opacity-85">
+            {decodeUnicodeEscapes(event.location_name)}
+          </p>
+        )}
+        {/* h2: the featured plan is the first section under the page h1 */}
+        <h2 className="max-w-3xl text-[clamp(1.9rem,7.4vw,3.2rem)] font-bold leading-[1.02] line-clamp-3 [text-shadow:0_2px_24px_rgb(6_16_14/0.6)]">
+          {displayTitle}
+        </h2>
+        <div className="mt-1.5 flex items-center justify-between gap-3">
+          {shouldShowGoingCount(goingSpots) ? (
+            <span className="flex min-w-0 items-center gap-1.5 text-sm font-medium">
+              <Users className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
+              <span className="truncate">
+                {spotsText} {labels.going}
+              </span>
+            </span>
+          ) : (
+            <span />
+          )}
+          <span className="fog-cta fog-scoop">
+            {labels.cta}
+            <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
+          </span>
         </div>
       </div>
     </Link>

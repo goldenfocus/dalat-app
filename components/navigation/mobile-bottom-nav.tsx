@@ -97,10 +97,11 @@ export function MobileBottomNav() {
               prefetch={false}
               onClick={() => triggerHaptic("selection")}
               aria-label={label}
-              className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
+              aria-current={isActive ? "page" : undefined}
+              className={`relative flex h-16 w-11 items-center justify-center transition-colors active:scale-95 ${
                 isActive
-                  ? "bg-foreground/10 text-foreground"
-                  : "text-muted-foreground/60 hover:text-muted-foreground"
+                  ? "text-foreground before:absolute before:inset-x-2 before:top-0 before:h-0.5 before:bg-foreground"
+                  : "text-muted-foreground/70 hover:text-foreground"
               }`}
             >
               <Icon className={`h-5 w-5 ${isActive ? "stroke-[2.5]" : ""}`} />

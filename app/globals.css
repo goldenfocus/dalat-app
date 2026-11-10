@@ -22,129 +22,146 @@
       sans-serif;
   }
 
+  /* Display face (self-hosted by next/font) for headlines only; body stays
+   * on the system stack above. */
+  h1,
+  h2,
+  h3,
+  .font-display {
+    font-family: var(--font-display), system-ui, -apple-system, "Segoe UI",
+      Roboto, sans-serif;
+    letter-spacing: -0.02em;
+    /* body opts for optimizeSpeed; large headlines need their kerning back */
+    text-rendering: optimizeLegibility;
+  }
+
   /* ============================================
-   * DALAT COLOR PALETTE - "Pine & Mist"
-   * Inspired by Dalat's pine forests, morning mist,
-   * coffee culture, and highland tranquility.
-   *
-   * Philosophy: Distinctive, calm, nature-forward.
-   * Pine green primary makes this instantly recognizable.
+   * DALAT COLOR PALETTE - "Fog Hour"
+   * Cool mist, pine ink and one warm yellow (dã quỳ)
+   * reserved for the primary action.
    * ============================================ */
 
   :root {
-    /* === LIGHT MODE: "Morning in the Pines" === */
-    /* Soft mist, filtered forest light, quiet elegance */
+    /* === LIGHT MODE: "Morning Mist" === */
+    /* Cool fog over pine: mist neutrals, pine ink, one warm yellow */
 
     /* Core semantic colors */
-    --background: 40 25% 98%;           /* warm off-white, hint of cream */
-    --foreground: 160 15% 15%;          /* pine-tinted dark, not pure black */
-    --card: 40 20% 97%;                 /* subtle warmth on cards */
-    --card-foreground: 160 15% 15%;
-    --popover: 40 20% 99%;
-    --popover-foreground: 160 15% 15%;
+    --background: 135 12% 93%;          /* cool mist */
+    --foreground: 167 37% 10%;          /* pine ink, never pure black */
+    --card: 120 12% 97%;                /* lifted mist */
+    --card-foreground: 167 37% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 167 37% 10%;
 
-    /* Primary: Pine Forest - calm, distinctive, grounded */
-    --primary: 158 35% 32%;             /* deep pine green - the signature */
-    --primary-foreground: 0 0% 100%;
+    /* Primary: Pine Forest - the brand */
+    --primary: 161 50% 25%;
+    --primary-foreground: 146 41% 97%;
 
-    /* Secondary: Warm stone - earthy, supportive */
-    --secondary: 35 20% 93%;            /* warm light stone */
-    --secondary-foreground: 35 25% 30%;
+    /* Secondary: deeper mist */
+    --secondary: 144 12% 88%;
+    --secondary-foreground: 167 30% 16%;
 
-    /* Muted: Morning mist - soft, receding */
-    --muted: 160 10% 94%;               /* barely green-gray */
-    --muted-foreground: 160 8% 45%;
+    /* Muted: receding fog */
+    --muted: 140 10% 89%;
+    --muted-foreground: 162 12% 34%;
 
-    /* Accent: Soft sky blue - fresh highland air */
-    --accent: 200 30% 94%;              /* very light sky */
-    --accent-foreground: 200 40% 30%;
+    /* Accent: pine wash */
+    --accent: 150 23% 88%;
+    --accent-foreground: 161 50% 22%;
 
     /* Destructive: Muted warm red (not alarming) */
     --destructive: 0 60% 50%;
     --destructive-foreground: 0 0% 100%;
 
     /* UI elements */
-    --border: 35 15% 88%;               /* warm gray border */
-    --input: 35 15% 88%;
-    --ring: 158 35% 32%;                /* pine green focus ring */
+    --border: 143 10% 84%;
+    --input: 143 10% 84%;
+    --ring: 161 50% 25%;
+
+    /* Dã quỳ (wild sunflower): the one primary action per screen */
+    --sun: 42 89% 53%;
+    --sun-foreground: 45 100% 7%;
 
     /* Charts - nature palette */
-    --chart-1: 158 35% 35%;             /* pine green */
-    --chart-2: 35 65% 55%;              /* warm gold */
-    --chart-3: 200 45% 50%;             /* sky blue */
+    --chart-1: 161 50% 30%;             /* pine green */
+    --chart-2: 42 80% 52%;              /* dã quỳ */
+    --chart-3: 231 58% 58%;             /* hydrangea */
     --chart-4: 25 55% 45%;              /* coffee brown */
     --chart-5: 280 25% 55%;             /* misty purple */
 
     /* === EXTENDED DALAT PALETTE === */
     /* For badges, highlights, special UI moments */
-    --dalat-pine: 158 35% 32%;          /* same as primary */
-    --dalat-pine-light: 158 25% 92%;    /* light pine wash */
-    --dalat-gold: 38 75% 50%;           /* warm gold - for highlights */
-    --dalat-gold-light: 40 60% 92%;     /* light gold wash */
+    --dalat-pine: 161 50% 25%;          /* same as primary */
+    --dalat-pine-light: 150 23% 88%;    /* light pine wash */
+    --dalat-gold: 42 89% 53%;           /* dã quỳ */
+    --dalat-gold-light: 44 80% 90%;
     --dalat-coffee: 25 55% 35%;         /* rich coffee */
     --dalat-coffee-light: 30 40% 90%;   /* coffee cream */
-    --dalat-hydrangea: 220 45% 55%;     /* hydrangea blue */
-    --dalat-hydrangea-light: 220 35% 93%;
+    --dalat-hydrangea: 231 58% 58%;     /* hydrangea blue */
+    --dalat-hydrangea-light: 230 71% 93%;
     --dalat-mist: 260 20% 65%;          /* misty purple */
     --dalat-mist-light: 260 15% 95%;
 
-    --radius: 0.5rem;
+    /* Timetable corners: 3px everywhere, scooped where the browser can */
+    --radius: 0.1875rem;
   }
 
   .dark {
-    /* === DARK MODE: "Evening Cafe" === */
-    /* Warm lamp light, wood tables, steaming coffee */
-    /* Not corporate blue-black, but cozy brown-black */
+    /* === DARK MODE: "Pine Night" === */
+    /* The hills after the fog rolls in: deep pine, lamp light */
 
     /* Core semantic colors */
-    --background: 30 20% 7%;            /* coffee-black, warm undertone */
-    --foreground: 35 15% 90%;           /* warm cream text */
-    --card: 30 18% 11%;                 /* elevated surface, still warm */
-    --card-foreground: 35 15% 90%;
-    --popover: 30 18% 9%;
-    --popover-foreground: 35 15% 90%;
+    --background: 169 35% 6%;
+    --foreground: 146 19% 93%;
+    --card: 167 30% 9%;
+    --card-foreground: 146 19% 93%;
+    --popover: 166 27% 12%;
+    --popover-foreground: 146 19% 93%;
 
-    /* Primary: Brighter pine for dark backgrounds */
-    --primary: 158 40% 45%;             /* lighter pine, still recognizable */
-    --primary-foreground: 160 30% 8%;   /* dark pine for contrast */
+    /* Primary: brighter pine for dark backgrounds */
+    --primary: 156 41% 56%;
+    --primary-foreground: 159 54% 5%;
 
-    /* Secondary: Warm dark stone */
-    --secondary: 30 15% 18%;            /* dark warm stone */
-    --secondary-foreground: 35 20% 85%;
+    /* Secondary: lifted night */
+    --secondary: 166 22% 14%;
+    --secondary-foreground: 146 15% 88%;
 
-    /* Muted: Deep forest shadow */
-    --muted: 160 10% 15%;               /* dark pine-gray */
-    --muted-foreground: 160 8% 55%;
+    /* Muted: deep forest shadow */
+    --muted: 166 20% 13%;
+    --muted-foreground: 157 11% 67%;
 
-    /* Accent: Deep sky */
-    --accent: 200 25% 20%;              /* dark sky blue */
-    --accent-foreground: 200 30% 85%;
+    /* Accent: dark pine wash */
+    --accent: 160 37% 14%;
+    --accent-foreground: 156 41% 72%;
 
     /* Destructive: Softened for dark */
     --destructive: 0 50% 45%;
     --destructive-foreground: 0 0% 95%;
 
     /* UI elements */
-    --border: 30 12% 20%;               /* warm dark border */
-    --input: 30 12% 20%;
-    --ring: 158 40% 45%;                /* pine green focus */
+    --border: 164 18% 16%;
+    --input: 164 18% 16%;
+    --ring: 156 41% 56%;
+
+    --sun: 43 91% 60%;
+    --sun-foreground: 45 100% 7%;
 
     /* Charts - dark mode optimized */
-    --chart-1: 158 40% 50%;             /* brighter pine */
-    --chart-2: 38 70% 55%;              /* warm gold */
-    --chart-3: 200 40% 55%;             /* sky blue */
-    --chart-4: 25 50% 50%;              /* coffee */
-    --chart-5: 280 25% 55%;             /* mist purple */
+    --chart-1: 156 41% 56%;
+    --chart-2: 43 85% 58%;
+    --chart-3: 230 70% 72%;
+    --chart-4: 25 50% 50%;
+    --chart-5: 280 25% 55%;
 
     /* === EXTENDED DALAT PALETTE (dark mode) === */
-    --dalat-pine: 158 40% 45%;
-    --dalat-pine-light: 158 20% 15%;    /* dark pine bg */
-    --dalat-gold: 38 70% 55%;
-    --dalat-gold-light: 38 40% 15%;     /* dark gold bg */
+    --dalat-pine: 156 41% 56%;
+    --dalat-pine-light: 160 37% 14%;    /* dark pine bg */
+    --dalat-gold: 43 91% 60%;
+    --dalat-gold-light: 42 45% 14%;     /* dark gold bg */
     --dalat-coffee: 25 50% 50%;
     --dalat-coffee-light: 25 30% 15%;
-    --dalat-hydrangea: 220 40% 55%;
-    --dalat-hydrangea-light: 220 25% 18%;
+    --dalat-hydrangea: 230 78% 77%;
+    --dalat-hydrangea-light: 229 40% 19%;
     --dalat-mist: 260 20% 55%;
     --dalat-mist-light: 260 15% 18%;
   }
@@ -490,23 +507,180 @@
 
 /* ============================================
  * THEME TRANSITION SYSTEM
- * Smooth 300ms transitions when switching themes
+ * Smooth 300ms transitions while a theme switch is in flight.
+ * ThemeSelector adds .theme-switching to <html> for the duration.
+ * Scoped on purpose: an always-on universal rule outranks Tailwind's
+ * transition utilities and silently turns off every transform transition.
  * ============================================ */
 
-html:not(.no-transitions) *,
-html:not(.no-transitions) *::before,
-html:not(.no-transitions) *::after {
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after {
   transition-property: color, background-color, border-color, box-shadow, fill, stroke;
   transition-duration: 300ms;
   transition-timing-function: ease-out;
 }
 
 /* Exclude elements that shouldn't transition (prevents image/video flash) */
-html:not(.no-transitions) img,
-html:not(.no-transitions) video,
-html:not(.no-transitions) canvas,
-html:not(.no-transitions) [data-no-theme-transition] {
+html.theme-switching img,
+html.theme-switching video,
+html.theme-switching canvas,
+html.theme-switching [data-no-theme-transition] {
   transition: none !important;
+}
+
+/* ============================================
+ * FOG HOUR: SHAPES AND LIGHT
+ * Timetable cells, ticket-scoop frames, lamp glow.
+ * ============================================ */
+
+:root {
+  --fog-shadow: 0 1px 1px rgb(16 35 31 / 0.05), 0 4px 10px -2px rgb(16 35 31 / 0.08),
+    0 22px 44px -18px rgb(16 35 31 / 0.28);
+  --fog-glow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 26px -10px hsl(var(--sun) / 0.8);
+  --fog-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.dark {
+  --fog-shadow: 0 1px 1px rgb(0 0 0 / 0.3), 0 6px 14px -4px rgb(0 0 0 / 0.4),
+    0 26px 50px -18px rgb(0 0 0 / 0.7);
+  --fog-glow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 0 0 1px hsl(var(--sun) / 0.5),
+    0 8px 30px -6px hsl(var(--sun) / 0.6), 0 0 80px -8px hsl(var(--sun) / 0.42);
+}
+
+@layer components {
+  /* Small caps label: timetable headers, chips, tabs */
+  .fog-cap {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .fog-scoop,
+  .fog-scoop-lg {
+    border-radius: var(--radius);
+  }
+
+  .fog-shadow {
+    box-shadow: var(--fog-shadow);
+  }
+
+  .fog-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.625rem;
+    padding: 0 0.5625rem;
+    border-radius: 2px;
+    font-size: 0.65625rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .fog-chip-glass {
+    background: rgb(6 16 14 / 0.55);
+    color: #fff;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  }
+
+  .fog-chip-live {
+    background: hsl(358 71% 56%);
+    color: #fff;
+    box-shadow: 0 0 22px -2px hsl(358 71% 56%);
+  }
+
+  /* The one primary action: dã quỳ yellow with a lamp glow */
+  .fog-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    background: hsl(var(--sun));
+    color: hsl(var(--sun-foreground));
+    font-size: 0.78125rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: var(--fog-glow);
+    transition: transform 150ms ease, box-shadow 250ms ease;
+  }
+
+  .group:hover .fog-cta {
+    transform: translateY(-1px);
+  }
+
+  .group:active .fog-cta {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  /* Photo scrim with a fine static grain, like a mounted print */
+  .fog-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: var(--fog-grain),
+      linear-gradient(
+        180deg,
+        rgb(6 16 14 / 0.5) 0%,
+        rgb(6 16 14 / 0) 26%,
+        rgb(6 16 14 / 0.2) 52%,
+        rgb(6 16 14 / 0.94) 100%
+      );
+  }
+
+  /* Inset hairline frame on photos */
+  .fog-frame-line {
+    position: absolute;
+    inset: 8px;
+    z-index: 3;
+    pointer-events: none;
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 1px;
+  }
+}
+
+/* Ticket scoop where the browser can draw it (Chromium 139+); everything
+ * else keeps the crisp --radius corner from the rules above. */
+@supports (corner-shape: scoop) {
+  .fog-scoop {
+    border-radius: 9px;
+    corner-shape: scoop;
+  }
+  .fog-scoop-lg {
+    border-radius: 18px;
+    corner-shape: scoop;
+  }
+  .fog-frame-line {
+    border-radius: 11px;
+    corner-shape: scoop;
+  }
+}
+
+/* The featured photo sinks behind its frame as the page scrolls.
+ * Compositor-only (transform), and off entirely under reduced motion. */
+@keyframes fog-drift {
+  to {
+    transform: scale(1.12) translateY(4%);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fog-drift {
+      animation: fog-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 700px;
+    }
+  }
 }
 
 /* ============================================

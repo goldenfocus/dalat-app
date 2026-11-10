@@ -3,7 +3,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { CreateEventLink } from "@/components/auth/create-event-link";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ContentNav } from "@/components/navigation/content-nav";
 import {
   DeferredHeaderSearch,
@@ -26,13 +25,16 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
     <nav data-floating-chrome="site-header" className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-14 max-w-6xl items-center justify-between mx-auto px-2 min-[360px]:px-4">
         <div className="flex items-center gap-0.5 min-[360px]:gap-1.5">
-          <Link href="/" className="font-bold text-base min-[360px]:text-lg">
-            ĐàLạt.app
+          {/* Wordmark only: the name in the display face is the logo */}
+          <Link
+            href="/"
+            className="font-display text-lg font-extrabold tracking-[-0.035em] min-[360px]:text-xl"
+          >
+            ĐàLạt
+            <span className="font-medium text-muted-foreground">.app</span>
           </Link>
-          <div className="flex items-center gap-0 min-[360px]:gap-1">
-            <DeferredLocalePicker />
-            <ThemeToggle />
-          </div>
+          {/* Theme choice lives in Settings, not in the bar */}
+          <DeferredLocalePicker />
         </div>
         <div className="flex items-center gap-0 min-[360px]:gap-1">
           <Link

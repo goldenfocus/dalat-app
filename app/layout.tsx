@@ -1,6 +1,17 @@
 import { AccountBridge } from '@/components/deovia/AccountBridge';
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+
+// Headlines only. Self-hosted by next/font with a metric-matched fallback, so
+// text paints immediately in the system face and swaps without a layout shift.
+// Scripts the face lacks (CJK, Cyrillic, Thai) fall through to the system stack.
+const displayFont = Bricolage_Grotesque({
+  subsets: ["latin", "vietnamese"],
+  axes: ["opsz"],
+  display: "swap",
+  variable: "--font-display",
+});
 
 const siteUrl = "https://dalat.app";
 const localeBootstrapScript = `
@@ -78,7 +89,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="und" suppressHydrationWarning>
+    <html lang="und" className={displayFont.variable} suppressHydrationWarning>
       <head>
         {/* Keep static rendering while declaring the URL locale before body content parses. */}
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
@@ -101,7 +112,7 @@ export default function RootLayout({
         {/* Apple touch icon for iOS home screen */}
         <link rel="apple-touch-icon" href="/android-chrome-192x192.png" />
       </head>
-      {/* System font stack via globals.css — zero webfont bytes, faster FCP */}
+      {/* Body text: system font stack via globals.css, zero webfont bytes */}
       <body className="antialiased"><AccountBridge />{children}</body>
     </html>
   );

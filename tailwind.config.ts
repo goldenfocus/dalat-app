@@ -50,6 +50,11 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        // Dã quỳ yellow — reserved for the single primary action on a screen
+        sun: {
+          DEFAULT: "hsl(var(--sun))",
+          foreground: "hsl(var(--sun-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -84,10 +89,20 @@ export default {
           },
         },
       },
+      fontFamily: {
+        display: ["var(--font-display)", "system-ui", "sans-serif"],
+      },
+      // Fog Hour shape scale: timetable cells, not pills. Every named radius
+      // stays within a few px of --radius so cards and controls read as one
+      // family; only rounded-full (avatars, dots) keeps a true circle.
       borderRadius: {
+        sm: "calc(var(--radius) - 1px)",
+        DEFAULT: "var(--radius)",
+        md: "var(--radius)",
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 1px)",
+        "2xl": "calc(var(--radius) + 3px)",
+        "3xl": "calc(var(--radius) + 5px)",
       },
       keyframes: {
         ripple: {
