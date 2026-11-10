@@ -339,7 +339,7 @@ export function PromoMediaSection({
                 )}
                 {lightboxIndex !== null && <PromoLightboxContent item={promo[lightboxIndex]} />}
                 {lightboxIndex !== null && (
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-sm">
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-pill">
                     {lightboxIndex + 1} / {promo.length}
                   </div>
                 )}

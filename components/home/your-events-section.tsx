@@ -207,7 +207,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
           <h2 className="text-lg font-bold tracking-tight">
             {t("yourEvents.title")}
           </h2>
-          <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-sm">
+          <span className="bg-primary text-primary-foreground text-xs font-medium px-2 py-0.5 rounded-pill">
             {events.length}
           </span>
         </div>
@@ -392,7 +392,7 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
 
         {/* Status badge + attendee count */}
         <div className="flex items-center gap-2 mt-1.5">
-          <span className={`text-xs px-2 py-0.5 rounded-sm border ${status.className}`}>
+          <span className={`text-xs px-2 py-0.5 rounded-pill border ${status.className}`}>
             {status.label}
           </span>
           {goingCount > 0 && (

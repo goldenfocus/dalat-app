@@ -1,7 +1,6 @@
-import type { ReactNode } from "react";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/lib/i18n/routing";
-import { Calendar, History, Images } from "lucide-react";
+import { Radio, Calendar, History, Images } from "lucide-react";
 import {
   EventHeroCardServer,
   resolveHeroTimeDisplay,
@@ -14,9 +13,7 @@ import {
   type MoreAtVenueHomeLinkData,
 } from "./more-at-venue-home-link";
 import { getPastProof, shouldShowGoingCount } from "@/lib/events/social-proof";
-import { getHomeFeed } from "@/lib/events/home-feed";
-import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
-import { formatInDaLatAsync } from "@/lib/timezone";
+import { takeSoonestEventPerVenue } from "@/lib/events/one-per-venue";
 import type {
   CardEvent,
   ContentLocale,
@@ -26,18 +23,21 @@ import type {
 import { getEventTranslationsBatch } from "@/lib/translations";
 import { createStaticClient } from "@/lib/supabase/server";
 import {
+  getCachedEventsByLifecycle,
   getCachedEventCountsBatch,
   getCachedEventSocialBatch,
 } from "@/lib/cache/server-cache";
 
+const HAPPENING_LIMIT = 5;
+const UPCOMING_LIMIT = 12;
+// Series-deduped rows to read before venue collapse, so one nightly venue
+// cannot consume the visible slots.
+const HOME_FEED_CANDIDATE_LIMIT = 120;
 const FULL_UPCOMING_HREF = "/events/upcoming";
-const CARD_GRID = "grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5";
 
 interface EventFeedScrollableProps {
   locale: Locale;
   happeningCount: number;
-  /** Rendered between the featured card and the rest of the feed. */
-  afterFeatured?: ReactNode;
 }
 
 async function loadVenueSlugs(venueIds: string[]): Promise<Map<string, string>> {
@@ -103,195 +103,159 @@ function toCardEvent(event: EventWithSeriesData): CardEvent {
 }
 
 /**
- * Homepage event feed: one featured plan (live, else the next one), then
- * anything else underway, then "Coming Up".
- * Server-first (no card hydration); view prefs enhance client-side.
+ * Scrollable event feed with "Happening Now" and "Coming Up" sections.
+ * Default grid is server-first (no card hydration); view prefs enhance client-side.
  */
 export async function EventFeedScrollable({
   locale,
   happeningCount,
-  afterFeatured,
 }: EventFeedScrollableProps) {
-  const [t, tEvents, tFeed, feed] = await Promise.all([
-    getTranslations("home"),
-    getTranslations("events"),
-    getTranslations("feed"),
-    getHomeFeed(happeningCount > 0),
+  const t = await getTranslations("home");
+  const tEvents = await getTranslations("events");
+
+  // Over-fetch, then keep one soonest event per venue before the slot limit.
+  const [happeningCandidates, upcomingCandidates] = await Promise.all([
+    happeningCount > 0
+      ? getCachedEventsByLifecycle("happening", HOME_FEED_CANDIDATE_LIMIT)
+      : Promise.resolve([]),
+    getCachedEventsByLifecycle("upcoming", HOME_FEED_CANDIDATE_LIMIT),
   ]);
-  const { featured, happeningEvents, upcomingEvents, hasMoreUpcoming } = feed;
-  const visibleEvents = [
-    ...(featured ? [featured.event] : []),
-    ...happeningEvents,
-    ...upcomingEvents,
-  ];
+  const happeningPick = takeSoonestEventPerVenue(
+    happeningCandidates,
+    HAPPENING_LIMIT,
+    { featuredFirst: true },
+  );
+  const upcomingPick = takeSoonestEventPerVenue(
+    upcomingCandidates,
+    UPCOMING_LIMIT,
+    { featuredFirst: true },
+  );
+  const happeningEvents = happeningPick.events;
+  const upcomingEvents = upcomingPick.events;
+  // One-per-venue hides most rows when a few venues post many dates, so the
+  // "see all" link must follow hidden rows, not only a full grid.
+  const hasMoreUpcoming = upcomingCandidates.length > upcomingEvents.length;
 
   const venueIds = new Set<string>();
-  for (const event of visibleEvents) {
+  for (const event of [...happeningEvents, ...upcomingEvents]) {
+    const extra =
+      happeningPick.moreAtVenueByEventId[event.id] ??
+      upcomingPick.moreAtVenueByEventId[event.id];
     const venueId = event.venue_id?.trim();
-    if (feed.moreAtVenueByEventId[event.id] && venueId) venueIds.add(venueId);
+    if (extra && venueId) venueIds.add(venueId);
   }
-  const allEventIds = visibleEvents.map((event) => event.id);
+  const venueSlugs = await loadVenueSlugs([...venueIds]);
+  const moreAtVenue = {
+    ...moreAtVenueLinks(
+      happeningEvents,
+      happeningPick.moreAtVenueByEventId,
+      venueSlugs,
+      (count) => t("moreAtThisVenue", { count }),
+    ),
+    ...moreAtVenueLinks(
+      upcomingEvents,
+      upcomingPick.moreAtVenueByEventId,
+      venueSlugs,
+      (count) => t("moreAtThisVenue", { count }),
+    ),
+  };
 
-  // Batch fetch venue slugs, counts, social-proof data, and translations
-  const [venueSlugs, counts, social, eventTranslations] = await Promise.all([
-    loadVenueSlugs([...venueIds]),
+  // Gather all event IDs for batch fetching
+  const allEventIds = [
+    ...happeningEvents.map((e) => e.id),
+    ...upcomingEvents.map((e) => e.id),
+  ];
+
+  // Batch fetch counts, social-proof data, and translations
+  const [counts, social, eventTranslations] = await Promise.all([
     getCachedEventCountsBatch(allEventIds),
     getCachedEventSocialBatch(allEventIds),
     getEventTranslationsBatch(allEventIds, locale as ContentLocale),
   ]);
-  const moreAtVenue = moreAtVenueLinks(
-    visibleEvents,
-    feed.moreAtVenueByEventId,
-    venueSlugs,
-    (count) => t("moreAtThisVenue", { count }),
-  );
 
   // Build series rrules map
   const seriesRrules: Record<string, string> = {};
-  for (const event of visibleEvents) {
-    if (event.series_rrule) seriesRrules[event.id] = event.series_rrule;
-  }
+  [...happeningEvents, ...upcomingEvents].forEach((event) => {
+    if (event.series_rrule) {
+      seriesRrules[event.id] = event.series_rrule;
+    }
+  });
 
   // Only serialize card-rendered fields to the client
-  const featuredCardEvent = featured ? toCardEvent(featured.event) : null;
   const happeningCardEvents = happeningEvents.map(toCardEvent);
   const upcomingCardEvents = upcomingEvents.map(toCardEvent);
 
   // Serializable translations for the client view-switcher
   const translationsRecord: Record<string, { title?: string } | undefined> = {};
-  for (const event of upcomingCardEvents) {
+  for (const event of [...happeningCardEvents, ...upcomingCardEvents]) {
     if (event.source_locale === locale) continue;
     const tr = eventTranslations.get(event.id);
     if (tr) translationsRecord[event.id] = { title: tr.title };
   }
 
-  const translatedTitle = (event: CardEvent) =>
-    event.source_locale === locale
-      ? undefined
-      : eventTranslations.get(event.id)?.title;
-
-  let featuredTime = "";
-  if (featured && featuredCardEvent) {
-    if (featured.live) {
-      featuredTime = resolveHeroTimeDisplay(featuredCardEvent, locale, {
-        startedAgo: (minutes) => t("happeningNow.startedAgo", { minutes }),
-        endsAt: (time) => t("happeningNow.endsAt", { time }),
-      });
-    } else {
-      const [day, time] = await Promise.all([
-        formatInDaLatAsync(featuredCardEvent.starts_at, "EEE, MMM d", locale),
-        hasLamVienTbdSchedule(featuredCardEvent.source_metadata)
-          ? "TBD"
-          : formatInDaLatAsync(featuredCardEvent.starts_at, "h:mm a", locale),
-      ]);
-      featuredTime = `${day} · ${time}`;
-    }
-  }
-
   const popularLabel = tEvents("popular");
-  const framedCard = (event: CardEvent) => {
-    const goingSpots = counts[event.id]?.going_spots ?? 0;
-    const pastProof = getPastProof(social[event.id]);
-    const photoCredit = social[event.id]?.fallback_photo_credit;
-    const more = moreAtVenue[event.id];
-    return (
-      <div key={event.id} className="min-w-0">
-        <EventCardFramedServer
-          event={event}
-          counts={counts[event.id]}
-          social={social[event.id]}
-          seriesRrule={seriesRrules[event.id]}
-          translatedTitle={translatedTitle(event)}
-          locale={locale}
-          labels={{
-            popular: popularLabel,
-            spotsAvailable:
-              event.capacity && !shouldShowGoingCount(goingSpots)
-                ? tEvents("spotsAvailable", {
-                    count: event.capacity - goingSpots,
-                  })
-                : "",
-            photoBy: photoCredit ? tEvents("photoBy", { name: photoCredit }) : "",
-            pastProofBoth:
-              pastProof?.kind === "both"
-                ? tEvents("pastProofBoth", {
-                    went: pastProof.went,
-                    photos: pastProof.photos,
-                  })
-                : "",
-            pastProofPhotos:
-              pastProof?.kind === "photos"
-                ? tEvents("pastProofPhotos", { photos: pastProof.photos })
-                : "",
-            pastProofWent:
-              pastProof?.kind === "went"
-                ? tEvents("pastProofWent", { went: pastProof.went })
-                : "",
-          }}
-        />
-        {more ? (
-          <MoreAtVenueHomeLink href={more.href} label={more.label} />
-        ) : null}
-      </div>
-    );
-  };
 
   return (
     <div className="space-y-8">
-      {/* FEATURED — the one plan the page leads with; also the LCP image */}
-      {featured && featuredCardEvent && (
-        <section
-          id={featured.live ? "happening-now" : undefined}
-          className="scroll-mt-20"
-        >
-          <EventHeroCardServer
-            event={featuredCardEvent}
-            counts={counts[featuredCardEvent.id]}
-            social={social[featuredCardEvent.id]}
-            translatedTitle={translatedTitle(featuredCardEvent)}
-            labels={{
-              live: featured.live ? t("happeningNow.live") : undefined,
-              cta: featured.live
-                ? t("happeningNow.tapToJoin")
-                : tFeed("viewEvent"),
-              going: tEvents("going"),
-              timeDisplay: featuredTime,
-            }}
-          />
-          {moreAtVenue[featuredCardEvent.id] ? (
-            <MoreAtVenueHomeLink {...moreAtVenue[featuredCardEvent.id]} />
-          ) : null}
-        </section>
-      )}
-
-      {afterFeatured}
-
-      {/* ALSO HAPPENING NOW — other live events */}
-      {happeningCardEvents.length > 0 && (
-        <section>
-          <div className="mb-4 flex items-center gap-3">
-            <span
-              className="h-2 w-2 animate-pulse rounded-full bg-red-500"
-              aria-hidden="true"
-            />
-            <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-              {t("happeningNow.title")}
-            </h2>
-            <span className="h-px flex-1 bg-border" aria-hidden="true" />
+      {/* HAPPENING NOW — server-first hero cards */}
+      {happeningEvents.length > 0 && (
+        <section id="happening-now" className="scroll-mt-20">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="flex items-center gap-2 text-red-500">
+              <Radio className="w-5 h-5 animate-pulse" />
+              <h2 className="text-lg font-bold tracking-tight">
+                {t("happeningNow.title")}
+              </h2>
+            </div>
+            <div className="flex-1 h-px bg-gradient-to-r from-red-500/50 to-transparent" />
           </div>
-          <div className={CARD_GRID}>{happeningCardEvents.map(framedCard)}</div>
+
+          <div className="space-y-4">
+            {happeningCardEvents.map((event) => {
+              const translation =
+                event.source_locale === locale
+                  ? undefined
+                  : eventTranslations.get(event.id);
+              const more = moreAtVenue[event.id];
+              return (
+                <div key={event.id}>
+                  <EventHeroCardServer
+                    event={event}
+                    counts={counts[event.id]}
+                    social={social[event.id]}
+                    translatedTitle={translation?.title}
+                    labels={{
+                      live: t("happeningNow.live"),
+                      tapToJoin: t("happeningNow.tapToJoin"),
+                      going: tEvents("going"),
+                      timeDisplay: resolveHeroTimeDisplay(event, locale, {
+                        startedAgo: (minutes) =>
+                          t("happeningNow.startedAgo", { minutes }),
+                        endsAt: (time) => t("happeningNow.endsAt", { time }),
+                      }),
+                    }}
+                  />
+                  {more ? (
+                    <MoreAtVenueHomeLink href={more.href} label={more.label} />
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </section>
       )}
 
-      {/* COMING UP — server-first default grid + client view island.
-          Skipped when the featured card already shows the only plan. */}
-      {(upcomingCardEvents.length > 0 || !featured) && (
+      {/* COMING UP — server-first default grid + client view island */}
       <section id="upcoming-events" className="scroll-mt-20">
-        <div className="mb-4 flex items-center gap-3">
-          <h2 className="text-xl font-bold tracking-tight sm:text-2xl">
-            {t("comingUp.title")}
-          </h2>
-          <span className="h-px flex-1 bg-border" aria-hidden="true" />
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-start gap-2 min-w-0">
+            <Calendar className="mt-0.5 w-5 h-5 text-muted-foreground flex-shrink-0" />
+            <div className="min-w-0">
+              <h2 className="text-lg font-bold tracking-tight">
+                {t("comingUp.title")}
+              </h2>
+            </div>
+          </div>
           {upcomingCardEvents.length > 0 && <EventViewToggle />}
         </div>
 
@@ -305,7 +269,65 @@ export async function EventFeedScrollable({
             moreAtVenue={moreAtVenue}
           >
             {/* Default view: server-rendered framed cards — no hydration */}
-            <div className={CARD_GRID}>{upcomingCardEvents.map(framedCard)}</div>
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
+              {upcomingCardEvents.map((event, index) => {
+                const translation =
+                  event.source_locale === locale
+                    ? undefined
+                    : eventTranslations.get(event.id);
+                const goingSpots = counts[event.id]?.going_spots ?? 0;
+                const pastProof = getPastProof(social[event.id]);
+
+                const more = moreAtVenue[event.id];
+                return (
+                  <div key={event.id} className="min-w-0">
+                    <EventCardFramedServer
+                      event={event}
+                      counts={counts[event.id]}
+                      social={social[event.id]}
+                      seriesRrule={seriesRrules[event.id]}
+                      translatedTitle={translation?.title}
+                      priority={index === 0}
+                      locale={locale}
+                      labels={{
+                        popular: popularLabel,
+                        spotsAvailable:
+                          event.capacity && !shouldShowGoingCount(goingSpots)
+                            ? tEvents("spotsAvailable", {
+                                count: event.capacity - goingSpots,
+                              })
+                            : "",
+                        photoBy: social[event.id]?.fallback_photo_credit
+                          ? tEvents("photoBy", {
+                              name: social[event.id]!.fallback_photo_credit!,
+                            })
+                          : "",
+                        pastProofBoth:
+                          pastProof?.kind === "both"
+                            ? tEvents("pastProofBoth", {
+                                went: pastProof.went,
+                                photos: pastProof.photos,
+                              })
+                            : "",
+                        pastProofPhotos:
+                          pastProof?.kind === "photos"
+                            ? tEvents("pastProofPhotos", {
+                                photos: pastProof.photos,
+                              })
+                            : "",
+                        pastProofWent:
+                          pastProof?.kind === "went"
+                            ? tEvents("pastProofWent", { went: pastProof.went })
+                            : "",
+                      }}
+                    />
+                    {more ? (
+                      <MoreAtVenueHomeLink href={more.href} label={more.label} />
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
           </EventGridWithViews>
         ) : (
           <div className="rounded-2xl border border-border/70 bg-muted/30 px-5 py-8 text-center sm:px-8 sm:py-10">
@@ -321,7 +343,7 @@ export async function EventFeedScrollable({
             </p>
             <Link
               href="/moments"
-              className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-sm border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted active:scale-[0.98]"
+              className="mt-4 inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted active:scale-[0.98]"
             >
               <Images className="h-4 w-4" aria-hidden="true" />
               {t("comingUp.emptyCta")}
@@ -340,7 +362,6 @@ export async function EventFeedScrollable({
           </div>
         )}
       </section>
-      )}
 
       <div className="pt-4 border-t border-border/50">
         <Link
@@ -361,13 +382,12 @@ export async function EventFeedScrollable({
 export function EventFeedScrollableSkeleton() {
   return (
     <div className="space-y-8">
-      {/* Same box as the featured card, so the feed streams in without a shift */}
-      <div className="aspect-[4/5] max-h-[36rem] w-full animate-pulse rounded-lg bg-muted sm:aspect-[16/9] lg:aspect-[2/1]" />
       <section>
         <div className="flex items-center gap-2 mb-4">
+          <div className="w-5 h-5 bg-muted rounded animate-pulse" />
           <div className="w-32 h-6 bg-muted rounded animate-pulse" />
         </div>
-        <div className={CARD_GRID}>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}

@@ -190,7 +190,7 @@ export function VideoPlayer({
       {/* "Tap to unmute" hint - shows briefly on first view */}
       {isMuted && showHint && isActive && !isLoading && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-sm bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-pill bg-black/70 backdrop-blur-sm animate-in fade-in duration-300">
             <VolumeX className="w-5 h-5 text-white" />
             <span className="text-white text-sm font-medium">Tap for sound</span>
           </div>

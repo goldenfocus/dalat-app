@@ -75,7 +75,7 @@ export function CinemaControls({
     >
       {/* Top bar — counter + share (view mode switcher is a separate persistent component) */}
       <div className="absolute top-0 left-0 right-0 p-4 pointer-events-auto flex items-center justify-between">
-        <div className="text-white/80 text-sm font-medium px-3 py-1.5 rounded-sm bg-black/30 backdrop-blur-sm w-fit">
+        <div className="text-white/80 text-sm font-medium px-3 py-1.5 rounded-pill bg-black/30 backdrop-blur-sm w-fit">
           {currentIndex + 1} / {total}
         </div>
 

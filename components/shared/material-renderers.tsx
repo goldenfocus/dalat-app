@@ -89,7 +89,7 @@ export function YouTubeEmbed({ videoId, title, className }: YouTubeEmbedProps) {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm"
+          className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm"
         >
           <Youtube className="w-4 h-4" />
           <span>YouTube</span>
@@ -115,7 +115,7 @@ export function YouTubeEmbed({ videoId, title, className }: YouTubeEmbedProps) {
         href={youtubeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm z-10"
+        className="absolute bottom-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-black/70 hover:bg-black/90 text-white text-sm font-medium transition-colors backdrop-blur-sm z-10"
       >
         <ExternalLink className="w-3.5 h-3.5" />
         <span>Watch on YouTube</span>

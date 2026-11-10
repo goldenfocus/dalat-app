@@ -14,9 +14,9 @@ const themes = [
     descKey: "themeMorningMistDesc",
     icon: Sun,
     preview: {
-      bg: "hsl(135 12% 93%)",
-      card: "hsl(120 12% 97%)",
-      accent: "hsl(161 50% 25%)",
+      bg: "hsl(40 25% 98%)",
+      card: "hsl(40 20% 97%)",
+      accent: "hsl(158 35% 32%)",
     },
   },
   {
@@ -25,9 +25,9 @@ const themes = [
     descKey: "themeEveningCafeDesc",
     icon: Moon,
     preview: {
-      bg: "hsl(169 35% 6%)",
-      card: "hsl(167 30% 9%)",
-      accent: "hsl(156 41% 56%)",
+      bg: "hsl(30 20% 7%)",
+      card: "hsl(30 18% 11%)",
+      accent: "hsl(158 40% 45%)",
     },
   },
   {
@@ -127,8 +127,8 @@ export function ThemeSelector() {
   const [mounted, setMounted] = useState(false);
   const t = useTranslations("userMenu");
 
-  // Colour transitions run only while the switch is in flight (see
-  // .theme-switching in globals.css), so they never tax normal interaction.
+  // Marks the moment of switching so the Fog Hour preview can limit colour
+  // transitions to it (see .theme-switching in globals.css).
   const switchTheme = (value: string) => {
     const root = document.documentElement;
     root.classList.add("theme-switching");

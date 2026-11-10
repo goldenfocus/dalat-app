@@ -55,7 +55,7 @@ export function KaraokeShareButton({
       <button
         onClick={handleShare}
         className={cn(
-          "flex items-center gap-2 px-4 py-2 rounded-sm",
+          "flex items-center gap-2 px-4 py-2 rounded-pill",
           "bg-white/10 text-white/80 hover:text-white hover:bg-white/20",
           "transition-all",
           className,

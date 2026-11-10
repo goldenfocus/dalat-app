@@ -173,7 +173,7 @@ export function MomentsTimeline({
               key={key}
               onClick={() => key !== filter && refetchWithFilter(key)}
               className={`
-                flex items-center gap-1.5 px-3 py-1.5 rounded-sm text-sm font-medium
+                flex items-center gap-1.5 px-3 py-1.5 rounded-pill text-sm font-medium
                 transition-colors touch-manipulation
                 ${filter === key
                   ? "bg-primary text-primary-foreground"

@@ -523,7 +523,7 @@ export function FlyerBuilder({
             {/* Preview hint overlay - hide when editing focal point */}
             {!isEditingFocalPoint && (
               <div className="absolute inset-0 bg-black/0 hover:bg-black/30 transition-colors flex items-center justify-center opacity-0 hover:opacity-100">
-                <div className="flex items-center gap-2 text-white bg-black/50 px-3 py-1.5 rounded-sm text-sm">
+                <div className="flex items-center gap-2 text-white bg-black/50 px-3 py-1.5 rounded-pill text-sm">
                   <Maximize2 className="w-4 h-4" />
                   {t("clickToPreview")}
                 </div>
@@ -531,7 +531,7 @@ export function FlyerBuilder({
             )}
             {/* Focal point editing hint */}
             {isEditingFocalPoint && (
-              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-sm text-sm">
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 text-white bg-blue-600/90 px-3 py-1.5 rounded-pill text-sm">
                 {t("clickToSetFocalPoint")}
               </div>
             )}
@@ -586,7 +586,7 @@ export function FlyerBuilder({
                     }}
                     disabled={isGenerating}
                     className={cn(
-                      "px-3 py-1.5 text-sm rounded-sm border transition-colors",
+                      "px-3 py-1.5 text-sm rounded-pill border transition-colors",
                       selectedPreset === preset.id
                         ? "bg-primary text-primary-foreground border-primary"
                         : "bg-background hover:bg-muted border-input"

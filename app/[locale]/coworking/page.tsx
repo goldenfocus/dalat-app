@@ -217,13 +217,13 @@ async function CoworkingContent({ locale }: { locale: Locale }) {
           {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
+          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.cafes")}
           </Link>
-          <Link href="/community-centers" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
+          <Link href="/community-centers" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.communityCenters")}
           </Link>
-          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-sm border hover:bg-muted transition-colors">
+          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.allVenues")}
           </Link>
         </div>

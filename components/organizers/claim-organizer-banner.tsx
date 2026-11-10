@@ -147,7 +147,7 @@ export function UnclaimedOrganizerBadge({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-xs font-medium bg-muted text-muted-foreground border border-border ${className ?? ""}`}
+      className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-pill text-xs font-medium bg-muted text-muted-foreground border border-border ${className ?? ""}`}
     >
       <Building2 className="h-3 w-3" />
       {t("claimBanner.unclaimed")}

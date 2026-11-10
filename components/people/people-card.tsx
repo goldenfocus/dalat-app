@@ -141,7 +141,7 @@ export function PeopleCardBody({
           {labels.interests.map((interest) => (
             <li
               key={interest}
-              className="rounded-sm bg-muted px-2.5 py-1 text-xs text-muted-foreground"
+              className="rounded-pill bg-muted px-2.5 py-1 text-xs text-muted-foreground"
             >
               {interest}
             </li>

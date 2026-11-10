@@ -361,7 +361,7 @@ export default async function VenuePage({ params }: PageProps) {
                 <div className="flex-1 pb-1">
                   {/* Verified Badge */}
                   {venue.is_verified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-sm bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
                       <BadgeCheck className="w-3.5 h-3.5" />
                       {t("verified")}
                     </span>
@@ -426,7 +426,7 @@ export default async function VenuePage({ params }: PageProps) {
             <div className="flex-1">
               {/* Verified Badge */}
               {venue.is_verified && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-sm bg-primary/10 text-primary mb-2">
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/10 text-primary mb-2">
                   <BadgeCheck className="w-3.5 h-3.5" />
                   {t("verified")}
                 </span>
@@ -610,7 +610,7 @@ export default async function VenuePage({ params }: PageProps) {
                 {amenities.map((amenity) => (
                   <span
                     key={amenity.key}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm bg-muted text-sm"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-muted text-sm"
                   >
                     <amenity.icon className="w-4 h-4" />
                     {amenity.label}

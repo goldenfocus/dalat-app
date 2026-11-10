@@ -247,7 +247,7 @@ export function EnhancePopover({
               onClick={() => handleChipClick(chip.id, chip.direction)}
               disabled={isEnhancing}
               className={cn(
-                "px-2.5 py-1.5 text-xs rounded-sm transition-colors",
+                "px-2.5 py-1.5 text-xs rounded-pill transition-colors",
                 "border",
                 selectedChipId === chip.id
                   ? "bg-foreground text-background border-foreground"
@@ -269,7 +269,7 @@ export function EnhancePopover({
                   onClick={() => handleChipClick(chip.id, chip.direction)}
                   disabled={isEnhancing}
                   className={cn(
-                    "px-2.5 py-1.5 text-xs rounded-sm transition-colors",
+                    "px-2.5 py-1.5 text-xs rounded-pill transition-colors",
                     "border pr-6",
                     selectedChipId === chip.id
                       ? "bg-foreground text-background border-foreground"

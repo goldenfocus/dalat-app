@@ -388,7 +388,7 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
         {phase === "idle" ? (
           <button
             onClick={handleStart}
-            className="mx-auto block bg-amber-400 text-zinc-950 font-bold text-xl px-10 py-4 rounded-sm active:scale-95 transition-all"
+            className="mx-auto block bg-amber-400 text-zinc-950 font-bold text-xl px-10 py-4 rounded-pill active:scale-95 transition-all"
           >
             {t("tapToStart")}
           </button>
@@ -444,19 +444,19 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
             <div className="flex gap-2 mb-6 flex-wrap">
               <button
                 onClick={() => applyPreset(6)}
-                className="px-4 py-2 rounded-sm bg-zinc-900 text-sm active:scale-95 transition-all"
+                className="px-4 py-2 rounded-pill bg-zinc-900 text-sm active:scale-95 transition-all"
               >
                 {t("presetHyper")}
               </button>
               <button
                 onClick={() => applyPreset(10)}
-                className="px-4 py-2 rounded-sm bg-zinc-900 text-sm active:scale-95 transition-all"
+                className="px-4 py-2 rounded-pill bg-zinc-900 text-sm active:scale-95 transition-all"
               >
                 {t("presetTurbo")}
               </button>
               <button
                 onClick={() => applyPreset(15)}
-                className="px-4 py-2 rounded-sm bg-zinc-900 text-sm active:scale-95 transition-all"
+                className="px-4 py-2 rounded-pill bg-zinc-900 text-sm active:scale-95 transition-all"
               >
                 {t("presetStandard")}
               </button>
@@ -474,7 +474,7 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
               />
               <button
                 onClick={applyBulkMinutes}
-                className="px-4 py-2 rounded-sm bg-amber-400 text-zinc-950 text-sm font-semibold active:scale-95 transition-all"
+                className="px-4 py-2 rounded-pill bg-amber-400 text-zinc-950 text-sm font-semibold active:scale-95 transition-all"
               >
                 {t("applyToAll")}
               </button>
@@ -522,13 +522,13 @@ export function TableClock({ eventSlug, eventTitle }: TableClockProps) {
             <div className="flex items-center justify-between mt-6">
               <button
                 onClick={addLevel}
-                className="flex items-center gap-2 px-4 py-2 rounded-sm bg-zinc-900 text-sm active:scale-95 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-pill bg-zinc-900 text-sm active:scale-95 transition-all"
               >
                 <Plus className="w-4 h-4" /> {t("addLevel")}
               </button>
               <button
                 onClick={handleReset}
-                className="flex items-center gap-2 px-4 py-2 rounded-sm bg-zinc-900 text-sm text-red-400 active:scale-95 transition-all"
+                className="flex items-center gap-2 px-4 py-2 rounded-pill bg-zinc-900 text-sm text-red-400 active:scale-95 transition-all"
               >
                 <RotateCcw className="w-4 h-4" /> {t("resetClock")}
               </button>

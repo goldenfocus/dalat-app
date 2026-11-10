@@ -12,12 +12,11 @@ import { setRequestLocale } from "next-intl/server";
 import { HeroSection } from "@/components/home/hero-section";
 import { EventFeedScrollable, EventFeedScrollableSkeleton } from "@/components/events/event-feed-scrollable";
 import { YourEventsSection } from "@/components/home/your-events-section";
+import { cloudflareLoader } from "@/lib/image-cdn";
 import { isVideoUrl } from "@/lib/media-utils";
-import { heroImageSources } from "@/lib/events/hero-image";
-import { getHomeFeed } from "@/lib/events/home-feed";
-import { getCardCoverUrl } from "@/lib/events/social-proof";
 import type { Locale } from "@/lib/i18n/routing";
 import {
+  getCachedEventsByLifecycle,
   getCachedDiscoveryWindowCounts,
   getCachedLifecycleCounts,
   getCachedHomepageConfig,
@@ -32,6 +31,15 @@ type PageProps = {
   params: Promise<{ locale: Locale }>;
 };
 
+// Mirrors the srcset next/image emits for the visually-first event card
+// (fill + cloudflareLoader, quality 70): EVENT_CARD_SIZES matches
+// EventCardFramed ("Coming Up"), HERO_CARD_SIZES matches EventHeroCard
+// ("Happening Now"). Both sizes yield the same width list, so the preload
+// and the card share one download either way.
+const EVENT_CARD_SIZES = "(max-width: 640px) 45vw, (max-width: 1024px) 33vw, 25vw";
+const HERO_CARD_SIZES = "(max-width: 640px) 100vw, 40vw";
+const EVENT_CARD_WIDTHS = [256, 384, 640, 750, 828, 1080, 1200, 1920];
+
 export default async function Home({ params }: PageProps) {
   const { locale } = await params;
 
@@ -45,20 +53,24 @@ export default async function Home({ params }: PageProps) {
   ]);
 
   // Preload the LCP image: with a hero configured, HeroImageSection preloads
-  // its own image; otherwise preload the featured card's photo. getHomeFeed is
-  // the same (request-cached) selection the feed renders, and heroImageSources
-  // the same srcset/sizes its <img> uses, so the browser fetches one candidate
-  // once. A community-photo fallback cover is resolved later and not preloaded.
+  // its own image; otherwise preload the visually-first event card's image —
+  // the "Happening Now" hero card when there are live events, else the first
+  // "Coming Up" card
   if (!homepageConfig?.hero_image_url) {
-    const { featured } = await getHomeFeed(lifecycleCounts.happening > 0);
-    const coverUrl = getCardCoverUrl(featured?.event.image_url, undefined);
-    if (coverUrl && !isVideoUrl(coverUrl)) {
-      const { src, srcSet, sizes } = heroImageSources(coverUrl);
-      preload(src, {
+    const hasHappening = lifecycleCounts.happening > 0;
+    const events = await getCachedEventsByLifecycle(
+      hasHappening ? "happening" : "upcoming",
+      1
+    );
+    const cardImageUrl = events[0]?.image_url;
+    if (cardImageUrl && !isVideoUrl(cardImageUrl)) {
+      preload(cloudflareLoader({ src: cardImageUrl, width: 1920 }), {
         as: "image",
         fetchPriority: "high",
-        imageSrcSet: srcSet,
-        imageSizes: sizes,
+        imageSrcSet: EVENT_CARD_WIDTHS.map(
+          (width) => `${cloudflareLoader({ src: cardImageUrl, width })} ${width}w`
+        ).join(", "),
+        imageSizes: hasHappening ? HERO_CARD_SIZES : EVENT_CARD_SIZES,
       });
     }
   }
@@ -88,6 +100,11 @@ export default async function Home({ params }: PageProps) {
         hasWeekend={(discoveryCounts.weekend ?? 0) > 0}
       />
 
+      {/* Recent Moments Strip - real community activity keeps thin weeks alive */}
+      <Suspense fallback={null}>
+        <MomentsStripServer />
+      </Suspense>
+
       {/* Main content - Scrollable event feed */}
       <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
         {/* Your Events - personalized section for logged-in users */}
@@ -100,15 +117,6 @@ export default async function Home({ params }: PageProps) {
           <EventFeedScrollable
             locale={locale}
             happeningCount={lifecycleCounts.happening}
-            afterFeatured={
-              // Recent moments - real community activity keeps thin weeks alive.
-              // Full-bleed on phones: cancel the container gutter.
-              <div className="-mx-4 lg:mx-0">
-                <Suspense fallback={null}>
-                  <MomentsStripServer />
-                </Suspense>
-              </div>
-            }
           />
         </Suspense>
 

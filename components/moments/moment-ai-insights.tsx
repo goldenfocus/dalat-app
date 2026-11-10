@@ -209,7 +209,7 @@ export function MomentAiInsights({
                 {pills.slice(0, 15).map(({ label, icon: Icon }, i) => (
                   <span
                     key={`${label}-${i}`}
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm bg-primary/5 text-primary/80 text-xs"
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-primary/5 text-primary/80 text-xs"
                   >
                     <Icon className="w-3 h-3" />
                     {label}

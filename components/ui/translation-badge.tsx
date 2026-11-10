@@ -56,7 +56,7 @@ export function TranslationBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm text-xs",
+        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded-pill text-xs",
         "bg-muted/50 text-muted-foreground",
         "border border-border/50",
         className,

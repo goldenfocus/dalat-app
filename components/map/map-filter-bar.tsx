@@ -167,7 +167,7 @@ export function MapFilterBar({
               setShowMobileFilters(true);
             }}
             className={cn(
-              "flex items-center gap-2 px-3 py-2 rounded-sm border transition-all active:scale-95",
+              "flex items-center gap-2 px-3 py-2 rounded-pill border transition-all active:scale-95",
               activeFilterCount > 0
                 ? "bg-primary/10 border-primary text-primary"
                 : "border-border text-muted-foreground"
@@ -424,7 +424,7 @@ function MobileFilterSheet({
                       onDatePresetChange(preset.value);
                     }}
                     className={cn(
-                      "px-4 py-2.5 rounded-sm text-sm font-medium transition-all active:scale-95",
+                      "px-4 py-2.5 rounded-pill text-sm font-medium transition-all active:scale-95",
                       datePreset === preset.value
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted hover:bg-muted/80"
@@ -436,7 +436,7 @@ function MobileFilterSheet({
                 <button
                   onClick={() => setShowCustomPicker(!showCustomPicker)}
                   className={cn(
-                    "px-4 py-2.5 rounded-sm text-sm font-medium transition-all active:scale-95 flex items-center gap-1.5",
+                    "px-4 py-2.5 rounded-pill text-sm font-medium transition-all active:scale-95 flex items-center gap-1.5",
                     datePreset === "custom"
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted hover:bg-muted/80"

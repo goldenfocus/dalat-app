@@ -127,7 +127,7 @@ export default async function AboutPage({ params }: PageProps) {
               href="https://github.com/goldenfocus/dalat-app"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-sm border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-pill border text-sm text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
             >
               <Github className="w-4 h-4" />
               <span>{t("openSource")}</span>

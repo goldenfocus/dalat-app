@@ -89,20 +89,20 @@ export default {
           },
         },
       },
-      fontFamily: {
-        display: ["var(--font-display)", "system-ui", "sans-serif"],
-      },
-      // Fog Hour shape scale: timetable cells, not pills. Every named radius
-      // stays within a few px of --radius so cards and controls read as one
-      // family; only rounded-full (avatars, dots) keeps a true circle.
+      // Each radius reads an optional --fog-* override and otherwise keeps its
+      // current value, so the Fog Hour preview (html.fog) can square every
+      // corner without changing a pixel anywhere else.
+      // rounded-pill = a text chip or filter: a full pill today, a timetable
+      // cell under Fog Hour. Avatars, dots and spinners stay on rounded-full.
       borderRadius: {
-        sm: "calc(var(--radius) - 1px)",
-        DEFAULT: "var(--radius)",
-        md: "var(--radius)",
         lg: "var(--radius)",
-        xl: "calc(var(--radius) + 1px)",
-        "2xl": "calc(var(--radius) + 3px)",
-        "3xl": "calc(var(--radius) + 5px)",
+        md: "var(--fog-radius, calc(var(--radius) - 2px))",
+        sm: "var(--fog-radius-sm, calc(var(--radius) - 4px))",
+        DEFAULT: "var(--fog-radius, 0.25rem)",
+        xl: "var(--fog-radius-xl, 0.75rem)",
+        "2xl": "var(--fog-radius-2xl, 1rem)",
+        "3xl": "var(--fog-radius-3xl, 1.5rem)",
+        pill: "var(--fog-radius, 9999px)",
       },
       keyframes: {
         ripple: {

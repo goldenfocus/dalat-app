@@ -279,7 +279,7 @@ export function EventSettingsForm({
                   type="button"
                   onClick={() => handleDurationChange(preset)}
                   className={cn(
-                    "px-3 py-1.5 text-xs font-medium rounded-sm transition-all",
+                    "px-3 py-1.5 text-xs font-medium rounded-pill transition-all",
                     durationPreset === preset
                       ? "bg-primary text-primary-foreground"
                       : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -299,7 +299,7 @@ export function EventSettingsForm({
                 type="button"
                 onClick={() => handleDurationChange("multi_day")}
                 className={cn(
-                  "px-3 py-1.5 text-xs font-medium rounded-sm transition-all",
+                  "px-3 py-1.5 text-xs font-medium rounded-pill transition-all",
                   durationPreset === "multi_day"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"

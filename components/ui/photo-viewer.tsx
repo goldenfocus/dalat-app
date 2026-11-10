@@ -125,7 +125,7 @@ export function PhotoViewer({ photos, index, onIndexChange, shareUrl, shareTitle
   };
 
   const url = shareUrl ? shareUrl(photo) : `${window.location.origin}${window.location.pathname}#photo-${photo.id}`;
-  const btn = "inline-flex items-center gap-1.5 rounded-sm bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20 active:scale-95 transition";
+  const btn = "inline-flex items-center gap-1.5 rounded-pill bg-white/10 px-3 py-2 text-sm text-white hover:bg-white/20 active:scale-95 transition";
 
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={photo.alt} className="fixed inset-0 z-50 flex flex-col bg-black text-white select-none">
