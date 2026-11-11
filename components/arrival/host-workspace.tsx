@@ -25,36 +25,52 @@ export function HostWorkspace({ slug }: { slug: string }) {
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<Tab>("arrivals");
   const sequence = useRef(0);
+  const pendingLoad = useRef<Promise<void> | null>(null);
   const endpoint = `/api/events/${encodeURIComponent(slug)}/arrival/staff`;
 
-  const load = useCallback(async () => {
-    const current = ++sequence.current;
-    setRefreshing(true);
-    try {
-      const response = await fetch(`${endpoint}?locale=${encodeURIComponent(locale)}`, { cache: "no-store" });
-      if (current !== sequence.current) return;
-      if (response.status === 401) {
-        window.location.assign(`/auth/login?next=${encodeURIComponent(window.location.pathname)}`);
-        return;
+  const load = useCallback((): Promise<void> => {
+    if (pendingLoad.current) return pendingLoad.current;
+    const task = (async () => {
+      const current = ++sequence.current;
+      setRefreshing(true);
+      try {
+        const response = await fetch(`${endpoint}?locale=${encodeURIComponent(locale)}`, { cache: "no-store", signal: AbortSignal.timeout(20000) });
+        if (current !== sequence.current) return;
+        if (response.status === 401) {
+          window.location.assign(`/auth/login?next=${encodeURIComponent(window.location.pathname)}`);
+          return;
+        }
+        if (response.status === 403) { setForbidden(true); return; }
+        if (!response.ok) throw new Error("load");
+        const result = await response.json() as HostData;
+        if (current !== sequence.current) return;
+        setData(result);
+        setError(null);
+        setLastUpdated(new Date());
+      } catch {
+        if (current === sequence.current) setError(t("hostLoadError"));
+      } finally {
+        if (current === sequence.current) setRefreshing(false);
       }
-      if (response.status === 403) { setForbidden(true); return; }
-      if (!response.ok) throw new Error("load");
-      const result = await response.json() as HostData;
-      if (current !== sequence.current) return;
-      setData(result);
-      setError(null);
-      setLastUpdated(new Date());
-    } catch {
-      if (current === sequence.current) setError(t("hostLoadError"));
-    } finally {
-      if (current === sequence.current) setRefreshing(false);
-    }
+    })();
+    pendingLoad.current = task;
+    void task.finally(() => { if (pendingLoad.current === task) pendingLoad.current = null; });
+    return task;
   }, [endpoint, locale, t]);
+
+  const reload = useCallback(async () => {
+    await pendingLoad.current;
+    await load();
+  }, [load]);
 
   useEffect(() => {
     void load();
-    const timer = window.setInterval(() => { if (!document.hidden) void load(); }, 5000);
-    return () => { window.clearInterval(timer); };
+    const resume = () => { if (!document.hidden) void load(); };
+    const timer = window.setInterval(resume, 5000);
+    document.addEventListener("visibilitychange", resume);
+    window.addEventListener("focus", resume);
+    window.addEventListener("online", resume);
+    return () => { window.clearInterval(timer); document.removeEventListener("visibilitychange", resume); window.removeEventListener("focus", resume); window.removeEventListener("online", resume); };
   }, [load]);
 
   const act = async (body: Record<string, unknown>) => {
@@ -66,12 +82,12 @@ export function HostWorkspace({ slug }: { slug: string }) {
       });
       if (!response.ok) {
         setError(t(response.status === 409 ? "hostConflict" : "hostSaveError"));
-        await load();
+        await reload();
         // A successful reload must not erase the mutation error.
         setError(t(response.status === 409 ? "hostConflict" : "hostSaveError"));
         return false;
       }
-      await load();
+      await reload();
       return true;
     } catch { setError(t("hostSaveError")); return false; }
     finally { setBusy(false); }
@@ -97,7 +113,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
       {forbidden ? <section className="mt-8 border-l-2 border-destructive p-4"><h2 className="font-semibold">{t("hostForbidden")}</h2><p className="mt-2 text-sm text-muted-foreground">{t("hostAskAccess")}</p></section> : <>
         <div className="my-5 flex flex-wrap items-center justify-between gap-2 border-y py-2">
           <p className="text-xs text-muted-foreground" role="status">{lastUpdated ? t("hostUpdated", { time: lastUpdated.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" }) }) : t("loading")}</p>
-          <button type="button" className="flex min-h-11 items-center gap-2 px-3 text-sm" onClick={() => void load()} disabled={refreshing}>
+          <button type="button" className="flex min-h-11 items-center gap-2 px-3 text-sm" onClick={() => void reload()} disabled={refreshing}>
             <RefreshCw aria-hidden className={`h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />{t("refresh")}
           </button>
         </div>
@@ -110,9 +126,9 @@ export function HostWorkspace({ slug }: { slug: string }) {
               </button>
             ))}
           </nav>
-          {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={load} />}
+          {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={reload} />}
           {visibleTab === "orders" && data.access.canOrder && <HostOrders orders={data.orders} busy={busy} act={act} />}
-          {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <details className="mb-6"><summary className="cursor-pointer py-3 font-medium">{t("registration.editOffer")}</summary><DrinkOfferSettings key={`${data.event.sponsorship.rsvpLimit}:${data.event.sponsorship.eligibleItemIds.join(",")}`} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} itemIds={data.event.sponsorship.eligibleItemIds} menu={data.menu} onSaved={load} /></details>}<SponsorLedger data={data} busy={busy} act={act} /></>}
+          {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <details className="mb-6"><summary className="cursor-pointer py-3 font-medium">{t("registration.editOffer")}</summary><DrinkOfferSettings key={`${data.event.sponsorship.rsvpLimit}:${data.event.sponsorship.eligibleItemIds.join(",")}`} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} itemIds={data.event.sponsorship.eligibleItemIds} menu={data.menu} onSaved={reload} /></details>}<SponsorLedger data={data} busy={busy} act={act} /></>}
           {visibleTab === "team" && data.access.canManage && <HostTeam staff={data.staff} busy={busy} act={act} />}
         </>}
       </>}

@@ -35,6 +35,7 @@ export type ArrivalOrder = {
 export type ArrivalReceipt = { participant: ArrivalParticipant; order: ArrivalOrder | null };
 export type ArrivalEvent = { id: string; slug: string; title: string; startsAt: string; venueName: string; orderingEnabled: boolean; isOpen: boolean; sponsorship?: { sponsorName: string; eligibleItemIds: string[]; rsvpLimit?: number; registrationCutoffAt?: string | null } | null };
 export type ArrivalContext = {
+  viewerId?: string | null;
   event: ArrivalEvent;
   sponsorEligibility?: { eligible: boolean; position: number | null; limit: number | null; claimed: boolean };
   menu: MenuSection[];

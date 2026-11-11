@@ -54,15 +54,27 @@ export function GuestArrival({ slug }: { slug: string }) {
   const submitting = useRef(false);
   const heading = useRef<HTMLHeadingElement>(null);
   const hasReceipt = receipt !== null;
+  const receiptRevision = useRef(0);
+  const savedReceipt = useRef<ArrivalReceipt | null>(null);
+  const receiptIdentity = useRef<string | null | undefined>(undefined);
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
+    const revision = receiptRevision.current;
     try {
       const response = await fetch(endpoint, { cache: "no-store", signal });
       if (!response.ok) throw new Error("arrival_unavailable");
       const data: ArrivalContext = await response.json();
-      if (signal?.aborted) return;
+      if (signal?.aborted || revision !== receiptRevision.current) return;
       setContext(data);
-      setReceipt(data.receipt);
+      // A stale/missing lookup must never send someone back through check-in.
+      if (receiptIdentity.current !== data.viewerId) {
+        savedReceipt.current = null; initialized.current = false;
+        setNickname(data.profile?.name || ""); setStep(0);
+        setPreferences(DEFAULT_LANGUAGE_PREFERENCES); setLanguages(emptyLanguageChoices); setSpeaks(null);
+      }
+      receiptIdentity.current = data.viewerId;
+      if (data.receipt) savedReceipt.current = data.receipt;
+      setReceipt(savedReceipt.current);
       setNickname(current => current || data.profile?.name || "");
       if (!initialized.current) {
         initialized.current = true;
@@ -90,7 +102,7 @@ export function GuestArrival({ slug }: { slug: string }) {
         }
       }
       setLoadError(false);
-      setStale(false);
+      setStale(!data.receipt && savedReceipt.current !== null);
       return data;
     } catch {
       if (signal?.aborted) return;
@@ -110,10 +122,13 @@ export function GuestArrival({ slug }: { slug: string }) {
   useEffect(() => {
     if (!hasReceipt) return;
     const controller = new AbortController();
-    const timer = window.setInterval(() => {
-      if (document.visibilityState === "visible") void refresh(controller.signal);
-    }, 10000);
-    return () => { window.clearInterval(timer); controller.abort(); };
+    const resume = () => { if (!document.hidden) void refresh(controller.signal); };
+    const timer = window.setInterval(resume, 10000);
+    window.addEventListener("focus", resume);
+    window.addEventListener("pageshow", resume);
+    window.addEventListener("online", resume);
+    document.addEventListener("visibilitychange", resume);
+    return () => { window.clearInterval(timer); controller.abort(); window.removeEventListener("focus", resume); window.removeEventListener("pageshow", resume); window.removeEventListener("online", resume); document.removeEventListener("visibilitychange", resume); };
   }, [hasReceipt, refresh]);
 
   useEffect(() => { if (!loading) (nameInput.current ?? heading.current)?.focus(); }, [step, loading]);
@@ -152,7 +167,11 @@ export function GuestArrival({ slug }: { slug: string }) {
         return;
       }
       const result: ArrivalReceipt = await response.json();
+      receiptRevision.current++;
+      savedReceipt.current = result;
+      receiptIdentity.current = context.viewerId;
       setReceipt(result);
+      window.dispatchEvent(new Event("dalat:arrival-change"));
       setStale(false);
     } catch {
       // Keep the same request ID and choices: a lost response must not duplicate an order.

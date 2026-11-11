@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { StaffArrivalContext } from "@/lib/arrival/types";
 
@@ -13,7 +13,7 @@ const fixture: StaffArrivalContext = {
   menu: [], participants: [], orders: [], rsvps: [], staff: [],
 };
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 describe("arrival staff permissions in the UI", () => {
   it("lets welcome-only staff check in without payment, ordering or team controls", async () => {
@@ -65,4 +65,30 @@ describe("arrival staff permissions in the UI", () => {
     expect(action).toEqual({ action: "setOrderStatus", orderId: "order", status: "confirmed", expectedStatus: "pending" });
     expect(screen.getByRole("alert")).toHaveTextContent("hostConflict");
   });
+});
+
+it("finishes slow refreshes without overlapping and refreshes when staff return", async () => {
+ let resolveLoad: (value: unknown) => void = () => {};
+ const fetcher = vi.fn().mockImplementationOnce(() => new Promise(resolve => { resolveLoad = resolve; })).mockResolvedValue({ ok: true, json: async () => fixture });
+ vi.stubGlobal("fetch", fetcher);
+ render(<HostWorkspace slug="test" />);
+ fireEvent(window, new Event("focus"));fireEvent(window, new Event("online"));
+ expect(fetcher).toHaveBeenCalledTimes(1);
+ resolveLoad({ ok: true, json: async () => fixture });
+ await screen.findByRole("button", { name: "hostWalkIn" });
+ fireEvent(window, new Event("focus"));
+ await waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+});
+
+it("does not starve a response taking longer than the five-second polling interval", async () => {
+ vi.useFakeTimers();
+ let resolveLoad: (value: unknown) => void = () => {};
+ const fetcher = vi.fn().mockImplementationOnce(() => new Promise(resolve => { resolveLoad = resolve; })).mockResolvedValue({ ok: true, json: async () => fixture });
+ vi.stubGlobal("fetch", fetcher);render(<HostWorkspace slug="test" />);
+ await act(async () => { vi.advanceTimersByTime(15000); });
+ expect(fetcher).toHaveBeenCalledTimes(1);
+ await act(async () => { resolveLoad({ ok: true, json: async () => fixture }); });
+ expect(screen.getByRole("button", { name: "hostWalkIn" })).toBeInTheDocument();
+ await act(async () => { vi.advanceTimersByTime(5000); });
+ expect(fetcher).toHaveBeenCalledTimes(2);
 });

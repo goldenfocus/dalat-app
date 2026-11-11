@@ -5,6 +5,8 @@ export function arrivalJson(body: unknown, status = 200) {
   return NextResponse.json(body, { status, headers: {
     "Cache-Control": "private, no-store, max-age=0",
     "Vary": "Cookie",
+    "CDN-Cache-Control": "no-store",
+    "Vercel-CDN-Cache-Control": "no-store",
     "X-Robots-Tag": "noindex, nofollow",
   } });
 }

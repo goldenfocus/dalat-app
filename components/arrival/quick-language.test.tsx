@@ -126,3 +126,26 @@ describe("one-screen guest check-in", () => {
     expect(fetcher.mock.calls.some(([url]) => String(url).endsWith("/arrival/door"))).toBe(false);
   });
 });
+
+it("keeps the successful receipt if a later refresh cannot find it", async () => {
+ const fetcher = vi.fn(async (_url: string, init?: RequestInit) => json(init?.method === "POST" ? receipt : context));
+ vi.stubGlobal("fetch", fetcher);render(<GuestArrival slug="exchange" />);
+ fireEvent.change(await screen.findByLabelText("nickname"), { target: { value: "Lan" } });
+ fireEvent.click(screen.getByRole("button", { name: "Tiếng Việt" }));
+ fireEvent.click(screen.getByRole("button", { name: "checkIn" }));
+ await screen.findByText("welcomeName Lan");
+ fireEvent(window, new Event("focus"));
+ await waitFor(() => expect(screen.getByText("refreshFailed")).toBeInTheDocument());
+ expect(screen.getByText("welcomeName Lan")).toBeInTheDocument();
+ expect(screen.queryByRole("button", { name: "checkIn" })).toBeNull();
+});
+
+it("does not retain another account's receipt when the signed-in identity changes", async () => {
+ let changed = false;
+ const fetcher = vi.fn(async () => json(changed ? { ...context, viewerId: "different-account" } : { ...context, viewerId: "first-account", receipt }));
+ vi.stubGlobal("fetch", fetcher);render(<GuestArrival slug="exchange" />);
+ await screen.findByText("welcomeName Lan");changed = true;
+ fireEvent(window, new Event("focus"));
+ await screen.findByLabelText("nickname");
+ expect(screen.queryByText("welcomeName Lan")).toBeNull();
+});

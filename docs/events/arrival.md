@@ -340,3 +340,19 @@ the end).
 Checked with the full suite, typecheck and a rendered preview of the rehearsal
 page with the new stylesheet applied; the signed-in event card was not viewed in
 a browser before release.
+
+### Check-in recognition and staff refresh (11 November follow-up)
+
+The event's Check in action now reads private attendance state on mount, browser
+back, focus, reconnect and after a saved arrival. Once the account or this
+browser's guest receipt has checked in, the action shows You're checked in and
+opens the saved receipt. Legacy checked-in RSVPs are recognized too. The status
+response contains only a boolean, uses the authenticated session or HttpOnly
+receipt, and bypasses shared/CDN caches; it cannot query another attendee.
+
+A temporary missing receipt response after a successful submission preserves the
+last confirmed receipt with stale feedback instead of returning to the form.
+The staff desk serializes its five-second refreshes so a slow response can finish,
+refreshes immediately on app return/reconnect, and forces a fresh read after a
+staff change. This changes neither saved attendance nor drink sponsorship.
+Door QR and host confirmation rules for practice participation remain unchanged.

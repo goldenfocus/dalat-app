@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
         priorOrder = result.data ? mapOrder(result.data) : null;
       }
     }
-    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder, rsvpStatus, sponsorEligibility });
+    const response = arrivalJson({ event, access, menu, profile, preferences, receipt, priorOrder, rsvpStatus, sponsorEligibility, viewerId: user?.id || null });
     response.cookies.set(guestCookieName(event.id), token, {
       httpOnly: true, secure: request.nextUrl.protocol === "https:", sameSite: "lax", path: "/", maxAge: 90 * 86400,
     });
