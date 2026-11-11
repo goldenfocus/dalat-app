@@ -5,9 +5,18 @@ Events · People · Moments · Love · Đà Lạt 🇻🇳
 ## Development
 
 ```bash
-npm install
+npm ci        # clean, reproducible install from package-lock.json
 npm run dev
 ```
+
+### Package manager and lockfile
+
+npm is the only package manager. `package-lock.json` is the single lockfile; Vercel detects npm from it (`vercel.json` sets no install command).
+
+- Clean installs and CI use `npm ci`. It fails when the lock and `package.json` disagree, which is the point.
+- To add or change a dependency, run `npm install <pkg>` and commit `package.json` and `package-lock.json` together.
+- Do not commit `bun.lock`, `yarn.lock` or `pnpm-lock.yaml` (they are gitignored). `bun run <script>` as a TypeScript runner is fine; `bun install` is not.
+- Next.js is held on the 16.2.x line (`~16.2.10`). On Next 16.4 the Turbopack build cannot resolve the dynamic worker URL in `@ffmpeg/ffmpeg` (used by `lib/video-compression.ts`). Fix that import before widening the range.
 
 ## Deployment
 
