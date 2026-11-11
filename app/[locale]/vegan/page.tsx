@@ -200,16 +200,16 @@ async function VeganContent({ locale }: { locale: Locale }) {
           {tp("shared.exploreMore")}
         </h3>
         <div className="flex flex-wrap gap-2">
-          <Link href="/vegetarian" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/vegetarian" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.vegetarian")}
           </Link>
-          <Link href="/restaurants" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/restaurants" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.restaurants")}
           </Link>
-          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/cafes" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.cafes")}
           </Link>
-          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors">
+          <Link href="/venues" className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors">
             {tp("shared.chips.allVenues")}
           </Link>
         </div>

@@ -30,7 +30,7 @@ function AttendeeChip({
   return (
     <Link
       href={`/${rsvp.profiles?.username || rsvp.user_id}`}
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-sm transition-colors ${
+      className={`flex items-center gap-2 px-3 py-1.5 rounded-pill text-sm transition-colors ${
         isSecondary
           ? "bg-transparent border border-dashed border-muted-foreground/40 text-muted-foreground hover:border-muted-foreground/60"
           : isFollowed

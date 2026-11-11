@@ -393,7 +393,7 @@ export function QuestionnaireBuilder({
                       type="button"
                       onClick={() => toggleRequired(question.id)}
                       className={cn(
-                        "px-2 py-1 text-xs rounded-full transition-colors",
+                        "px-2 py-1 text-xs rounded-pill transition-colors",
                         question.is_required
                           ? "bg-primary/10 text-primary"
                           : "bg-muted text-muted-foreground hover:bg-muted/80"

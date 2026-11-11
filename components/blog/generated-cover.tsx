@@ -52,7 +52,7 @@ export function GeneratedCover({
       <div className="relative flex flex-col items-start gap-2">
         {categoryLabel && (
           <span
-            className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/90"
+            className="rounded-pill px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-widest text-white/90"
             style={{
               backgroundColor: "rgba(255,255,255,0.14)",
               boxShadow: `inset 0 0 0 1px ${palette.accent}`,

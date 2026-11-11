@@ -97,7 +97,7 @@ export function MobileBottomNav() {
               prefetch={false}
               onClick={() => triggerHaptic("selection")}
               aria-label={label}
-              className={`flex h-11 w-11 items-center justify-center rounded-full transition-all active:scale-95 ${
+              className={`flex h-11 w-11 items-center justify-center rounded-pill transition-all active:scale-95 ${
                 isActive
                   ? "bg-foreground/10 text-foreground"
                   : "text-muted-foreground/60 hover:text-muted-foreground"

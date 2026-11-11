@@ -58,7 +58,7 @@ export function VenueCard({ venue, className }: VenueCardProps) {
                 {venue.has_happening_now ? (
                   <span className="w-2 h-2 bg-white rounded-full shadow-lg animate-pulse" />
                 ) : venue.upcoming_event_count > 0 ? (
-                  <span className="flex items-center gap-1 text-xs text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-xs text-white/90 bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-pill">
                     <Calendar className="w-3 h-3" />
                     {venue.upcoming_event_count}
                   </span>
@@ -86,7 +86,7 @@ export function VenueCard({ venue, className }: VenueCardProps) {
                 {venue.has_happening_now ? (
                   <span className="w-2 h-2 bg-foreground/60 rounded-full shadow-lg animate-pulse" />
                 ) : venue.upcoming_event_count > 0 ? (
-                  <span className="flex items-center gap-1 text-xs text-muted-foreground bg-background/50 backdrop-blur-sm px-2 py-0.5 rounded-full">
+                  <span className="flex items-center gap-1 text-xs text-muted-foreground bg-background/50 backdrop-blur-sm px-2 py-0.5 rounded-pill">
                     <Calendar className="w-3 h-3" />
                     {venue.upcoming_event_count}
                   </span>

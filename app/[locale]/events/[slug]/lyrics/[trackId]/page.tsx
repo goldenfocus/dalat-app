@@ -300,7 +300,7 @@ export default async function LyricsPage({ params }: PageProps) {
               <Music className="w-5 h-5" />
               {t("heading")}
               {is_translated && (
-                <span className="inline-flex items-center gap-1 text-xs font-normal px-2 py-0.5 bg-primary/10 text-primary rounded-full">
+                <span className="inline-flex items-center gap-1 text-xs font-normal px-2 py-0.5 bg-primary/10 text-primary rounded-pill">
                   <Globe className="w-3 h-3" />
                   {LOCALE_FLAGS[locale as ContentLocale]} {LOCALE_NAMES[locale as ContentLocale]}
                 </span>

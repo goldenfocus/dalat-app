@@ -64,7 +64,7 @@ export function TagFilter({
         {selectedTag && selectedTag in TAG_CONFIG && (
           <button
             onClick={() => handleTagClick(null)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium bg-primary text-primary-foreground"
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-sm font-medium bg-primary text-primary-foreground"
           >
             {TAG_CONFIG[selectedTag as EventTag].label}
             <X className="w-3 h-3" />
@@ -81,7 +81,7 @@ export function TagFilter({
                 key={tag}
                 onClick={() => handleTagClick(tag)}
                 className={`
-                  inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-sm font-medium
+                  inline-flex items-center gap-1 px-3 py-1.5 rounded-pill text-sm font-medium
                   transition-colors hover:opacity-80
                   ${config.color}
                 `}
@@ -142,7 +142,7 @@ export function TagFilterPill({ selectedTag }: { selectedTag?: string }) {
   return (
     <button
       onClick={clearTag}
-      className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-sm"
+      className="inline-flex items-center gap-1 px-2 py-1 rounded-pill text-xs font-medium bg-black/50 text-white backdrop-blur-sm"
     >
       {config.label}
       <X className="w-3 h-3" />

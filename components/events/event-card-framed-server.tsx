@@ -95,7 +95,7 @@ export function EventCardFramedServer({
             shouldShowGoingCount(goingSpots) ? (
               <div
                 className={cn(
-                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-pill flex items-center gap-1",
                   goingSpots >= event.capacity
                     ? "bg-orange-500/90"
                     : "bg-black/60 backdrop-blur-sm",
@@ -105,7 +105,7 @@ export function EventCardFramedServer({
                 {goingSpots}/{event.capacity}
               </div>
             ) : (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-full flex items-center gap-1">
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-black/60 backdrop-blur-sm text-white text-xs font-medium rounded-pill flex items-center gap-1">
                 <Users className="w-3 h-3" />
                 {labels.spotsAvailable}
               </div>
@@ -113,7 +113,7 @@ export function EventCardFramedServer({
           ) : (
             !isSponsored &&
             goingSpots >= 20 && (
-              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+              <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-pill">
                 {labels.popular}
               </div>
             )
@@ -178,7 +178,7 @@ export function EventCardFramedServer({
           ) : null}
 
           {isFallbackCover && social?.fallback_photo_credit && (
-            <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-full">
+            <div className="absolute bottom-2 left-2 z-10 px-2 py-0.5 bg-black/50 backdrop-blur-sm text-white text-xs rounded-pill">
               {labels.photoBy}
             </div>
           )}

@@ -73,7 +73,7 @@ export function EventCardFull({ event, isPast }: EventCardFullProps) {
 
           {/* Past event badge */}
           {isPast && (
-            <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-full bg-muted text-muted-foreground">
+            <span className="inline-block mt-2 text-xs px-2 py-0.5 rounded-pill bg-muted text-muted-foreground">
               Past event
             </span>
           )}

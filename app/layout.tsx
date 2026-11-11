@@ -1,6 +1,29 @@
 import { AccountBridge } from '@/components/deovia/AccountBridge';
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque } from "next/font/google";
 import "./globals.css";
+
+// Headline face for the Fog Hour preview. preload is off so pages outside the
+// preview never fetch it; turn it on when the redesign becomes the default.
+const displayFont = Bricolage_Grotesque({
+  subsets: ["latin", "vietnamese"],
+  axes: ["opsz"],
+  display: "swap",
+  preload: false,
+  variable: "--font-display",
+});
+
+// Fog Hour preview: /v3 (any locale) turns the new skin on before first paint,
+// and it stays on for the rest of that tab so the whole app can be browsed in it.
+const fogBootstrapScript = `
+  (() => {
+    try {
+      if (/^\\/(?:[a-z]{2}\\/)?v3(?:\\/|$)/.test(location.pathname) || sessionStorage.getItem('fog-preview') === '1') {
+        document.documentElement.classList.add('fog');
+      }
+    } catch {}
+  })();
+`;
 
 const siteUrl = "https://dalat.app";
 const localeBootstrapScript = `
@@ -78,10 +101,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="und" suppressHydrationWarning>
+    <html lang="und" className={displayFont.variable} suppressHydrationWarning>
       <head>
         {/* Keep static rendering while declaring the URL locale before body content parses. */}
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: fogBootstrapScript }} />
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"

@@ -21,6 +21,7 @@ import type {
   Locale,
 } from "@/lib/types";
 import { getEventTranslationsBatch } from "@/lib/translations";
+import { loadDateFnsLocale } from "@/lib/timezone";
 import { createStaticClient } from "@/lib/supabase/server";
 import {
   getCachedEventsByLifecycle,
@@ -112,6 +113,10 @@ export async function EventFeedScrollable({
 }: EventFeedScrollableProps) {
   const t = await getTranslations("home");
   const tEvents = await getTranslations("events");
+  // Cards format dates with the sync helper, which falls back to English
+  // until the locale is cached. Warm it so every locale gets its own day and
+  // month names on a cold render.
+  await loadDateFnsLocale(locale);
 
   // Over-fetch, then keep one soonest event per venue before the slot limit.
   const [happeningCandidates, upcomingCandidates] = await Promise.all([

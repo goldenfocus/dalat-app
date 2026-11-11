@@ -120,10 +120,21 @@ const themes = [
   },
 ] as const;
 
+const THEME_SWITCH_MS = 350;
+
 export function ThemeSelector() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const t = useTranslations("userMenu");
+
+  // Marks the moment of switching so the Fog Hour preview can limit colour
+  // transitions to it (see .theme-switching in globals.css).
+  const switchTheme = (value: string) => {
+    const root = document.documentElement;
+    root.classList.add("theme-switching");
+    setTheme(value);
+    window.setTimeout(() => root.classList.remove("theme-switching"), THEME_SWITCH_MS);
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -155,7 +166,7 @@ export function ThemeSelector() {
         return (
           <button
             key={themeItem.value}
-            onClick={() => setTheme(themeItem.value)}
+            onClick={() => switchTheme(themeItem.value)}
             className={cn(
               "flex flex-col gap-2 p-3 rounded-xl border-2 transition-all duration-200 text-left",
               "active:scale-[0.98]",

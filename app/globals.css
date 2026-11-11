@@ -493,20 +493,284 @@
  * Smooth 300ms transitions when switching themes
  * ============================================ */
 
-html:not(.no-transitions) *,
-html:not(.no-transitions) *::before,
-html:not(.no-transitions) *::after {
+/* Outside the Fog Hour preview these rules are unchanged. Under html.fog
+ * they apply only while a theme switch is in flight (ThemeSelector adds
+ * .theme-switching): always-on, the universal rule outranks Tailwind's
+ * transition utilities and turns off every transform transition. */
+html:not(.fog):not(.no-transitions) *,
+html:not(.fog):not(.no-transitions) *::before,
+html:not(.fog):not(.no-transitions) *::after,
+html.fog.theme-switching *,
+html.fog.theme-switching *::before,
+html.fog.theme-switching *::after {
   transition-property: color, background-color, border-color, box-shadow, fill, stroke;
   transition-duration: 300ms;
   transition-timing-function: ease-out;
 }
 
 /* Exclude elements that shouldn't transition (prevents image/video flash) */
-html:not(.no-transitions) img,
-html:not(.no-transitions) video,
-html:not(.no-transitions) canvas,
-html:not(.no-transitions) [data-no-theme-transition] {
+html:not(.fog):not(.no-transitions) img,
+html:not(.fog):not(.no-transitions) video,
+html:not(.fog):not(.no-transitions) canvas,
+html:not(.fog):not(.no-transitions) [data-no-theme-transition],
+html.fog.theme-switching img,
+html.fog.theme-switching video,
+html.fog.theme-switching canvas,
+html.fog.theme-switching [data-no-theme-transition] {
   transition: none !important;
+}
+
+/* ============================================
+ * FOG HOUR PREVIEW (html.fog)
+ * The redesign, opt-in: /v3 adds .fog to <html> for that tab. Everything in
+ * this block is either scoped to html.fog or only used by the /v3 components,
+ * so the live site renders exactly as before.
+ * To make it the default: move these token values into :root / .dark, drop
+ * the html.fog prefixes, and turn the display font's preload back on.
+ * ============================================ */
+
+:root {
+  /* Dã quỳ (wild sunflower): the one primary action per screen */
+  --sun: 42 89% 53%;
+  --sun-foreground: 45 100% 7%;
+  --fog-shadow: 0 1px 1px rgb(16 35 31 / 0.05), 0 4px 10px -2px rgb(16 35 31 / 0.08),
+    0 22px 44px -18px rgb(16 35 31 / 0.28);
+  --fog-glow: inset 0 1px 0 rgb(255 255 255 / 0.5), 0 10px 26px -10px hsl(var(--sun) / 0.8);
+  --fog-grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .16 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Timetable corners: 3px everywhere, in every theme */
+html.fog {
+  --radius: 0.1875rem;
+  --fog-radius: 0.1875rem;
+  --fog-radius-sm: 0.125rem;
+  --fog-radius-xl: 0.25rem;
+  --fog-radius-2xl: 0.375rem;
+  --fog-radius-3xl: 0.5rem;
+}
+
+/* "Morning Mist": cool fog over pine, pine ink, one warm yellow */
+html.fog.light {
+  --background: 135 12% 93%;
+  --foreground: 167 37% 10%;
+  --card: 120 12% 97%;
+  --card-foreground: 167 37% 10%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 167 37% 10%;
+  --primary: 161 50% 25%;
+  --primary-foreground: 146 41% 97%;
+  --secondary: 144 12% 88%;
+  --secondary-foreground: 167 30% 16%;
+  --muted: 140 10% 89%;
+  --muted-foreground: 162 12% 34%;
+  --accent: 150 23% 88%;
+  --accent-foreground: 161 50% 22%;
+  --border: 143 10% 84%;
+  --input: 143 10% 84%;
+  --ring: 161 50% 25%;
+  --chart-1: 161 50% 30%;
+  --chart-2: 42 80% 52%;
+  --chart-3: 231 58% 58%;
+  --dalat-pine: 161 50% 25%;
+  --dalat-pine-light: 150 23% 88%;
+  --dalat-gold: 42 89% 53%;
+  --dalat-gold-light: 44 80% 90%;
+  --dalat-hydrangea: 231 58% 58%;
+  --dalat-hydrangea-light: 230 71% 93%;
+}
+
+/* "Pine Night": the hills after the fog rolls in */
+html.fog.dark {
+  --background: 169 35% 6%;
+  --foreground: 146 19% 93%;
+  --card: 167 30% 9%;
+  --card-foreground: 146 19% 93%;
+  --popover: 166 27% 12%;
+  --popover-foreground: 146 19% 93%;
+  --primary: 156 41% 56%;
+  --primary-foreground: 159 54% 5%;
+  --secondary: 166 22% 14%;
+  --secondary-foreground: 146 15% 88%;
+  --muted: 166 20% 13%;
+  --muted-foreground: 157 11% 67%;
+  --accent: 160 37% 14%;
+  --accent-foreground: 156 41% 72%;
+  --border: 164 18% 16%;
+  --input: 164 18% 16%;
+  --ring: 156 41% 56%;
+  --sun: 43 91% 60%;
+  --chart-1: 156 41% 56%;
+  --chart-2: 43 85% 58%;
+  --chart-3: 230 70% 72%;
+  --dalat-pine: 156 41% 56%;
+  --dalat-pine-light: 160 37% 14%;
+  --dalat-gold: 43 91% 60%;
+  --dalat-gold-light: 42 45% 14%;
+  --dalat-hydrangea: 230 78% 77%;
+  --dalat-hydrangea-light: 229 40% 19%;
+  --fog-shadow: 0 1px 1px rgb(0 0 0 / 0.3), 0 6px 14px -4px rgb(0 0 0 / 0.4),
+    0 26px 50px -18px rgb(0 0 0 / 0.7);
+  --fog-glow: inset 0 1px 0 rgb(255 255 255 / 0.45), 0 0 0 1px hsl(var(--sun) / 0.5),
+    0 8px 30px -6px hsl(var(--sun) / 0.6), 0 0 80px -8px hsl(var(--sun) / 0.42);
+}
+
+/* Display face for headlines only; body stays on the system stack.
+ * Scripts the face lacks (CJK, Cyrillic, Thai) fall through to it too. */
+html.fog h1,
+html.fog h2,
+html.fog h3,
+html.fog [data-fog-wordmark] {
+  font-family: var(--font-display), system-ui, -apple-system, "Segoe UI", Roboto,
+    sans-serif;
+  letter-spacing: -0.02em;
+  /* body opts for optimizeSpeed; large headlines need their kerning back */
+  text-rendering: optimizeLegibility;
+}
+
+/* Header: wordmark only, theme choice lives in Settings */
+html.fog [data-fog-wordmark] {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+html.fog [data-fog-hide] {
+  display: none;
+}
+
+@layer components {
+  /* Small caps label: timetable headers, chips, tabs */
+  .fog-cap {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .fog-scoop,
+  .fog-scoop-lg {
+    border-radius: 0.1875rem;
+  }
+
+  .fog-shadow {
+    box-shadow: var(--fog-shadow);
+  }
+
+  .fog-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.625rem;
+    padding: 0 0.5625rem;
+    border-radius: 2px;
+    font-size: 0.65625rem;
+    font-weight: 700;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .fog-chip-glass {
+    background: rgb(6 16 14 / 0.55);
+    color: #fff;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.16);
+  }
+
+  .fog-chip-live {
+    background: hsl(358 71% 56%);
+    color: #fff;
+    box-shadow: 0 0 22px -2px hsl(358 71% 56%);
+  }
+
+  /* The one primary action: dã quỳ yellow with a lamp glow */
+  .fog-cta {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0 1.5rem;
+    background: hsl(var(--sun));
+    color: hsl(var(--sun-foreground));
+    font-size: 0.78125rem;
+    font-weight: 700;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    box-shadow: var(--fog-glow);
+    transition: transform 150ms ease, box-shadow 250ms ease;
+  }
+
+  .group:hover .fog-cta {
+    transform: translateY(-1px);
+  }
+
+  .group:active .fog-cta {
+    transform: translateY(1px) scale(0.98);
+  }
+
+  /* Photo scrim with a fine static grain, like a mounted print */
+  .fog-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: var(--fog-grain),
+      linear-gradient(
+        180deg,
+        rgb(6 16 14 / 0.5) 0%,
+        rgb(6 16 14 / 0) 26%,
+        rgb(6 16 14 / 0.2) 52%,
+        rgb(6 16 14 / 0.94) 100%
+      );
+  }
+
+  /* Inset hairline frame on photos */
+  .fog-frame-line {
+    position: absolute;
+    inset: 8px;
+    z-index: 3;
+    pointer-events: none;
+    border: 1px solid rgb(255 255 255 / 0.3);
+    border-radius: 1px;
+  }
+}
+
+/* Ticket scoop where the browser can draw it (Chromium 139+); everything
+ * else keeps the crisp 3px corner from the rules above. */
+@supports (corner-shape: scoop) {
+  .fog-scoop {
+    border-radius: 9px;
+    corner-shape: scoop;
+  }
+  .fog-scoop-lg {
+    border-radius: 18px;
+    corner-shape: scoop;
+  }
+  .fog-frame-line {
+    border-radius: 11px;
+    corner-shape: scoop;
+  }
+}
+
+/* The featured photo sinks behind its frame as the page scrolls.
+ * Compositor-only (transform), and off entirely under reduced motion. */
+@keyframes fog-drift {
+  to {
+    transform: scale(1.12) translateY(4%);
+  }
+}
+
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .fog-drift {
+      animation: fog-drift linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 700px;
+    }
+  }
 }
 
 /* ============================================

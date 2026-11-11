@@ -139,7 +139,7 @@ export const EventCard = memo(function EventCard({
             {event.capacity ? (
               <div
                 className={cn(
-                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-full flex items-center gap-1",
+                  "absolute top-2 right-2 z-10 px-2 py-0.5 text-white text-xs font-medium rounded-pill flex items-center gap-1",
                   isFull ? "bg-orange-500/90" : "bg-black/60 backdrop-blur-sm",
                 )}
               >
@@ -150,7 +150,7 @@ export const EventCard = memo(function EventCard({
               /* Popular badge (only for non-sponsored events with 20+ attendees, no cap) */
               !isSponsored &&
               (counts?.going_spots ?? 0) >= 20 && (
-                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-full">
+                <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-amber-500/90 text-white text-xs font-medium rounded-pill">
                   {t("popular")}
                 </div>
               )

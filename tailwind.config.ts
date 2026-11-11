@@ -50,6 +50,11 @@ export default {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        // Dã quỳ yellow — reserved for the single primary action on a screen
+        sun: {
+          DEFAULT: "hsl(var(--sun))",
+          foreground: "hsl(var(--sun-foreground))",
+        },
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -84,10 +89,20 @@ export default {
           },
         },
       },
+      // Each radius reads an optional --fog-* override and otherwise keeps its
+      // current value, so the Fog Hour preview (html.fog) can square every
+      // corner without changing a pixel anywhere else.
+      // rounded-pill = a text chip or filter: a full pill today, a timetable
+      // cell under Fog Hour. Avatars, dots and spinners stay on rounded-full.
       borderRadius: {
         lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
+        md: "var(--fog-radius, calc(var(--radius) - 2px))",
+        sm: "var(--fog-radius-sm, calc(var(--radius) - 4px))",
+        DEFAULT: "var(--fog-radius, 0.25rem)",
+        xl: "var(--fog-radius-xl, 0.75rem)",
+        "2xl": "var(--fog-radius-2xl, 1rem)",
+        "3xl": "var(--fog-radius-3xl, 1.5rem)",
+        pill: "var(--fog-radius, 9999px)",
       },
       keyframes: {
         ripple: {

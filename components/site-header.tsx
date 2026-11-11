@@ -26,12 +26,19 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
     <nav data-floating-chrome="site-header" className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
       <div className="container flex h-14 max-w-6xl items-center justify-between mx-auto px-2 min-[360px]:px-4">
         <div className="flex items-center gap-0.5 min-[360px]:gap-1.5">
-          <Link href="/" className="font-bold text-base min-[360px]:text-lg">
+          <Link
+            href="/"
+            data-fog-wordmark
+            className="font-bold text-base min-[360px]:text-lg"
+          >
             ĐàLạt.app
           </Link>
           <div className="flex items-center gap-0 min-[360px]:gap-1">
             <DeferredLocalePicker />
-            <ThemeToggle />
+            {/* Fog Hour preview: theme choice lives in Settings only */}
+            <span data-fog-hide className="contents">
+              <ThemeToggle />
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-0 min-[360px]:gap-1">

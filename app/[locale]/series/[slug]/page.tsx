@@ -291,7 +291,7 @@ export default async function SeriesPage({ params }: PageProps) {
                     href={officialMediaSourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="absolute bottom-2 right-2 rounded-full bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm hover:bg-black/75"
+                    className="absolute bottom-2 right-2 rounded-pill bg-black/60 px-2 py-1 text-xs text-white backdrop-blur-sm hover:bg-black/75"
                   >
                     © {officialMediaCredit}
                   </a>

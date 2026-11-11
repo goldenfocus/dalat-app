@@ -368,7 +368,7 @@ export default async function FestivalPage({ params }: FestivalPageProps) {
             {festival.hashtags.map((tag) => (
               <span
                 key={tag}
-                className="px-3 py-1 rounded-full bg-primary/10 text-primary text-sm"
+                className="px-3 py-1 rounded-pill bg-primary/10 text-primary text-sm"
               >
                 {tag}
               </span>

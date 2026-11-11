@@ -32,7 +32,7 @@ export function HeroImageQuickActions({ labels }: HeroImageQuickActionsProps) {
             key={action.key}
             href={action.href}
             onClick={() => triggerHaptic("selection")}
-            className="inline-flex items-center gap-2 rounded-full bg-white/20 backdrop-blur-sm px-5 py-3 text-sm font-medium text-white transition-all hover:bg-white/30 active:scale-95"
+            className="inline-flex items-center gap-2 rounded-pill bg-white/20 backdrop-blur-sm px-5 py-3 text-sm font-medium text-white transition-all hover:bg-white/30 active:scale-95"
           >
             <Icon className="h-4 w-4" />
             <span>{labels[action.key]}</span>

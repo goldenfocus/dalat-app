@@ -169,7 +169,7 @@ export default async function OrganizerEventsPage() {
                     </td>
                     <td className="p-3">
                       <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium ${statusStyles[event.status] || "bg-muted"}`}
+                        className={`text-xs px-2 py-1 rounded-pill font-medium ${statusStyles[event.status] || "bg-muted"}`}
                       >
                         {event.status}
                       </span>

@@ -66,7 +66,7 @@ export function MomentJoinCard({
         <Button
           asChild
           size="lg"
-          className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-8 py-6 text-base rounded-full shadow-lg shadow-violet-500/20"
+          className="bg-white text-slate-900 hover:bg-white/90 font-semibold px-8 py-6 text-base rounded-pill shadow-lg shadow-violet-500/20"
         >
           <Link href="/auth/login?next=/moments">
             {isGentle ? t("gentleCta") : t("cta")}

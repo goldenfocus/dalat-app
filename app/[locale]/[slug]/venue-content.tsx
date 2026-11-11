@@ -486,7 +486,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
                 <div className="flex-1 pb-1">
                   {venue.is_verified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
+                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
                       <BadgeCheck className="w-3.5 h-3.5" />
                       {t("verified")}
                     </span>
@@ -548,7 +548,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
             <div className="flex-1">
               {venue.is_verified && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary mb-2">
+                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/10 text-primary mb-2">
                   <BadgeCheck className="w-3.5 h-3.5" />
                   {t("verified")}
                 </span>
@@ -848,7 +848,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               {amenities.map((amenity) => (
                 <span
                   key={amenity.key}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted text-sm"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-pill bg-muted text-sm"
                 >
                   <amenity.icon className="w-4 h-4" />
                   {amenity.label}
@@ -865,7 +865,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               {venue.tags.map((tag: string, index: number) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-primary/5 text-sm text-primary border border-primary/10"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-pill bg-primary/5 text-sm text-primary border border-primary/10"
                 >
                   <Tag className="w-3 h-3" />
                   {localizedTags[index] !== tag
@@ -1148,19 +1148,19 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             <div className="flex flex-wrap gap-2">
               <Link
                 href={`/${venue.venue_type === "cafe" ? "cafes" : venue.venue_type === "bar" ? "bars" : venue.venue_type === "restaurant" ? "restaurants" : venue.venue_type === "gallery" ? "galleries" : venue.venue_type === "park" ? "parks" : venue.venue_type === "hotel" ? "hotels" : venue.venue_type === "homestay" ? "homestays" : venue.venue_type}`}
-                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors"
+                className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors"
               >
                 {t("allOfType", { type: typeConfig?.label || "" })}
               </Link>
               <Link
                 href="/discover"
-                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors"
+                className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors"
               >
                 {t("discoverDaLat")}
               </Link>
               <Link
                 href="/blog/venues"
-                className="text-sm px-3 py-1.5 rounded-full border hover:bg-muted transition-colors inline-flex items-center gap-1"
+                className="text-sm px-3 py-1.5 rounded-pill border hover:bg-muted transition-colors inline-flex items-center gap-1"
               >
                 <BookOpen className="w-3 h-3" />
                 {t("venueGuides")}

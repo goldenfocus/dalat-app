@@ -111,7 +111,7 @@ export async function EventFeedImmersive({
               <p className="text-lg text-white/60 mb-8">{t("seeAllUpcoming")}</p>
               <Link
                 href="/events/upcoming"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full active:scale-95 transition-transform"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-pill active:scale-95 transition-transform"
               >
                 {t("seeAllUpcoming")} →
               </Link>
@@ -129,7 +129,7 @@ export async function EventFeedImmersive({
               <p className="text-lg text-white/60 mb-8">{t("browseArchive")}</p>
               <Link
                 href="/events/this-month"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-full active:scale-95 transition-transform"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-medium rounded-pill active:scale-95 transition-transform"
               >
                 {t("browseArchive")} →
               </Link>

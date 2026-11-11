@@ -282,19 +282,19 @@ export function MomentsStrip({ initialMoments = [], title, className }: MomentsS
                 {(moment.event_photo_count > 0 || moment.event_video_count > 0 || moment.event_audio_count > 0) && (
                   <div className="flex items-center gap-1.5 pt-0.5">
                     {moment.event_photo_count > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-muted/80 text-[11px] font-medium text-muted-foreground">
                         <Camera className="w-3 h-3" />
                         {moment.event_photo_count}
                       </span>
                     )}
                     {moment.event_video_count > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-muted/80 text-[11px] font-medium text-muted-foreground">
                         <Video className="w-3 h-3" />
                         {moment.event_video_count}
                       </span>
                     )}
                     {moment.event_audio_count > 0 && (
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-muted/80 text-[11px] font-medium text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-pill bg-muted/80 text-[11px] font-medium text-muted-foreground">
                         <Music className="w-3 h-3" />
                         {moment.event_audio_count}
                       </span>

@@ -57,7 +57,7 @@ export function MomentsJoinPill({ delay = 2000 }: MomentsJoinPillProps) {
         <Button
           asChild
           size="sm"
-          className="rounded-full px-4 bg-violet-600 hover:bg-violet-700"
+          className="rounded-pill px-4 bg-violet-600 hover:bg-violet-700"
         >
           <Link href="/auth/login?next=/moments">{t("cta")}</Link>
         </Button>

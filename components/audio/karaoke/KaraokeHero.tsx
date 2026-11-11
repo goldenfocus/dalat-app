@@ -145,7 +145,7 @@ function TimingControls() {
           onClick={handleSave}
           disabled={isSaving}
           className={cn(
-            "flex items-center gap-1 px-2 py-1.5 rounded-full text-xs transition-all",
+            "flex items-center gap-1 px-2 py-1.5 rounded-pill text-xs transition-all",
             isSaving
               ? "bg-white/5 text-white/30"
               : "bg-primary/80 text-white hover:bg-primary"
