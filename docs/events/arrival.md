@@ -257,8 +257,10 @@ drinks remain covered. Changing eligibility cannot be used to retroactively bill
 a guest.
 
 The intended Social House default is lime water, ginger tea and iced coffee.
-Activation requires confirmed venue prices for those products; the old broad
-beverage-section configuration must be replaced as an explicit operational step.
+The owner authorized pricing lime water and ginger tea at the cheapest listed
+drink price (35,000 VND), and iced coffee at the existing Black Coffee price
+(40,000 VND). Iced coffee is black coffee served chilled, with no hot option.
+The scoped setup script replaces the old broad beverage-section configuration.
 Do not substitute unrelated menu items or zero prices to make sponsor accounting
 appear complete. Special quota promotions beyond the existing RSVP limit remain
 future work.
