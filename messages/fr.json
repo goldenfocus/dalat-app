@@ -4094,7 +4094,10 @@
     "guest": "Invité",
     "markConfirmed": "Confirmer",
     "markFulfilled": "Marquer comme servie",
-    "droppedItems": "Certains articles de votre commande précédente ne sont plus disponibles, on les a retirés."
+    "droppedItems": "Certains articles de votre commande précédente ne sont plus disponibles, on les a retirés.",
+    "itemPhoto": "Photo",
+    "removePhoto": "Supprimer la photo",
+    "photoInvalid": "Choisissez une image JPG, PNG ou WebP de moins de 5 Mo."
   },
   "arrival": {
     "staffDesk": "Espace du personnel",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Préparez votre échange linguistique",
       "intro": "Indiquez les langues que vous parlez et celles que vous souhaitez pratiquer. Nous garderons vos réponses.",
-      "complimentary": "Votre première boisson est offerte par EZViet",
+      "complimentary": "Offert par EZViet",
       "chooseCoveredDrink": "Quelle boisson souhaitez-vous vous faire offrir par EZViet ?",
       "coveredByEzviet": "Pris en charge par EZViet",
       "youPay": "Vous réglez sur place",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Voir votre boisson",
       "freeDrinkLimit": "Boissons offertes : premières inscriptions",
       "limitHint": "Pour cet événement. Saisissez 0 pour arrêter les nouvelles offres. Les réservations existantes restent prises en charge.",
-      "saveLimit": "Enregistrer la limite",
-      "saveFailed": "Enregistrement impossible. Réessayez."
+      "saveLimit": "Enregistrer l’offre",
+      "saveFailed": "Enregistrement impossible. Réessayez.",
+      "free": "Gratuit",
+      "paid": "Payant",
+      "itemDetails": "Détails",
+      "editOffer": "Modifier l’offre de boissons",
+      "hiddenItem": "Article masqué"
     },
     "hostAccountSearch": "Nom, @pseudo ou adresse e-mail complète",
     "hostMatchingAccounts": "Comptes correspondants",

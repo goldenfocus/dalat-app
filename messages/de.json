@@ -4094,7 +4094,10 @@
     "guest": "Gast",
     "markConfirmed": "Bestätigen",
     "markFulfilled": "Als serviert markieren",
-    "droppedItems": "Einige Artikel aus deiner früheren Bestellung sind nicht mehr verfügbar, wir haben sie entfernt."
+    "droppedItems": "Einige Artikel aus deiner früheren Bestellung sind nicht mehr verfügbar, wir haben sie entfernt.",
+    "itemPhoto": "Foto",
+    "removePhoto": "Foto entfernen",
+    "photoInvalid": "JPG, PNG oder WebP unter 5 MB verwenden."
   },
   "arrival": {
     "staffDesk": "Mitarbeiterbereich",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Mach dich bereit für den Sprachaustausch",
       "intro": "Sag uns, welche Sprachen du sprichst und üben möchtest. Wir merken uns deine Angaben.",
-      "complimentary": "Dein erstes Getränk geht auf EZViet",
+      "complimentary": "Von EZViet spendiert",
       "chooseCoveredDrink": "Welches Getränk soll EZViet übernehmen?",
       "coveredByEzviet": "Von EZViet übernommen",
       "youPay": "Du zahlst vor Ort",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Dein Getränk ansehen",
       "freeDrinkLimit": "Gratisgetränke: erste Anmeldungen",
       "limitHint": "Gilt für dieses Event. Mit 0 werden neue Gratisgetränke gestoppt. Bestehende Reservierungen bleiben gedeckt.",
-      "saveLimit": "Limit speichern",
-      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen."
+      "saveLimit": "Angebot speichern",
+      "saveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
+      "free": "Kostenlos",
+      "paid": "Kostenpflichtig",
+      "itemDetails": "Details",
+      "editOffer": "Getränkeangebot bearbeiten",
+      "hiddenItem": "Ausgeblendeter Menüartikel"
     },
     "hostAccountSearch": "Name, @Benutzername oder vollständige E-Mail-Adresse",
     "hostMatchingAccounts": "Passende Konten",

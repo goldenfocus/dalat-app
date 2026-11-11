@@ -4094,7 +4094,10 @@
     "guest": "Guest",
     "markConfirmed": "Confirm",
     "markFulfilled": "Mark served",
-    "droppedItems": "Some items from your earlier order are no longer available, so we took them out."
+    "droppedItems": "Some items from your earlier order are no longer available, so we took them out.",
+    "itemPhoto": "Photo",
+    "removePhoto": "Remove photo",
+    "photoInvalid": "Use a JPG, PNG or WebP under 5 MB."
   },
   "arrival": {
     "staffDesk": "Staff desk",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Get ready for the exchange",
       "intro": "Tell us which languages you speak and want to practise. We’ll remember your answers.",
-      "complimentary": "Your first drink is on EZViet",
+      "complimentary": "Complimentary by EZViet",
       "chooseCoveredDrink": "Which drink should EZViet cover?",
       "coveredByEzviet": "Covered by EZViet",
       "youPay": "You pay at the venue",
@@ -4285,8 +4288,13 @@
       "viewDrink": "View your drink",
       "freeDrinkLimit": "Free drinks: first RSVPs",
       "limitHint": "Applies to this event. Enter 0 to stop new free-drink claims. Existing reservations stay covered.",
-      "saveLimit": "Save limit",
-      "saveFailed": "Couldn’t save. Please try again."
+      "saveLimit": "Save offer",
+      "saveFailed": "Couldn’t save. Please try again.",
+      "free": "Free",
+      "paid": "Paid",
+      "itemDetails": "Details",
+      "editOffer": "Edit drink offer",
+      "hiddenItem": "Hidden menu item"
     },
     "hostAccountSearch": "Name, @username or full email address",
     "hostMatchingAccounts": "Matching accounts",

@@ -4094,7 +4094,10 @@
     "guest": "ゲスト",
     "markConfirmed": "確定",
     "markFulfilled": "提供済みにする",
-    "droppedItems": "前回の注文の一部が提供できなくなったため、取り除きました。"
+    "droppedItems": "前回の注文の一部が提供できなくなったため、取り除きました。",
+    "itemPhoto": "写真",
+    "removePhoto": "写真を削除",
+    "photoInvalid": "5 MB未満のJPG、PNG、WebPを選んでください。"
   },
   "arrival": {
     "staffDesk": "スタッフポータル",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "言語交流の準備をしましょう",
       "intro": "話せる言語と練習したい言語を教えてください。回答は次回のために保存します。",
-      "complimentary": "最初のドリンク1杯はEZVietの提供で無料",
+      "complimentary": "EZVietからのサービス",
       "chooseCoveredDrink": "無料ドリンクを選んでください",
       "coveredByEzviet": "EZViet負担",
       "youPay": "会場でお支払い",
@@ -4285,8 +4288,13 @@
       "viewDrink": "選んだドリンクを見る",
       "freeDrinkLimit": "無料ドリンクの先着人数",
       "limitHint": "このイベントに適用。0で新規の無料提供を停止します。既存の予約は引き続き対象です。",
-      "saveLimit": "上限を保存",
-      "saveFailed": "保存できませんでした。再度お試しください。"
+      "saveLimit": "特典を保存",
+      "saveFailed": "保存できませんでした。再度お試しください。",
+      "free": "無料",
+      "paid": "有料",
+      "itemDetails": "詳細",
+      "editOffer": "ドリンク特典を編集",
+      "hiddenItem": "非表示のメニュー項目"
     },
     "hostAccountSearch": "名前、@ユーザー名、メールアドレス（完全一致）",
     "hostMatchingAccounts": "一致するアカウント",

@@ -166,3 +166,57 @@ DO $$ BEGIN
 END $$;
 SQL
 echo 'Concurrent RSVP free-drink cutoff passed.'
+
+# Event-specific complimentary menus preserve existing promises and inherited defaults.
+for file in supabase/migrations/20261202_001_explicit_drink_offers.sql \
+ supabase/tests/explicit-drink-offers.sql; do
+ docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/$file"
+done
+# A menu edit starting during an offer save must see the committed override.
+awk '/SELECT set_event_drink_offer/{exit} !/^BEGIN;/{print}' "$repo_root/supabase/tests/explicit-drink-offers.sql" | docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1
+docker exec -i -e PGAPPNAME=explicit-offer-save "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL' &
+BEGIN;
+SELECT set_event_drink_offer('99000000-0000-4000-8000-000000000020','99000000-0000-4000-8000-000000000001',100,ARRAY['99000000-0000-4000-8000-000000000003']::uuid[]);
+SELECT pg_sleep(1);
+COMMIT;
+SQL
+offer_writer=$!
+started=false
+for ((i=0;i<50;i++)); do
+ if [[ "$(docker exec "$container" psql -X -At -U postgres -c "SELECT count(*) FROM pg_stat_activity WHERE application_name='explicit-offer-save' AND wait_event='PgSleep'")" == 1 ]]; then started=true; break; fi
+ sleep 0.02
+done
+if [[ "$started" != true ]]; then echo 'Concurrent offer save did not start' >&2; exit 1; fi
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+UPDATE venue_menu_items SET section_id=section_id WHERE id='99000000-0000-4000-8000-000000000004';
+DO $$ BEGIN
+ IF (SELECT count(*) FROM event_sponsored_drinks WHERE event_id='99000000-0000-4000-8000-000000000020')<>1 THEN RAISE EXCEPTION 'Concurrent sync expanded explicit offer'; END IF;
+END $$;
+SQL
+wait "$offer_writer"
+echo 'Concurrent explicit offer menu sync passed.'
+# An occurrence created during a section move must join the same venue lock.
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+INSERT INTO venue_menu_sections(id,venue_id,slug,title) VALUES('99000000-0000-4000-8000-000000000022','99000000-0000-4000-8000-000000000010','paid','Paid');
+SQL
+docker exec -i -e PGAPPNAME=inherit-offer-create "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL' &
+BEGIN;
+INSERT INTO events(id,series_id,created_by,venue_id,status,starts_at,ends_at,arrival_enabled) VALUES('99000000-0000-4000-8000-000000000021','99000000-0000-4000-8000-000000000009','99000000-0000-4000-8000-000000000001','99000000-0000-4000-8000-000000000010','published',now(),now()+interval '2 hours',true);
+SELECT pg_sleep(1);
+COMMIT;
+SQL
+inherit_writer=$!
+started=false
+for ((i=0;i<50;i++)); do
+ if [[ "$(docker exec "$container" psql -X -At -U postgres -c "SELECT count(*) FROM pg_stat_activity WHERE application_name='inherit-offer-create' AND wait_event='PgSleep'")" == 1 ]]; then started=true; break; fi
+ sleep 0.02
+done
+if [[ "$started" != true ]]; then echo 'Concurrent offer inheritance did not start' >&2; exit 1; fi
+docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 <<'SQL'
+UPDATE venue_menu_items SET section_id='99000000-0000-4000-8000-000000000022' WHERE id='99000000-0000-4000-8000-000000000003';
+DO $$ BEGIN
+ IF EXISTS(SELECT 1 FROM event_sponsored_drinks WHERE event_id='99000000-0000-4000-8000-000000000021' AND menu_item_id='99000000-0000-4000-8000-000000000003') THEN RAISE EXCEPTION 'Concurrent inheritance kept stale membership'; END IF;
+END $$;
+SQL
+wait "$inherit_writer"
+echo 'Concurrent new-occurrence menu sync passed.'

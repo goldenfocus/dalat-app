@@ -4094,7 +4094,10 @@
     "guest": "访客",
     "markConfirmed": "确认",
     "markFulfilled": "标记为已上桌",
-    "droppedItems": "你之前订单里的部分餐品已无法供应，我们已帮你移除。"
+    "droppedItems": "你之前订单里的部分餐品已无法供应，我们已帮你移除。",
+    "itemPhoto": "照片",
+    "removePhoto": "删除照片",
+    "photoInvalid": "请使用小于5 MB的JPG、PNG或WebP图片。"
   },
   "arrival": {
     "staffDesk": "员工工作台",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "为语言交流做好准备",
       "intro": "告诉我们您会说哪些语言、想练习哪些语言。我们会记住您的选择。",
-      "complimentary": "首杯饮品由 EZViet 请客",
+      "complimentary": "EZViet 免费提供",
       "chooseCoveredDrink": "您想让 EZViet 请您喝哪款饮品？",
       "coveredByEzviet": "由 EZViet 赞助",
       "youPay": "您到店支付",
@@ -4285,8 +4288,13 @@
       "viewDrink": "查看你的饮品",
       "freeDrinkLimit": "免费饮品：前几位报名者",
       "limitHint": "仅适用于本活动。输入0停止新增免费饮品。已有预订仍由赞助方承担。",
-      "saveLimit": "保存限额",
-      "saveFailed": "保存失败，请重试。"
+      "saveLimit": "保存优惠",
+      "saveFailed": "保存失败，请重试。",
+      "free": "免费",
+      "paid": "付费",
+      "itemDetails": "详情",
+      "editOffer": "编辑饮品优惠",
+      "hiddenItem": "隐藏的菜单项"
     },
     "hostAccountSearch": "姓名、@用户名或完整邮箱地址",
     "hostMatchingAccounts": "匹配的账号",

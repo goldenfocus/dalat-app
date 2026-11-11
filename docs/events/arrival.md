@@ -236,3 +236,29 @@ API/component tests cover session authority, cross-origin requests, rate limitin
 stale search responses and already-arrived results. All twelve new UI catalog
 entries were independently reviewed. Private operational text remains excluded
 from the public translation worker.
+
+### Complimentary menu and paid orders
+
+The drink sheet separates **Complimentary by EZViet** from **Paid**, using the
+server's event-specific eligible item IDs and the guest's RSVP eligibility. It
+shows item names and prices first; details and paid-item options open on tap.
+Venue photos use the menu's existing image field, with icon placeholders when
+there is no photo. Venue menu editors can upload/remove a photo and edit the
+name, description, price and availability. Existing menu translation and original
+text controls apply to these same public menu records.
+
+Managers can expand **Edit drink offer** in the event's EZViet tab to select exact
+menu items and the RSVP limit. Saving affects that occurrence only. Explicit
+choices survive future menu-section and event-schedule updates. A hidden item
+stays removable from the offer. Series-default sections continue to supply new
+occurrences that have not been customized. Configuration changes never rewrite
+saved order prices, sponsor credit or guest amounts due; previously promised free
+drinks remain covered. Changing eligibility cannot be used to retroactively bill
+a guest.
+
+The intended Social House default is lime water, ginger tea and iced coffee.
+Activation requires confirmed venue prices for those products; the old broad
+beverage-section configuration must be replaced as an explicit operational step.
+Do not substitute unrelated menu items or zero prices to make sponsor accounting
+appear complete. Special quota promotions beyond the existing RSVP limit remain
+future work.

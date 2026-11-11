@@ -4094,7 +4094,10 @@
     "guest": "Khách",
     "markConfirmed": "Xác nhận",
     "markFulfilled": "Đã phục vụ",
-    "droppedItems": "Một vài món trong đơn trước không còn nữa, nên mình đã bỏ ra rồi nhé."
+    "droppedItems": "Một vài món trong đơn trước không còn nữa, nên mình đã bỏ ra rồi nhé.",
+    "itemPhoto": "Ảnh",
+    "removePhoto": "Xóa ảnh",
+    "photoInvalid": "Dùng ảnh JPG, PNG hoặc WebP dưới 5 MB."
   },
   "arrival": {
     "staffDesk": "Khu vực nhân viên",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Chuẩn bị cho buổi giao lưu ngôn ngữ",
       "intro": "Cho chúng tôi biết bạn nói được những ngôn ngữ nào và muốn luyện tập ngôn ngữ nào. Chúng tôi sẽ lưu câu trả lời của bạn.",
-      "complimentary": "EZViet mời bạn đồ uống đầu tiên",
+      "complimentary": "EZViet mời bạn",
       "chooseCoveredDrink": "Bạn muốn EZViet chi trả cho đồ uống nào?",
       "coveredByEzviet": "Do EZViet chi trả",
       "youPay": "Bạn thanh toán tại quán",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Xem đồ uống của bạn",
       "freeDrinkLimit": "Đồ uống miễn phí: số người đăng ký đầu tiên",
       "limitHint": "Áp dụng cho sự kiện này. Nhập 0 để ngừng nhận yêu cầu miễn phí mới. Các đơn đã đặt vẫn được tài trợ.",
-      "saveLimit": "Lưu giới hạn",
-      "saveFailed": "Không lưu được. Vui lòng thử lại."
+      "saveLimit": "Lưu ưu đãi",
+      "saveFailed": "Không lưu được. Vui lòng thử lại.",
+      "free": "Miễn phí",
+      "paid": "Trả phí",
+      "itemDetails": "Chi tiết",
+      "editOffer": "Chỉnh sửa ưu đãi đồ uống",
+      "hiddenItem": "Món đang ẩn"
     },
     "hostAccountSearch": "Tên, @tên_người_dùng hoặc địa chỉ email đầy đủ",
     "hostMatchingAccounts": "Tài khoản phù hợp",

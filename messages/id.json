@@ -4094,7 +4094,10 @@
     "guest": "Tamu",
     "markConfirmed": "Konfirmasi",
     "markFulfilled": "Tandai sudah disajikan",
-    "droppedItems": "Beberapa item dari pesananmu sebelumnya sudah tidak tersedia, jadi kami hapus."
+    "droppedItems": "Beberapa item dari pesananmu sebelumnya sudah tidak tersedia, jadi kami hapus.",
+    "itemPhoto": "Foto",
+    "removePhoto": "Hapus foto",
+    "photoInvalid": "Gunakan gambar JPG, PNG, atau WebP di bawah 5 MB."
   },
   "arrival": {
     "staffDesk": "Ruang staf",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Bersiap untuk acara pertukaran bahasa",
       "intro": "Beri tahu kami bahasa yang bisa Anda gunakan dan bahasa yang ingin Anda praktikkan. Jawaban Anda akan kami simpan.",
-      "complimentary": "Minuman pertama Anda ditraktir EZViet",
+      "complimentary": "Gratis dari EZViet",
       "chooseCoveredDrink": "Minuman apa yang ingin Anda pilih untuk ditanggung EZViet?",
       "coveredByEzviet": "Ditanggung EZViet",
       "youPay": "Anda bayar di kafe",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Lihat minumanmu",
       "freeDrinkLimit": "Minuman gratis: pendaftar pertama",
       "limitHint": "Berlaku untuk acara ini. Masukkan 0 untuk menghentikan klaim baru. Pesanan yang sudah ada tetap ditanggung.",
-      "saveLimit": "Simpan batas",
-      "saveFailed": "Gagal menyimpan. Coba lagi."
+      "saveLimit": "Simpan penawaran",
+      "saveFailed": "Gagal menyimpan. Coba lagi.",
+      "free": "Gratis",
+      "paid": "Berbayar",
+      "itemDetails": "Detail",
+      "editOffer": "Ubah penawaran minuman",
+      "hiddenItem": "Item menu tersembunyi"
     },
     "hostAccountSearch": "Nama, @nama_pengguna atau alamat email lengkap",
     "hostMatchingAccounts": "Akun yang cocok",

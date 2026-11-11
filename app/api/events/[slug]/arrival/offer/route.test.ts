@@ -24,3 +24,10 @@ it("rejects guest staff, cross-origin changes and client identity fields", async
   expect((await PUT(request({ limit: 100 }), params)).status).toBe(403);
   expect(mock.rpc).not.toHaveBeenCalled();
 });
+
+it("uses the explicit menu RPC with the signed-in manager", async () => {
+  const item = "70000000-0000-4000-8000-000000000001";
+  expect((await PUT(request({ limit: 100, itemIds: [item] }), params)).status).toBe(200);
+  expect(mock.rpc).toHaveBeenCalledWith("set_event_drink_offer", { p_event_id: "event", p_actor_id: "manager", p_limit: 100, p_item_ids: [item] });
+  expect((await PUT(request({ limit: 100, itemIds: ["invalid"] }), params)).status).toBe(400);
+});

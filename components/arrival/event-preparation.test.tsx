@@ -15,7 +15,7 @@ it("reuses saved language preferences and reserves one sponsored drink before ch
   vi.stubGlobal("fetch", fetcher);
   render(<EventPreparation slug="exchange" />);
   expect(await screen.findByText("Vi")).toBeVisible();
-  fireEvent.change(await screen.findByRole("combobox"), { target: { value: coffee.id } });
+  fireEvent.click(await screen.findByRole("button", { name: "Coffee" }));
   fireEvent.click(screen.getByRole("button", { name: "reserveFreeDrink" }));
   await screen.findByText("ready");
   const request = fetcher.mock.calls.find(([url]) => url.endsWith("/reserve"));
@@ -34,7 +34,7 @@ it("shows the paid menu after the free-drink cutoff and lets the guest choose at
   vi.stubGlobal("fetch", fetcher);
   render(<EventPreparation slug="exchange" />);
   expect(await screen.findByText("chooseFromMenu")).toBeVisible();
-  expect(screen.getByText("venuePurchase")).toBeVisible();
+  expect(screen.getByText("paid")).toBeVisible();
   expect(screen.queryByText("chooseFreeDrink")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: "chooseAtVenue" }));
   expect(await screen.findByText("ready")).toBeVisible();

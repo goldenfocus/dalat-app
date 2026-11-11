@@ -4094,7 +4094,10 @@
     "guest": "Tetamu",
     "markConfirmed": "Sahkan",
     "markFulfilled": "Tanda sudah dihidang",
-    "droppedItems": "Beberapa item daripada pesanan anda sebelum ini tiada lagi, jadi kami telah membuangnya."
+    "droppedItems": "Beberapa item daripada pesanan anda sebelum ini tiada lagi, jadi kami telah membuangnya.",
+    "itemPhoto": "Foto",
+    "removePhoto": "Buang foto",
+    "photoInvalid": "Gunakan imej JPG, PNG atau WebP di bawah 5 MB."
   },
   "arrival": {
     "staffDesk": "Ruang petugas",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Bersedia untuk sesi pertukaran bahasa",
       "intro": "Nyatakan bahasa yang anda tuturkan dan bahasa yang ingin anda praktikkan. Kami akan simpan jawapan anda.",
-      "complimentary": "Minuman pertama anda ditaja oleh EZViet",
+      "complimentary": "Percuma daripada EZViet",
       "chooseCoveredDrink": "Minuman mana yang anda mahu ditaja oleh EZViet?",
       "coveredByEzviet": "Ditanggung oleh EZViet",
       "youPay": "Anda bayar di kafe",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Lihat minuman anda",
       "freeDrinkLimit": "Minuman percuma: pendaftar pertama",
       "limitHint": "Untuk acara ini. Masukkan 0 untuk menghentikan tuntutan baharu. Tempahan sedia ada masih ditanggung.",
-      "saveLimit": "Simpan had",
-      "saveFailed": "Tidak dapat menyimpan. Cuba lagi."
+      "saveLimit": "Simpan tawaran",
+      "saveFailed": "Tidak dapat menyimpan. Cuba lagi.",
+      "free": "Percuma",
+      "paid": "Berbayar",
+      "itemDetails": "Butiran",
+      "editOffer": "Edit tawaran minuman",
+      "hiddenItem": "Item menu tersembunyi"
     },
     "hostAccountSearch": "Nama, @nama_pengguna atau alamat e-mel lengkap",
     "hostMatchingAccounts": "Akaun yang sepadan",

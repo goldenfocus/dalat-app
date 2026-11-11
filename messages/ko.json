@@ -4094,7 +4094,10 @@
     "guest": "게스트",
     "markConfirmed": "확정",
     "markFulfilled": "서빙 완료로 표시",
-    "droppedItems": "이전 주문의 일부 메뉴를 더 이상 주문할 수 없어서 빼 두었어요."
+    "droppedItems": "이전 주문의 일부 메뉴를 더 이상 주문할 수 없어서 빼 두었어요.",
+    "itemPhoto": "사진",
+    "removePhoto": "사진 삭제",
+    "photoInvalid": "5MB 미만의 JPG, PNG 또는 WebP를 사용하세요."
   },
   "arrival": {
     "staffDesk": "스태프 공간",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "언어 교환 준비하기",
       "intro": "구사하는 언어와 연습하고 싶은 언어를 알려주세요. 답변은 저장해 둘게요.",
-      "complimentary": "첫 음료 한 잔은 EZViet이 제공합니다",
+      "complimentary": "EZViet 무료 제공",
       "chooseCoveredDrink": "EZViet이 제공할 무료 음료를 선택하세요",
       "coveredByEzviet": "EZViet 부담",
       "youPay": "현장에서 직접 결제",
@@ -4285,8 +4288,13 @@
       "viewDrink": "선택한 음료 보기",
       "freeDrinkLimit": "무료 음료 선착순 인원",
       "limitHint": "이 행사에 적용됩니다. 0을 입력하면 신규 무료 신청을 중단합니다. 기존 예약은 유지됩니다.",
-      "saveLimit": "인원 제한 저장",
-      "saveFailed": "저장하지 못했습니다. 다시 시도해 주세요."
+      "saveLimit": "혜택 저장",
+      "saveFailed": "저장하지 못했습니다. 다시 시도해 주세요.",
+      "free": "무료",
+      "paid": "유료",
+      "itemDetails": "상세 정보",
+      "editOffer": "음료 혜택 수정",
+      "hiddenItem": "숨겨진 메뉴 항목"
     },
     "hostAccountSearch": "이름, @사용자명 또는 전체 이메일 주소",
     "hostMatchingAccounts": "일치하는 계정",

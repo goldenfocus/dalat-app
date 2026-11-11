@@ -4094,7 +4094,10 @@
     "guest": "Invitado",
     "markConfirmed": "Confirmar",
     "markFulfilled": "Marcar como servido",
-    "droppedItems": "Algunos productos de tu pedido anterior ya no están disponibles, así que los quitamos."
+    "droppedItems": "Algunos productos de tu pedido anterior ya no están disponibles, así que los quitamos.",
+    "itemPhoto": "Foto",
+    "removePhoto": "Eliminar foto",
+    "photoInvalid": "Usa una imagen JPG, PNG o WebP de menos de 5 MB."
   },
   "arrival": {
     "staffDesk": "Área del personal",
@@ -4260,7 +4263,7 @@
     "registration": {
       "prepare": "Prepárate para el intercambio de idiomas",
       "intro": "Dinos qué idiomas hablas y cuáles quieres practicar. Guardaremos tus respuestas.",
-      "complimentary": "Tu primera bebida corre por cuenta de EZViet",
+      "complimentary": "Invita EZViet",
       "chooseCoveredDrink": "¿Qué bebida quieres que pague EZViet?",
       "coveredByEzviet": "A cargo de EZViet",
       "youPay": "Pagas en el local",
@@ -4285,8 +4288,13 @@
       "viewDrink": "Ver tu bebida",
       "freeDrinkLimit": "Bebidas gratis: primeras inscripciones",
       "limitHint": "Solo para este evento. Introduce 0 para detener nuevas bebidas gratis. Las reservas existentes siguen cubiertas.",
-      "saveLimit": "Guardar límite",
-      "saveFailed": "No se pudo guardar. Inténtalo de nuevo."
+      "saveLimit": "Guardar oferta",
+      "saveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+      "free": "Gratis",
+      "paid": "De pago",
+      "itemDetails": "Detalles",
+      "editOffer": "Editar oferta de bebidas",
+      "hiddenItem": "Producto oculto"
     },
     "hostAccountSearch": "Nombre, @usuario o dirección de correo completa",
     "hostMatchingAccounts": "Cuentas coincidentes",

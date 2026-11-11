@@ -1,15 +1,16 @@
 "use client";
 
-import { ItemOptions } from "@/components/menu/item-options";
-import { readSelection, selectionKey, optionPrice } from "@/lib/menu/options";
+import { DrinkMenuItem } from "./drink-menu-item";
+import { DrinkSponsorLink } from "./drink-sponsor-link";
+import { readSelection, optionPrice } from "@/lib/menu/options";
 import { useViewer } from "@/lib/hooks/use-viewer";
 import { useLocale, useTranslations } from "next-intl";
+import { OriginalText } from "@/components/ui/original-text";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { OriginalText } from "@/components/ui/original-text";
 import { formatVnd } from "@/lib/menu/format";
 import type { ArrivalContext } from "@/lib/arrival/types";
-import { ArrivalMenu, cartTotal, type ArrivalQuantities } from "./arrival-menu";
+import { cartTotal, type ArrivalQuantities } from "./arrival-menu";
 
 export function reservationQuantities(extra: ArrivalQuantities, freeDrink: string | null) {
   return freeDrink ? { ...extra, [freeDrink]: (extra[freeDrink] || 0) + 1 } : extra;
@@ -30,39 +31,37 @@ export function DrinkMenuSheet({ context, open, onLater, busy, failed, quantitie
   const { isGodMode } = useViewer();
   const free = canChooseFreeDrink(context);
   const drinks = context.menu.flatMap(section => section.items).filter(item => !item.is_sold_out && context.event.sponsorship?.eligibleItemIds.includes(item.id));
-  const drink = drinks.find(item => item.id === readSelection(selected || "").item_id);
+  const drink = free ? drinks.find(item => item.id === readSelection(selected || "").item_id) : undefined;
   const drinkPrice = drink ? optionPrice(drink, readSelection(selected || "").selected_options) : null;
-  const selectionReady = Boolean(drink && drinkPrice !== null);
+  const selectionReady = Boolean(free && drink && drinkPrice !== null);
   const guestTotal = cartTotal(context.menu, reservationQuantities(quantities, selectionReady ? selected : null)) - (selectionReady ? drink!.price_vnd : 0);
   const selectDrink = (key: string | null) => {
     onSelect(key);
     if (key && (quantities[key] || 0) > 19) onChange({ ...quantities, [key]: 19 });
   };
+  const paidSections = context.menu.map(section => ({ ...section, items: section.items.filter(item => !free || !drinks.some(drink => drink.id === item.id) || item.id === drink?.id || Object.entries(quantities).some(([key, qty]) => qty > 0 && readSelection(key).item_id === item.id)) })).filter(section => section.items.length > 0);
   const hasExtras = Object.values(quantities).some(qty => qty > 0);
   return <Sheet open={open} onOpenChange={next => { if (!next && !busy) onLater(); }}>
     <SheetContent side="bottom" className="mx-auto flex max-h-[88dvh] max-w-xl flex-col gap-0 rounded-t-xl p-0">
       <SheetHeader className="shrink-0 border-b px-5 py-4 text-left">
-        <SheetTitle className="pr-7 text-xl">{t(free ? "chooseFreeDrink" : "chooseFromMenu")}</SheetTitle>
-        <p className="text-sm text-muted-foreground">{free ? t("firstRsvps", { count: context.event.sponsorship?.rsvpLimit ?? 100 }) : context.event.orderingEnabled && context.menu.length ? t("venuePurchase") : common("noMenu")}</p>
+        <SheetTitle className="pr-7 text-xl">{t("chooseFromMenu")}</SheetTitle>
       </SheetHeader>
       <div className="min-h-0 overflow-y-auto px-5 py-4">
-        {free ? <div className="space-y-4">
-          <label className="block space-y-2"><span className="text-sm font-medium">{t("drink")}</span>
-            <select value={readSelection(selected || "").item_id} onChange={event => { const item = drinks.find(i => i.id === event.target.value); selectDrink(item ? selectionKey(item.id, Object.fromEntries((item.option_groups || []).filter(g => g.default).map(g => [g.id, g.default!]))) : null); }} disabled={busy} className="min-h-12 w-full rounded-lg border border-input bg-background px-3 text-base">
-              <option value="">{t("chooseFreeDrink")}</option>
-              {drinks.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
-            </select>
-          </label>
-          {drink && <div className="space-y-2 rounded-lg bg-muted p-3">
-            {drink.description && <p className="text-sm">{drink.description}</p>}
-            <ItemOptions item={drink} value={readSelection(selected || "").selected_options} onChange={value => selectDrink(selectionKey(drink.id, value))} disabled={busy} />
-            <p className="flex items-center gap-3"><span className="text-sm text-muted-foreground line-through">{formatVnd(drink.price_vnd, locale)}</span><strong>{formatVnd(0, locale)}</strong></p>
-            {drink.originalName && (drink.originalName !== drink.name || drink.originalDescription !== drink.description) && <OriginalText text={[drink.originalName, drink.originalDescription].filter(Boolean).join("\n")} />}
-          </div>}
-          <details><summary className="flex min-h-11 cursor-pointer items-center text-sm font-medium">{t("addExtras")}</summary>
-            <ArrivalMenu sections={context.menu} quantities={quantities} onChange={next => onChange(selected ? { ...next, [selected]: Math.min(next[selected] || 0, 19) } : next)} note={note} onNoteChange={onNoteChange} disabled={busy} />
-          </details>
-        </div> : <ArrivalMenu sections={context.menu} quantities={quantities} onChange={onChange} note={note} onNoteChange={onNoteChange} disabled={busy} />}
+        {free && drinks.length > 0 && <section className="mb-6">
+          <h3 className="text-base font-semibold"><DrinkSponsorLink>{t("complimentary")}</DrinkSponsorLink></h3>
+          <ul>{drinks.map(item => <DrinkMenuItem key={item.id} item={item} complimentary selected={selected} onSelect={selectDrink} quantities={quantities} onChange={onChange} disabled={busy} />)}</ul>
+        </section>}
+        <section>
+          <h3 className="text-base font-semibold">{t("paid")}</h3>
+          {paidSections.map(section => <section key={section.id} className="mt-5">
+            {(!free || section.items.some(item => !context.event.sponsorship?.eligibleItemIds.includes(item.id))) && <h4 className="text-sm text-muted-foreground">{section.title}</h4>}
+            {section.note && <p className="mt-1 text-sm text-muted-foreground">{section.note}</p>}
+            {section.originalTitle && (section.title !== section.originalTitle || section.note !== section.originalNote) && <OriginalText text={[section.originalTitle, section.originalNote].filter(Boolean).join("\n")} />}
+            <ul>{section.items.map(item => <DrinkMenuItem key={item.id} item={item} selected={null} onSelect={selectDrink} quantities={quantities} onChange={next => onChange(selected ? { ...next, [selected]: Math.min(next[selected] || 0, 19) } : next)} disabled={busy} />)}</ul>
+          </section>)}
+        </section>
+        {(drink || hasExtras) && <details className="mt-4"><summary className="cursor-pointer py-3 text-sm">{common("noteLabel")}</summary><textarea aria-label={common("noteLabel")} rows={2} maxLength={500} value={note} disabled={busy} onChange={event => onNoteChange(event.target.value)} className="w-full rounded-lg border bg-background p-3 text-base" /></details>}
+
       </div>
       <div className={`shrink-0 space-y-2 border-t bg-background px-5 pt-3 ${isGodMode ? "pb-20" : "pb-[max(1rem,env(safe-area-inset-bottom))]"}`}>
         {failed && <p role="alert" className="text-sm text-destructive">{common("errorGeneric")}</p>}
