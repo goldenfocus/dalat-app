@@ -561,6 +561,7 @@ export async function GET(request: Request) {
           review: cluster.editorialReview,
           verificationStatus: quality.suggestedStatus,
           existingUrl: existingPost !== null,
+          alreadyPublished: existingPost?.status === 'published',
         });
         const nextStatus = resolveNewsPublicationStatus(
           existingPost?.status ?? null,
