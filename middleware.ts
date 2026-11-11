@@ -63,6 +63,6 @@ export const config = {
      * - images - .svg, .png, .jpg, .jpeg, .gif, .webp, .ico
      * - audio/video - .mp3, .wav, .ogg, .mp4, .webm
      */
-    "/((?!api/|experience-media/|auth/deovia/|auth/callback|auth/confirm|auth/continue|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|manifest\\.json|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm|txt)$).*)",
+    "/((?!api/|vendor/|experience-media/|auth/deovia/|auth/callback|auth/confirm|auth/continue|_next/static|_next/image|favicon\\.ico|manifest\\.webmanifest|manifest\\.json|sw\\.js|sitemap\\.xml|robots\\.txt|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|mp3|wav|ogg|mp4|webm|txt)$).*)",
   ],
 };
