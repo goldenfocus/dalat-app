@@ -30,6 +30,13 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
     if (payload.status === "present" && participantStatus(state, id, new Set(["sample-host"])) === "playing") state = seatLateArrival(state, numberPeople(state, session.people).find(person => person.id === id)!, now);
   }
   else if (payload.action === "settings") state = { ...state, tables: payload.tables as Table[], floorPolicy: payload.floorPolicy as FloorPolicy, draft: null };
+  else if (payload.action === "startGame") {
+    const current = state.rounds.at(-1);
+    if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current, now) > 0)) throw new Error("status_conflict");
+    const round = pairRound(eligiblePeople(state, session.people, new Set(["sample-host"])), state.rounds, payload.minutes === undefined ? DEFAULT_ROUND_MINUTES : Number(payload.minutes), now);
+    round.assignments = assignTables(round.groups, state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced");
+    state = { ...state, rounds: [...state.rounds, round], draft: null };
+  }
   else if (payload.action === "draft") {
     const players = eligiblePeople(state, session.people, new Set(["sample-host"]));
     const candidate = pairRound(players, state.rounds, payload.minutes === undefined ? DEFAULT_ROUND_MINUTES : Number(payload.minutes), now);

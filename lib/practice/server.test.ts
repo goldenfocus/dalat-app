@@ -369,3 +369,22 @@ describe("door and staff arrival confirmation", () => {
     expect(state()!.rounds[0].groups.flat().map(person => person.id)).toContain("late");
   });
 });
+
+it("starts the game and persists table assignments in one host mutation", async () => {
+  const started = await mutatePractice(slug, { action: "startGame", expectedRevision: revision() });
+  expect(started.round?.minutes).toBe(20);
+  expect(started.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b"]);
+  expect(started.round?.assignments).toHaveLength(1);
+  expect(started.draft).toBeNull();
+  expect(writes).toBe(1);
+  await expect(mutatePractice(slug, { action: "startGame", expectedRevision: revision() })).rejects.toThrow("status_conflict");
+  expect(state()?.rounds).toHaveLength(1);
+});
+it("restricts one-click game start to staff and the open event window", async () => {
+  actor = { id: "a" }; host = false;
+  await expect(mutatePractice(slug, { action: "startGame", expectedRevision: revision() })).rejects.toThrow("forbidden");
+  actor = { id: "owner" }; host = true;
+  mocked.context.mockResolvedValue({ admin: database(), user: actor, event: { id: "event", isOpen: false }, access: { canManage: true } });
+  await expect(mutatePractice(slug, { action: "startGame", expectedRevision: revision() })).rejects.toThrow("event_not_open_for_arrival");
+  expect(writes).toBe(0);
+});

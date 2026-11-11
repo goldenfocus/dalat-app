@@ -4318,6 +4318,7 @@
     "saveAccountLater": "完全自愿。无论如何，你的签到都会保留。"
   },
   "eventPractice": {
+    "startGame": "开始游戏",
     "title": "一起练习",
     "ready": "{count}人参加",
     "duration": "分钟",

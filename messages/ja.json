@@ -4318,6 +4318,7 @@
     "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
+    "startGame": "ゲーム開始",
     "title": "一緒に練習しよう",
     "ready": "{count}人が参加",
     "duration": "時間（分）",

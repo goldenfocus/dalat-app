@@ -109,21 +109,13 @@ describe("event pairing visibility", () => {
     expect(screen.queryByRole("link", { name: en.eventPractice.openActivity })).toBeNull();
     expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
   });
-  it.each(["before check-in", "hosting"])("lets a host open the activity while %s without starting or changing the round", async status => {
-    const view: PracticeView = { ...anonymous, canStart: true, ...(status === "hosting" ? { me, participation: "hosting" as const } : { round: null }) };
+  it.each(["before check-in", "hosting"])("starts the in-app game while %s without an external link", async status => {
+    const view: PracticeView = { ...anonymous, canStart: true, round: null, ...(status === "hosting" ? { me, participation: "hosting" as const } : {}) };
     fetchView(view);
     render(<EventPractice slug="event slug" />);
-    const link = await screen.findByRole("link", { name: en.eventPractice.openActivity });
-    expect(link).toHaveAttribute("href", "https://ezviet.org/challenges?event=event%20slug&practice=1");
-    expect(link).toHaveAttribute("target", "_blank");
-    expect(link).toHaveAttribute("rel", "noopener noreferrer");
-    expect(screen.getAllByRole("link", { name: en.eventPractice.openActivity })).toHaveLength(1);
-    expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
-  });
-  it("keeps the weekly challenge available to a host after the round ends", async () => {
-    fetchView({ ...anonymous, canStart: true, me, participation: "hosting", round: { ...anonymous.round!, endedAt: now } });
-    render(<EventPractice slug="test" />);
-    expect(await screen.findByRole("link", { name: en.eventPractice.challenge })).toHaveAttribute("href", "https://ezviet.org/challenges?event=test");
+    fireEvent.click(await screen.findByRole("button", { name: en.eventPractice.startGame }));
+    await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([, init]) => init?.body === JSON.stringify({ action: "startGame", minutes: 20, expectedRevision: 1 }))).toBe(true));
+    expect(document.querySelector('a[href*="ezviet.org"]')).toBeNull();
   });
   it("requires host draft review before publishing a round", async () => {
     const host: PracticeView = { ...anonymous, canStart: true, round: null, participants: [{ ...me, participation: "playing", presence: "present" }, { ...partner, participation: "playing", presence: "present" }] };

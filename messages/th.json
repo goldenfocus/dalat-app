@@ -4318,6 +4318,7 @@
     "saveAccountLater": "ไม่บังคับ การเช็กอินของคุณยังอยู่เหมือนเดิม"
   },
   "eventPractice": {
+    "startGame": "เริ่มเกม",
     "title": "ฝึกด้วยกัน",
     "ready": "เล่น {count} คน",
     "duration": "นาที",

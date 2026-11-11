@@ -86,41 +86,76 @@ export function pairRound(people: Person[], previous: Round[], minutes = DEFAULT
   const met = metPairs(previous);
   const count = Math.max(1, Math.round(roster.length / 3.5));
   const targets = Array.from({ length: count }, (_, i) => Math.floor(roster.length / count) + (i < roster.length % count ? 1 : 0));
-  const anchors = roster.filter(speaksVietnamese);
+  const anchors = roster.filter(speaksVietnamese).sort((a, b) => Number(a.speaks.includes("en")) - Number(b.speaks.includes("en")));
   const seeded = anchors.slice(0, count);
   const others = [...anchors.slice(count), ...roster.filter(p => !speaksVietnamese(p))];
+  const foreignMatch = (a: Person, b: Person) =>
+    (a.learns && !["en", "vi"].includes(a.learns) && b.speaks.includes(a.learns) ? 1 : 0) +
+    (b.learns && !["en", "vi"].includes(b.learns) && a.speaks.includes(b.learns) ? 1 : 0);
   const cost = (person: Person, group: Person[]) => group.reduce((sum, member) =>
-    sum + (met.has(pairKey(person.id, member.id)) ? 300 : 0) + (member.learns === person.learns ? 40 : 0), group.length);
+    sum + (met.has(pairKey(person.id, member.id)) ? 30 : 0) + (member.learns === person.learns ? 4 : 0) - foreignMatch(person, member) * 100, group.length);
+  const score = (groups: Person[][]) => groups.reduce((sum, group) => sum +
+    (["vi", "en"].filter(language => !group.some(p => p.speaks.includes(language))).length * 1_000_000) +
+    group.reduce((total, person, i) => total + cost(person, group.slice(i + 1)), 0), 0);
   let best: Person[][] = [], bestCost = Infinity;
   // Deterministic: try each rotation of the remaining roster and keep the cheapest seating.
   for (let offset = 0; offset < Math.max(1, others.length); offset++) {
     const groups: Person[][] = targets.map((_, i) => seeded[i] ? [seeded[i]] : []);
-    let total = 0;
+    // Cover English before filling remaining seats; keep bilingual hosts useful.
+    const assigned = new Set(groups.flat().map(p => p.id));
+    for (const group of groups) {
+      if (group.some(p => p.speaks.includes("en"))) continue;
+      const speaker = others.find(p => !assigned.has(p.id) && p.speaks.includes("en"));
+      if (speaker) { group.push(speaker); assigned.add(speaker.id); }
+    }
     for (const person of [...others.slice(offset), ...others.slice(0, offset)]) {
+      if (assigned.has(person.id)) continue;
       let index = -1, lowest = Infinity;
       for (let i = 0; i < groups.length; i++) {
         if (groups[i].length >= targets[i]) continue;
         const value = cost(person, groups[i]);
         if (value < lowest) { lowest = value; index = i; }
       }
-      total += lowest;
       groups[index].push(person);
     }
+    const total = score(groups);
     if (total < bestCost) { bestCost = total; best = groups; }
+  }
+  // Improve secondary language matches without losing English/Vietnamese coverage.
+  for (let pass = 0; pass < 4; pass++) {
+    let improved = false;
+    for (let a = 0; a < best.length; a++) for (let b = a + 1; b < best.length; b++) {
+      for (let i = 0; i < best[a].length; i++) for (let j = 0; j < best[b].length; j++) {
+        const before = score([best[a], best[b]]);
+        [best[a][i], best[b][j]] = [best[b][j], best[a][i]];
+        if (score([best[a], best[b]]) < before) improved = true;
+        else [best[a][i], best[b][j]] = [best[b][j], best[a][i]];
+      }
+    }
+    if (!improved) break;
   }
   return { number: previous.length + 1, startedAt: now.toISOString(), endsAt: new Date(now.getTime() + minutes * 60_000).toISOString(), minutes, groups: best };
 }
 
-function chooseTable(tables: Table[], used: Map<number, number>, floorUsed: Record<Table["floor"], number>, size: number, total: number, policy: FloorPolicy): Table | undefined {
+function chooseTable(tables: Table[], used: Map<number, number>, floorUsed: Record<Table["floor"], number>, size: number, total: number, policy: FloorPolicy, pullUpChairs = false): Table | undefined {
   const remaining = (t: Table) => t.capacity - (used.get(t.number) || 0);
   const available = tables.filter(t => t.available);
   const rank = (t: Table) => {
     let floor = 0;
     if (policy !== "balanced") floor = t.floor === policy ? 0 : 1000;
-    else if (total <= 10) floor = t.floor === "downstairs" ? 0 : 1000;
-    else floor = floorUsed[t.floor] * 100;
+    else {
+      const seated = floorUsed.upstairs + floorUsed.downstairs + size;
+      const upstairs = floorUsed.upstairs + (t.floor === "upstairs" ? size : 0);
+      floor = Math.abs(upstairs - seated * 0.6) * 100;
+    }
     return (t.bar ? 100_000 : 0) + floor + t.capacity * 2 + (used.get(t.number) || 0) * 3;
   };
+  if (pullUpChairs && policy !== "balanced") {
+    // The existing soft seating rule permits two pulled-up chairs at an unused table.
+    const preferred = available.filter(t => t.floor === policy && !used.has(t.number) && t.capacity + 2 >= size)
+      .sort((a, b) => Number(!!a.bar) - Number(!!b.bar) || Math.max(0, size - a.capacity) - Math.max(0, size - b.capacity) || a.capacity - b.capacity || a.number - b.number);
+    if (preferred[0]) return preferred[0];
+  }
   const fits = available.filter(t => remaining(t) >= size).sort((a, b) => rank(a) - rank(b) || a.number - b.number);
   if (fits[0]) return fits[0];
   // Never stop the game for seats: people pull up a chair at the roomiest open table.
@@ -133,10 +168,17 @@ export function assignTables(groups: Person[][], tables: Table[], policy: FloorP
   const assignments: TableAssignment[] = [];
   const total = groups.reduce((sum, group) => sum + group.length, 0);
   const floorUsed = { downstairs: 0, upstairs: 0 };
+  // Pick whole groups closest to 60% upstairs, rather than rounding each group.
+  const choices = new Map<number, number[]>([[0, []]]);
+  for (let i = 0; i < groups.length; i++) for (const [sum, indices] of [...choices]) {
+    const next = sum + groups[i].length;
+    if (!choices.has(next)) choices.set(next, [...indices, i]);
+  }
+  const upstairs = new Set([...choices].sort((a, b) => Math.abs(a[0] - total * 0.6) - Math.abs(b[0] - total * 0.6) || b[0] - a[0])[0][1]);
   // Seat larger groups first so smaller ones cannot fragment the remaining capacity.
   const ordered = groups.map((group, groupIndex) => ({ group, groupIndex })).sort((a, b) => b.group.length - a.group.length);
   for (const { group, groupIndex } of ordered) {
-    const table = chooseTable(tables, used, floorUsed, group.length, total, policy);
+    const table = chooseTable(tables, used, floorUsed, group.length, total, policy === "balanced" ? upstairs.has(groupIndex) ? "upstairs" : "downstairs" : policy, policy === "balanced");
     if (!table) throw new Error("invalid_table_capacity");
     used.set(table.number, (used.get(table.number) || 0) + group.length);
     floorUsed[table.floor] += group.length;

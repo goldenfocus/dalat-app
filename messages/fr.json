@@ -4318,6 +4318,7 @@
     "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
+    "startGame": "Démarrer le jeu",
     "title": "Pratiquons ensemble",
     "ready": "En jeu : {count}",
     "duration": "Minutes",

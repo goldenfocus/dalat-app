@@ -188,12 +188,11 @@ describe("physical tables", () => {
     for (const a of assigned) used.set(a.tableNumber, (used.get(a.tableNumber) || 0) + groups[a.groupIndex].length);
     return used;
   };
-  it("keeps a ten-person gathering downstairs at tables that fit each group", () => {
+  it("seats ten people 60% upstairs and 40% downstairs", () => {
     const groups = pairRound(roster(10), [], 12).groups;
     const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
     expect(assigned).toHaveLength(3);
-    expect(assigned.every(a => a.floor === "downstairs")).toBe(true);
-    expect(assigned[0].tableNumber).toBe(1);
+    expect(assigned.filter(a => a.floor === "upstairs").reduce((sum, a) => sum + groups[a.groupIndex].length, 0)).toBe(6);
     expect(assigned.some(a => a.tableNumber === 5)).toBe(false);
     for (const [number, seats] of seatsUsed(groups, assigned)) expect(seats).toBeLessThanOrEqual(DEFAULT_TABLES.find(t => t.number === number)!.capacity);
   });
@@ -321,4 +320,33 @@ describe("host draft edits", () => {
     expect(swapDraftParticipants(crowded, ids[0], ids[1], "new-draft", DEFAULT_TABLES).assignments).toEqual(crowded.assignments);
     expect(() => swapDraftParticipants({ ...draft, assignments: draft.assignments.slice(1) }, ids[0], ids[1], "new-draft", DEFAULT_TABLES)).toThrow("invalid_table_capacity");
   });
+});
+
+it("spreads scarce English speakers and keeps both languages at every possible table", () => {
+  const locals = Array.from({ length: 10 }, (_, i) => ({ id: `v${i}`, name: `Local ${i}`, speaks: ["vi"], learns: "en" }));
+  const visitors = Array.from({ length: 4 }, (_, i) => ({ id: `e${i}`, name: `Visitor ${i}`, speaks: ["en"], learns: "vi" }));
+  for (const group of pairRound([...locals, ...visitors], []).groups) {
+    expect(group.some(p => p.speaks.includes("vi"))).toBe(true);
+    expect(group.some(p => p.speaks.includes("en"))).toBe(true);
+  }
+});
+it("prioritizes another matching learning language ahead of avoiding repeat partners", () => {
+  const roster: Person[] = [
+    { id: "vf", name: "Vietnamese French learner", speaks: ["vi"], learns: "fr" },
+    { id: "vd", name: "Vietnamese German learner", speaks: ["vi"], learns: "de" },
+    { id: "ef", name: "French speaker", speaks: ["en", "fr"], learns: "vi" },
+    { id: "ed", name: "German speaker", speaks: ["en", "de"], learns: "vi" },
+    { id: "x", name: "X", speaks: ["vi"], learns: "en" },
+    { id: "y", name: "Y", speaks: ["vi"], learns: "en" },
+  ];
+  const prior: Round = { number: 1, startedAt: "2026-11-11T10:00:00Z", minutes: 20, groups: [[roster[0], roster[2]], [roster[1], roster[3]]] };
+  const round = pairRound(roster, [prior]);
+  expect(round.groups.find(g => g.some(p => p.id === "vf"))?.some(p => p.id === "ef")).toBe(true);
+  expect(round.groups.find(g => g.some(p => p.id === "vd"))?.some(p => p.id === "ed")).toBe(true);
+});
+it("targets sixty percent upstairs for twenty players and honors closed floors", () => {
+  const groups = pairRound(roster(20), []).groups;
+  const assignments = assignTables(groups, DEFAULT_TABLES, "balanced");
+  expect(assignments.filter(a => a.floor === "upstairs").reduce((n, a) => n + groups[a.groupIndex].length, 0)).toBe(12);
+  expect(assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.floor === "downstairs" })), "balanced").every(a => a.floor === "downstairs")).toBe(true);
 });

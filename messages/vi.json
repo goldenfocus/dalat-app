@@ -4318,6 +4318,7 @@
     "saveAccountLater": "Không bắt buộc đâu. Lượt check-in của bạn vẫn được giữ nguyên."
   },
   "eventPractice": {
+    "startGame": "Bắt đầu trò chơi",
     "title": "Cùng luyện tập",
     "ready": "{count} người chơi",
     "duration": "Phút",

@@ -4318,6 +4318,7 @@
     "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
+    "startGame": "Mulai permainan",
     "title": "Berlatih bersama",
     "ready": "{count} orang bermain",
     "duration": "Menit",

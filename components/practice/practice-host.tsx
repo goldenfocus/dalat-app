@@ -27,6 +27,7 @@ export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }
   const showRollCall = Boolean(view.participants && (needsRollCall || tool === "presence"));
   const rollCallHeading = <><span>{t("rollCall")}</span><span className="text-xs font-normal text-muted-foreground">{t("rollCallProgress", { checked: players.length - pending, total: players.length })}</span></>;
   return <div className="space-y-4">
+    {(!activeRound || remaining === 0 && !view.round?.pausedAt) && !draft && <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "startGame", minutes })}>{t("startGame")}</Button>}
     <div className="flex items-center justify-between gap-3">
       <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground" role="status"><Users aria-hidden className="h-4 w-4" />{t("ready", { count: view.count })}{!activeRound && <span className="text-xs">· {t("minutesShort", { count: draft?.minutes ?? minutes })}</span>}</p>
       {view.me && <PracticeParticipation view={view} busy={busy} act={act} />}
@@ -44,7 +45,7 @@ export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }
       {needsRollCall ? <h3 className="flex min-h-11 items-center justify-between gap-2 text-sm font-semibold">{rollCallHeading}</h3> : <button type="button" className="flex min-h-11 w-full items-center justify-between gap-2 text-left text-sm font-semibold" aria-expanded={showRollCall} onClick={() => setTool(showRollCall ? null : "presence")}>{rollCallHeading}</button>}
       {showRollCall && <PracticeRollCall participants={players} busy={busy} act={act} />}
     </div>}
-    {draft ? <PracticeDraft key={draft.id} draft={draft} busy={busy} locked={Boolean(draftPending || activeRound && (remaining > 0 || view.round?.pausedAt))} act={act} redraft={() => void act({ action: "draft", minutes })} /> : <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "draft", minutes })}>{t(view.round ? "draftNext" : "draft")}</Button>}
+    {draft ? <PracticeDraft key={draft.id} draft={draft} busy={busy} locked={Boolean(draftPending || activeRound && (remaining > 0 || view.round?.pausedAt))} act={act} redraft={() => void act({ action: "draft", minutes })} /> : <Button variant="outline" className="min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "draft", minutes })}>{t(view.round ? "draftNext" : "draft")}</Button>}
     {view.count < 2 ? <p className="text-sm text-muted-foreground">{t("needTwo")}</p> : !draft && pending > 0 && <p className="text-sm text-muted-foreground">{t("presenceHint")}</p>}
     <div className="flex items-center gap-1 border-t border-border/60 pt-1">
       <Button variant="ghost" size="icon" className="h-11 w-11" aria-label={t("settings")} title={t("settings")} aria-expanded={tool === "settings"} onClick={() => setTool(tool === "settings" ? null : "settings")}><Settings2 aria-hidden className="h-4 w-4" /></Button>

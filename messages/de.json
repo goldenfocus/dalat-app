@@ -4318,6 +4318,7 @@
     "saveAccountLater": "Völlig freiwillig. Dein Check-in bleibt so oder so."
   },
   "eventPractice": {
+    "startGame": "Spiel starten",
     "title": "Gemeinsam üben",
     "ready": "{count} spielen mit",
     "duration": "Minuten",

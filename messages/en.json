@@ -4318,6 +4318,7 @@
     "saveAccountLater": "Totally optional. Your check-in stays either way."
   },
   "eventPractice": {
+    "startGame": "Start Game",
     "title": "Practice together",
     "ready": "{count} playing",
     "duration": "Minutes",

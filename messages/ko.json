@@ -4318,6 +4318,7 @@
     "saveAccountLater": "선택 사항이에요. 어느 쪽이든 체크인은 그대로 유지돼요."
   },
   "eventPractice": {
+    "startGame": "게임 시작",
     "title": "함께 연습해요",
     "ready": "{count}명 참여",
     "duration": "분",

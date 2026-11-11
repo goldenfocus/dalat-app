@@ -71,3 +71,11 @@ it("uses twenty-minute defaults and accepts only a bounded host draft-swap paylo
   expect((await POST(request({ ...swap, withParticipantId: "" }), context)).status).toBe(400);
   expect((await POST(request({ ...swap, groups: [] }), context)).status).toBe(400);
 });
+
+it("accepts a bounded one-click game start and rejects cross-site starts", async () => {
+  mocks.mutate.mockResolvedValue({ revision: 1 });
+  expect((await POST(request({ action: "startGame", expectedRevision: 0 }), context)).status).toBe(200);
+  expect(mocks.mutate).toHaveBeenLastCalledWith("language-exchange-social-house-z8oc-20261028", { action: "startGame", expectedRevision: 0, minutes: 20 });
+  expect((await POST(request({ action: "startGame", expectedRevision: 0, minutes: 31 }), context)).status).toBe(400);
+  expect((await POST(request({ action: "startGame", expectedRevision: 0 }, "https://other.example"), context)).status).toBe(403);
+});

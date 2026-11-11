@@ -10,6 +10,7 @@ export type PracticeMutation =
   | { action: "participation"; expectedRevision: number; status: Participation; participantId?: string }
   | { action: "presence"; expectedRevision: number; status: "present" | "absent"; participantId: string }
   | { action: "settings"; expectedRevision: number; tables: Table[]; floorPolicy: FloorPolicy }
+  | { action: "startGame"; expectedRevision: number; minutes?: number }
   | { action: "draft"; expectedRevision: number; minutes?: number }
   | { action: "swap"; expectedRevision: number; draftId: string; participantId: string; withParticipantId: string }
   | { action: "start"; expectedRevision: number; draftId: string }
@@ -171,6 +172,14 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
     if (mutation.status === "present" && participantStatus(state, person.id, c.staffIds) === "playing") state = seatLateArrival(state, person);
   } else if (mutation.action === "settings") {
     state = { ...state, tables: mutation.tables, floorPolicy: mutation.floorPolicy, draft: null };
+  } else if (mutation.action === "startGame") {
+    if (!c.event.isOpen) throw new Error("event_not_open_for_arrival");
+    const current = state.rounds.at(-1);
+    if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current) > 0)) throw new Error("status_conflict");
+    const players = eligiblePeople(state, c.people, c.staffIds);
+    const round = pairRound(players, state.rounds, mutation.minutes ?? DEFAULT_ROUND_MINUTES);
+    round.assignments = assignTables(round.groups, state.tables || DEFAULT_TABLES, state.floorPolicy || "balanced");
+    state = { ...state, rounds: [...state.rounds, round], draft: null };
   } else if (mutation.action === "draft") {
     const players = eligiblePeople(state, c.people, c.staffIds);
     const tables = state.tables || DEFAULT_TABLES;

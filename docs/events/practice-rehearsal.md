@@ -25,11 +25,16 @@ changing sample attendance, or refreshing clears the sample event. Switching Hos
 Attendee preserves it. Nothing persists across tabs or refreshes. Language navigation also starts a new
 sample session. In a real event the server retains published rounds.
 
-Attendees see names/avatars, physical table/floor, countdown and one activity action.
-Hosts also see the same activity action before and during rounds, including while
-hosting or before checking themselves in. It opens EZViệt in a separate tab so the
-host can keep the event controls open. Opening the activity does not start a round
-or change pairings; only the reviewed-draft start action does that.
+Attendees see names/avatars, their physical table/floor, countdown and bilingual
+conversation cards inside DaLat. Hosts use **Start Game** to seat confirmed players
+and start a 20-minute round in one action, with no EZViet navigation. Optional draft
+review and swaps remain available before starting a reviewed round.
+Pairing first spreads Vietnamese and English speakers to cover every table when
+the roster allows it, then prioritizes other matching learning languages over
+avoiding repeat partners. Missing speakers are never inferred from nationality.
+Balanced seating targets 60% of players upstairs and 40% downstairs using whole
+groups; closed tables/floors still apply. Small tables may use up to two pulled-up
+chairs, consistent with the existing soft seating behavior.
 Visible group numbers and the participation form are removed. A compact status
 button offers Playing or sitting out. Joining during a live round explicitly says
 Play next round and never changes that round. A host sees icon controls for

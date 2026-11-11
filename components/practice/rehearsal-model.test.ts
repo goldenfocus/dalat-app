@@ -33,7 +33,7 @@ describe("isolated host rehearsal", () => {
     expect(drafted.state.rounds).toHaveLength(0);
     expect(drafted.state.draft?.groups.flat()).toHaveLength(10);
     expect(drafted.state.draft?.groups.flat().some(p => ["sample-host", "sample-visitor"].includes(p.id))).toBe(false);
-    expect(drafted.state.draft?.assignments.every(a => a.floor === "downstairs")).toBe(true);
+    expect(drafted.state.draft?.assignments.filter(a => a.floor === "upstairs")).toHaveLength(2);
   });
   it("uses the real blocked-table allocator and runs two published sample rounds", () => {
     let session = confirmedRehearsal(34);
