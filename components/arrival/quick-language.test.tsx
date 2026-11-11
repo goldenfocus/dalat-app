@@ -108,7 +108,7 @@ describe("one-screen guest check-in", () => {
 
   it("confirms presence once when an existing receipt is opened through the door QR", async () => {
     window.history.replaceState(null, "", "/events/exchange/arrive?door=abc123");
-    const fetcher = vi.fn(async (url: string) => String(url).endsWith("/arrival/door") ? Promise.reject(new Error("offline")) : json({ ...context, receipt }));
+    const fetcher = vi.fn(async (url: string, _init?: RequestInit) => String(url).endsWith("/arrival/door") ? Promise.reject(new Error("offline")) : json({ ...context, receipt }));
     vi.stubGlobal("fetch", fetcher);
     render(<GuestArrival slug="exchange" />);
     expect(await screen.findByText("welcomeName Lan")).toBeInTheDocument();
@@ -119,7 +119,7 @@ describe("one-screen guest check-in", () => {
   });
 
   it("does not confirm presence for an existing receipt without the door key", async () => {
-    const fetcher = vi.fn(async () => json({ ...context, receipt }));
+    const fetcher = vi.fn(async (_url: string, _init?: RequestInit) => json({ ...context, receipt }));
     vi.stubGlobal("fetch", fetcher);
     render(<GuestArrival slug="exchange" />);
     await screen.findByText("welcomeName Lan");
