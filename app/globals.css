@@ -593,13 +593,9 @@ img {
   content-visibility: auto;
 }
 
-/* Reduce animation jank with GPU acceleration for common transitions */
-.transition-transform,
-.transition-all,
-.animate-pulse,
-.animate-spin {
-  will-change: transform;
-}
+/* No blanket `will-change` on transition/animation utilities: it pins a
+ * compositor layer per element forever. Browsers already promote an element
+ * for as long as its transform/opacity animation runs. */
 
 /* Optimize font rendering */
 body {
