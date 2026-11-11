@@ -2621,6 +2621,7 @@
     "cancel": "취소",
     "refreshPage": "페이지 새로고침",
     "mapNotAvailable": "지도를 사용할 수 없습니다. Google Maps API 키가 구성되지 않았습니다.",
+    "mapLoadFailed": "지금은 지도를 불러올 수 없습니다. 페이지를 새로고침해 다시 시도해 주세요.",
     "legend": "범례",
     "happeningNow": "진행 중",
     "upcoming": "예정",

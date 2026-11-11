@@ -2633,6 +2633,7 @@
     "cancel": "Hủy",
     "refreshPage": "Tải lại trang",
     "mapNotAvailable": "Không thể hiển thị bản đồ. Chưa cấu hình khóa API Google Maps.",
+    "mapLoadFailed": "Bản đồ chưa tải được lúc này. Hãy tải lại trang để thử lại.",
     "legend": "Chú giải",
     "happeningNow": "Đang diễn ra",
     "upcoming": "Sắp tới",

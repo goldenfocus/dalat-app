@@ -2680,6 +2680,7 @@
     "cancel": "Batal",
     "refreshPage": "Muat ulang halaman",
     "mapNotAvailable": "Peta tidak tersedia. Kunci API Google Maps tidak dikonfigurasi.",
+    "mapLoadFailed": "Peta tidak dapat dimuat saat ini. Muat ulang halaman untuk mencoba lagi.",
     "legend": "Legenda",
     "happeningNow": "Sedang berlangsung",
     "upcoming": "Akan datang",
