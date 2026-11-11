@@ -3,7 +3,8 @@ import { ImageResponse } from "next/og";
 import { createStaticClient } from "@/lib/supabase/server";
 import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 
-export const runtime = "edge";
+// Menu/UI catalogs can exceed the Edge bundle limit; render share images on Node.
+export const runtime = "nodejs";
 export const alt = "Playlist on ĐàLạt.app";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";

@@ -262,3 +262,7 @@ beverage-section configuration must be replaced as an explicit operational step.
 Do not substitute unrelated menu items or zero prices to make sponsor accounting
 appear complete. Special quota promotions beyond the existing RSVP limit remain
 future work.
+
+The preview/release also runs playlist share-image generation in the Node runtime:
+its translated dependencies exceed Vercel's Edge function size limit. This changes
+where the same image is rendered, not its content or access policy.
