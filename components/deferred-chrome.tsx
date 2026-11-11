@@ -78,11 +78,6 @@ export const DeferredIosViewportAnchor = dynamic(
   { ssr: false }
 );
 
-export const DeferredPreviewChannel = dynamic(
-  () => import("@/components/preview-channel").then((m) => m.PreviewChannel),
-  { ssr: false }
-);
-
 export const DeferredGodModeIndicator = dynamic(
   () =>
     import("@/components/god-mode-indicator").then(

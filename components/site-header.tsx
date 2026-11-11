@@ -3,7 +3,6 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { CreateEventLink } from "@/components/auth/create-event-link";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ContentNav } from "@/components/navigation/content-nav";
 import {
   DeferredHeaderSearch,
@@ -37,11 +36,8 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             ĐàLạt.app
           </Link>
           <div className="flex items-center gap-0 min-[360px]:gap-1">
+            {/* Theme choice lives in Settings */}
             <DeferredLocalePicker />
-            {/* Fog Hour preview: theme choice lives in Settings only */}
-            <span data-fog-hide className="contents">
-              <ThemeToggle />
-            </span>
           </div>
         </div>
         <div className="flex items-center gap-0 min-[360px]:gap-1">

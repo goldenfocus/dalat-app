@@ -1,6 +1,5 @@
 import { defineRouting } from 'next-intl/routing';
 import { createNavigation } from 'next-intl/navigation';
-import { stripChannel } from '../preview-channel';
 
 // The Global Twelve - all supported locales with full UI translations
 // All 12 locale files in messages/*.json have complete translations
@@ -23,14 +22,4 @@ export const routing = defineRouting({
 
 const navigation = createNavigation(routing);
 
-export const { Link, redirect, useRouter, getPathname } = navigation;
-
-/**
- * Pathname without the locale prefix, and without a preview channel prefix
- * (/v3/moments reads as /moments), so active-state checks hold in a preview.
- */
-export function usePathname(): ReturnType<typeof navigation.usePathname> {
-  return stripChannel(navigation.usePathname()) as ReturnType<
-    typeof navigation.usePathname
-  >;
-}
+export const { Link, redirect, usePathname, useRouter, getPathname } = navigation;
