@@ -638,6 +638,67 @@ html.fog [data-fog-hide] {
   display: none;
 }
 
+/* --- Shared controls, so every page reads as Fog Hour, not only /v3 --- */
+
+/* Tabs and view switches read as a timetable board */
+html.fog [role="tablist"] {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  background: transparent;
+  border: 1px solid hsl(var(--foreground));
+  border-radius: var(--radius);
+}
+html.fog [role="tablist"] > [role="tab"] {
+  align-self: stretch;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+html.fog [role="tablist"] > [role="tab"] + [role="tab"] {
+  border-left: 1px solid hsl(var(--border));
+}
+html.fog [role="tablist"] > [role="tab"][aria-selected="true"] {
+  background: hsl(var(--foreground));
+  color: hsl(var(--background));
+}
+
+/* Section navigation under the header: ruled timetable tabs */
+html.fog [data-fog-sections] a {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+html.fog [data-fog-sections] a[aria-current="page"] {
+  border-color: hsl(var(--foreground));
+}
+
+/* The one primary action on an event: dã quỳ yellow with a lamp glow */
+html.fog .event-join-action {
+  background: hsl(var(--sun));
+  color: hsl(var(--sun-foreground));
+  box-shadow: var(--fog-glow);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+html.fog .event-join-action:hover {
+  background: hsl(var(--sun) / 0.92);
+}
+
+/* Small chips and filters read as timetable labels */
+html.fog .rounded-pill:is(.text-xs, .text-sm, [class*="text-[1"]) {
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 @layer components {
   /* Small caps label: timetable headers, chips, tabs */
   .fog-cap {

@@ -25,6 +25,7 @@ import {
   DeferredMiniPlayer,
   DeferredNotificationPrompt,
   DeferredPerformanceMonitor,
+  DeferredPreviewChannel,
   DeferredSwUpdateHandler,
   DeferredUploadFAB,
   DeferredUploadTray,
@@ -137,6 +138,7 @@ export default async function LocaleLayout({ children, params }: Props) {
             <AudioSession />
             <div lang={locale} className="min-h-screen flex flex-col">
               <DeferredPerformanceMonitor />
+              <DeferredPreviewChannel />
               <DeferredHeartbeat />
               <DeferredBadgeClearer />
               <DeferredNotificationPrompt />
