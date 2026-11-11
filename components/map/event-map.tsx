@@ -195,9 +195,31 @@ const TILE_ZOOM_OFFSET = 1;
 const WORLD_BBOX: [number, number, number, number] = [-180, -85, 180, 85];
 
 type MapLibre = typeof import("maplibre-gl");
-// The package is CommonJS: depending on the bundler the API is the module or its default
-const mapLibreApi = (module: MapLibre): MapLibre =>
-  (module as MapLibre & { default?: MapLibre }).default ?? module;
+
+// MapLibre builds its web worker from its own source text, so it has to run
+// exactly as published: bundled and re-minified by the app build, the worker
+// dies with "b is not defined". The published file is served from /public
+// (same version as the package, which supplies the types and the stylesheet).
+const MAPLIBRE_SRC = "/vendor/maplibre-gl-5.24.0.js";
+let mapLibreLoading: Promise<MapLibre> | null = null;
+
+function loadMapLibre(): Promise<MapLibre> {
+  const scope = window as Window & { maplibregl?: MapLibre };
+  if (scope.maplibregl) return Promise.resolve(scope.maplibregl);
+  mapLibreLoading ??= new Promise<MapLibre>((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = MAPLIBRE_SRC;
+    script.async = true;
+    script.onload = () =>
+      scope.maplibregl ? resolve(scope.maplibregl) : reject(new Error("maplibre-gl did not load"));
+    script.onerror = () => {
+      mapLibreLoading = null;
+      reject(new Error("maplibre-gl failed to load"));
+    };
+    document.head.appendChild(script);
+  });
+  return mapLibreLoading;
+}
 
 /**
  * MapLibre positions a marker by writing `transform` on the marker element, so
@@ -369,10 +391,9 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
       if (!mapInitializedRef.current) fail("timed out");
     }, 15000);
 
-    import("maplibre-gl")
-      .then((module) => {
+    loadMapLibre()
+      .then((maplibregl) => {
         if (cancelled) return;
-        const maplibregl = mapLibreApi(module);
         const created = new maplibregl.Map({
           container,
           style: MAP_STYLE_URLS[styleThemeRef.current],
