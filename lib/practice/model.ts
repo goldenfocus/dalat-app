@@ -90,6 +90,7 @@ export function pairRound(people: Person[], previous: Round[], minutes = DEFAULT
   const seeded = anchors.slice(0, count);
   const others = [...anchors.slice(count), ...roster.filter(p => !speaksVietnamese(p))];
   const foreignMatch = (a: Person, b: Person) =>
+    a.speaks.filter(language => !["en", "vi"].includes(language) && b.speaks.includes(language)).length +
     (a.learns && !["en", "vi"].includes(a.learns) && b.speaks.includes(a.learns) ? 1 : 0) +
     (b.learns && !["en", "vi"].includes(b.learns) && a.speaks.includes(b.learns) ? 1 : 0);
   const cost = (person: Person, group: Person[]) => group.reduce((sum, member) =>

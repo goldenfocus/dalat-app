@@ -27,7 +27,7 @@ export function PracticeHost({ view, busy, act, remaining, changeoverRemaining }
   const showRollCall = Boolean(view.participants && (needsRollCall || tool === "presence"));
   const rollCallHeading = <><span>{t("rollCall")}</span><span className="text-xs font-normal text-muted-foreground">{t("rollCallProgress", { checked: players.length - pending, total: players.length })}</span></>;
   return <div className="space-y-4">
-    {(!activeRound || remaining === 0 && !view.round?.pausedAt) && !draft && <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "startGame", minutes })}>{t("startGame")}</Button>}
+    {(!activeRound || remaining === 0 && !view.round?.pausedAt) && !draft && <Button className="practice-primary min-h-12 w-full" disabled={busy || view.count < 2} onClick={() => void act({ action: "startGame", minutes }).then(() => setTool("groups"))}>{t("startGame")}</Button>}
     <div className="flex items-center justify-between gap-3">
       <p className="flex items-center gap-2 text-sm font-medium text-muted-foreground" role="status"><Users aria-hidden className="h-4 w-4" />{t("ready", { count: view.count })}{!activeRound && <span className="text-xs">· {t("minutesShort", { count: draft?.minutes ?? minutes })}</span>}</p>
       {view.me && <PracticeParticipation view={view} busy={busy} act={act} />}

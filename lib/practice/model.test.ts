@@ -350,3 +350,21 @@ it("targets sixty percent upstairs for twenty players and honors closed floors",
   expect(assignments.filter(a => a.floor === "upstairs").reduce((n, a) => n + groups[a.groupIndex].length, 0)).toBe(12);
   expect(assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.floor === "downstairs" })), "balanced").every(a => a.floor === "downstairs")).toBe(true);
 });
+
+it("keeps other shared spoken languages together without losing Vietnamese/English coverage", () => {
+  const roster: Person[] = [
+    { id: "vf", name: "VF", speaks: ["vi", "fr"], learns: "en" },
+    { id: "vd", name: "VD", speaks: ["vi", "de"], learns: "en" },
+    { id: "ed", name: "ED", speaks: ["en", "de"], learns: "vi" },
+    { id: "ef", name: "EF", speaks: ["en", "fr"], learns: "vi" },
+    { id: "v", name: "V", speaks: ["vi"], learns: "en" },
+    { id: "e", name: "E", speaks: ["en"], learns: "vi" },
+  ];
+  const groups = pairRound(roster, []).groups;
+  expect(groups.find(g => g.some(p => p.id === "vf"))?.some(p => p.id === "ef")).toBe(true);
+  expect(groups.find(g => g.some(p => p.id === "vd"))?.some(p => p.id === "ed")).toBe(true);
+  for (const group of groups) {
+    expect(group.some(p => p.speaks.includes("vi"))).toBe(true);
+    expect(group.some(p => p.speaks.includes("en"))).toBe(true);
+  }
+});
