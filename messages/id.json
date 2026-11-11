@@ -4291,7 +4291,20 @@
     "hostSearching": "Mencari akun…",
     "hostSearchFailed": "Pencarian gagal. Ubah kata pencarian dan coba lagi.",
     "hostNoAccounts": "Akun tidak ditemukan. Masukkan alamat email lengkap tamu atau tambahkan tamu yang datang tanpa mendaftar terlebih dahulu.",
-    "hostEventFull": "Acara ini sudah penuh."
+    "hostEventFull": "Acara ini sudah penuh.",
+    "hostDoorHint": "Tunjukkan QR ini di pintu masuk. Memindainya mengonfirmasi tamu sudah hadir dan memberinya meja. Jangan bagikan tautan ini secara online.",
+    "quickSpeak": "Saya berbicara",
+    "quickOther": "Lainnya",
+    "saveAccountTitle": "Mau diresmikan?",
+    "saveAccountPitch": "Kamu sudah check-in. Sepuluh detik sekarang, lain kali tidak perlu isi nama lagi.",
+    "saveAccountSpot": "Simpan check-in malam ini dan mejamu di akunmu",
+    "saveAccountPhotos": "Dapatkan foto setelah acara",
+    "saveAccountDrink": "RSVP sekali ketuk lain kali (begitulah cara dapat minuman gratis)",
+    "saveAccountGoogle": "Lanjutkan dengan Google",
+    "saveAccountConnecting": "Menghubungkan…",
+    "saveAccountEmail": "Pakai email saja",
+    "saveAccountError": "Google tidak terbuka. Coba lagi atau pakai email.",
+    "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
     "title": "Berlatih bersama",
@@ -4406,7 +4419,15 @@
     "absent": "Tidak hadir",
     "presenceWaiting": "Tuan rumah akan mengonfirmasi kehadiran Anda",
     "absentShort": "Ditandai sebagai tidak hadir — beri tahu tuan rumah saat Anda tiba",
-    "presenceHint": "Anda dapat memulai dengan pemain yang ditandai hadir. Pemain yang kehadirannya belum dikonfirmasi tidak ikut ronde ini."
+    "presenceHint": "Anda dapat memulai dengan pemain yang ditandai hadir. Pemain yang kehadirannya belum dikonfirmasi tidak ikut ronde ini.",
+    "cardsTitle": "Kartu meja",
+    "cardsHint": "Baca kartu ini dengan lantang bersama, lalu saling bantu soal pelafalan dan arti.",
+    "cardsCounter": "Kartu {current} dari {total}",
+    "cardsLevel": "Level {level}",
+    "cardsPrevious": "Kartu sebelumnya",
+    "cardsNext": "Kartu berikutnya",
+    "cardsEasier": "Lebih mudah",
+    "cardsHarder": "Lebih sulit"
   },
   "eventFollowupEmail": {
     "subject": "Terima kasih sudah ikut {eventTitle}",

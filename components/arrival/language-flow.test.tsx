@@ -16,7 +16,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("compact language exchange flow", () => {
   it("reuses the account name and saved levels at check-in without a questionnaire", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({ participant: { id: "12345678", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
+    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({ participant: { id: "12345678", user_id: "user-chico", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
     vi.stubGlobal("fetch", fetcher);
     wrap(<GuestArrival slug="social-house" />);
     const checkIn = await screen.findByRole("button", { name: "Check in" });

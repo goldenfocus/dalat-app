@@ -4291,7 +4291,20 @@
     "hostSearching": "Đang tìm tài khoản…",
     "hostSearchFailed": "Tìm kiếm không thành công. Hãy thay đổi nội dung tìm kiếm rồi thử lại.",
     "hostNoAccounts": "Không tìm thấy tài khoản. Hãy nhập địa chỉ email đầy đủ của khách hoặc thêm khách chưa đăng ký.",
-    "hostEventFull": "Sự kiện đã đủ người."
+    "hostEventFull": "Sự kiện đã đủ người.",
+    "hostDoorHint": "Đưa mã QR này cho khách tại cửa. Khi quét, khách được xác nhận đã có mặt và được xếp bàn. Đừng đăng đường dẫn này lên mạng.",
+    "quickSpeak": "Tôi nói",
+    "quickOther": "Khác",
+    "saveAccountTitle": "Lưu lại cho chắc nhé?",
+    "saveAccountPitch": "Bạn đã check-in xong rồi. Thêm mười giây thôi, lần sau khỏi phải nhập lại tên.",
+    "saveAccountSpot": "Giữ lượt check-in và bàn tối nay trong tài khoản của bạn",
+    "saveAccountPhotos": "Nhận ảnh sau sự kiện",
+    "saveAccountDrink": "Lần sau đăng ký tham gia chỉ với một chạm (đồ uống miễn phí được nhận theo cách đó)",
+    "saveAccountGoogle": "Tiếp tục với Google",
+    "saveAccountConnecting": "Đang kết nối…",
+    "saveAccountEmail": "Dùng email",
+    "saveAccountError": "Không mở được Google. Hãy thử lại hoặc dùng email.",
+    "saveAccountLater": "Không bắt buộc đâu. Lượt check-in của bạn vẫn được giữ nguyên."
   },
   "eventPractice": {
     "title": "Cùng luyện tập",
@@ -4406,7 +4419,15 @@
     "absent": "Vắng mặt",
     "presenceWaiting": "Người tổ chức sẽ xác nhận bạn có mặt",
     "absentShort": "Đã được đánh dấu vắng mặt — hãy báo với người tổ chức khi bạn đến",
-    "presenceHint": "Bạn có thể bắt đầu với những người chơi được đánh dấu là có mặt. Người chơi chưa được xác nhận có mặt sẽ không tham gia vòng này."
+    "presenceHint": "Bạn có thể bắt đầu với những người chơi được đánh dấu là có mặt. Người chơi chưa được xác nhận có mặt sẽ không tham gia vòng này.",
+    "cardsTitle": "Thẻ luyện nói",
+    "cardsHint": "Cùng đọc to thẻ này, rồi giúp nhau phát âm và hiểu nghĩa.",
+    "cardsCounter": "Thẻ {current}/{total}",
+    "cardsLevel": "Cấp độ {level}",
+    "cardsPrevious": "Thẻ trước",
+    "cardsNext": "Thẻ tiếp theo",
+    "cardsEasier": "Dễ hơn",
+    "cardsHarder": "Khó hơn"
   },
   "eventFollowupEmail": {
     "subject": "Cảm ơn bạn đã tham gia {eventTitle}",

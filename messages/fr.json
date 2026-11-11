@@ -4291,7 +4291,20 @@
     "hostSearching": "Recherche de comptes…",
     "hostSearchFailed": "Échec de la recherche. Modifiez votre saisie pour réessayer.",
     "hostNoAccounts": "Aucun compte trouvé. Saisissez l’adresse e-mail complète de la personne ou ajoutez une personne non inscrite.",
-    "hostEventFull": "Cet événement est complet."
+    "hostEventFull": "Cet événement est complet.",
+    "hostDoorHint": "Montrez ce QR code à l'entrée. Le scanner confirme que la personne est sur place et lui attribue une table. Ne publiez pas ce lien en ligne.",
+    "quickSpeak": "Je parle",
+    "quickOther": "Autre",
+    "saveAccountTitle": "On officialise ?",
+    "saveAccountPitch": "Votre arrivée est déjà enregistrée. Dix secondes maintenant, et plus besoin de redonner votre nom la prochaine fois.",
+    "saveAccountSpot": "Gardez l'arrivée de ce soir et votre table dans votre compte",
+    "saveAccountPhotos": "Recevez les photos après l'événement",
+    "saveAccountDrink": "Inscrivez-vous en un geste la prochaine fois (c'est comme ça qu'on décroche les boissons offertes)",
+    "saveAccountGoogle": "Continuer avec Google",
+    "saveAccountConnecting": "Connexion…",
+    "saveAccountEmail": "Plutôt par e-mail",
+    "saveAccountError": "Google ne s'est pas ouvert. Réessayez ou passez par l'e-mail.",
+    "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
     "title": "Pratiquons ensemble",
@@ -4406,7 +4419,15 @@
     "absent": "Absent",
     "presenceWaiting": "L’animateur confirmera votre présence",
     "absentShort": "Absence indiquée — signalez-vous à l’animateur à votre arrivée",
-    "presenceHint": "Vous pouvez commencer avec les joueurs dont la présence sur place est confirmée. Les joueurs dont la présence n’est pas confirmée ne participent pas à cette manche."
+    "presenceHint": "Vous pouvez commencer avec les joueurs dont la présence sur place est confirmée. Les joueurs dont la présence n’est pas confirmée ne participent pas à cette manche.",
+    "cardsTitle": "Cartes de table",
+    "cardsHint": "Lisez la carte à voix haute ensemble, puis aidez-vous pour la prononciation et le sens.",
+    "cardsCounter": "Carte {current} sur {total}",
+    "cardsLevel": "Niveau {level}",
+    "cardsPrevious": "Carte précédente",
+    "cardsNext": "Carte suivante",
+    "cardsEasier": "Plus facile",
+    "cardsHarder": "Plus difficile"
   },
   "eventFollowupEmail": {
     "subject": "Merci d’avoir participé à {eventTitle}",

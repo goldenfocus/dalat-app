@@ -10,6 +10,8 @@ vi.mock("@/lib/hooks/use-viewer", () => ({ useViewer: () => ({ profile: null, is
 vi.mock("@/lib/i18n/routing", () => ({ Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a> }));
 vi.mock("./staff-desk-entry", () => ({ StaffDeskEntry: () => null }));
 vi.mock("@/components/practice/event-practice", () => ({ EventPractice: () => null }));
+// The optional account card after check-in has its own tests and needs auth routing.
+vi.mock("./save-account-card", () => ({ SaveAccountCard: () => null }));
 
 const context = { event: { id: "event", slug: "exchange", title: "Exchange", venueName: "Cafe", startsAt: "2026-10-28T11:00:00Z", isOpen: true, orderingEnabled: false }, profile: null, rsvpStatus: null, receipt: null, access: { canWelcome: false, canOrder: false, canManage: false }, menu: [] };
 const receipt = { participant: { id: "12345678-aaaa", nickname: "Lan", checked_in_at: "2026-10-28T11:00:00Z", user_id: null }, order: null };

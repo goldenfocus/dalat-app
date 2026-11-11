@@ -4291,7 +4291,20 @@
     "hostSearching": "Searching accounts…",
     "hostSearchFailed": "Search failed. Change your search and try again.",
     "hostNoAccounts": "No accounts found. Try their full email address, or add a walk-in guest.",
-    "hostEventFull": "This event is full."
+    "hostEventFull": "This event is full.",
+    "hostDoorHint": "Show this QR at the door. Scanning it confirms the guest is here and gives them a table. Don't post this link online.",
+    "quickSpeak": "I speak",
+    "quickOther": "Other",
+    "saveAccountTitle": "Make it official?",
+    "saveAccountPitch": "You're already checked in. Ten seconds now saves you the name game next time.",
+    "saveAccountSpot": "Keep tonight's check-in and your table on your account",
+    "saveAccountPhotos": "Get the photos after the event",
+    "saveAccountDrink": "RSVP in one tap next time (that's how free drinks get claimed)",
+    "saveAccountGoogle": "Continue with Google",
+    "saveAccountConnecting": "Connecting…",
+    "saveAccountEmail": "Use email instead",
+    "saveAccountError": "Google didn't open. Try again, or use email.",
+    "saveAccountLater": "Totally optional. Your check-in stays either way."
   },
   "eventPractice": {
     "title": "Practice together",
@@ -4406,7 +4419,15 @@
     "absent": "Absent",
     "presenceHint": "You can start with players marked present. Unchecked players stay out of this round.",
     "presenceWaiting": "The host will confirm you're here",
-    "absentShort": "Marked absent — ask the host when you arrive"
+    "absentShort": "Marked absent — ask the host when you arrive",
+    "cardsTitle": "Table cards",
+    "cardsHint": "Read the card aloud together, then help each other with pronunciation and meaning.",
+    "cardsCounter": "Card {current} of {total}",
+    "cardsLevel": "Level {level}",
+    "cardsPrevious": "Previous card",
+    "cardsNext": "Next card",
+    "cardsEasier": "Easier",
+    "cardsHarder": "Harder"
   },
   "eventFollowupEmail": {
     "subject": "Thanks for joining {eventTitle}",

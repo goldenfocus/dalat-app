@@ -4291,7 +4291,20 @@
     "hostSearching": "アカウントを検索中…",
     "hostSearchFailed": "検索できませんでした。検索内容を変更して、もう一度お試しください。",
     "hostNoAccounts": "アカウントが見つかりません。ゲストのメールアドレスを省略せず正確に入力するか、事前登録のない当日参加者を追加してください。",
-    "hostEventFull": "このイベントは定員に達しています。"
+    "hostEventFull": "このイベントは定員に達しています。",
+    "hostDoorHint": "このQRコードは入口で見せてください。読み取ると、ゲストの来場が確認され、テーブルが割り当てられます。このリンクをネットに公開しないでください。",
+    "quickSpeak": "話せる言語",
+    "quickOther": "その他",
+    "saveAccountTitle": "アカウントに残しませんか？",
+    "saveAccountPitch": "チェックインはもう完了しています。今の10秒で、次回は名前の入力が不要になります。",
+    "saveAccountSpot": "今夜のチェックインとテーブルをアカウントに保存",
+    "saveAccountPhotos": "イベント後に写真を受け取る",
+    "saveAccountDrink": "次回はワンタップで参加登録（無料ドリンクはこの登録で受け取れます）",
+    "saveAccountGoogle": "Googleで続ける",
+    "saveAccountConnecting": "接続中…",
+    "saveAccountEmail": "メールアドレスを使う",
+    "saveAccountError": "Googleを開けませんでした。もう一度試すか、メールアドレスをご利用ください。",
+    "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
     "title": "一緒に練習しよう",
@@ -4406,7 +4419,15 @@
     "absent": "欠席",
     "presenceWaiting": "ホストがあなたの出席を確認します",
     "absentShort": "欠席として記録されています — 到着したらホストに声をかけてください",
-    "presenceHint": "その場にいることが確認されたプレイヤーで開始できます。出席が確認されていないプレイヤーは、このラウンドには参加しません。"
+    "presenceHint": "その場にいることが確認されたプレイヤーで開始できます。出席が確認されていないプレイヤーは、このラウンドには参加しません。",
+    "cardsTitle": "テーブルカード",
+    "cardsHint": "カードを一緒に声に出して読み、発音と意味を教え合いましょう。",
+    "cardsCounter": "カード {current}/{total}",
+    "cardsLevel": "レベル {level}",
+    "cardsPrevious": "前のカード",
+    "cardsNext": "次のカード",
+    "cardsEasier": "やさしく",
+    "cardsHarder": "むずかしく"
   },
   "eventFollowupEmail": {
     "subject": "{eventTitle}にご参加いただき、ありがとうございました",

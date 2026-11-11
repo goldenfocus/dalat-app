@@ -4291,7 +4291,20 @@
     "hostSearching": "Mencari akaun…",
     "hostSearchFailed": "Carian gagal. Ubah kata carian dan cuba lagi.",
     "hostNoAccounts": "Tiada akaun ditemui. Masukkan alamat e-mel lengkap tetamu atau tambah tetamu yang hadir tanpa pendaftaran awal.",
-    "hostEventFull": "Acara ini sudah penuh."
+    "hostEventFull": "Acara ini sudah penuh.",
+    "hostDoorHint": "Tunjukkan QR ini di pintu masuk. Imbasan mengesahkan tetamu sudah hadir dan memberikan meja kepadanya. Jangan kongsi pautan ini dalam talian.",
+    "quickSpeak": "Saya bertutur",
+    "quickOther": "Lain-lain",
+    "saveAccountTitle": "Nak jadikan rasmi?",
+    "saveAccountPitch": "Anda sudah daftar masuk. Sepuluh saat sekarang, lain kali tak perlu isi nama lagi.",
+    "saveAccountSpot": "Simpan daftar masuk malam ini dan meja anda dalam akaun anda",
+    "saveAccountPhotos": "Dapatkan foto selepas acara",
+    "saveAccountDrink": "RSVP dengan satu ketikan lain kali (begitulah cara minuman percuma dituntut)",
+    "saveAccountGoogle": "Teruskan dengan Google",
+    "saveAccountConnecting": "Menyambung…",
+    "saveAccountEmail": "Guna e-mel",
+    "saveAccountError": "Google tidak dibuka. Cuba lagi atau guna e-mel.",
+    "saveAccountLater": "Pilihan sepenuhnya. Daftar masuk anda kekal walau apa pun."
   },
   "eventPractice": {
     "title": "Berlatih bersama",
@@ -4406,7 +4419,15 @@
     "absent": "Tidak hadir",
     "presenceWaiting": "Hos akan mengesahkan kehadiran anda",
     "absentShort": "Ditandakan sebagai tidak hadir — maklumkan kepada hos apabila anda tiba",
-    "presenceHint": "Anda boleh bermula dengan pemain yang ditandakan sebagai hadir. Pemain yang belum disahkan hadir tidak akan menyertai pusingan ini."
+    "presenceHint": "Anda boleh bermula dengan pemain yang ditandakan sebagai hadir. Pemain yang belum disahkan hadir tidak akan menyertai pusingan ini.",
+    "cardsTitle": "Kad meja",
+    "cardsHint": "Baca kad ini dengan kuat bersama-sama, kemudian bantu satu sama lain dengan sebutan dan makna.",
+    "cardsCounter": "Kad {current} daripada {total}",
+    "cardsLevel": "Tahap {level}",
+    "cardsPrevious": "Kad sebelumnya",
+    "cardsNext": "Kad seterusnya",
+    "cardsEasier": "Lebih mudah",
+    "cardsHarder": "Lebih sukar"
   },
   "eventFollowupEmail": {
     "subject": "Terima kasih kerana menyertai {eventTitle}",
