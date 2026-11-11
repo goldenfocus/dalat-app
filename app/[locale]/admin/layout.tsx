@@ -67,8 +67,10 @@ export default async function AdminLayout({
 
   // Build nav items based on role (using icon names for serialization)
   const communityT = await getTranslations("tribes");
+  const datingT = await getTranslations("dating");
   const peopleT = await getTranslations("people");
   const navItems = [
+    { href: "/admin/dating", label: datingT("adminTitle"), icon: "ShieldCheck", show: isModerator },
     { href: "/admin/people-reports", label: peopleT("reportsTitle"), icon: "ShieldCheck", show: isModerator && isPeopleEnabled() },
     { href: "/admin/communities", label: communityT("insights"), icon: "Users", show: isAdmin },
     { href: "/admin", label: t("navDashboard"), icon: "LayoutDashboard", show: true },

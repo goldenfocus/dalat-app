@@ -1,4 +1,6 @@
 import { metadataLabels } from "./metadata-labels";
+// Dating profiles, messages, preferences and reports are private. Never enqueue
+// them in the public translation store. The dating UI uses reviewed catalogs.
 /** Every public text surface must declare its source here and render an OriginalText control. */
 // Legacy language-exchange preferences, reusable event language profiles and
 // per-arrival language snapshots are private.
