@@ -18,6 +18,8 @@ export const arrivalSchema = z.object({
   staffEntry: z.boolean().optional().default(false),
   userId: z.uuid().optional(),
   participantId: z.uuid().optional(),
+  // Printed on the host's door QR only. Proves presence; never forwarded to the database.
+  doorKey: z.string().max(64).optional(),
 }).strict().superRefine((value, ctx) => {
   if (!value.staffEntry && (value.userId || value.participantId)) {
     ctx.addIssue({ code: "custom", message: "invalid_identity" });

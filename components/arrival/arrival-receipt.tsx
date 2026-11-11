@@ -4,6 +4,7 @@ import { Check, RefreshCw } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { OrderPaymentSummary } from "./order-payment-summary";
+import { SaveAccountCard } from "./save-account-card";
 import { formatVnd } from "@/lib/menu/format";
 import type { ArrivalOrder, ArrivalReceipt } from "@/lib/arrival/types";
 
@@ -25,6 +26,7 @@ export function ArrivalReceiptView({ receipt, stale, onRefresh }: {
         <p className="mt-2 font-mono text-lg tracking-wider text-foreground">{receipt.participant.id.slice(0, 8).toUpperCase()}</p>
       </div>
       {order ? <ArrivalOrderView order={order} /> : <p className="border-y border-border py-5 text-muted-foreground">{t("noOrder")}</p>}
+      {!receipt.participant.user_id && <SaveAccountCard />}
       {stale && <p className="text-sm text-muted-foreground" role="status">{t("refreshFailed")}</p>}
       <Button type="button" variant="ghost" className="min-h-11" onClick={onRefresh}><RefreshCw aria-hidden="true" />{t("refresh")}</Button>
     </section>

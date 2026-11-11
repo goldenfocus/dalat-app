@@ -11,6 +11,8 @@ import { PracticeHost } from "./practice-host";
 import { PracticePerson } from "./practice-person";
 import { PracticeParticipation } from "./practice-participation";
 import { PracticeLanguage } from "./practice-language";
+import { PracticeCards } from "./practice-cards";
+import { startingCardLevel } from "@/lib/practice/cards";
 import "./practice.css";
 
 /** Uses server timestamps and a measured clock offset; pausing never advances locally. */
@@ -116,6 +118,9 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   const activityUrl = transport ? "https://ezviet.org/challenges?practice=1" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}&practice=1`;
   const challengeUrl = transport ? "https://ezviet.org/challenges" : `https://ezviet.org/challenges?event=${encodeURIComponent(slug)}`;
   const assigned = Boolean(view?.myGroup?.length);
+  // The paused EZViet challenge is no longer offered to attendees: a seated group plays the
+  // table cards here. A new table or round starts on a different card.
+  const cardSeed = (view?.myTable?.tableNumber ?? view?.myGroupNumber ?? 0) * 31 + (view?.round?.number ?? 0);
   const activityLink = <a href={complete ? challengeUrl : activityUrl} target={view?.canStart ? "_blank" : undefined} rel={view?.canStart ? "noopener noreferrer" : undefined} className="practice-primary inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>;
   return <section id="practice" aria-labelledby="practice-heading" className="practice-experience practice-glass my-4 scroll-mt-24 space-y-4 p-4 sm:p-6">
     {!transport && <PracticeLanguage />}
@@ -134,7 +139,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
         <span className="text-sm text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
         <p aria-label={t("timer")} role="timer" className="text-3xl font-semibold tracking-tight tabular-nums">{complete ? "0:00" : clock}</p>
       </div>}
-      {partnerNames.length > 0 && activityLink}
+      {partnerNames.length > 0 && <PracticeCards key={cardSeed} seed={cardSeed} initialLevel={startingCardLevel(view.me.learningLevel)} />}
       {complete && partnerNames.length > 0 && changeoverRemaining > 0 && <p className="text-center text-sm text-muted-foreground">{t("changeoverShort")} · <span className="tabular-nums">{Math.floor(changeoverRemaining / 60)}:{String(changeoverRemaining % 60).padStart(2, "0")}</span></p>}
     </>}
     {view?.canStart && partnerNames.length === 0 && activityLink}

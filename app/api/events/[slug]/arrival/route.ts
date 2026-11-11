@@ -4,6 +4,9 @@ import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } 
 import { arrivalSchema } from "@/lib/arrival/schema";
 import { visibleArrivalReceipt } from "@/lib/arrival/receipt";
 import { getLanguagePreferences } from "@/lib/arrival/preferences";
+import { linkGuestArrival } from "@/lib/arrival/link-account";
+import { validDoorKey } from "@/lib/arrival/door";
+import { confirmArrival } from "@/lib/practice/server";
 import type { ArrivalReceipt } from "@/lib/arrival/types";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +16,11 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
     const { db, admin, user, event, access, menu, sponsorEligibility } = await arrivalContext(slug, request.nextUrl.searchParams.get("locale") || "en");
-    const token = await guestToken(event.id) || newGuestToken();
+    const savedToken = await guestToken(event.id);
+    const token = savedToken || newGuestToken();
+    // A guest who signs in afterwards keeps the same check-in: the receipt
+    // cookie plus their session prove ownership, never an email or a name.
+    if (user && savedToken) await linkGuestArrival(admin, event.id, user.id, tokenHash(savedToken));
     const receipt = await ownReceipt(event.id, user?.id, tokenHash(token));
     const preferences = user ? await getLanguagePreferences(user.id) : null;
     let profile = null;
@@ -47,7 +54,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
   try {
     const { slug } = await params;
     const { admin, user, event, access } = await arrivalContext(slug);
-    const payload = parsed.data;
+    // The door key only proves presence; it never reaches the database payload.
+    const { doorKey, ...payload } = parsed.data;
     if (payload.staffEntry && (!user || !access.canWelcome)) return arrivalJson({ code: "forbidden" }, 403);
     const token = await guestToken(event.id);
     if (!payload.staffEntry && !token) return arrivalJson({ code: "invalid_session" }, 400);
@@ -71,6 +79,10 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       p_request_id: payload.requestId, p_payload: payload,
     });
     if (error) throw error;
+    // A staff check-in or a door QR scan means the person is in the room: confirm
+    // presence and seat them now. This never fails the saved check-in.
+    const participantId = (data as ArrivalReceipt | null)?.participant?.id;
+    if (participantId && (payload.staffEntry || validDoorKey(event.id, doorKey))) await confirmArrival(slug, participantId);
     return arrivalJson(visibleArrivalReceipt(data as ArrivalReceipt, payload.staffEntry, access));
   } catch (error) { return arrivalFailure(error); }
 }
