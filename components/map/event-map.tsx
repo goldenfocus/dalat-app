@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTheme } from "next-themes";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Loader2, Navigation } from "lucide-react";
 import { startOfDay, endOfDay, isAfter, parseISO } from "date-fns";
 import Supercluster from "supercluster";
+import type { Map as MapLibreMap, Marker as MapLibreMarker } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import type { VenueMapMarker } from "@/lib/types";
 import type { MapEvent } from "./dynamic-event-map";
 import type { EventTag } from "@/lib/constants/event-tags";
@@ -14,7 +16,7 @@ import { VenuePopupCard } from "./venue-popup-card";
 import { EventPopupCard } from "./event-popup-card";
 import { MapLegend } from "./map-legend";
 import { VENUE_MARKER_COLORS } from "@/lib/constants/venue-types";
-import { DALAT_CENTER, DEFAULT_ZOOM, MARKER_COLORS } from "./map-styles";
+import { DALAT_CENTER, DEFAULT_ZOOM, MAP_STYLE_URLS, MARKER_COLORS } from "./map-styles";
 import { MapFilterBar, type DatePreset } from "./map-filter-bar";
 import { triggerHaptic } from "@/lib/haptics";
 
@@ -187,21 +189,52 @@ interface EventPointProperties {
   isHappening: boolean;
 }
 
-// Google calls window.gm_authFailure when it rejects the API key (referrer
-// not allowed, billing, quota). By then it has replaced every google.maps
-// method with a no-op for the rest of the tab, so creating a marker throws.
-let googleMapsAuthFailed = false;
-type AuthFailureWindow = Window & { gm_authFailure?: () => void };
+// MapLibre uses 512px tiles, so its zoom is one less than the 256px-tile zoom
+// that DEFAULT_ZOOM and the cluster index are written in.
+const TILE_ZOOM_OFFSET = 1;
+const WORLD_BBOX: [number, number, number, number] = [-180, -85, 180, 85];
+
+type MapLibre = typeof import("maplibre-gl");
+// The package is CommonJS: depending on the bundler the API is the module or its default
+const mapLibreApi = (module: MapLibre): MapLibre =>
+  (module as MapLibre & { default?: MapLibre }).default ?? module;
+
+/**
+ * MapLibre positions a marker by writing `transform` on the marker element, so
+ * our own content (which animates `transform` for hover/selection) sits one
+ * level down. The wrapper is the button; `markerContent` reads the content back.
+ */
+function markerShell(content: HTMLElement, label: string, onActivate: () => void): HTMLElement {
+  const shell = document.createElement("div");
+  shell.setAttribute("role", "button");
+  shell.setAttribute("aria-label", label);
+  shell.title = label;
+  shell.tabIndex = 0;
+  shell.appendChild(content);
+  shell.addEventListener("click", (event) => {
+    event.stopPropagation();
+    onActivate();
+  });
+  shell.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onActivate();
+    }
+  });
+  return shell;
+}
+
+const markerContent = (marker: MapLibreMarker) =>
+  marker.getElement().firstElementChild as HTMLElement | null;
 
 export function EventMap({ events, happeningEventIds = [], venues = [] }: EventMapProps) {
   const t = useTranslations("mapPage");
-  const locale = useLocale();
   // Convert to Set for O(1) lookup
   const happeningSet = useMemo(() => new Set(happeningEventIds), [happeningEventIds]);
   const { resolvedTheme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [map, setMap] = useState<MapLibreMap | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
   const [selectedVenue, setSelectedVenue] = useState<VenueMapMarker | null>(null);
   const [selectedTags, setSelectedTags] = useState<EventTag[]>([]);
@@ -210,10 +243,13 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
   const [customEndDate, setCustomEndDate] = useState<string>("");
 
   const mapRef = useRef<HTMLDivElement>(null);
-  const markersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-  const venueMarkersRef = useRef<google.maps.marker.AdvancedMarkerElement[]>([]);
-  const userMarkerRef = useRef<google.maps.marker.AdvancedMarkerElement | null>(null);
+  const markersRef = useRef<MapLibreMarker[]>([]);
+  const venueMarkersRef = useRef<MapLibreMarker[]>([]);
+  const userMarkerRef = useRef<MapLibreMarker | null>(null);
+  const mapLibreRef = useRef<MapLibre | null>(null);
   const mapInitializedRef = useRef(false);
+  const mapTheme: "light" | "dark" = resolvedTheme === "dark" ? "dark" : "light";
+  const styleThemeRef = useRef(mapTheme);
   const [currentZoom, setCurrentZoom] = useState(DEFAULT_ZOOM);
 
   // Calculate date range based on preset or custom selection
@@ -312,181 +348,105 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     return map;
   }, [eventsWithLocation]);
 
-  // Show the map-unavailable state instead of crashing when Google rejects the key
+  // Create the map. MapLibre with OpenFreeMap tiles: no API key, no usage bill.
   useEffect(() => {
-    const win = window as AuthFailureWindow;
-    const previous = win.gm_authFailure;
-    const onAuthFailure = () => {
-      previous?.();
-      googleMapsAuthFailed = true;
+    const container = mapRef.current;
+    if (!container) return;
+
+    let cancelled = false;
+    let instance: MapLibreMap | null = null;
+
+    const fail = (reason: unknown) => {
+      if (cancelled) return;
+      console.error("Map failed to load:", reason);
       setMap(null);
       setLoadError(t("mapLoadFailed"));
       setIsLoading(false);
     };
-    win.gm_authFailure = onAuthFailure;
-    return () => {
-      if (win.gm_authFailure === onAuthFailure) win.gm_authFailure = previous;
-    };
-  }, [t]);
 
-  // Load Google Maps script
-  useEffect(() => {
-    // Rejected earlier in this tab: google.maps is unusable until a reload
-    if (googleMapsAuthFailed) return;
+    // Tiles that never arrive (offline, blocked host) end in the error state
+    const timeoutId = setTimeout(() => {
+      if (!mapInitializedRef.current) fail("timed out");
+    }, 15000);
 
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) {
-      console.error("Google Maps API key not configured");
-      setLoadError("Google Maps API key not configured");
-      setIsLoading(false);
-      return;
-    }
-
-    let timeoutId: NodeJS.Timeout;
-
-    // Check if Google Maps API is fully ready (not just partially loaded)
-    const isGoogleMapsReady = () => {
-      return (
-        typeof google !== "undefined" &&
-        google.maps &&
-        typeof google.maps.Map === "function"
-      );
-    };
-
-    const initMap = () => {
-      if (!isGoogleMapsReady()) {
-        console.error("Google Maps not fully loaded");
-        return;
-      }
-
-      if (!mapRef.current) {
-        console.error("Map container ref not available");
-        setLoadError("Failed to initialize map container");
-        setIsLoading(false);
-        return;
-      }
-
-      try {
-        // Build map options - using mapId for stable rendering
-        // Note: For dark mode support, set up Cloud-based styling in Google Cloud Console
-        const mapOptions: google.maps.MapOptions = {
-          center: DALAT_CENTER,
-          zoom: DEFAULT_ZOOM,
-          disableDefaultUI: true,
-          zoomControl: true,
-          mapId: "dalat-events-map",
-          gestureHandling: "greedy",
-        };
-
-        // Only set zoomControlOptions if ControlPosition is available
-        if (google.maps.ControlPosition) {
-          mapOptions.zoomControlOptions = {
-            position: google.maps.ControlPosition.RIGHT_CENTER,
-          };
-        }
-
-        const mapInstance = new google.maps.Map(mapRef.current, mapOptions);
-
-        // Track zoom changes for clustering
-        mapInstance.addListener("zoom_changed", () => {
-          const zoom = mapInstance.getZoom();
-          if (zoom !== undefined) {
-            setCurrentZoom(zoom);
+    import("maplibre-gl")
+      .then((module) => {
+        if (cancelled) return;
+        const maplibregl = mapLibreApi(module);
+        const created = new maplibregl.Map({
+          container,
+          style: MAP_STYLE_URLS[styleThemeRef.current],
+          center: [DALAT_CENTER.lng, DALAT_CENTER.lat],
+          zoom: DEFAULT_ZOOM - TILE_ZOOM_OFFSET,
+          attributionControl: false,
+          // A flat, north-up map: no rotate or tilt gestures
+          dragRotate: false,
+          pitchWithRotate: false,
+          touchPitch: false,
+        });
+        instance = created;
+        created.touchZoomRotate.disableRotation();
+        created.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
+        // Top-left keeps the OpenStreetMap credit clear of the legend, the
+        // location button and the popup cards along the bottom edge.
+        created.addControl(new maplibregl.AttributionControl({ compact: true }), "top-left");
+        // The stock styles reference a few sprite images they do not ship
+        created.on("styleimagemissing", (event) => {
+          if (!created.hasImage(event.id)) {
+            created.addImage(event.id, { width: 1, height: 1, data: new Uint8Array(4) });
           }
         });
 
-        setMap(mapInstance);
-        setIsLoading(false);
-        mapInitializedRef.current = true;
-        if (timeoutId) clearTimeout(timeoutId);
-      } catch (err) {
-        console.error("Error initializing map:", err);
-        setLoadError("Failed to initialize map");
-        setIsLoading(false);
-      }
+        // Track zoom changes for clustering
+        created.on("zoomend", () => setCurrentZoom(created.getZoom() + TILE_ZOOM_OFFSET));
+        created.once("load", () => {
+          mapInitializedRef.current = true;
+          clearTimeout(timeoutId);
+          setIsLoading(false);
+          // On a phone the open credit line runs under the zoom buttons:
+          // start it folded into its (i) button, which opens it on tap.
+          if (container.clientWidth < 640) {
+            const credit = container.querySelector(".maplibregl-ctrl-attrib");
+            credit?.classList.remove("maplibregl-compact-show");
+            credit?.removeAttribute("open");
+          }
+        });
+
+        mapLibreRef.current = maplibregl;
+        setMap(created);
+      })
+      .catch(fail);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+      instance?.remove();
     };
-
-    // Set a timeout to stop loading if map doesn't initialize
-    timeoutId = setTimeout(() => {
-      if (!mapInitializedRef.current) {
-        console.error("Map initialization timed out");
-        setLoadError("Map took too long to load. Please refresh the page.");
-        setIsLoading(false);
-      }
-    }, 15000);
-
-    // Check if already loaded
-    if (isGoogleMapsReady()) {
-      initMap();
-      return () => clearTimeout(timeoutId);
-    }
-
-    // Check for existing script
-    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
-    if (existingScript) {
-      const checkReady = setInterval(() => {
-        if (isGoogleMapsReady()) {
-          clearInterval(checkReady);
-          initMap();
-        }
-      }, 100);
-      setTimeout(() => clearInterval(checkReady), 10000);
-      return () => {
-        clearInterval(checkReady);
-        clearTimeout(timeoutId);
-      };
-    }
-
-    // Load script with both marker and places libraries
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=marker,places&loading=async&v=weekly&language=${locale}&region=VN`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      const checkReady = setInterval(() => {
-        if (isGoogleMapsReady()) {
-          clearInterval(checkReady);
-          initMap();
-        }
-      }, 100);
-      setTimeout(() => clearInterval(checkReady), 10000);
-    };
-    script.onerror = () => {
-      console.error("Failed to load Google Maps script");
-      setLoadError("Failed to load Google Maps");
-      setIsLoading(false);
-    };
-    document.head.appendChild(script);
-
-    return () => clearTimeout(timeoutId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Note: Legacy map styles (programmatic) were deprecated March 2025
-  // For dark mode: Create light/dark Map IDs in Google Cloud Console > Map Styles
-  // Then switch mapId based on resolvedTheme
+  // Follow the app theme
+  useEffect(() => {
+    if (!map || styleThemeRef.current === mapTheme) return;
+    styleThemeRef.current = mapTheme;
+    map.setStyle(MAP_STYLE_URLS[mapTheme]);
+  }, [map, mapTheme]);
 
   // Create markers for events with clustering support
   useEffect(() => {
-    if (!map || typeof google === "undefined" || !google.maps?.marker) return;
+    const maplibregl = mapLibreRef.current;
+    if (!map || !maplibregl) return;
 
     // Clear existing markers
-    markersRef.current.forEach(marker => marker.map = null);
+    markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
-    const theme = resolvedTheme === "dark" ? "dark" : "light";
-    const bounds = map.getBounds();
+    const theme = mapTheme;
     const zoom = Math.floor(currentZoom);
 
-    // Get clusters/points for current viewport
-    let bbox: [number, number, number, number] = [-180, -90, 180, 90]; // Default to world
-    if (bounds) {
-      const sw = bounds.getSouthWest();
-      const ne = bounds.getNorthEast();
-      bbox = [sw.lng(), sw.lat(), ne.lng(), ne.lat()];
-    }
-
-    const clusters = clusterIndex.getClusters(bbox, zoom);
+    // The whole index every time (at most ~150 points), so panning never
+    // reveals an area without its markers.
+    const clusters = clusterIndex.getClusters(WORLD_BBOX, zoom);
 
     // Calculate offset for stacked markers at same location (spiral pattern)
     // Only used when not clustering (zoom > CLUSTER_MAX_ZOOM)
@@ -522,24 +482,22 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         const clusterId = props.cluster_id;
         const clusterElement = createClusterMarker(count, theme);
 
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          map,
-          position: { lat, lng },
-          content: clusterElement,
-          title: `${count} events`,
-          gmpClickable: true,
-        });
-
         // Click to zoom into cluster
-        marker.addEventListener("gmp-click", () => {
+        const shell = markerShell(clusterElement, t("eventsCount", { count }), () => {
           triggerHaptic("selection");
           const expansionZoom = clusterIndex.getClusterExpansionZoom(clusterId);
-          map.setZoom(Math.min(expansionZoom, 18));
-          map.panTo({ lat, lng });
+          map.easeTo({
+            center: [lng, lat],
+            zoom: Math.min(expansionZoom, 18) - TILE_ZOOM_OFFSET,
+          });
           setSelectedEvent(null); // Clear selection when zooming
         });
 
-        markersRef.current.push(marker);
+        markersRef.current.push(
+          new maplibregl.Marker({ element: shell, anchor: "center" })
+            .setLngLat([lng, lat])
+            .addTo(map)
+        );
       } else {
         // It's a single event - props should have eventId
         const eventProps = props as EventPointProperties;
@@ -556,24 +514,13 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         const isHappening = eventProps.isHappening;
         const markerElement = createMarkerElement(selectedEvent?.id === eventId, theme, isHappening);
 
-        const marker = new google.maps.marker.AdvancedMarkerElement({
-          map,
-          position: {
-            lat: lat + offset.lat,
-            lng: lng + offset.lng,
-          },
-          content: markerElement,
-          title: event.title,
-          gmpClickable: true,
-        });
-
-        marker.addEventListener("gmp-click", () => {
+        const shell = markerShell(markerElement, event.title, () => {
           triggerHaptic("selection");
           setSelectedEvent(event);
 
           // Update marker styles for all single-event markers
           markersRef.current.forEach(m => {
-            const el = m.content as HTMLElement;
+            const el = markerContent(m);
             if (el && el.querySelector("[data-marker-pill]")) {
               const isSelected = m === marker;
               el.style.transform = isSelected ? "scale(1.15)" : "scale(1)";
@@ -589,24 +536,28 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
             }
           });
 
-          map.panTo({ lat: event.latitude!, lng: event.longitude! });
+          map.panTo([event.longitude!, event.latitude!]);
         });
 
+        const marker = new maplibregl.Marker({ element: shell, anchor: "bottom" })
+          .setLngLat([lng + offset.lng, lat + offset.lat])
+          .addTo(map);
         markersRef.current.push(marker);
       }
     });
-  }, [map, eventsWithLocation, eventsById, clusterIndex, currentZoom, selectedEvent?.id, resolvedTheme, happeningSet]);
+  }, [map, eventsWithLocation, eventsById, clusterIndex, currentZoom, selectedEvent?.id, mapTheme, happeningSet, t]);
 
   // Create venue markers
   useEffect(() => {
-    if (!map || typeof google === "undefined" || !google.maps?.marker) return;
+    const maplibregl = mapLibreRef.current;
+    if (!map || !maplibregl) return;
     if (!venues.length) return;
 
     // Clear existing venue markers
-    venueMarkersRef.current.forEach(marker => marker.map = null);
+    venueMarkersRef.current.forEach(marker => marker.remove());
     venueMarkersRef.current = [];
 
-    const theme = resolvedTheme === "dark" ? "dark" : "light";
+    const theme = mapTheme;
 
     venues.forEach(venue => {
       const markerElement = createVenueMarkerElement(
@@ -616,22 +567,14 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         selectedVenue?.id === venue.id
       );
 
-      const marker = new google.maps.marker.AdvancedMarkerElement({
-        map,
-        position: { lat: venue.latitude, lng: venue.longitude },
-        content: markerElement,
-        title: venue.name,
-        gmpClickable: true,
-      });
-
-      marker.addEventListener("gmp-click", () => {
+      const shell = markerShell(markerElement, venue.name, () => {
         triggerHaptic("selection");
         setSelectedEvent(null); // Clear event selection
         setSelectedVenue(venue);
 
         // Update venue marker styles
         venueMarkersRef.current.forEach(m => {
-          const el = m.content as HTMLElement;
+          const el = markerContent(m);
           if (el && el.getAttribute("data-venue-marker")) {
             const isSelected = m === marker;
             el.style.transform = isSelected ? "scale(1.15)" : "scale(1)";
@@ -652,12 +595,15 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
           }
         });
 
-        map.panTo({ lat: venue.latitude, lng: venue.longitude });
+        map.panTo([venue.longitude, venue.latitude]);
       });
 
+      const marker = new maplibregl.Marker({ element: shell, anchor: "bottom" })
+        .setLngLat([venue.longitude, venue.latitude])
+        .addTo(map);
       venueMarkersRef.current.push(marker);
     });
-  }, [map, venues, selectedVenue?.id, resolvedTheme]);
+  }, [map, venues, selectedVenue?.id, mapTheme]);
 
   // Handle "Near Me" button
   const handleNearMe = useCallback(() => {
@@ -672,22 +618,17 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
       (position) => {
         const { latitude, longitude } = position.coords;
 
-        if (map && typeof google !== "undefined" && google.maps?.marker) {
-          map.panTo({ lat: latitude, lng: longitude });
-          map.setZoom(15);
+        const maplibregl = mapLibreRef.current;
+        if (map && maplibregl) {
+          map.easeTo({ center: [longitude, latitude], zoom: 15 - TILE_ZOOM_OFFSET });
 
-          // Remove previous user marker
-          if (userMarkerRef.current) {
-            userMarkerRef.current.map = null;
-          }
-
-          // Add new user location marker
-          userMarkerRef.current = new google.maps.marker.AdvancedMarkerElement({
-            map,
-            position: { lat: latitude, lng: longitude },
-            content: createUserMarker(),
-            title: t("nearMe"),
-          });
+          // Replace the previous user marker
+          userMarkerRef.current?.remove();
+          const dot = createUserMarker();
+          dot.title = t("nearMe");
+          userMarkerRef.current = new maplibregl.Marker({ element: dot, anchor: "center" })
+            .setLngLat([longitude, latitude])
+            .addTo(map);
         }
       },
       (error) => {
@@ -698,11 +639,11 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     );
   }, [map, t]);
 
-  if (loadError || googleMapsAuthFailed) {
+  if (loadError) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 p-4">
         <div className="text-center">
-          <p className="text-muted-foreground mb-2">{loadError ?? t("mapLoadFailed")}</p>
+          <p className="text-muted-foreground mb-2">{loadError}</p>
           <button
             onClick={() => window.location.reload()}
             className="text-sm text-primary underline hover:no-underline"
@@ -710,16 +651,6 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
             {t("refreshPage")}
           </button>
         </div>
-      </div>
-    );
-  }
-
-  if (!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-    return (
-      <div className="h-full flex items-center justify-center bg-muted/30 p-4">
-        <p className="text-center text-muted-foreground">
-          {t("mapNotAvailable")}
-        </p>
       </div>
     );
   }
@@ -760,15 +691,15 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         {/* Near Me button */}
         <button
           onClick={handleNearMe}
-          className="absolute bottom-24 right-4 bg-background hover:bg-muted text-foreground h-12 px-4 rounded-full shadow-lg border border-border flex items-center gap-2 transition-all duration-200 active:scale-95 hover:shadow-xl"
+          className="absolute bottom-4 right-4 bg-background hover:bg-muted text-foreground h-12 px-4 rounded-full shadow-lg border border-border flex items-center gap-2 transition-all duration-200 active:scale-95 hover:shadow-xl"
           title={t("showMyLocation")}
         >
           <Navigation className="w-5 h-5 text-blue-500" />
           <span className="hidden sm:inline font-medium text-sm">{t("nearMe")}</span>
         </button>
 
-        {/* Map legend */}
-        <MapLegend />
+        {/* Map legend (a popup card takes its place while one is open) */}
+        {!selectedEvent && !selectedVenue && <MapLegend />}
 
         {/* Selected event card */}
         {selectedEvent && (

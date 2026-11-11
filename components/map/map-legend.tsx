@@ -26,7 +26,7 @@ export function MapLegend() {
   }, []);
 
   return (
-    <div className="absolute bottom-24 left-4 z-10">
+    <div className="absolute bottom-4 left-4 z-10">
       <Collapsible open={isOpen} onOpenChange={setIsOpen}>
         <div className="bg-background/95 backdrop-blur-sm rounded-lg shadow-lg border border-border overflow-hidden">
           <CollapsibleTrigger className="flex items-center justify-between gap-2 px-3 py-2 w-full text-left hover:bg-muted/50 transition-colors">
