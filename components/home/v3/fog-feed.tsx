@@ -206,6 +206,7 @@ export async function FogFeed({
           locale={locale}
           labels={{
             popular: popularLabel,
+            going: tEvents("going"),
             spotsAvailable:
               event.capacity && !shouldShowGoingCount(goingSpots)
                 ? tEvents("spotsAvailable", {
