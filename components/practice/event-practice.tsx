@@ -121,7 +121,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
   // The paused EZViet challenge is no longer offered to attendees: a seated group plays the
   // table cards here. A new table or round starts on a different card.
   const cardSeed = (view?.myTable?.tableNumber ?? view?.myGroupNumber ?? 0) * 31 + (view?.round?.number ?? 0);
-  const activityLink = <a href={complete ? challengeUrl : activityUrl} target={view?.canStart ? "_blank" : undefined} rel={view?.canStart ? "noopener noreferrer" : undefined} className="practice-primary inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-primary px-4 py-3 text-center font-semibold text-primary-foreground">{t(complete ? "challenge" : "openActivity")}</a>;
+  const activityLink = <a href={complete ? challengeUrl : activityUrl} target={view?.canStart ? "_blank" : undefined} rel={view?.canStart ? "noopener noreferrer" : undefined} className="inline-flex min-h-12 w-full items-center justify-center rounded-md border border-border px-4 py-3 text-center text-sm font-semibold text-foreground hover:bg-accent">{t(complete ? "challenge" : "openActivity")}</a>;
   return <section id="practice" aria-labelledby="practice-heading" className="practice-experience practice-glass my-4 scroll-mt-24 space-y-4 p-4 sm:p-6">
     {!transport && <PracticeLanguage />}
     <h2 id="practice-heading" className={view?.me || view?.canStart ? "sr-only" : "text-xl font-semibold"}>{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
@@ -129,14 +129,14 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
     {view?.me && <>
       {(!view.canStart || assigned) && <div className="flex items-start justify-between gap-3">
         <div>{view.myTable && assigned && <>
-          <h3 className="text-3xl font-bold tracking-tight">{t("table", { number: view.myTable.tableNumber })}</h3>
-          <p className="mt-1 flex items-center gap-1 text-sm text-muted-foreground">{view.myTable.floor === "upstairs" ? <ArrowUp aria-hidden className="h-3.5 w-3.5" /> : <ArrowDown aria-hidden className="h-3.5 w-3.5" />}{t(view.myTable.floor)}</p>
+          <h3 className="text-5xl font-extrabold leading-none tracking-tight">{t("table", { number: view.myTable.tableNumber })}</h3>
+          <p className="fog-cap mt-2 flex items-center gap-1 text-muted-foreground">{view.myTable.floor === "upstairs" ? <ArrowUp aria-hidden className="h-3.5 w-3.5" /> : <ArrowDown aria-hidden className="h-3.5 w-3.5" />}{t(view.myTable.floor)}</p>
         </>}</div>
         {!view.canStart && <PracticeParticipation view={view} busy={busy} act={act} />}
       </div>}
       {assigned ? <div className="grid grid-cols-2 gap-x-4 gap-y-3 py-1">{view.myGroup!.map(person => <PracticePerson key={person.id} person={person} />)}</div> : !view.canStart && <p role="status" className="py-3 text-lg font-medium">{t(view.participation === "playing" ? view.presence === "absent" ? "absentShort" : view.presence === "pending" ? "presenceWaiting" : view.round ? "nextRoundShort" : "waitingShort" : "notPlayingShort")}</p>}
       {view.round && assigned && !view.canStart && <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
-        <span className="text-sm text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
+        <span className="fog-cap text-muted-foreground">{t("round", { number: view.round.number })}{view.round.pausedAt && <span className="ml-2">{t("paused")}</span>}{!complete && remaining <= view.round.minutes * 30 && <span className="mt-1 block">{t("swapNow")}</span>}</span>
         <p aria-label={t("timer")} role="timer" className="text-3xl font-semibold tracking-tight tabular-nums">{complete ? "0:00" : clock}</p>
       </div>}
       {partnerNames.length > 0 && <PracticeCards key={cardSeed} seed={cardSeed} initialLevel={startingCardLevel(view.me.learningLevel)} />}

@@ -566,7 +566,8 @@
     "youreGoing": "Vous participez !",
     "youreInterested": "Vous êtes intéressé",
     "waitlistPosition": "Vous êtes #{position} sur la liste d'attente",
-    "waitlistAutoPromote": "Vous obtiendrez automatiquement une place quand une se libère"
+    "waitlistAutoPromote": "Vous obtiendrez automatiquement une place quand une se libère",
+    "changeRsvp": "Modifier ma participation"
   },
   "feedback": {
     "howWasIt": "Comment était l'événement ?",

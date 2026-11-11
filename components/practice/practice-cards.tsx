@@ -22,15 +22,15 @@ export function PracticeCards({ seed = 0, initialLevel = 1 }: { seed?: number; i
       <h3 id="practice-cards-heading" className="text-base font-semibold">{t("cardsTitle")}</h3>
       <p className="mt-1 text-sm text-muted-foreground">{t("cardsHint")}</p>
     </div>
-    <div aria-live="polite" className="space-y-4 rounded-2xl border border-border/60 bg-background/70 p-4">
-      <p className="text-xs font-medium text-muted-foreground">{t("cardsCounter", { current: step + 1, total: cards.length })}</p>
+    <div aria-live="polite" className="space-y-5 rounded-md border border-border bg-background p-5">
+      <p className="fog-cap tabular-nums text-muted-foreground">{t("cardsCounter", { current: step + 1, total: cards.length })}</p>
       <div>
         {/* Endonyms label the two languages for everyone at the table, whatever the interface locale. */}
-        <p lang="vi" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Tiếng Việt</p>
+        <p lang="vi" className="fog-cap text-muted-foreground">Tiếng Việt</p>
         <p lang="vi" className="mt-1 break-words text-2xl font-semibold leading-snug">{card.vi}</p>
       </div>
       <div>
-        <p lang="en" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">English</p>
+        <p lang="en" className="fog-cap text-muted-foreground">English</p>
         <p lang="en" className="mt-1 break-words text-xl font-medium leading-snug">{card.en}</p>
       </div>
     </div>
@@ -40,7 +40,7 @@ export function PracticeCards({ seed = 0, initialLevel = 1 }: { seed?: number; i
     </div>
     <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
       <Button type="button" variant="ghost" className="h-auto min-h-12 whitespace-normal" disabled={level === lowest} onClick={() => changeLevel(level - 1)}>{t("cardsEasier")}</Button>
-      <p aria-live="polite" className="px-1 text-center text-sm font-medium tabular-nums">{t("cardsLevel", { level })}</p>
+      <p aria-live="polite" className="fog-cap px-1 text-center tabular-nums">{t("cardsLevel", { level })}</p>
       <Button type="button" variant="ghost" className="h-auto min-h-12 whitespace-normal" disabled={level === highest} onClick={() => changeLevel(level + 1)}>{t("cardsHarder")}</Button>
     </div>
   </section>;

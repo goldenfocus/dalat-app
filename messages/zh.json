@@ -566,7 +566,8 @@
     "youreGoing": "您已报名！",
     "youreInterested": "您已表示感兴趣",
     "waitlistPosition": "您在等候名单第{position}位",
-    "waitlistAutoPromote": "有空位时您将自动获得名额"
+    "waitlistAutoPromote": "有空位时您将自动获得名额",
+    "changeRsvp": "更改报名"
   },
   "eventForm": {
     "linkedPastEvent": "往期活动的精彩瞬间",

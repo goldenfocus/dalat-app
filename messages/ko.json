@@ -566,7 +566,8 @@
     "youreGoing": "참석 예정입니다!",
     "youreInterested": "관심을 표시했습니다",
     "waitlistPosition": "대기자 명단 {position}번째입니다",
-    "waitlistAutoPromote": "자리가 생기면 자동으로 참석으로 변경됩니다"
+    "waitlistAutoPromote": "자리가 생기면 자동으로 참석으로 변경됩니다",
+    "changeRsvp": "참석 여부 변경"
   },
   "eventForm": {
     "linkedPastEvent": "지난 이벤트의 모먼트",

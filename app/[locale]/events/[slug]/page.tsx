@@ -1254,6 +1254,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     isLoggedIn, isPast, rsvpStatus: currentRsvp?.status, canManageEvent,
   });
 
+  // Same window the arrival flow enforces: six hours before the start until two hours after the end.
+  const arrivalStart = new Date(event.starts_at).getTime();
+  const arrivalEnd = event.ends_at ? new Date(event.ends_at).getTime() : arrivalStart + 6 * 3600_000;
+  const arrivalOpen = Date.now() >= arrivalStart - 6 * 3600_000 && Date.now() <= arrivalEnd + 2 * 3600_000;
+
   const attendanceCard = (
     <Card className="event-join-card">
       <CardContent className="p-4 space-y-4">
@@ -1404,6 +1409,11 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             prepareRegistration={!!event.arrival_enabled}
           />
         </RsvpCardObserver>
+
+        {/* Check-in is the one thing to do on the night: show it here, only while arrival is open. */}
+        {event.arrival_enabled && participation.arrival && arrivalOpen && <Suspense fallback={null}>
+          <EventArrivalCard slug={event.slug} />
+        </Suspense>}
 
         {/* Feedback stats for past events */}
         {feedbackStats && feedbackStats.total > 0 && (
@@ -1810,10 +1820,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   sourceMetadata={event.source_metadata ?? null}
                 />
               )}
-
-              {event.arrival_enabled && participation.arrival && <Suspense fallback={null}>
-                <EventArrivalCard slug={event.slug} selection={drinkSelection} />
-              </Suspense>}
 
               {/* Sponsors */}
               {sponsors.length > 0 && <SponsorDisplay sponsors={sponsors} />}

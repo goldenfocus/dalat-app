@@ -566,7 +566,8 @@
     "youreGoing": "¡Vas a ir!",
     "youreInterested": "Estás interesado",
     "waitlistPosition": "Estás en posición #{position} de la lista de espera",
-    "waitlistAutoPromote": "Obtendrás un lugar automáticamente cuando haya disponibilidad"
+    "waitlistAutoPromote": "Obtendrás un lugar automáticamente cuando haya disponibilidad",
+    "changeRsvp": "Cambiar asistencia"
   },
   "eventForm": {
     "linkedPastEvent": "Momentos de un evento pasado",
