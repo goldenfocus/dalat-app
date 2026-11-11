@@ -24,6 +24,8 @@ const BLUR_DATA_URL =
 const DEFAULT_IMAGE_URL = "/images/defaults/event-default-desktop.png";
 
 export interface EventCardFramedLabels {
+  /** Word after the count ("38 going"); the row is hidden without it */
+  going?: string;
   popular: string;
   spotsAvailable: string;
   photoBy: string;
@@ -214,6 +216,15 @@ export function EventCardFramedServer({
                 <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
                 <span className="truncate">
                   {decodeUnicodeEscapes(event.location_name)}
+                </span>
+              </div>
+            )}
+
+            {shouldShowGoingCount(goingSpots) && labels.going && (
+              <div className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
+                <span className="truncate">
+                  {goingSpots} {labels.going}
                 </span>
               </div>
             )}
