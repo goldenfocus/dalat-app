@@ -15,7 +15,7 @@ export function ContentNav() {
   const t = useTranslations("nav");
   const pathname = usePathname();
   return (
-    <div className="border-t border-border/40">
+    <div data-fog-sections className="border-t border-border/40">
       <div className="mx-auto flex max-w-6xl items-center gap-1 px-2 min-[360px]:px-4">
         {sections.map(({ key, href, prefix }) => {
           const active = pathname.startsWith(prefix);

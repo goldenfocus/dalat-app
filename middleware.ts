@@ -2,6 +2,7 @@ import { updateSession } from "@/lib/supabase/proxy";
 import { NextRequest, NextResponse } from "next/server";
 import { locales } from "@/lib/i18n/routing";
 import {
+  PREVIEW_FLAG,
   innerPath,
   parsePreviewPath,
   splitLocale,
@@ -15,6 +16,31 @@ const outsideMiddleware =
   /^\/(?:api|experience-media|auth\/(?:deovia|callback|confirm|continue))(?:\/|$)/;
 
 /**
+ * ?preview=off on any URL ends the preview for that tab. The channel is
+ * remembered in sessionStorage, which only a document can clear, and the
+ * destination page may redirect and drop the parameter; so answer with a
+ * minimal document that forgets the channel and then loads the plain URL.
+ */
+function leavePreview(request: NextRequest, preview: PreviewPath | null) {
+  const target = new URL(request.nextUrl.href);
+  target.searchParams.delete("preview");
+  if (preview) target.pathname = `${preview.locale}${preview.rest}` || "/";
+  const destination = JSON.stringify(`${target.pathname}${target.search}`)
+    // Keep the string inert inside <script>.
+    .replace(/</g, "\\u003c");
+  return new NextResponse(
+    `<!doctype html><meta charset="utf-8"><title>ĐàLạt.app</title><script>try{sessionStorage.removeItem(${JSON.stringify(PREVIEW_FLAG)})}catch(e){}location.replace(${destination})</script>`,
+    {
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "private, no-store",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    },
+  );
+}
+
+/**
  * Preview channel (see lib/preview-channel.ts): serve /v3/<path> from the
  * route for /<path>, with locale, auth and redirect handling unchanged. The
  * browser keeps the channel URL; redirects are put back under the prefix.
@@ -22,10 +48,6 @@ const outsideMiddleware =
 async function previewChannel(request: NextRequest, preview: PreviewPath) {
   // A plain URL: NextURL would carry a trailing slash over to the new path.
   const inner = new URL(request.nextUrl.href);
-  if (inner.searchParams.get("preview") === "off") {
-    inner.pathname = `${preview.locale}${preview.rest}` || "/";
-    return NextResponse.redirect(inner);
-  }
   inner.pathname = innerPath(preview);
 
   const response = await updateSession(
@@ -91,6 +113,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(destination);
   }
   const preview = parsePreviewPath(request.nextUrl.pathname);
+  if (request.nextUrl.searchParams.get("preview") === "off") {
+    return leavePreview(request, preview);
+  }
   if (preview) return previewChannel(request, preview);
   return await updateSession(request);
 }

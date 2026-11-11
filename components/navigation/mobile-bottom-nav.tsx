@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
+import { stripChannel } from "@/lib/preview-channel";
 
 const NAV_ITEMS = [
   {
@@ -61,7 +62,8 @@ const NAV_ITEMS = [
 ];
 
 function normalizePath(pathname: string) {
-  return pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
+  // Preview channel URLs (/v3/map) highlight the same tab as /map.
+  return stripChannel(pathname).replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 }
 
 export function MobileBottomNav() {

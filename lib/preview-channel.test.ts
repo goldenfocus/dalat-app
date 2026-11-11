@@ -6,6 +6,7 @@ import {
   parsePreviewPath,
   previewBootstrapScript,
   splitLocale,
+  stripChannel,
   withChannel,
 } from "./preview-channel";
 
@@ -37,6 +38,14 @@ describe("preview channel paths", () => {
     expect(withChannel("/vi", "v4")).toBe("/vi/v4");
     expect(withChannel("/vi/preview-home", "v3")).toBe("/vi/v3");
     expect(withChannel("/v3/calendar", "v3")).toBe("/v3/calendar");
+  });
+
+  it("reads the plain path behind a channel URL", () => {
+    expect(stripChannel("/v3/moments")).toBe("/moments");
+    expect(stripChannel("/vi/v3/map")).toBe("/vi/map");
+    expect(stripChannel("/v3")).toBe("/");
+    expect(stripChannel("/vi/v3")).toBe("/vi");
+    expect(stripChannel("/moments")).toBe("/moments");
   });
 
   it("splits a locale prefix only when it is a whole segment", () => {
@@ -94,10 +103,6 @@ describe("preview bootstrap script", () => {
     const result = boot("/vi", "v3");
     expect(result.location.replace).toHaveBeenCalledWith("/vi/v3");
     expect(result.replaceState).not.toHaveBeenCalled();
-  });
-
-  it("leaves the preview with ?preview=off", () => {
-    expect(boot("/calendar?preview=off", "v3")).toMatchObject({ flag: null, fog: false });
   });
 
   it("does not mistake a username for a channel", () => {

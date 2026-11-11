@@ -75,11 +75,25 @@ describe("preview channel", () => {
     expect(response.headers.get("location")).toBe(expected);
   });
 
-  it("leaves the preview with ?preview=off", async () => {
+  it.each([
+    ["/vi/v3/calendar?view=week&preview=off", "/vi/calendar?view=week"],
+    ["/v3?preview=off", "/"],
+    ["/calendar?preview=off", "/calendar"],
+  ])("leaves the preview from %s", async (path, destination) => {
     vi.mocked(updateSession).mockClear();
-    const response = await middleware(new NextRequest("https://dalat.app/vi/v3/calendar?preview=off"));
-    expect(response.headers.get("location")).toBe("https://dalat.app/vi/calendar?preview=off");
+    const response = await middleware(new NextRequest(`https://dalat.app${path}`));
+    const body = await response.text();
+    expect(body).toContain(`sessionStorage.removeItem("fog-preview")`);
+    expect(body).toContain(`location.replace(${JSON.stringify(destination)})`);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
     expect(updateSession).not.toHaveBeenCalled();
+  });
+
+  it("keeps the exit destination inert inside the script", async () => {
+    const response = await middleware(
+      new NextRequest("https://dalat.app/calendar?preview=off&x=%3C/script%3E%3Cb%3E"),
+    );
+    expect(await response.text()).not.toContain("</script><b>");
   });
 
   it.each(["/v10/calendar", "/v3x", "/events/v3", "/vanessa"])("does not treat %s as a channel", async (path) => {

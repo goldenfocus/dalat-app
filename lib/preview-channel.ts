@@ -15,7 +15,7 @@ import { locales } from "@/lib/i18n/locales";
  *     before first paint and remembers the channel for the tab;
  *   - components/preview-channel.tsx keeps the address bar under the prefix
  *     while the visitor navigates.
- * Leave with ?preview=off on any URL.
+ * Leave with ?preview=off on any URL (handled in middleware).
  */
 export const PREVIEW_FLAG = "fog-preview";
 /** Route the channel root is served from. */
@@ -55,6 +55,12 @@ export function innerPath({ locale, rest }: PreviewPath): string {
   return `${locale}${rest || PREVIEW_HOME}`;
 }
 
+/** The plain app path behind a channel URL: "/vi/v3/map" → "/vi/map". */
+export function stripChannel(pathname: string): string {
+  const preview = parsePreviewPath(pathname);
+  return preview ? `${preview.locale}${preview.rest}` || "/" : pathname;
+}
+
 /** Put a plain app path under the channel: "/vi/map" → "/vi/v3/map". */
 export function withChannel(pathname: string, channel: string): string {
   if (parsePreviewPath(pathname)) return pathname;
@@ -66,14 +72,12 @@ export function withChannel(pathname: string, channel: string): string {
 /**
  * Runs inline in <head>, before first paint. Kept dependency-free and in step
  * with the helpers above:
- *   - ?preview=off forgets the channel;
  *   - a channel URL (or a tab that already entered one) gets the .fog skin;
  *   - a plain URL loaded inside a preview tab is put back under the prefix
  *     (the homepage is a real navigation, since the preview has its own).
  */
 export const previewBootstrapScript = `(()=>{try{
 var l=location,s=sessionStorage,k=${JSON.stringify(PREVIEW_FLAG)};
-if(/[?&]preview=off(?:&|$)/.test(l.search)){s.removeItem(k);return}
 var m=l.pathname.match(/^(?:\\/(?:${localeGroup}))?\\/(v[1-9])(?=\\/|$)/);
 var c=m?m[1]:s.getItem(k);if(!c)return;
 s.setItem(k,c);document.documentElement.classList.add('fog');
