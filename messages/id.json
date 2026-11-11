@@ -566,7 +566,8 @@
     "youreGoing": "Anda akan hadir!",
     "youreInterested": "Anda tertarik",
     "waitlistPosition": "Anda di posisi #{position} dalam daftar tunggu",
-    "waitlistAutoPromote": "Anda akan mendapat tempat secara otomatis saat tersedia"
+    "waitlistAutoPromote": "Anda akan mendapat tempat secara otomatis saat tersedia",
+    "changeRsvp": "Ubah RSVP"
   },
   "eventForm": {
     "linkedPastEvent": "Momen dari acara sebelumnya",

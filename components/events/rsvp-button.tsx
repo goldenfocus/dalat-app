@@ -515,21 +515,27 @@ export function RsvpButton({
             {t("youreGoing")}
           </p>
           {arrivalEnabled && <EventDrinkAction slug={eventSlug} selection={drinkSelection} />}
-          <Button
-            onClick={handleCancel}
-            disabled={isPending}
-            variant="outline"
-            className="w-full"
-          >
-            {isPending && !interestedPending ? "..." : t("cancelRsvp")}
-          </Button>
-          <button
-            onClick={handleInterested}
-            disabled={isPending}
-            className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            {interestedPending ? <span className="inline-flex items-center gap-2" role="status"><Loader2 className="h-4 w-4 animate-spin" />{t("justInterested")}</span> : t("justInterested")}
-          </button>
+          {/* Changing your mind is rare: keep it one tap away, not two buttons deep in the card. */}
+          <details className="text-center" open={isPending || !!error || undefined}>
+            <summary className="inline-flex min-h-11 cursor-pointer list-none items-center justify-center px-3 text-sm text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden">{t("changeRsvp")}</summary>
+            <div className="space-y-2 pt-2">
+              <Button
+                onClick={handleCancel}
+                disabled={isPending}
+                variant="outline"
+                className="w-full"
+              >
+                {isPending && !interestedPending ? "..." : t("cancelRsvp")}
+              </Button>
+              <button
+                onClick={handleInterested}
+                disabled={isPending}
+                className="min-h-11 w-full text-sm text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
+              >
+                {interestedPending ? <span className="inline-flex items-center gap-2" role="status"><Loader2 className="h-4 w-4 animate-spin" />{t("justInterested")}</span> : t("justInterested")}
+              </button>
+            </div>
+          </details>
           {error && <p className="text-sm text-red-500 text-center">{error}</p>}
         </div>
       </>

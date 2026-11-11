@@ -566,7 +566,8 @@
     "youreGoing": "参加予定です！",
     "youreInterested": "興味ありとしました",
     "waitlistPosition": "キャンセル待ち{position}番目です",
-    "waitlistAutoPromote": "空きが出ると自動的に参加になります"
+    "waitlistAutoPromote": "空きが出ると自動的に参加になります",
+    "changeRsvp": "参加状況を変更"
   },
   "eventForm": {
     "linkedPastEvent": "過去のイベントのモーメント",

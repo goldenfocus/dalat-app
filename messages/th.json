@@ -566,7 +566,8 @@
     "youreGoing": "คุณจะไป!",
     "youreInterested": "คุณสนใจ",
     "waitlistPosition": "คุณอยู่ลำดับที่ {position} ในรายชื่อรอ",
-    "waitlistAutoPromote": "คุณจะได้ที่อัตโนมัติเมื่อมีที่ว่าง"
+    "waitlistAutoPromote": "คุณจะได้ที่อัตโนมัติเมื่อมีที่ว่าง",
+    "changeRsvp": "เปลี่ยนการตอบรับ"
   },
   "eventForm": {
     "linkedPastEvent": "โมเมนต์จากอีเวนต์ที่ผ่านมา",

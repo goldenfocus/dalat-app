@@ -209,7 +209,7 @@ export function GuestArrival({ slug }: { slug: string }) {
                 <ArrivalMenu sections={menu} quantities={quantities} onChange={setQuantities} note={note} onNoteChange={setNote} disabled={busy} />
               </details>}
               {error && <p className="text-sm text-destructive" role="alert">{t(error)}</p>}
-              <Button type="submit" loading={busy} disabled={busy || !nickname.trim() || !speaks} className="scroll-mb-28 min-h-12 w-full whitespace-normal text-base">{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>
+              <Button type="submit" loading={busy} disabled={busy || !nickname.trim() || !speaks} className="event-join-action scroll-mb-28 min-h-12 w-full whitespace-normal text-base">{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>
             </form>
           )}
           {context.profile && step === 0 && (
@@ -230,7 +230,7 @@ export function GuestArrival({ slug }: { slug: string }) {
                 {context.event.sponsorship && context.profile && context.rsvpStatus === "going" && context.sponsorEligibility?.eligible === true && <SponsoredCart sections={menu} quantities={quantities} eligible={context.event.sponsorship.eligibleItemIds} selected={selectedSponsored} onSelect={setSelectedSponsored} />}
               </details>}
               {error && <p className="text-sm text-destructive" role="alert">{t(error)}</p>}
-              <Button type="button" loading={busy} disabled={busy} className="scroll-mb-28 min-h-12 w-full whitespace-normal text-base" onClick={() => void submit(selectedItems.length > 0)}>{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>
+              <Button type="button" loading={busy} disabled={busy} className="event-join-action scroll-mb-28 min-h-12 w-full whitespace-normal text-base" onClick={() => void submit(selectedItems.length > 0)}>{t(busy ? "submitting" : selectedItems.length > 0 ? "checkInAndOrder" : "checkIn")}</Button>
               {!context.priorOrder && menu.length > 0 && <Button type="button" variant="ghost" disabled={busy} className="scroll-mb-28 min-h-12 w-full" onClick={() => void submit(false)}>{t("orderWithStaff")}</Button>}
             </div>
           )}

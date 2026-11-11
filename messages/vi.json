@@ -566,7 +566,8 @@
     "youreGoing": "Bạn sẽ tham gia!",
     "youreInterested": "Bạn đang quan tâm",
     "waitlistPosition": "Bạn đang ở vị trí #{position} trong danh sách chờ",
-    "waitlistAutoPromote": "Bạn sẽ tự động có chỗ khi có người hủy"
+    "waitlistAutoPromote": "Bạn sẽ tự động có chỗ khi có người hủy",
+    "changeRsvp": "Thay đổi đăng ký"
   },
   "eventForm": {
     "linkedPastEvent": "Khoảnh khắc từ sự kiện trước",

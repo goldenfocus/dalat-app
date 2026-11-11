@@ -566,7 +566,8 @@
     "youreGoing": "Вы идёте!",
     "youreInterested": "Вам интересно",
     "waitlistPosition": "Вы #{position} в очереди",
-    "waitlistAutoPromote": "Вы автоматически получите место, когда оно освободится"
+    "waitlistAutoPromote": "Вы автоматически получите место, когда оно освободится",
+    "changeRsvp": "Изменить ответ"
   },
   "eventForm": {
     "linkedPastEvent": "Моменты с прошлого события",

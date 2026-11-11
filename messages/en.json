@@ -566,7 +566,8 @@
     "youreGoing": "You're going!",
     "youreInterested": "You're interested",
     "waitlistPosition": "You're #{position} on the waitlist",
-    "waitlistAutoPromote": "You'll automatically get a spot when one opens up"
+    "waitlistAutoPromote": "You'll automatically get a spot when one opens up",
+    "changeRsvp": "Change RSVP"
   },
   "feedback": {
     "howWasIt": "How was the event?",

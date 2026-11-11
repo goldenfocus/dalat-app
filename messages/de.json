@@ -566,7 +566,8 @@
     "youreGoing": "Du bist dabei!",
     "youreInterested": "Du bist interessiert",
     "waitlistPosition": "Du bist auf Platz {position} der Warteliste",
-    "waitlistAutoPromote": "Du bekommst automatisch einen Platz, wenn einer frei wird"
+    "waitlistAutoPromote": "Du bekommst automatisch einen Platz, wenn einer frei wird",
+    "changeRsvp": "Zusage ändern"
   },
   "eventForm": {
     "linkedPastEvent": "Momente eines früheren Events",

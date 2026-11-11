@@ -322,3 +322,21 @@ future work.
 The preview/release also runs playlist share-image generation in the Node runtime:
 its translated dependencies exceed Vercel's Edge function size limit. This changes
 where the same image is rendered, not its content or access policy.
+
+### Fog Hour styling and a calmer event card (11 November 2026, follow-up)
+
+The practice panel no longer carries its own blue glass palette: it inherits the
+site's Fog Hour tokens (mist and pine, 3px corners) and its one primary action
+per state uses the sun colour (`.practice-primary`). The host's EZViệt preview
+link is an outline link so it does not compete with Start. The guest and
+signed-in Check in buttons use the shared `event-join-action` style.
+
+On the event page, a going attendee now sees Cancel RSVP and Just interested
+behind one "Change RSVP" disclosure. The separate "Welcome in" card is gone: its
+duplicate drink summary is removed and Check in sits in the top attendance card,
+shown only while arrival is open (six hours before the start to two hours after
+the end).
+
+Checked with the full suite, typecheck and a rendered preview of the rehearsal
+page with the new stylesheet applied; the signed-in event card was not viewed in
+a browser before release.
