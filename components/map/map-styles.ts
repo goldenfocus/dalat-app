@@ -271,6 +271,13 @@ export const MARKER_COLORS = {
   },
 };
 
+// Vector map styles served by OpenFreeMap (OpenStreetMap data): no API key
+// and no usage billing.
+export const MAP_STYLE_URLS = {
+  light: "https://tiles.openfreemap.org/styles/positron",
+  dark: "https://tiles.openfreemap.org/styles/dark",
+} as const;
+
 // Da Lat center coordinates
 export const DALAT_CENTER = {
   lat: 11.9404,

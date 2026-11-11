@@ -147,8 +147,9 @@ export default async function MapPage({ params }: PageProps) {
   setRequestLocale(locale);
 
   return (
-    <main className="h-[calc(100dvh-3.5rem)] flex flex-col">
-      {/* Map fills remaining space (accounting for sticky header height) */}
+    <main className="h-[calc(100dvh-6.375rem-4rem-env(safe-area-inset-bottom))] lg:h-[calc(100dvh-6.375rem)] flex flex-col">
+      {/* Map fills the viewport between the header (wordmark row + section
+          tabs, 6.375rem) and, below lg, the bottom bar (4rem + safe area) */}
       <div className="flex-1 min-h-0">
         <Suspense fallback={<MapLoading />}>
           <MapContent locale={locale} />
