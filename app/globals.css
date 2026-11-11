@@ -634,14 +634,7 @@ html.fog [data-fog-wordmark] {
   letter-spacing: -0.035em;
 }
 
-html.fog [data-fog-hide] {
-  display: none;
-}
 
-/* Chrome that only the preview shows */
-html:not(.fog) [data-fog-only] {
-  display: none;
-}
 
 /* --- Shared controls, so every page reads as Fog Hour, not only /v3 --- */
 
