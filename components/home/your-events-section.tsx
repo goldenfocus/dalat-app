@@ -374,6 +374,9 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
   return (
     <Link
       href={`/events/${event.slug}`}
+      // Like the other event cards: prefetching replays the event page's
+      // stylesheet preload on this page, where nothing uses it.
+      prefetch={false}
       className="flex gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 active:bg-muted transition-colors group"
     >
       {/* Event image */}

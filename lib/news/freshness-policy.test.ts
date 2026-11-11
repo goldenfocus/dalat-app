@@ -51,6 +51,22 @@ describe('news freshness publication gate', () => {
     })).toBe('draft');
   });
 
+  it('keeps a published story published when it is re-verified after the freshness window', () => {
+    const stale = evaluateNewsFreshness('2026-07-12T08:00:00.000Z', NOW);
+    const review = { disposition: 'current-news' as const, dalatRelevance: 1, newsworthiness: 1 };
+    expect(resolveEditorialPublicationCandidate({
+      freshness: stale, review, verificationStatus: 'published', existingUrl: true, alreadyPublished: true,
+    })).toBe('published');
+    // Evidence that no longer verifies still demotes it.
+    expect(resolveEditorialPublicationCandidate({
+      freshness: stale, review, verificationStatus: 'draft', existingUrl: true, alreadyPublished: true,
+    })).toBe('draft');
+    // An old story that was never published stays held.
+    expect(resolveEditorialPublicationCandidate({
+      freshness: stale, review, verificationStatus: 'published', existingUrl: true,
+    })).toBe('draft');
+  });
+
   it('requires fresh evidence, editorial approval, and verification', () => {
     const freshness = evaluateNewsFreshness('2026-08-30T10:00:00.000Z', NOW);
     expect(resolveEditorialPublicationCandidate({
