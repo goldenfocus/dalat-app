@@ -1,6 +1,56 @@
 import { updateSession } from "@/lib/supabase/proxy";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { locales } from "@/lib/i18n/routing";
+import {
+  innerPath,
+  parsePreviewPath,
+  splitLocale,
+  withChannel,
+  type PreviewPath,
+} from "@/lib/preview-channel";
+
+// Paths the matcher below never sends through middleware. A redirect to one
+// of them must not gain the preview prefix.
+const outsideMiddleware =
+  /^\/(?:api|experience-media|auth\/(?:deovia|callback|confirm|continue))(?:\/|$)/;
+
+/**
+ * Preview channel (see lib/preview-channel.ts): serve /v3/<path> from the
+ * route for /<path>, with locale, auth and redirect handling unchanged. The
+ * browser keeps the channel URL; redirects are put back under the prefix.
+ */
+async function previewChannel(request: NextRequest, preview: PreviewPath) {
+  // A plain URL: NextURL would carry a trailing slash over to the new path.
+  const inner = new URL(request.nextUrl.href);
+  if (inner.searchParams.get("preview") === "off") {
+    inner.pathname = `${preview.locale}${preview.rest}` || "/";
+    return NextResponse.redirect(inner);
+  }
+  inner.pathname = innerPath(preview);
+
+  const response = await updateSession(
+    new NextRequest(inner, { headers: request.headers, method: request.method }),
+  );
+  // Channel URLs duplicate canonical pages; keep them out of every index.
+  response.headers.set("X-Robots-Tag", "noindex, nofollow");
+
+  const location = response.headers.get("location");
+  if (location) {
+    const target = new URL(location, inner);
+    if (
+      target.origin === inner.origin &&
+      !outsideMiddleware.test(splitLocale(target.pathname).rest)
+    ) {
+      target.pathname = withChannel(target.pathname, preview.channel);
+      response.headers.set("location", target.toString());
+    }
+  } else if (response.headers.has("x-middleware-next")) {
+    // "Continue" would serve the channel URL itself, which has no route.
+    response.headers.delete("x-middleware-next");
+    response.headers.set("x-middleware-rewrite", inner.toString());
+  }
+  return response;
+}
 
 // Edge middleware (NOT proxy.ts): the OpenNext Cloudflare adapter only
 // supports edge middleware, and in Next 16 proxy.ts always compiles to the
@@ -40,6 +90,8 @@ export async function middleware(request: NextRequest) {
     destination.port = "";
     return NextResponse.redirect(destination);
   }
+  const preview = parsePreviewPath(request.nextUrl.pathname);
+  if (preview) return previewChannel(request, preview);
   return await updateSession(request);
 }
 

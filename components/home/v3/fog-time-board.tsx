@@ -23,7 +23,7 @@ export async function FogTimeBoard({
 
   const horizons = [
     ...(hasHappening
-      ? [{ key: "live" as const, href: "/v3#happening-now" as const }]
+      ? [{ key: "live" as const, href: "#happening-now" as const }]
       : []),
     ...(hasTonight
       ? [{ key: "tonight" as const, href: "/tonight" as const }]

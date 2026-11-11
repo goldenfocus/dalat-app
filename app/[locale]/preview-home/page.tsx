@@ -3,7 +3,6 @@ import { preload } from "react-dom";
 import { setRequestLocale } from "next-intl/server";
 import { FogFeed, FogFeedSkeleton } from "@/components/home/v3/fog-feed";
 import { FogHeadline } from "@/components/home/v3/fog-headline";
-import { FogMode } from "@/components/home/v3/fog-mode";
 import { FogTimeBoard } from "@/components/home/v3/fog-time-board";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
 import { TribesStrip } from "@/components/home/tribes-strip";
@@ -22,9 +21,10 @@ import {
 export const maxDuration = 60;
 export const revalidate = 60;
 
-// Preview of the Fog Hour homepage. It duplicates "/", so keep it out of
-// search: noindex here, and the canonical inherited from the locale layout
-// already points at the homepage.
+// Homepage of the preview channel: middleware serves it at /v3 (see
+// lib/preview-channel.ts). It duplicates "/", so keep it out of search:
+// noindex here, and the canonical inherited from the locale layout already
+// points at the homepage.
 export const metadata = { robots: { index: false, follow: false } };
 
 type PageProps = {
@@ -58,7 +58,6 @@ export default async function FogHomePreview({ params }: PageProps) {
 
   return (
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-      <FogMode />
       <FogHeadline />
 
       {/* Time board: only shows "live" when real events are underway */}
