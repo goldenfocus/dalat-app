@@ -2621,6 +2621,7 @@
     "cancel": "取消",
     "refreshPage": "刷新页面",
     "mapNotAvailable": "地图不可用。Google Maps API 密钥未配置。",
+    "mapLoadFailed": "地图暂时无法加载。请刷新页面重试。",
     "legend": "图例",
     "happeningNow": "正在进行",
     "upcoming": "即将举行",

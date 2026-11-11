@@ -2664,6 +2664,7 @@
     "cancel": "Cancel",
     "refreshPage": "Refresh page",
     "mapNotAvailable": "Map not available. Google Maps API key not configured.",
+    "mapLoadFailed": "The map couldn't load right now. Refresh the page to try again.",
     "legend": "Legend",
     "happeningNow": "Happening now",
     "upcoming": "Upcoming",

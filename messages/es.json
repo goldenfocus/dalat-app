@@ -2680,6 +2680,7 @@
     "cancel": "Cancelar",
     "refreshPage": "Actualizar página",
     "mapNotAvailable": "Mapa no disponible. Clave de API de Google Maps no configurada.",
+    "mapLoadFailed": "El mapa no se pudo cargar en este momento. Actualiza la página para volver a intentarlo.",
     "legend": "Leyenda",
     "happeningNow": "En curso",
     "upcoming": "Próximamente",

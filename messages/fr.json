@@ -2647,6 +2647,7 @@
     "cancel": "Annuler",
     "refreshPage": "Actualiser la page",
     "mapNotAvailable": "Carte non disponible. Clé API Google Maps non configurée.",
+    "mapLoadFailed": "La carte n'a pas pu se charger pour le moment. Actualisez la page pour réessayer.",
     "legend": "Légende",
     "happeningNow": "En cours",
     "upcoming": "À venir",

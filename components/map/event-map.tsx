@@ -187,6 +187,12 @@ interface EventPointProperties {
   isHappening: boolean;
 }
 
+// Google calls window.gm_authFailure when it rejects the API key (referrer
+// not allowed, billing, quota). By then it has replaced every google.maps
+// method with a no-op for the rest of the tab, so creating a marker throws.
+let googleMapsAuthFailed = false;
+type AuthFailureWindow = Window & { gm_authFailure?: () => void };
+
 export function EventMap({ events, happeningEventIds = [], venues = [] }: EventMapProps) {
   const t = useTranslations("mapPage");
   const locale = useLocale();
@@ -306,8 +312,28 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     return map;
   }, [eventsWithLocation]);
 
+  // Show the map-unavailable state instead of crashing when Google rejects the key
+  useEffect(() => {
+    const win = window as AuthFailureWindow;
+    const previous = win.gm_authFailure;
+    const onAuthFailure = () => {
+      previous?.();
+      googleMapsAuthFailed = true;
+      setMap(null);
+      setLoadError(t("mapLoadFailed"));
+      setIsLoading(false);
+    };
+    win.gm_authFailure = onAuthFailure;
+    return () => {
+      if (win.gm_authFailure === onAuthFailure) win.gm_authFailure = previous;
+    };
+  }, [t]);
+
   // Load Google Maps script
   useEffect(() => {
+    // Rejected earlier in this tab: google.maps is unusable until a reload
+    if (googleMapsAuthFailed) return;
+
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     if (!apiKey) {
       console.error("Google Maps API key not configured");
@@ -501,10 +527,11 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
           position: { lat, lng },
           content: clusterElement,
           title: `${count} events`,
+          gmpClickable: true,
         });
 
         // Click to zoom into cluster
-        marker.addListener("click", () => {
+        marker.addEventListener("gmp-click", () => {
           triggerHaptic("selection");
           const expansionZoom = clusterIndex.getClusterExpansionZoom(clusterId);
           map.setZoom(Math.min(expansionZoom, 18));
@@ -537,9 +564,10 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
           },
           content: markerElement,
           title: event.title,
+          gmpClickable: true,
         });
 
-        marker.addListener("click", () => {
+        marker.addEventListener("gmp-click", () => {
           triggerHaptic("selection");
           setSelectedEvent(event);
 
@@ -593,9 +621,10 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
         position: { lat: venue.latitude, lng: venue.longitude },
         content: markerElement,
         title: venue.name,
+        gmpClickable: true,
       });
 
-      marker.addListener("click", () => {
+      marker.addEventListener("gmp-click", () => {
         triggerHaptic("selection");
         setSelectedEvent(null); // Clear event selection
         setSelectedVenue(venue);
@@ -669,11 +698,11 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     );
   }, [map, t]);
 
-  if (loadError) {
+  if (loadError || googleMapsAuthFailed) {
     return (
       <div className="h-full flex items-center justify-center bg-muted/30 p-4">
         <div className="text-center">
-          <p className="text-muted-foreground mb-2">{loadError}</p>
+          <p className="text-muted-foreground mb-2">{loadError ?? t("mapLoadFailed")}</p>
           <button
             onClick={() => window.location.reload()}
             className="text-sm text-primary underline hover:no-underline"

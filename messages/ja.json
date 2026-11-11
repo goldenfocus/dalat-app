@@ -2621,6 +2621,7 @@
     "cancel": "キャンセル",
     "refreshPage": "ページを更新",
     "mapNotAvailable": "マップを利用できません。Google Maps APIキーが設定されていません。",
+    "mapLoadFailed": "現在マップを読み込めません。ページを再読み込みしてもう一度お試しください。",
     "legend": "凡例",
     "happeningNow": "開催中",
     "upcoming": "予定",
