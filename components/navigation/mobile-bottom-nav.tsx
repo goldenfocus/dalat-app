@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
-import { stripChannel } from "@/lib/preview-channel";
 
 const NAV_ITEMS = [
   {
@@ -63,7 +62,7 @@ const NAV_ITEMS = [
   },
 ];
 
-// Preview design: these three stay on the bar, the rest move under "More".
+// These three stay on the bar; the rest live under "More".
 const PRIMARY_KEYS = ["map", "calendar", "news"];
 const PRIMARY_ITEMS = NAV_ITEMS.filter((item) => PRIMARY_KEYS.includes(item.key));
 const MORE_ITEMS = NAV_ITEMS.filter((item) => !PRIMARY_KEYS.includes(item.key));
@@ -73,7 +72,7 @@ const tabClass = (active: boolean) =>
     active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
   }`;
 
-function PreviewNavRow({
+function NavRow({
   normalizedPath,
   tNav,
 }: {
@@ -93,7 +92,7 @@ function PreviewNavRow({
   }, [open]);
 
   return (
-    <div data-fog-only>
+    <div>
       {open && (
         <>
           <button
@@ -173,8 +172,7 @@ function PreviewNavRow({
 }
 
 function normalizePath(pathname: string) {
-  // Preview channel URLs (/v3/map) highlight the same tab as /map.
-  return stripChannel(pathname).replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
+  return pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 }
 
 export function MobileBottomNav() {
@@ -197,32 +195,7 @@ export function MobileBottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tNav("primary")}
     >
-      <PreviewNavRow normalizedPath={normalizedPath} tNav={tNav} />
-      {/* Current design: every section as an icon. Hidden in the preview. */}
-      <div data-fog-hide className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
-        {NAV_ITEMS.map((item) => {
-          const Icon = item.icon;
-          const isActive = normalizedPath.startsWith(item.href);
-          const label = tNav(item.labelKey);
-
-          return (
-            <Link
-              key={item.key}
-              href={item.href}
-              prefetch={false}
-              onClick={() => triggerHaptic("selection")}
-              aria-label={label}
-              className={`flex h-11 w-11 items-center justify-center rounded-pill transition-all active:scale-95 ${
-                isActive
-                  ? "bg-foreground/10 text-foreground"
-                  : "text-muted-foreground/60 hover:text-muted-foreground"
-              }`}
-            >
-              <Icon className={`h-5 w-5 ${isActive ? "stroke-[2.5]" : ""}`} />
-            </Link>
-          );
-        })}
-      </div>
+      <NavRow normalizedPath={normalizedPath} tNav={tNav} />
     </nav>
   );
 }

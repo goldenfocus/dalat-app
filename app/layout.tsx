@@ -1,11 +1,10 @@
 import { AccountBridge } from '@/components/deovia/AccountBridge';
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
-import { previewBootstrapScript } from "@/lib/preview-channel";
 import "./globals.css";
 
-// Headline face for the Fog Hour preview. preload is off so pages outside the
-// preview never fetch it; turn it on when the redesign becomes the default.
+// Headline face (h1–h3 and the wordmark). Not preloaded: it swaps in after
+// first paint so it never competes with the LCP image.
 const displayFont = Bricolage_Grotesque({
   subsets: ["latin", "vietnamese"],
   axes: ["opsz"],
@@ -90,12 +89,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="und" className={displayFont.variable} suppressHydrationWarning>
+    <html lang="und" className={`${displayFont.variable} fog`} suppressHydrationWarning>
       <head>
         {/* Keep static rendering while declaring the URL locale before body content parses. */}
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
-        {/* Preview channel (/v3/…): skin on before first paint. */}
-        <script dangerouslySetInnerHTML={{ __html: previewBootstrapScript }} />
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"
