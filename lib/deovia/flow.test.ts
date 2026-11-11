@@ -10,7 +10,7 @@ vi.mock('./server', () => ({
   admin: () => ({ from: () => ({ insert: state.insert }) }),
 }));
 vi.mock('./http', () => ({
-  redirect: (path:string) => new Response(null, { status: 307, headers: { location: new URL(path,'https://dalat.app').toString() } }),
+  redirect: (path:string, status = 307) => new Response(null, { status, headers: { location: new URL(path,'https://dalat.app').toString() } }),
   setCookie: async (name:string,value:string) => { state.jar.set(name,value); },
 }));
 import { start, authorize, callback, confirm } from './flow';
@@ -65,5 +65,18 @@ describe('browser-bound account handoff', () => {
   it('rejects a cross-site confirmation without touching identity links', async () => {
     await confirm(new Request('https://dalat.app/api/deovia/confirm',{method:'POST',headers:{origin:'https://evil.example'}}));
     expect(state.bind).not.toHaveBeenCalled();
+  });
+  it('answers the confirmation form POST with 303, so the browser follows with GET', async () => {
+    // A 307 would re-send the POST to the destination page, which answers 405.
+    const rejected = await confirm(new Request('https://dalat.app/api/deovia/confirm',{method:'POST',headers:{origin:'https://evil.example'}}));
+    expect(rejected.status).toBe(303);
+    const signedOut = await confirm(new Request('https://dalat.app/api/deovia/confirm',{method:'POST',headers:{origin:'https://dalat.app'}}));
+    expect(signedOut.status).toBe(303);
+    expect(signedOut.headers.get('location')).toContain('/auth/login');
+  });
+  it('keeps method-preserving 307 redirects for the GET hand-offs', async () => {
+    state.peerReady.mockResolvedValue(false);
+    const response = await start(new Request('https://dalat.app/auth/deovia/start?next=/meet'));
+    expect(response.status).toBe(307);
   });
 });

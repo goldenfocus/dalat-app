@@ -8,7 +8,12 @@ export function privateResponse(response: NextResponse) {
   return response;
 }
 export function reply(body: unknown, status = 200) { return privateResponse(NextResponse.json(body, { status })); }
-export function redirect(path: string) { return privateResponse(NextResponse.redirect(new URL(path, origin))); }
+// 307 keeps the request method, which suits the GET hand-offs. After a form
+// POST pass 303 so the browser follows with a GET; a re-sent POST to a page
+// route is answered with 405.
+export function redirect(path: string, status: 303 | 307 = 307) {
+  return privateResponse(NextResponse.redirect(new URL(path, origin), status));
+}
 export function sameOrigin(request: Request) { return request.headers.get('origin') === origin; }
 export async function setCookie(name: string, value: string, maxAge = 600) {
   (await cookies()).set(name, value, { httpOnly: true, secure: true, sameSite: 'lax', path: '/', maxAge });

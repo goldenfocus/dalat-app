@@ -73,12 +73,14 @@ export async function pendingLink() {
   return error || !data ? null : { ...data, token };
 }
 export async function confirm(request: Request) {
-  if (request.headers.get('origin') !== origin) return redirect('/');
+  // This handles a form POST, so every exit must be a 303 (see redirect()).
+  const seeOther = (path: string) => redirect(path, 303);
+  if (request.headers.get('origin') !== origin) return seeOther('/');
   const pending = await pendingLink();
   const identity = await currentIdentity();
-  if (!pending || !identity) return redirect(loginPath('/auth/deovia/link'));
+  if (!pending || !identity) return seeOther(loginPath('/auth/deovia/link'));
   const form = await request.formData();
-  if (form.get('token') !== pending.token) return redirect('/auth/deovia/link');
+  if (form.get('token') !== pending.token) return seeOther('/auth/deovia/link');
   try {
     // Explicit consent plus authentication of both accounts authorizes replacing
     // previous connections. No profiles, auth users or learning/event data move.
@@ -87,6 +89,6 @@ export async function confirm(request: Request) {
     if (error) throw new Error('Reconnect unavailable');
     await admin().from('deovia_pending_links').delete().eq('token_hash', hash(pending.token));
     await setCookie('__Host-deovia_link', '', 0);
-    return redirect(pending.next_path);
-  } catch { return redirect('/auth/deovia/link?error=conflict'); }
+    return seeOther(pending.next_path);
+  } catch { return seeOther('/auth/deovia/link?error=conflict'); }
 }
