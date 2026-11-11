@@ -693,6 +693,12 @@ html.fog .event-join-action:hover {
   background: hsl(var(--sun) / 0.92);
 }
 
+/* Interactive pills and round icon buttons become timetable cells too.
+ * Avatars, dots and form toggles keep their circle. */
+html.fog :is(a, button, [role="button"]).rounded-full:not([role="switch"], [role="radio"], [role="checkbox"]) {
+  border-radius: var(--radius);
+}
+
 /* Small chips and filters read as timetable labels */
 html.fog .rounded-pill:is(.text-xs, .text-sm, [class*="text-[1"]) {
   letter-spacing: 0.06em;
