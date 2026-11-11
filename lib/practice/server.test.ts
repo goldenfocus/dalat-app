@@ -4,7 +4,7 @@ const mocked = vi.hoisted(() => ({ context: vi.fn(), guestToken: vi.fn(), ownRec
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocked.cookie }) }));
 vi.mock("@/lib/arrival/server", () => ({ arrivalContext: mocked.context, guestToken: mocked.guestToken, ownReceipt: mocked.ownReceipt, participantColumns: "id,user_id,nickname", tokenHash: (value: string) => `hash:${value}` }));
-import { mutatePractice, readPractice } from "./server";
+import { confirmArrival, mutatePractice, readPractice } from "./server";
 import type { PracticeState } from "./model";
 
 type Row = Record<string, unknown>;
@@ -160,7 +160,16 @@ describe("practice mutations", () => {
     expect(waiting.myGroup).toEqual([]);
     expect(waiting.groups).toEqual([]);
     actor = { id: "owner" }; host = true;
+    const published = structuredClone(state()!.rounds[0]);
     await mutatePractice(slug, { action: "presence", participantId: "late", status: "present", expectedRevision: revision() });
+    // Confirmed during the running round: seated at once, nobody else moves.
+    expect(state()!.rounds[0].groups[0].map(person => person.id)).toEqual([...published.groups[0].map(person => person.id), "late"]);
+    expect(state()!.rounds[0].assignments).toEqual(published.assignments);
+    actor = { id: "late-user" }; host = false;
+    const seated = await readPractice(slug);
+    expect(seated.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+    expect(seated.myTable?.tableNumber).toBe(published.assignments![0].tableNumber);
+    actor = { id: "owner" }; host = true;
     const next = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
     expect(next.draft?.groups.flat().map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
   });
@@ -203,8 +212,8 @@ describe("practice mutations", () => {
     expect(writes).toBe(1);
   });
   it("completes two rounds with persisted pause/extend/end and new partner assignments", async () => {
-    rows.event_arrival_participants.push({ id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" }, { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" });
-    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present" };
+    rows.event_arrival_participants.push({ id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" }, { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" }, { id: "player-e", event_id: "event", user_id: null, nickname: "E", checked_in_at: "now", practice_language: "english" }, { id: "player-f", event_id: "event", user_id: null, nickname: "F", checked_in_at: "now", practice_language: "vietnamese" });
+    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present", "player-e": "present", "player-f": "present" };
     let draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
     await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
     await mutatePractice(slug, { action: "pause", expectedRevision: revision() });
@@ -225,10 +234,13 @@ describe("practice mutations", () => {
 
 describe("editable pre-start practice drafts", () => {
   function addPlayers() {
-    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present" };
+    // Six confirmed players make two tables of three.
+    state()!.presence = { ...state()!.presence, "player-c": "present", "player-d": "present", "player-e": "present", "player-f": "present" };
     rows.event_arrival_participants.push(
       { id: "player-c", event_id: "event", user_id: null, nickname: "C", checked_in_at: "now", practice_language: "english" },
       { id: "player-d", event_id: "event", user_id: null, nickname: "D", checked_in_at: "now", practice_language: "vietnamese" },
+      { id: "player-e", event_id: "event", user_id: null, nickname: "E", checked_in_at: "now", practice_language: "english" },
+      { id: "player-f", event_id: "event", user_id: null, nickname: "F", checked_in_at: "now", practice_language: "vietnamese" },
     );
   }
   it("uses twenty minutes when duration is omitted but leaves explicit duration intact", async () => {
@@ -290,5 +302,70 @@ describe("editable pre-start practice drafts", () => {
     expect(JSON.stringify(view)).not.toContain("unrelated.jpg");
     rows.profiles[0].avatar_url = "javascript:alert(1)";
     expect((await readPractice(slug)).participants?.find(p => p.id === "player-a")?.avatarUrl).toBeUndefined();
+  });
+});
+
+describe("door and staff arrival confirmation", () => {
+  const late = { id: "late", event_id: "event", user_id: null, nickname: "Late", checked_in_at: "now", practice_language: "vietnamese", english_level: "fluent", vietnamese_level: "starting" };
+  async function startRound() {
+    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
+  }
+  it("confirms presence before any round and creates the room when missing", async () => {
+    rows.event_practice_rooms = [];
+    expect(await confirmArrival(slug, "player-a")).toBe(true);
+    expect(state()?.presence).toEqual({ "player-a": "present" });
+    expect(state()?.rounds).toEqual([]);
+    expect(revision()).toBe(0);
+  });
+  it("seats a door arrival in the running round without a host and keeps the draft under review", async () => {
+    await startRound();
+    const nextDraft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
+    rows.event_arrival_participants.push(late);
+    actor = null; host = false;
+    const before = revision();
+    expect(await confirmArrival(slug, "late")).toBe(true);
+    expect(revision()).toBe(before + 1);
+    expect(state()!.presence!.late).toBe("present");
+    expect(state()!.rounds[0].groups[0].map(person => person.id)).toContain("late");
+    expect(state()!.rounds[0].groups[0].at(-1)).toMatchObject({ id: "late", speaks: ["en"], learns: "vi" });
+    expect(state()!.draft?.id).toBe(nextDraft.draft!.id);
+    mocked.guestToken.mockResolvedValue("receipt");
+    mocked.ownReceipt.mockResolvedValue({ participant: { id: "late" } });
+    const view = await readPractice(slug);
+    expect(view.myTable?.tableNumber).toBeTruthy();
+    expect(view.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+  });
+  it("is idempotent and never seats working staff", async () => {
+    await startRound();
+    const settled = revision();
+    expect(await confirmArrival(slug, "player-a")).toBe(true);
+    expect(revision()).toBe(settled);
+    expect(await confirmArrival(slug, "owner-arrival")).toBe(true);
+    expect(state()!.rounds[0].groups.flat().map(person => person.id)).not.toContain("owner-arrival");
+  });
+  it("ignores other events and unknown people, and swallows every failure", async () => {
+    const before = writes;
+    expect(await confirmArrival("some-other-event", "player-a")).toBe(false);
+    expect(mocked.context).not.toHaveBeenCalled();
+    expect(await confirmArrival(slug, "missing")).toBe(false);
+    rejectCompareAndSwap = true;
+    rows.event_arrival_participants.push(late);
+    expect(await confirmArrival(slug, "late")).toBe(false);
+    expect(mocked.context).toHaveBeenCalledTimes(4);
+    mocked.context.mockRejectedValueOnce(new Error("unavailable"));
+    await expect(confirmArrival(slug, "late")).resolves.toBe(false);
+    expect(writes).toBe(before);
+  });
+  it("retries after a concurrent host write", async () => {
+    await startRound();
+    rows.event_arrival_participants.push(late);
+    rejectCompareAndSwap = true;
+    const original = mocked.context.getMockImplementation()!;
+    let calls = 0;
+    mocked.context.mockImplementation(async () => { if (++calls === 2) rejectCompareAndSwap = false; return original(); });
+    expect(await confirmArrival(slug, "late")).toBe(true);
+    expect(calls).toBe(2);
+    expect(state()!.rounds[0].groups.flat().map(person => person.id)).toContain("late");
   });
 });

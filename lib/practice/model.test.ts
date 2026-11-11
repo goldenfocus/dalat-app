@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { arrivalPerson, pairRound, practiceView, type Person } from "./model";
+import { arrivalPerson, pairRound, practiceView, seatLateArrival, LATE_GROUP_LIMIT, type Person, type Round } from "./model";
 
 const people: Person[] = [
   { id: "a", name: "An", speaks: ["vi"], learns: "en" },
@@ -7,21 +7,50 @@ const people: Person[] = [
   { id: "c", name: "Chi", speaks: ["vi"], learns: "en" },
   { id: "d", name: "Dan", speaks: ["en"], learns: "vi" },
 ];
+const eight: Person[] = [...people, ...people.map((person, index) => ({ ...person, id: "efgh"[index], name: ["Em", "Finn", "Giang", "Hugo"][index] }))];
 describe("practice from event attendance", () => {
-  it("includes every checked-in person exactly once, with an odd guest in a trio", () => {
+  it("includes every checked-in person exactly once and keeps five people at one table", () => {
     const roster = [...people, { ...people[0], id: "e", name: "Em" }];
     const round = pairRound([...roster, roster[0]], [], 10);
-    expect(round.groups.map(g => g.length).sort()).toEqual([2, 3]);
+    expect(round.groups.map(g => g.length)).toEqual([5]);
     expect(round.groups.flat().map(p => p.id).sort()).toEqual(["a", "b", "c", "d", "e"]);
   });
-  it("uses reciprocal language preferences and changes partners next round", () => {
-    const first = pairRound(people, [], 10);
-    for (const group of first.groups) expect(group[0].learns).toBe(group[1].speaks[0]);
-    const second = pairRound(people, [first], 10);
+  it("forms tables of three or four from six people up, and one table below that", () => {
+    const many = (count: number) => Array.from({ length: count }, (_, i) => ({ ...people[i % 4], id: `n${i}` }));
+    for (const count of [2, 3, 4, 5]) expect(pairRound(many(count), []).groups.map(g => g.length)).toEqual([count]);
+    for (let count = 6; count <= 60; count++) {
+      const groups = pairRound(many(count), []).groups;
+      expect(groups.flat().map(p => p.id).sort()).toEqual(many(count).map(p => p.id).sort());
+      expect(groups.length).toBe(Math.round(count / 3.5));
+      for (const group of groups) expect([3, 4]).toContain(group.length);
+    }
+    expect(pairRound(many(7), []).groups.map(g => g.length)).toEqual([4, 3]);
+    expect(pairRound(many(10), []).groups.map(g => g.length)).toEqual([4, 3, 3]);
+  });
+  it("spreads Vietnamese speakers first, one per table as far as they go", () => {
+    const visitors: Person[] = Array.from({ length: 9 }, (_, i) => ({ id: `en${i}`, name: `Visitor ${i}`, speaks: ["en"], learns: "vi" }));
+    const locals: Person[] = Array.from({ length: 3 }, (_, i) => ({ id: `vi${i}`, name: `Local ${i}`, speaks: ["vi"], learns: "en" }));
+    const balanced = pairRound([...visitors, ...locals], []).groups;
+    expect(balanced).toHaveLength(3);
+    for (const group of balanced) expect(group.filter(p => p.speaks.includes("vi"))).toHaveLength(1);
+    // Fewer locals than tables: each local still anchors a different table.
+    const scarce = pairRound([...visitors, ...locals.slice(0, 2)], []).groups;
+    expect(scarce.map(group => group.filter(p => p.speaks.includes("vi")).length).sort()).toEqual([0, 1, 1]);
+    // More locals than tables: nobody is left without one.
+    const plenty = pairRound([...visitors.slice(0, 3), ...locals, { ...locals[0], id: "vi3" }, { ...locals[0], id: "vi4" }], []).groups;
+    for (const group of plenty) expect(group.some(p => p.speaks.includes("vi"))).toBe(true);
+    expect(pairRound([...visitors, ...locals], []).groups).toEqual(balanced);
+  });
+  it("mixes languages at each table and changes tablemates next round", () => {
+    const first = pairRound(eight, [], 10);
+    expect(first.groups.map(g => g.length)).toEqual([4, 4]);
+    for (const group of first.groups) expect(new Set(group.flatMap(p => p.speaks))).toEqual(new Set(["vi", "en"]));
+    const second = pairRound(eight, [first], 10);
     expect(second.groups.find(g => g.some(p => p.id === "a"))?.map(p => p.id).sort())
       .not.toEqual(first.groups.find(g => g.some(p => p.id === "a"))?.map(p => p.id).sort());
   });
   it("keeps other groups private and queues a late arrival without reshuffling", () => {
+    const people = eight;
     const round = pairRound(people, [], 10);
     const state = { rounds: [round] };
     const guest = practiceView(state, people, "a", false);
@@ -38,6 +67,75 @@ describe("practice from event attendance", () => {
     const p = arrivalPerson({ id: "p", event_id: "e", user_id: null, nickname: "Person", checked_in_at: "now", practice_language: "english", english_level: null, vietnamese_level: null });
     expect(p).toEqual({ id: "p", name: "Person", speaks: [], learns: "en" });
     expect(() => pairRound([p], [], 10)).toThrow("invalid_roster");
+  });
+  it("reads who can help from a quick check-in's comfortable legacy levels", () => {
+    const base = { id: "p", event_id: "e", user_id: null, nickname: "Person", checked_in_at: "now" };
+    expect(arrivalPerson({ ...base, practice_language: "english", english_level: "some", vietnamese_level: "native" }).speaks).toEqual(["vi"]);
+    expect(arrivalPerson({ ...base, practice_language: "vietnamese", english_level: "fluent", vietnamese_level: "starting" }).speaks).toEqual(["en"]);
+    expect(arrivalPerson({ ...base, practice_language: "both", english_level: "comfortable", vietnamese_level: "advanced" }).speaks).toEqual(["vi", "en"]);
+    // A full language profile stays authoritative over the legacy columns.
+    expect(arrivalPerson({ ...base, practice_language: "english", english_level: "native", vietnamese_level: "native", language_preferences: { speaks: [{ language: "fr", level: "native" }], learning: { language: "vi", level: "new" } } }).speaks).toEqual(["fr"]);
+  });
+});
+
+describe("late arrivals join the running round", () => {
+  const start = new Date("2026-11-04T12:00:00.000Z");
+  const during = new Date("2026-11-04T12:05:00.000Z");
+  const late: Person = { id: "late", name: "Late", speaks: ["en"], learns: "vi" };
+  function running(roster = eight): PracticeState {
+    const round = pairRound(roster, [], 20, start);
+    return { rounds: [{ ...round, assignments: assignTables(round.groups, DEFAULT_TABLES, "balanced") }] };
+  }
+  it("seats a newcomer at the smallest table without moving anyone", () => {
+    const state = running(eight.slice(0, 7));
+    const before = structuredClone(state);
+    const seated = seatLateArrival(state, late, during);
+    expect(state).toEqual(before);
+    expect(seated.rounds[0].groups.map(g => g.length)).toEqual([4, 4]);
+    expect(seated.rounds[0].groups[1].at(-1)).toEqual(late);
+    expect(seated.rounds[0].groups[0]).toEqual(before.rounds[0].groups[0]);
+    expect(seated.rounds[0].assignments).toEqual(before.rounds[0].assignments);
+    expect(practiceView(seated, [...eight, late], "late", false, 0, new Set(), during).myTable?.tableNumber).toBe(before.rounds[0].assignments![1].tableNumber);
+  });
+  it("sends a Vietnamese speaker to a table that lacks one", () => {
+    const visitors: Person[] = Array.from({ length: 5 }, (_, i) => ({ id: `en${i}`, name: `Visitor ${i}`, speaks: ["en"], learns: "vi" }));
+    const state = running([people[0], ...visitors, { ...visitors[0], id: "en5" }]);
+    const lacking = state.rounds[0].groups.findIndex(group => !group.some(p => p.speaks.includes("vi")));
+    expect(lacking).toBeGreaterThanOrEqual(0);
+    const seated = seatLateArrival(state, { id: "local", name: "Local", speaks: ["vi"], learns: "en" }, during);
+    expect(seated.rounds[0].groups[lacking].some(p => p.id === "local")).toBe(true);
+  });
+  it("prefers tablemates the newcomer has not met when sizes tie", () => {
+    const [a, , c, d, e, f, g] = eight;
+    const earlier: Round = { number: 1, startedAt: "2026-11-04T11:00:00.000Z", minutes: 20, endedAt: "2026-11-04T11:20:00.000Z", groups: [[late, a, c, e]] };
+    const live: Round = { number: 2, startedAt: start.toISOString(), endsAt: new Date(start.getTime() + 20 * 60_000).toISOString(), minutes: 20, groups: [[a, c, e], [d, f, g]] };
+    const seated = seatLateArrival({ rounds: [earlier, live] }, late, during);
+    expect(seated.rounds[1].groups.map(group => group.some(p => p.id === "late"))).toEqual([false, true]);
+    expect(seated.rounds[0]).toEqual(earlier);
+  });
+  it("does nothing before a round, after it ends, or for someone already seated", () => {
+    expect(seatLateArrival({ rounds: [] }, late, during)).toEqual({ rounds: [] });
+    const state = running();
+    expect(seatLateArrival(state, eight[0], during)).toBe(state);
+    expect(seatLateArrival(state, late, new Date(start.getTime() + 21 * 60_000))).toBe(state);
+    const ended: PracticeState = { rounds: [updateClock(state.rounds[0], "end", during)] };
+    expect(seatLateArrival(ended, late, during)).toBe(ended);
+    const paused: PracticeState = { rounds: [updateClock(state.rounds[0], "pause", during)] };
+    expect(seatLateArrival(paused, late, new Date(start.getTime() + 3_600_000)).rounds[0].groups.flat().some(p => p.id === "late")).toBe(true);
+  });
+  it("opens a new table once every table is full instead of crowding one", () => {
+    let state = running(eight.slice(0, 4));
+    const arrivals = Array.from({ length: 4 }, (_, i) => ({ ...late, id: `late${i}` }));
+    state = seatLateArrival(state, arrivals[0], during);
+    expect(state.rounds[0].groups.map(g => g.length)).toEqual([LATE_GROUP_LIMIT]);
+    state = seatLateArrival(state, arrivals[1], during);
+    expect(state.rounds[0].groups.map(g => g.length)).toEqual([5, 1]);
+    expect(state.rounds[0].assignments).toHaveLength(2);
+    expect(state.rounds[0].assignments![1].groupIndex).toBe(1);
+    expect(state.rounds[0].assignments![1].tableNumber).not.toBe(state.rounds[0].assignments![0].tableNumber);
+    expect(DEFAULT_TABLES.find(t => t.number === state.rounds[0].assignments![1].tableNumber)!.capacity).toBeGreaterThanOrEqual(3);
+    state = seatLateArrival(seatLateArrival(state, arrivals[2], during), arrivals[3], during);
+    expect(state.rounds[0].groups.map(g => g.length)).toEqual([5, 3]);
   });
 });
 
@@ -85,35 +183,55 @@ describe("present and playing eligibility", () => {
 
 function roster(count: number) { return Array.from({ length: count }, (_, i) => ({ ...people[i % 4], id: `p${i}` })); }
 describe("physical tables", () => {
-  it("keeps a ten-person gathering downstairs and uses small tables first", () => {
-    const groups = pairRound(roster(10), [], 12).groups;
-    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
-    expect(assigned).toHaveLength(5);
-    expect(assigned.every(a => a.floor === "downstairs")).toBe(true);
-    expect(assigned.some(a => [4, 6, 7].includes(a.tableNumber))).toBe(true);
-    expect(assigned.some(a => a.tableNumber === 5)).toBe(false);
-  });
-  it("spreads a large group across floors without exceeding seats, including shared tables", () => {
-    const groups = pairRound(roster(40), [], 12).groups;
-    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
-    expect(new Set(assigned.map(a => a.floor)).size).toBe(2);
+  const seatsUsed = (groups: Person[][], assigned: ReturnType<typeof assignTables>) => {
     const used = new Map<number, number>();
     for (const a of assigned) used.set(a.tableNumber, (used.get(a.tableNumber) || 0) + groups[a.groupIndex].length);
-    for (const [number, seats] of used) expect(seats).toBeLessThanOrEqual(DEFAULT_TABLES.find(t => t.number === number)!.capacity);
-    expect(used.has(5)).toBe(false);
-    expect(assigned).toHaveLength(groups.length);
+    return used;
+  };
+  it("keeps a ten-person gathering downstairs at tables that fit each group", () => {
+    const groups = pairRound(roster(10), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
+    expect(assigned).toHaveLength(3);
+    expect(assigned.every(a => a.floor === "downstairs")).toBe(true);
+    expect(assigned[0].tableNumber).toBe(1);
+    expect(assigned.some(a => a.tableNumber === 5)).toBe(false);
+    for (const [number, seats] of seatsUsed(groups, assigned)) expect(seats).toBeLessThanOrEqual(DEFAULT_TABLES.find(t => t.number === number)!.capacity);
   });
-  it("handles an odd trio, blocked tables and insufficient capacity", () => {
+  it("spreads a medium group across floors without exceeding seats while tables fit", () => {
+    const groups = pairRound(roster(12), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
+    expect(new Set(assigned.map(a => a.floor)).size).toBe(2);
+    for (const [number, seats] of seatsUsed(groups, assigned)) expect(seats).toBeLessThanOrEqual(DEFAULT_TABLES.find(t => t.number === number)!.capacity);
+  });
+  it("never blocks a large evening for seats: overflow spreads across open tables, bar last", () => {
+    const groups = pairRound(roster(40), [], 12).groups;
+    const assigned = assignTables(groups, DEFAULT_TABLES, "balanced");
+    expect(assigned).toHaveLength(groups.length);
+    expect(assigned.map(a => a.groupIndex)).toEqual(groups.map((_, index) => index));
+    expect(new Set(assigned.map(a => a.floor)).size).toBe(2);
+    const used = seatsUsed(groups, assigned);
+    expect(used.has(5)).toBe(false);
+    // Nobody is stacked several groups deep on one small table while others sit empty.
+    for (const [number, seats] of used) expect(seats - DEFAULT_TABLES.find(t => t.number === number)!.capacity).toBeLessThanOrEqual(2);
+  });
+  it("handles blocked floors and one tiny table, and only fails with no table at all", () => {
     const groups = pairRound(roster(9), [], 12).groups;
     const assigned = assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.floor === "upstairs" })), "downstairs");
     expect(assigned.every(a => a.floor === "upstairs")).toBe(true);
-    const trio = assigned.find(a => groups[a.groupIndex].length === 3)!;
-    expect(DEFAULT_TABLES.find(t => t.number === trio.tableNumber)!.capacity).toBeGreaterThanOrEqual(3);
-    expect(() => assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.number === 4 })), "balanced")).toThrow("invalid_table_capacity");
+    expect(assigned.filter(a => [13, 14].includes(a.tableNumber))).toHaveLength(2);
+    const crowded = assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: t.number === 4 })), "balanced");
+    expect(crowded.map(a => a.tableNumber)).toEqual([4, 4, 4]);
+    const barOnly = assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: !!t.bar })), "balanced");
+    expect(barOnly.every(a => a.tableNumber === 5)).toBe(true);
+    expect(() => assignTables(groups, DEFAULT_TABLES.map(t => ({ ...t, available: false })), "balanced")).toThrow("invalid_table_capacity");
+    expect(() => assignTables(groups, [], "balanced")).toThrow("invalid_table_capacity");
   });
   it("respects an upstairs preference when enough seats are available", () => {
-    const assigned = assignTables(pairRound(roster(10), [], 12).groups, DEFAULT_TABLES, "upstairs");
+    const assigned = assignTables(pairRound(roster(7), [], 12).groups, DEFAULT_TABLES, "upstairs");
     expect(assigned.every(a => a.floor === "upstairs")).toBe(true);
+    // A full preferred floor falls back to a table that fits rather than crowding.
+    const fallback = assignTables(pairRound(roster(10), [], 12).groups, DEFAULT_TABLES, "upstairs");
+    expect(fallback.filter(a => a.floor === "upstairs")).toHaveLength(2);
   });
 });
 
@@ -153,7 +271,7 @@ describe("persisted authoritative clock", () => {
 });
 
 import { DEFAULT_ROUND_MINUTES, swapDraftParticipants, type Draft } from "./model";
-function editableDraft(count = 4): Draft {
+function editableDraft(count = 8): Draft {
   const groups = pairRound(roster(count), []).groups;
   return { id: "original-draft", round: 1, minutes: DEFAULT_ROUND_MINUTES, groups,
     assignments: assignTables(groups, DEFAULT_TABLES, "balanced"), rosterFingerprint: "unchanged-roster", createdAt: "2026-11-04T12:00:00Z" };
@@ -178,11 +296,12 @@ describe("host draft edits", () => {
     expect(swapped.id).not.toBe(original.id);
     expect(original).toEqual(before);
   });
-  it("keeps pairs and an odd trio the same size after a swap", () => {
-    const original = editableDraft(5);
+  it("keeps a four and a trio the same size after a swap", () => {
+    const original = editableDraft(7);
     const swapped = swapDraftParticipants(original, original.groups[0][0].id, original.groups[1][0].id, "new-draft", DEFAULT_TABLES);
     expect(swapped.groups.map(group => group.length)).toEqual(original.groups.map(group => group.length));
-    expect(swapped.groups.flat()).toHaveLength(5);
+    expect(swapped.groups.map(group => group.length)).toEqual([4, 3]);
+    expect(swapped.groups.flat()).toHaveLength(7);
   });
   it("rejects the same person, same-group swaps, unknown IDs and reused draft IDs", () => {
     const draft = editableDraft();
@@ -193,12 +312,13 @@ describe("host draft edits", () => {
     }
     expect(() => swapDraftParticipants(draft, first.id, other.id, draft.id, DEFAULT_TABLES)).toThrow("invalid_draft_swap");
   });
-  it("rejects blocked tables and combined shared-table capacity violations", () => {
+  it("rejects blocked tables but allows a swap at an overflowing table", () => {
     const draft = editableDraft(6);
     const ids = [draft.groups[0][0].id, draft.groups[1][0].id];
     const blocked = DEFAULT_TABLES.map(table => ({ ...table, available: false }));
     expect(() => swapDraftParticipants(draft, ids[0], ids[1], "new-draft", blocked)).toThrow("invalid_table_capacity");
     const crowded = { ...draft, assignments: draft.groups.map((_, groupIndex) => ({ groupIndex, tableNumber: 1, floor: "downstairs" as const })) };
-    expect(() => swapDraftParticipants(crowded, ids[0], ids[1], "new-draft", DEFAULT_TABLES)).toThrow("invalid_table_capacity");
+    expect(swapDraftParticipants(crowded, ids[0], ids[1], "new-draft", DEFAULT_TABLES).assignments).toEqual(crowded.assignments);
+    expect(() => swapDraftParticipants({ ...draft, assignments: draft.assignments.slice(1) }, ids[0], ids[1], "new-draft", DEFAULT_TABLES)).toThrow("invalid_table_capacity");
   });
 });

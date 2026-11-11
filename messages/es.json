@@ -4301,7 +4301,20 @@
     "hostSearching": "Buscando cuentas…",
     "hostSearchFailed": "La búsqueda falló. Modifica la búsqueda y vuelve a intentarlo.",
     "hostNoAccounts": "No se encontró ninguna cuenta. Introduce la dirección de correo completa de la persona o añade a un asistente sin inscripción previa.",
-    "hostEventFull": "Este evento tiene el aforo completo."
+    "hostEventFull": "Este evento tiene el aforo completo.",
+    "hostDoorHint": "Muestra este QR en la entrada. Al escanearlo se confirma que la persona está aquí y se le asigna una mesa. No publiques este enlace en internet.",
+    "quickSpeak": "Hablo",
+    "quickOther": "Otro",
+    "saveAccountTitle": "¿Lo hacemos oficial?",
+    "saveAccountPitch": "Ya tienes el check-in hecho. Diez segundos ahora te ahorran repetir tu nombre la próxima vez.",
+    "saveAccountSpot": "Guarda el check-in de hoy y tu mesa en tu cuenta",
+    "saveAccountPhotos": "Recibe las fotos después del evento",
+    "saveAccountDrink": "Confirma tu asistencia con un toque la próxima vez (así se consiguen las bebidas gratis)",
+    "saveAccountGoogle": "Continuar con Google",
+    "saveAccountConnecting": "Conectando…",
+    "saveAccountEmail": "Mejor con correo",
+    "saveAccountError": "Google no se abrió. Inténtalo de nuevo o usa el correo.",
+    "saveAccountLater": "Totalmente opcional. Tu check-in se queda igual."
   },
   "eventPractice": {
     "title": "Practicar juntos",
@@ -4416,7 +4429,15 @@
     "absent": "Ausente",
     "presenceWaiting": "El anfitrión confirmará tu presencia",
     "absentShort": "Ausencia registrada — avisa al anfitrión cuando llegues",
-    "presenceHint": "Puedes empezar con los jugadores marcados como presentes. Los jugadores cuya presencia no esté confirmada quedan fuera de esta ronda."
+    "presenceHint": "Puedes empezar con los jugadores marcados como presentes. Los jugadores cuya presencia no esté confirmada quedan fuera de esta ronda.",
+    "cardsTitle": "Tarjetas de mesa",
+    "cardsHint": "Lean la tarjeta en voz alta y ayúdense con la pronunciación y el significado.",
+    "cardsCounter": "Tarjeta {current} de {total}",
+    "cardsLevel": "Nivel {level}",
+    "cardsPrevious": "Tarjeta anterior",
+    "cardsNext": "Siguiente tarjeta",
+    "cardsEasier": "Más fácil",
+    "cardsHarder": "Más difícil"
   },
   "eventFollowupEmail": {
     "subject": "Gracias por acompañarnos en {eventTitle}",

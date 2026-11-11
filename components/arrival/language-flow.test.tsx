@@ -16,7 +16,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe("compact language exchange flow", () => {
   it("reuses the account name and saved levels at check-in without a questionnaire", async () => {
-    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({ participant: { id: "12345678", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
+    const fetcher = vi.fn().mockResolvedValueOnce(json(context)).mockResolvedValueOnce(json({ preferences: null })).mockResolvedValueOnce(json({ participant: { id: "12345678", user_id: "user-chico", nickname: "Chico", checked_in_at: "2026-10-28T12:00:00Z" }, order: null }));
     vi.stubGlobal("fetch", fetcher);
     wrap(<GuestArrival slug="social-house" />);
     const checkIn = await screen.findByRole("button", { name: "Check in" });
@@ -44,12 +44,15 @@ describe("compact language exchange flow", () => {
     expect(JSON.parse(fetcher.mock.calls[2][1].body)).toEqual(richPreferences);
   });
 
-  it("keeps walk-in name entry alongside compact language dropdowns", async () => {
+  it("asks a walk-in only for a name and one spoken language on a single screen", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(json({ ...context, profile: null, preferences: null })));
     wrap(<GuestArrival slug="social-house" />);
     expect(await screen.findByLabelText("Your name or nickname")).toBeInTheDocument();
-    expect(screen.getAllByRole("combobox")).toHaveLength(2);
-    expect(screen.getByLabelText("Your English").querySelectorAll("option")).toHaveLength(7);
+    expect(screen.queryByRole("combobox")).toBeNull();
+    expect(screen.getByRole("button", { name: "Tiếng Việt" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "English" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Check in" })).toBeDisabled();
+    expect(screen.queryByRole("button", { name: "Continue" })).toBeNull();
     expect(screen.queryByText("Step 1 of 3")).toBeNull();
   });
 });

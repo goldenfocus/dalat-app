@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { arrivalContext, guestToken, ownReceipt, participantColumns, tokenHash } from "@/lib/arrival/server";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
-import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
+import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, participantStatus, practiceView, remainingSeconds, rosterFingerprint, seatLateArrival, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
 import { claimCookieName, signClaim, verifyClaim } from "./claim";
 
 export type PracticeMutation =
@@ -16,9 +16,11 @@ export type PracticeMutation =
   | { action: "pause" | "resume" | "end"; expectedRevision: number }
   | { action: "extend"; expectedRevision: number; seconds: number };
 
+const PRACTICE_SERIES = /^language-exchange-social-house-z8oc-\d{8}$/;
+
 export async function practiceContext(slug: string) {
   // Restrict the pilot to the existing language-exchange series.
-  if (!/^language-exchange-social-house-z8oc-\d{8}$/.test(slug)) throw new Error("event_not_found");
+  if (!PRACTICE_SERIES.test(slug)) throw new Error("event_not_found");
   const context = await arrivalContext(slug);
   const { admin, event, user, access } = context;
   const [arrivals, legacy, stored, staff, metadata] = await Promise.all([
@@ -124,6 +126,30 @@ async function persist(c: Awaited<ReturnType<typeof practiceContext>>, state: Pr
   return view({ ...c, state, revision: c.revision + 1 });
 }
 
+/**
+ * Door QR scans and staff check-ins prove the person is in the room: confirm their
+ * presence and seat them in a running round. Never throws; a failed seat must not
+ * undo or fail the check-in itself.
+ */
+export async function confirmArrival(slug: string, participantId: string): Promise<boolean> {
+  if (!PRACTICE_SERIES.test(slug)) return false;
+  try {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const c = await practiceContext(slug);
+      const numbered = numberPeople(c.state, c.people);
+      const person = numbered.find(item => item.id === participantId);
+      if (!person) return false;
+      let state: PracticeState = { ...c.state, numbers: { ...c.state.numbers, ...Object.fromEntries(numbered.map(p => [p.id, p.number!])) }, presence: { ...c.state.presence, [participantId]: "present" } };
+      if (participantStatus(state, participantId, c.staffIds) === "playing") state = seatLateArrival(state, person);
+      // An in-review draft stays: starting it already tolerates newer arrivals.
+      if (c.state.presence?.[participantId] === "present" && state.rounds === c.state.rounds) return true;
+      try { await persist(c, state); return true; }
+      catch (error) { if (!(error instanceof Error) || error.message !== "status_conflict") throw error; }
+    }
+  } catch { /* The arrival is already saved; the host can still confirm presence by hand. */ }
+  return false;
+}
+
 export async function mutatePractice(slug: string, mutation: PracticeMutation) {
   const c = await practiceContext(slug);
   if (mutation.expectedRevision !== c.revision) throw new Error("status_conflict");
@@ -140,6 +166,9 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
   if (mutation.action === "presence") {
     if (!c.people.some(person => person.id === mutation.participantId)) throw new Error("participant_not_found");
     state = { ...state, presence: { ...state.presence, [mutation.participantId]: mutation.status }, draft: null };
+    // A confirmed late arrival gets a table in the running round straight away.
+    const person = numbered.find(item => item.id === mutation.participantId)!;
+    if (mutation.status === "present" && participantStatus(state, person.id, c.staffIds) === "playing") state = seatLateArrival(state, person);
   } else if (mutation.action === "settings") {
     state = { ...state, tables: mutation.tables, floorPolicy: mutation.floorPolicy, draft: null };
   } else if (mutation.action === "draft") {

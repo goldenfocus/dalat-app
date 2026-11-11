@@ -4301,7 +4301,20 @@
     "hostSearching": "Konten werden gesucht…",
     "hostSearchFailed": "Suche fehlgeschlagen. Ändere die Eingabe und versuche es erneut.",
     "hostNoAccounts": "Kein Konto gefunden. Gib die vollständige E-Mail-Adresse des Gastes ein oder füge einen Gast ohne vorherige Anmeldung hinzu.",
-    "hostEventFull": "Diese Veranstaltung ist ausgebucht."
+    "hostEventFull": "Diese Veranstaltung ist ausgebucht.",
+    "hostDoorHint": "Zeige diesen QR-Code am Eingang. Der Scan bestätigt, dass der Gast da ist, und weist ihm einen Tisch zu. Teile diesen Link nicht online.",
+    "quickSpeak": "Ich spreche",
+    "quickOther": "Andere",
+    "saveAccountTitle": "Machen wir's offiziell?",
+    "saveAccountPitch": "Du bist schon eingecheckt. Zehn Sekunden jetzt ersparen dir beim nächsten Mal das Namensspiel.",
+    "saveAccountSpot": "Behalte den heutigen Check-in und deinen Tisch in deinem Konto",
+    "saveAccountPhotos": "Erhalte die Fotos nach dem Event",
+    "saveAccountDrink": "Sag nächstes Mal mit einem Tipp zu (so sichert man sich die Freigetränke)",
+    "saveAccountGoogle": "Weiter mit Google",
+    "saveAccountConnecting": "Verbindung wird hergestellt…",
+    "saveAccountEmail": "Lieber per E-Mail",
+    "saveAccountError": "Google ließ sich nicht öffnen. Versuch es noch einmal oder nimm die E-Mail.",
+    "saveAccountLater": "Völlig freiwillig. Dein Check-in bleibt so oder so."
   },
   "eventPractice": {
     "title": "Gemeinsam üben",
@@ -4416,7 +4429,15 @@
     "absent": "Abwesend",
     "presenceWaiting": "Der Gastgeber wird deine Anwesenheit bestätigen",
     "absentShort": "Als abwesend markiert — melde dich beim Gastgeber, wenn du ankommst",
-    "presenceHint": "Du kannst mit den als anwesend markierten Spielern starten. Spieler ohne bestätigte Anwesenheit nehmen an dieser Runde nicht teil."
+    "presenceHint": "Du kannst mit den als anwesend markierten Spielern starten. Spieler ohne bestätigte Anwesenheit nehmen an dieser Runde nicht teil.",
+    "cardsTitle": "Tischkarten",
+    "cardsHint": "Lest die Karte gemeinsam laut vor und helft euch bei Aussprache und Bedeutung.",
+    "cardsCounter": "Karte {current} von {total}",
+    "cardsLevel": "Stufe {level}",
+    "cardsPrevious": "Vorherige Karte",
+    "cardsNext": "Nächste Karte",
+    "cardsEasier": "Leichter",
+    "cardsHarder": "Schwerer"
   },
   "eventFollowupEmail": {
     "subject": "Danke, dass du bei {eventTitle} dabei warst",

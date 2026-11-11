@@ -1,4 +1,4 @@
-import { assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
+import { assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, participantStatus, practiceView, remainingSeconds, rosterFingerprint, seatLateArrival, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "@/lib/practice/model";
 
 /** Entirely synthetic, browser-memory-only state. Never reads or writes an event API. */
 export type Rehearsal = { state: PracticeState; revision: number; people: Person[]; mode: "host" | "attendee" };
@@ -27,6 +27,7 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
     if (!session.people.some(person => person.id === id)) throw new Error("participant_not_found");
     if (payload.status !== "present" && payload.status !== "absent") throw new Error("invalid_request");
     state = { ...state, presence: { ...state.presence, [id]: payload.status }, draft: null };
+    if (payload.status === "present" && participantStatus(state, id, new Set(["sample-host"])) === "playing") state = seatLateArrival(state, numberPeople(state, session.people).find(person => person.id === id)!, now);
   }
   else if (payload.action === "settings") state = { ...state, tables: payload.tables as Table[], floorPolicy: payload.floorPolicy as FloorPolicy, draft: null };
   else if (payload.action === "draft") {

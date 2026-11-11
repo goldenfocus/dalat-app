@@ -4301,7 +4301,20 @@
     "hostSearching": "계정 검색 중…",
     "hostSearchFailed": "검색에 실패했어요. 검색어를 바꿔 다시 시도해 주세요.",
     "hostNoAccounts": "계정을 찾지 못했어요. 게스트의 이메일 주소를 정확히 모두 입력하거나 사전 등록 없이 방문한 참가자를 추가해 주세요.",
-    "hostEventFull": "이 행사는 정원이 찼어요."
+    "hostEventFull": "이 행사는 정원이 찼어요.",
+    "hostDoorHint": "이 QR 코드를 입구에서 보여 주세요. 스캔하면 게스트의 도착이 확인되고 테이블이 배정됩니다. 이 링크를 온라인에 올리지 마세요.",
+    "quickSpeak": "구사 언어",
+    "quickOther": "기타",
+    "saveAccountTitle": "계정으로 남겨 둘까요?",
+    "saveAccountPitch": "체크인은 이미 끝났어요. 지금 10초만 쓰면 다음엔 이름을 다시 입력할 필요가 없어요.",
+    "saveAccountSpot": "오늘 밤 체크인과 테이블을 내 계정에 보관",
+    "saveAccountPhotos": "행사 후 사진 받기",
+    "saveAccountDrink": "다음엔 한 번의 탭으로 참석 신청 (무료 음료는 이렇게 받아요)",
+    "saveAccountGoogle": "Google로 계속하기",
+    "saveAccountConnecting": "연결 중…",
+    "saveAccountEmail": "이메일로 하기",
+    "saveAccountError": "Google이 열리지 않았어요. 다시 시도하거나 이메일을 사용하세요.",
+    "saveAccountLater": "선택 사항이에요. 어느 쪽이든 체크인은 그대로 유지돼요."
   },
   "eventPractice": {
     "title": "함께 연습해요",
@@ -4416,7 +4429,15 @@
     "absent": "결석",
     "presenceWaiting": "호스트가 회원님의 출석을 확인할 예정입니다",
     "absentShort": "결석으로 표시됨 — 도착하면 호스트에게 알려 주세요",
-    "presenceHint": "현장 참석이 확인된 플레이어로 시작할 수 있습니다. 참석이 확인되지 않은 플레이어는 이번 라운드에 참여하지 않습니다."
+    "presenceHint": "현장 참석이 확인된 플레이어로 시작할 수 있습니다. 참석이 확인되지 않은 플레이어는 이번 라운드에 참여하지 않습니다.",
+    "cardsTitle": "테이블 카드",
+    "cardsHint": "카드를 함께 소리 내어 읽고, 발음과 뜻을 서로 도와주세요.",
+    "cardsCounter": "카드 {current}/{total}",
+    "cardsLevel": "레벨 {level}",
+    "cardsPrevious": "이전 카드",
+    "cardsNext": "다음 카드",
+    "cardsEasier": "더 쉽게",
+    "cardsHarder": "더 어렵게"
   },
   "eventFollowupEmail": {
     "subject": "{eventTitle}에 참여해 주셔서 감사해요",

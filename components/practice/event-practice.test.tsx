@@ -2,7 +2,9 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "@/messages/en.json";
 import type { PracticeView } from "@/lib/practice/model";
-vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => (key: keyof typeof en.eventPractice, args: Record<string, unknown> = {}) => Object.entries(args).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), en.eventPractice[key]) }));
+// Falls back to the key so new strings resolve before and after the catalogs are merged.
+function tr(key: string, args: Record<string, unknown> = {}) { return Object.entries(args).reduce((s, [k, v]) => s.replace(`{${k}}`, String(v)), (en.eventPractice as Record<string, string>)[key] ?? key); }
+vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => (key: string, args: Record<string, unknown> = {}) => tr(key, args) }));
 vi.mock("@/lib/hooks/use-viewer", () => ({ useViewer: () => ({ profile: null }) }));
 vi.mock("@/lib/i18n/routing", () => ({ usePathname: () => "/events/test", useRouter: () => ({ replace: vi.fn() }), Link: ({ children, href }: { children: React.ReactNode; href: string }) => <a href={href}>{children}</a> }));
 import { EventPractice, remainingSeconds } from "./event-practice";
@@ -60,7 +62,9 @@ describe("event pairing visibility", () => {
     expect(screen.queryByText("Group 7")).toBeNull();
     expect(screen.queryByText(/#1|#2/)).toBeNull();
     expect(screen.getByRole("timer")).toHaveTextContent("12:00");
-    expect(screen.getByRole("link", { name: en.eventPractice.openActivity })).toHaveAttribute("href", "https://ezviet.org/challenges?event=test&practice=1");
+    expect(screen.getByRole("heading", { name: tr("cardsTitle") })).toBeVisible();
+    expect(screen.getByRole("button", { name: tr("cardsNext") })).toBeVisible();
+    expect(document.querySelector('a[href*="ezviet.org"]')).toBeNull();
     expect(screen.queryByRole("button", { name: "Start practice" })).toBeNull();
     await waitFor(() => expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST").map(([, init]) => JSON.parse(init.body))).toEqual([{ action: "find", code: "12ABCDEF" }]));
   });
@@ -78,15 +82,35 @@ describe("event pairing visibility", () => {
     expect(fetchMock.mock.calls.some(([, init]) => init?.body === JSON.stringify({ action: "participation", status: "playing", expectedRevision: 1 }))).toBe(true);
     expect(screen.queryByLabelText("Check-in code")).toBeNull();
   });
-  it("shows challenge entry after round end without adding identity or course to the URL", async () => {
+  it("keeps the table cards and offers no paused challenge link after round end", async () => {
     fetchView({ ...found, round: { ...found.round!, endedAt: now } });
     render(<EventPractice slug="event slug" />);
-    expect(await screen.findByRole("link", { name: en.eventPractice.challenge })).toHaveAttribute("href", "https://ezviet.org/challenges?event=event%20slug");
+    expect(await screen.findByRole("heading", { name: tr("cardsTitle") })).toBeVisible();
+    expect(screen.queryByRole("link", { name: en.eventPractice.challenge })).toBeNull();
+    expect(document.querySelector('a[href*="ezviet.org"]')).toBeNull();
   });
-  it.each(["before check-in", "hosting", "paired"])("lets a host open the activity while %s without starting or changing the round", async status => {
-    const view: PracticeView = status === "paired"
-      ? { ...found, canStart: true }
-      : { ...anonymous, canStart: true, ...(status === "hosting" ? { me, participation: "hosting" as const } : { round: null }) };
+  it("starts a new round's table on a fresh card without any network write", async () => {
+    fetchView(found);
+    const first = render(<EventPractice slug="test" />);
+    await screen.findByRole("heading", { name: tr("cardsTitle") });
+    const before = first.container.querySelector('p[lang="vi"].text-2xl')?.textContent;
+    first.unmount();
+    fetchView({ ...found, round: { ...found.round!, number: 2 } });
+    const second = render(<EventPractice slug="test" />);
+    await screen.findByRole("heading", { name: tr("cardsTitle") });
+    expect(before).toBeTruthy();
+    expect(second.container.querySelector('p[lang="vi"].text-2xl')?.textContent).not.toBe(before);
+    expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it("gives a seated host the table cards instead of a second activity link", async () => {
+    fetchView({ ...found, canStart: true });
+    render(<EventPractice slug="event slug" />);
+    expect(await screen.findByRole("heading", { name: tr("cardsTitle") })).toBeVisible();
+    expect(screen.queryByRole("link", { name: en.eventPractice.openActivity })).toBeNull();
+    expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
+  });
+  it.each(["before check-in", "hosting"])("lets a host open the activity while %s without starting or changing the round", async status => {
+    const view: PracticeView = { ...anonymous, canStart: true, ...(status === "hosting" ? { me, participation: "hosting" as const } : { round: null }) };
     fetchView(view);
     render(<EventPractice slug="event slug" />);
     const link = await screen.findByRole("link", { name: en.eventPractice.openActivity });
@@ -124,7 +148,8 @@ describe("event pairing visibility", () => {
     const transport = vi.fn().mockImplementation(async payload => new Response(JSON.stringify(payload ? { ...found, participation: "visiting", revision: 2 } : found), { status: 200 }));
     render(<EventPractice slug="sample-rehearsal" transport={transport} />);
     expect(await screen.findByText("Table 4")).toBeVisible();
-    expect(screen.getByRole("link", { name: en.eventPractice.openActivity })).toHaveAttribute("href", "https://ezviet.org/challenges?practice=1");
+    expect(screen.getByRole("heading", { name: tr("cardsTitle") })).toBeVisible();
+    expect(document.querySelector('a[href*="ezviet.org"]')).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Change participation: Playing" }));
     fireEvent.click(await screen.findByRole("button", { name: "Sit out next round" }));
     await waitFor(() => expect(transport).toHaveBeenCalledWith({ action: "participation", status: "visiting", expectedRevision: 1 }));

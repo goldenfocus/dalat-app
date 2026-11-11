@@ -23,6 +23,13 @@ describe("arrival request boundary", () => {
     expect(arrivalSchema.safeParse({ ...guest, items: [] }).success).toBe(true);
     expect(arrivalSchema.safeParse({ ...guest, staffEntry: true, userId: requestId }).success).toBe(true);
   });
+  it("accepts a bounded door key and nothing else unknown", () => {
+    expect(arrivalSchema.parse({ ...guest, doorKey: "0123456789abcdef0123" }).doorKey).toBe("0123456789abcdef0123");
+    expect(arrivalSchema.parse(guest).doorKey).toBeUndefined();
+    expect(arrivalSchema.safeParse({ ...guest, doorKey: "x".repeat(65) }).success).toBe(false);
+    expect(arrivalSchema.safeParse({ ...guest, doorKey: 1 }).success).toBe(false);
+    expect(arrivalSchema.safeParse({ ...guest, door: "0123456789abcdef0123" }).success).toBe(false);
+  });
   it("requires expected status for concurrent staff transitions", () => {
     const transition = { action: "setOrderStatus", orderId: itemId, status: "confirmed" };
     expect(staffActionSchema.safeParse(transition).success).toBe(false);

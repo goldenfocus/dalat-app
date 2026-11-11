@@ -6,6 +6,7 @@ import { staffActionSchema } from "@/lib/arrival/schema";
 import { languagePreferencesSchema as legacyLanguagePreferencesSchema } from "@/lib/arrival/legacy-languages";
 import type { LanguagePreferences } from "@/lib/arrival/languages";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
+import { doorKey } from "@/lib/arrival/door";
 
 export const dynamic = "force-dynamic";
 type RouteContext = { params: Promise<{ slug: string }> };
@@ -73,7 +74,8 @@ export async function GET(request: NextRequest, { params }: RouteContext) {
       if (order.sponsor_status === "settled") totals.settled_vnd += amount;
       return totals;
     }, { reserved_vnd: 0, owed_vnd: 0, settled_vnd: 0 }) : null;
-    return arrivalJson({ event, access, menu, sponsorAccounting, participants: access.canWelcome ? participants : [], orders: access.canOrder ? orders : [], rsvps, staff });
+    // Welcome staff alone receive the door key that their QR and guest link carry.
+    return arrivalJson({ event, access, menu, sponsorAccounting, doorKey: access.canWelcome ? doorKey(event.id) : null, participants: access.canWelcome ? participants : [], orders: access.canOrder ? orders : [], rsvps, staff });
   } catch (error) { return arrivalFailure(error); }
 }
 

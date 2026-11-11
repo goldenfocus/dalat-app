@@ -237,6 +237,60 @@ stale search responses and already-arrived results. All twelve new UI catalog
 entries were independently reviewed. Private operational text remains excluded
 from the public translation worker.
 
+## Door check-in, tables of 3–4 and table cards (11 November 2026)
+
+Requested after the fourth Social House exchange: registration at the door was
+too slow, partners could not find each other, late arrivals fell out of the
+rounds, and voice recording did not work in a noisy bar. No schema change.
+
+**Guest check-in is one screen.** A visitor without an account enters a name,
+taps Tiếng Việt / English / Other, and is checked in. The answer maps onto the
+existing legacy language fields (`quickLanguageChoices`). Ordering stays optional
+and never gates check-in. Signed-in visitors keep the two-step flow with saved
+preferences and the sponsored drink.
+
+**Door QR proves presence.** The host Arrivals panel shows a QR and link that
+carry an event-scoped door key (`lib/arrival/door.ts`, an HMAC of the event ID;
+the QR variant `?door=1` requires welcome authority and is never cached). A
+check-in through the door link, or one made by welcome staff, confirms presence
+and seats the person without a roll-call tick. The public arrive link still
+works from anywhere but stays pending until a host confirms it or the guest
+scans the door QR (`POST /api/events/<slug>/arrival/door`). The key is a
+presence signal, not a secret credential: anyone who scanned it holds the link.
+It grants no staff access.
+
+**Tables of three or four.** `pairRound` now builds groups of 3–4 (five people
+stay one table), spreads Vietnamese speakers first so each table has one where
+possible, and avoids repeat partners. Seating is soft: a group that fits no
+table goes to the roomiest open one rather than blocking the draft. A confirmed
+arrival joins the running round at once (`seatLateArrival`), capped at five per
+table before a new table opens; nobody already seated moves. Between rounds a
+late arrival waits for the host's next draft. Attendees see their table, floor,
+tablemates and each person's spoken-language badge.
+
+**Table cards replace the recording activity.** Seated attendees get a
+no-microphone deck (`lib/practice/cards.ts`, 36 Vietnamese/English cards in
+three levels) with Easier/Harder controls. The attendee EZViệt activity and
+challenge links are removed; a host with no group keeps the preview link.
+
+**Save your account, after the door.** A guest receipt shows an optional card
+with Google sign-in and a link to email login, both returning to the arrive
+page. When a signed-in user loads the arrival page holding that phone's guest
+receipt cookie, the guest row is attached to their account
+(`lib/arrival/link-account.ts`) and keeps its ID, table, order and code. It never
+matches by email or name and leaves both rows alone if the account already has
+an arrival. A new account still passes the normal onboarding steps first.
+
+Not built: an emailed sign-in code (no evidence in the repository that a code
+email is delivered; the Supabase template must be checked first), carrying the
+return path through email confirmation, and automatic round rotation.
+
+Verification is unit and component level only: the full suite, typecheck and
+catalog check pass locally. Nothing was run against the production database, a
+real QR scan, a live Google round trip or a phone at the venue. The eleven
+non-English UI strings and the Vietnamese card deck were machine-written and
+have not had independent review.
+
 ### Complimentary menu and paid orders
 
 The drink sheet separates **Complimentary by EZViet** from **Paid**, using the

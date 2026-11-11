@@ -43,7 +43,7 @@ describe("isolated host rehearsal", () => {
     expect(new Set(session.state.draft?.assignments.map(a => a.floor)).size).toBe(2);
     session = act(session, { action: "start", draftId: session.state.draft!.id });
     const guest = rehearsalView({ ...session, mode: "attendee" });
-    expect(guest.myGroup).toHaveLength(2);
+    expect([3, 4]).toContain(guest.myGroup?.length);
     expect(guest.myTable?.tableNumber).toBeTruthy();
     expect(guest.draft).toBeNull();
     expect(guest.participants).toBeUndefined();
@@ -53,6 +53,18 @@ describe("isolated host rehearsal", () => {
     expect(session.state.rounds).toHaveLength(2);
     expect(session.state.rounds[1].number).toBe(2);
     expect(rehearsalView({ ...session, mode: "attendee" }).myGroup).not.toEqual(guest.myGroup);
+  });
+  it("seats a late sample arrival in the running round as soon as the host confirms them", () => {
+    let session = createRehearsal(7);
+    for (const id of ["sample-1", "sample-2", "sample-3", "sample-4", "sample-5", "sample-6"]) session = act(session, { action: "presence", participantId: id, status: "present" });
+    session = act(session, { action: "draft" });
+    session = act(session, { action: "start", draftId: session.state.draft!.id });
+    expect(session.state.rounds[0].groups.map(group => group.length)).toEqual([3, 3]);
+    session = act(session, { action: "presence", participantId: "sample-7", status: "present" });
+    expect(session.state.rounds[0].groups.flat().map(person => person.id)).toContain("sample-7");
+    expect(session.state.rounds[0].groups.map(group => group.length).sort()).toEqual([3, 4]);
+    session = act(session, { action: "presence", participantId: "sample-visitor", status: "present" });
+    expect(session.state.rounds[0].groups.flat().map(person => person.id)).not.toContain("sample-visitor");
   });
   it("enforces role/revision boundaries locally and leaves reset with no assignments", () => {
     const session = createRehearsal();

@@ -7,5 +7,6 @@ export type HostParticipant = ArrivalParticipant;
 export type HostRsvp = StaffArrivalContext["rsvps"][number];
 export type HostOrder = ArrivalOrder;
 export type HostStaff = StaffArrivalContext["staff"][number];
-export type HostData = StaffArrivalContext;
+/** `doorKey` is present only for welcome staff; it marks a QR scan as made at the venue. */
+export type HostData = StaffArrivalContext & { doorKey?: string | null };
 export type HostAction = (body: Record<string, unknown>) => Promise<boolean>;

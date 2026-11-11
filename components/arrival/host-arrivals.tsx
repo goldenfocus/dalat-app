@@ -58,9 +58,11 @@ export function HostArrivals({ data, slug, guestPath, busy, onSaved }: { data: H
     } catch { setCheckInError(t("errorGeneric")); }
     finally { checking.current = false; setCheckingId(null); }
   };
+  // The door link and QR carry the presence key: a scan confirms the guest is in the room.
+  const doorPath = data.doorKey ? `${guestPath}?door=${encodeURIComponent(data.doorKey)}` : guestPath;
   const copy = async () => {
     try {
-      await navigator.clipboard.writeText(`${window.location.origin}${guestPath}`);
+      await navigator.clipboard.writeText(`${window.location.origin}${doorPath}`);
       setCopied(true); setCopyError(false);
     } catch { setCopyError(true); }
   };
@@ -68,10 +70,10 @@ export function HostArrivals({ data, slug, guestPath, busy, onSaved }: { data: H
     <details className="rounded-lg border bg-card p-4">
       <summary className="min-h-11 cursor-pointer font-medium">{t("hostGuestLink")}</summary>
       <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
-        {/* The QR endpoint encodes only the public arrival URL, never host access. */}
+        {/* The QR encodes the arrival URL plus the door presence key, never host access. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={`/api/events/${encodeURIComponent(slug)}/arrival/qr?locale=${encodeURIComponent(locale)}`} alt={t("hostQrAlt")} width={176} height={176} className="h-44 w-44 bg-white p-2" />
-        <div className="min-w-0"><a href={guestPath} target="_blank" rel="noreferrer" className="break-all text-sm underline underline-offset-4">{guestPath}</a><button type="button" onClick={() => void copy()} className="mt-3 flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm">{copied ? <Check aria-hidden className="h-4 w-4" /> : <Copy aria-hidden className="h-4 w-4" />}{t(copied ? "hostCopied" : "hostCopyLink")}</button>{copyError && <p role="alert" className="mt-2 text-sm">{t("hostCopyFailed")}</p>}</div>
+        <img src={`/api/events/${encodeURIComponent(slug)}/arrival/qr?locale=${encodeURIComponent(locale)}${data.doorKey ? "&door=1" : ""}`} alt={t("hostQrAlt")} width={176} height={176} className="h-44 w-44 bg-white p-2" />
+        <div className="min-w-0">{data.doorKey && <p className="mb-2 text-sm text-muted-foreground">{t("hostDoorHint")}</p>}<a href={doorPath} target="_blank" rel="noreferrer" className="break-all text-sm underline underline-offset-4">{doorPath}</a><button type="button" onClick={() => void copy()} className="mt-3 flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm">{copied ? <Check aria-hidden className="h-4 w-4" /> : <Copy aria-hidden className="h-4 w-4" />}{t(copied ? "hostCopied" : "hostCopyLink")}</button>{copyError && <p role="alert" className="mt-2 text-sm">{t("hostCopyFailed")}</p>}</div>
       </div>
     </details>
     {selection !== null ? <HostGuestForm key={selection.participant?.id || selection.rsvp?.id || "walkin"} data={data} slug={slug} participant={selection.participant} rsvp={selection.rsvp} orderMode={selection.orderMode} onCancel={() => setSelection(null)} onSaved={async () => { setSelection(null); await onSaved(); }} /> : <>

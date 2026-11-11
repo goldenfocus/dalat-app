@@ -4301,7 +4301,20 @@
     "hostSearching": "正在搜索账号…",
     "hostSearchFailed": "搜索失败，请修改搜索内容后重试。",
     "hostNoAccounts": "未找到账号。请尝试输入来宾的完整邮箱地址，或添加未提前报名的现场来宾。",
-    "hostEventFull": "活动人数已满。"
+    "hostEventFull": "活动人数已满。",
+    "hostDoorHint": "请在入口处出示此二维码。扫码后即确认来宾已到场并为其安排桌位。请勿在网上公开此链接。",
+    "quickSpeak": "我说",
+    "quickOther": "其他",
+    "saveAccountTitle": "要不要正式存下来？",
+    "saveAccountPitch": "你已经签到成功。现在花十秒，下次就不用再填名字了。",
+    "saveAccountSpot": "把今晚的签到和你的桌位保存到账号里",
+    "saveAccountPhotos": "活动结束后收到照片",
+    "saveAccountDrink": "下次一键报名（免费饮品就是这样领到的）",
+    "saveAccountGoogle": "使用 Google 继续",
+    "saveAccountConnecting": "正在连接…",
+    "saveAccountEmail": "改用邮箱",
+    "saveAccountError": "Google 没有打开。请重试，或改用邮箱。",
+    "saveAccountLater": "完全自愿。无论如何，你的签到都会保留。"
   },
   "eventPractice": {
     "title": "一起练习",
@@ -4416,7 +4429,15 @@
     "absent": "缺席",
     "presenceWaiting": "主持人会确认您已到场",
     "absentShort": "已标记为缺席 — 到场后请联系主持人",
-    "presenceHint": "你可以与已标记为到场的玩家开始。未确认到场的玩家不参与本轮。"
+    "presenceHint": "你可以与已标记为到场的玩家开始。未确认到场的玩家不参与本轮。",
+    "cardsTitle": "桌面卡片",
+    "cardsHint": "一起大声朗读卡片，互相帮助发音和理解意思。",
+    "cardsCounter": "第 {current}/{total} 张",
+    "cardsLevel": "等级 {level}",
+    "cardsPrevious": "上一张",
+    "cardsNext": "下一张",
+    "cardsEasier": "简单一点",
+    "cardsHarder": "难一点"
   },
   "eventFollowupEmail": {
     "subject": "感谢你参加 {eventTitle}",
