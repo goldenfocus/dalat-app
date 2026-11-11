@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { ArrivalContext, ArrivalReceipt } from "@/lib/arrival/types";
 import { ArrivalMenu, cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView, ArrivalReceiptView } from "./arrival-receipt";
+import { SaveAccountCard } from "./save-account-card";
 import { StaffDeskEntry } from "./staff-desk-entry";
 import { EventPractice } from "@/components/practice/event-practice";
 import { QuickLanguage, quickLanguageChoices, type QuickSpeaks } from "./quick-language";
@@ -189,7 +190,7 @@ export function GuestArrival({ slug }: { slug: string }) {
       {receipt && /^language-exchange-social-house-z8oc-\d{8}$/.test(slug) && <EventPractice slug={slug} />}
       {loading ? <p className="py-16 text-muted-foreground" role="status">{t("loading")}</p> : !context ? (
         <div className="space-y-4 py-12"><p role="alert">{t("loadError")}</p><Button className="scroll-mb-28 min-h-12" onClick={() => void refresh()}>{t("retry")}</Button></div>
-      ) : receipt ? <ArrivalReceiptView receipt={receipt} stale={stale} onRefresh={() => void refresh()} /> : !context.event.isOpen ? (
+      ) : receipt ? <><ArrivalReceiptView receipt={receipt} stale={stale} onRefresh={() => void refresh()} />{!receipt.participant.user_id && <SaveAccountCard />}</> : !context.event.isOpen ? (
         <div className="space-y-4 py-12"><h1 className="text-2xl font-semibold">{context.event.title}</h1><time dateTime={context.event.startsAt} className="block text-foreground">{new Intl.DateTimeFormat(locale, { dateStyle: "full", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(context.event.startsAt))}</time><p role="status" className="text-muted-foreground">{t("errorClosed")}</p><Button variant="outline" className="scroll-mb-28 min-h-12" onClick={() => void refresh()}>{t("refresh")}</Button></div>
       ) : (
         <>

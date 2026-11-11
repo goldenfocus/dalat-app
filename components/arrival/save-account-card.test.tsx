@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ArrivalReceiptView } from "./arrival-receipt";
+import { SaveAccountCard } from "./save-account-card";
 import type { ArrivalReceipt } from "@/lib/arrival/types";
 
 const { signInWithOAuth } = vi.hoisted(() => ({ signInWithOAuth: vi.fn() }));
@@ -19,7 +20,7 @@ afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe("save account after a guest check-in", () => {
   it("offers Google and email to a guest, both returning to this arrival page", async () => {
     signInWithOAuth.mockResolvedValue({ error: null });
-    render(<ArrivalReceiptView receipt={receipt(null)} stale={false} onRefresh={() => {}} />);
+    render(<SaveAccountCard />);
     expect(screen.getByRole("heading", { name: "saveAccountTitle" })).toBeVisible();
     expect(screen.getByRole("link", { name: "saveAccountEmail" })).toHaveAttribute("href", "/auth/login?next=%2Fevents%2Fexchange-20261111%2Farrive");
     fireEvent.click(screen.getByRole("button", { name: "saveAccountGoogle" }));
@@ -31,15 +32,15 @@ describe("save account after a guest check-in", () => {
     expect(redirect.searchParams.get("next")).toBe("/auth/continue?next=%2Fevents%2Fexchange-20261111%2Farrive");
   });
 
-  it("stays out of the way once the check-in belongs to an account", () => {
-    render(<ArrivalReceiptView receipt={receipt("user-1")} stale={false} onRefresh={() => {}} />);
+  it("is rendered by the guest page, not by the shared receipt view", () => {
+    render(<ArrivalReceiptView receipt={receipt(null)} stale={false} onRefresh={() => {}} />);
     expect(screen.queryByRole("heading", { name: "saveAccountTitle" })).toBeNull();
     expect(screen.getByText("welcomeName")).toBeVisible();
   });
 
   it("recovers with a visible error when Google sign-in cannot start", async () => {
     signInWithOAuth.mockResolvedValue({ error: new Error("blocked") });
-    render(<ArrivalReceiptView receipt={receipt(null)} stale={false} onRefresh={() => {}} />);
+    render(<SaveAccountCard />);
     fireEvent.click(screen.getByRole("button", { name: "saveAccountGoogle" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("saveAccountError");
     expect(screen.getByRole("button", { name: "saveAccountGoogle" })).toBeEnabled();
