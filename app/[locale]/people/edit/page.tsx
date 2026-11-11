@@ -27,6 +27,7 @@ export default async function PeopleEditPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("people");
+  const dating = await getTranslations("dating");
   const unavailable = <PeopleMessage title={t("unavailableTitle")} description={t("unavailableDescription")}><PeopleRetry label={t("retry")} /></PeopleMessage>;
   let content;
   if (!isPeopleEnabled()) {
@@ -51,6 +52,7 @@ export default async function PeopleEditPage({ params }: PageProps) {
     <div className="container mx-auto max-w-2xl px-4 py-6 pb-28 sm:py-10 sm:pb-28">
       <Link href="/people" className="-ml-3 mb-5 flex min-h-11 w-fit items-center gap-2 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-foreground active:scale-95 active:text-foreground"><ArrowLeft className="h-4 w-4" aria-hidden="true" /><span>{t("back")}</span></Link>
       <header className="mb-8"><h1 className="text-3xl font-semibold tracking-tight">{t("setupTitle")}</h1><p className="mt-3 text-base leading-relaxed text-muted-foreground">{t("setupDescription")}</p></header>
+      <Link href="/dating" className="mb-6 inline-flex min-h-11 items-center gap-2 border-b py-2 font-medium">♡ {dating("navLabel")}</Link>
       {content}
     </div>
   );

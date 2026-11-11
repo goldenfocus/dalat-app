@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { uploadFile } from "@/lib/storage/client";
 import { createClient } from "@/lib/supabase/client";
 import type { MenuItemRow, MenuSectionRow } from "@/lib/menu/types";
 
@@ -46,6 +47,18 @@ function ItemRow({ item, onChange, onDelete }: {
     if (!quiet) toast.success(t("saved"));
   };
 
+  const uploadPhoto = async (file: File) => {
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type) || file.size >= 5 * 1024 * 1024) {
+      toast.error(t("photoInvalid")); return;
+    }
+    setBusy(true);
+    try {
+      const result = await uploadFile("venue-media", file, { entityId: item.id });
+      await patch({ image_url: result.publicUrl }, true);
+    } catch { toast.error(t("errorGeneric")); }
+    finally { setBusy(false); }
+  };
+
   const save = () =>
     patch({
       name: name.trim(),
@@ -72,6 +85,16 @@ function ItemRow({ item, onChange, onDelete }: {
         <span className="text-xs text-muted-foreground">{t("itemDescription")}</span>
         <Textarea className="text-base" rows={2} maxLength={600} value={description} onChange={(e) => setDescription(e.target.value)} />
       </label>
+      <div className="flex items-center gap-3">
+        {item.image_url &&
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={item.image_url} alt="" className="h-16 w-16 rounded-lg object-cover" />}
+        <label className="relative inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-lg border px-3 text-sm">
+          <Camera aria-hidden className="h-4 w-4" />{t("itemPhoto")}
+          <input type="file" accept="image/jpeg,image/png,image/webp" aria-label={t("itemPhoto")} disabled={busy} className="absolute inset-0 cursor-pointer opacity-0" onChange={event => { const file = event.target.files?.[0]; if (file) void uploadPhoto(file); event.target.value = ""; }} />
+        </label>
+        {item.image_url && <Button type="button" variant="ghost" size="icon" disabled={busy} aria-label={t("removePhoto")} onClick={() => void patch({ image_url: null }, true)}><Trash2 aria-hidden className="h-4 w-4" /></Button>}
+      </div>
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         <label className="flex min-h-11 items-center gap-2 text-sm">
           <Switch checked={item.is_available} disabled={busy} onCheckedChange={(v) => patch({ is_available: v }, true)} />

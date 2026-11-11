@@ -108,34 +108,9 @@ export function useEventCounts(eventId: string, initialData?: EventCounts) {
   const query = useQuery({
     queryKey: queryKeys.events.counts(eventId),
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("rsvps")
-        .select("status, plus_ones")
-        .eq("event_id", eventId);
-
+      const { data, error } = await supabase.rpc("get_event_counts", { p_event_id: eventId });
       if (error) throw error;
-
-      // Aggregate counts
-      const counts: EventCounts = {
-        event_id: eventId,
-        going_count: 0,
-        going_spots: 0,
-        waitlist_count: 0,
-        interested_count: 0,
-      };
-
-      for (const rsvp of data || []) {
-        if (rsvp.status === "going") {
-          counts.going_count++;
-          counts.going_spots += 1 + (rsvp.plus_ones || 0);
-        } else if (rsvp.status === "waitlist") {
-          counts.waitlist_count++;
-        } else if (rsvp.status === "interested") {
-          counts.interested_count++;
-        }
-      }
-
-      return counts;
+      return data as EventCounts;
     },
     initialData,
     staleTime: STALE_TIMES.eventCounts,

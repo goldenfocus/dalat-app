@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
-import { CalendarCheck, ChevronRight, ChevronDown, Music, Loader2 } from "lucide-react";
+import { CalendarCheck, ChevronRight, ChevronDown, Music, Loader2, Repeat } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
@@ -35,6 +35,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
   const t = useTranslations("home");
   const tRsvp = useTranslations("rsvp");
   const tEvents = useTranslations("events");
+  const tSeries = useTranslations("series");
   const locale = useLocale() as Locale;
 
   const [events, setEvents] = useState<UserEvent[]>([]);
@@ -79,7 +80,8 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
             ends_at,
             location_name,
             capacity,
-            status
+            status,
+            series_id
           )
         `)
         .eq("user_id", user.id)
@@ -103,7 +105,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
         events: Event | null;
       };
 
-      const userEvents: UserEvent[] = (rsvps as RsvpWithEvent[])
+      const upcoming: UserEvent[] = (rsvps as RsvpWithEvent[])
         .filter((r) => {
           if (!r.events) return false;
           // Only upcoming events that are published
@@ -116,6 +118,15 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
         }))
         // Sort by start date (soonest first)
         .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime());
+
+      // A recurring series shows once, as its next date.
+      const seenSeries = new Set<string>();
+      const userEvents = upcoming.filter((event) => {
+        if (!event.series_id) return true;
+        if (seenSeries.has(event.series_id)) return false;
+        seenSeries.add(event.series_id);
+        return true;
+      });
 
       setEvents(userEvents);
 
@@ -231,6 +242,7 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
             locale={locale}
             tRsvp={tRsvp}
             tEvents={tEvents}
+            recurringLabel={tSeries("recurringSeries")}
           />
         ))}
       </div>
@@ -242,10 +254,10 @@ export function YourEventsSection({ locale: _locale }: YourEventsSectionProps) {
           className="w-full mt-2 py-2 text-sm text-muted-foreground hover:text-foreground flex items-center justify-center gap-1 transition-colors"
         >
           {expanded ? (
-            <>Show less</>
+            <>{t("showLess")}</>
           ) : (
             <>
-              Show {events.length - DEFAULT_VISIBLE} more
+              {t("showMore", { count: events.length - DEFAULT_VISIBLE })}
               <ChevronDown className="w-4 h-4" />
             </>
           )}
@@ -262,9 +274,10 @@ interface YourEventCardProps {
   locale: Locale;
   tRsvp: ReturnType<typeof useTranslations>;
   tEvents: ReturnType<typeof useTranslations>;
+  recurringLabel: string;
 }
 
-function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents }: YourEventCardProps) {
+function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents, recurringLabel }: YourEventCardProps) {
   const [isLoadingPlaylist, setIsLoadingPlaylist] = useState(false);
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
 
@@ -361,6 +374,9 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
   return (
     <Link
       href={`/events/${event.slug}`}
+      // Like the other event cards: prefetching replays the event page's
+      // stylesheet preload on this page, where nothing uses it.
+      prefetch={false}
       className="flex gap-3 p-2 -mx-2 rounded-lg hover:bg-muted/50 active:bg-muted transition-colors group"
     >
       {/* Event image */}
@@ -386,8 +402,15 @@ function YourEventCard({ event, counts, friendsAttending, locale, tRsvp, tEvents
         </h3>
 
         {/* Date & Time */}
-        <p className="text-xs text-muted-foreground mt-0.5">
-          {dateStr} · {timeStr}
+        <p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5">
+          <span>
+            {dateStr} · {timeStr}
+          </span>
+          {event.series_id && (
+            <span role="img" aria-label={recurringLabel} title={recurringLabel} className="inline-flex">
+              <Repeat className="w-3 h-3" aria-hidden="true" />
+            </span>
+          )}
         </p>
 
         {/* Status badge + attendee count */}

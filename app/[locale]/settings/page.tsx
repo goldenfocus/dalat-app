@@ -1,4 +1,5 @@
 import { PeerSignIn } from '@/components/deovia/PeerSignIn';
+import { Link } from "@/lib/i18n/routing";
 import { redirect } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { getEffectiveUser } from "@/lib/god-mode";
@@ -24,6 +25,7 @@ export default async function SettingsPage({ params }: Props) {
   setRequestLocale(locale);
 
   const t = await getTranslations("settings");
+  const dating = await getTranslations("dating");
   const { user, profile, godMode } = await getEffectiveUser();
 
   if (!user) {
@@ -36,6 +38,7 @@ export default async function SettingsPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <Link href="/dating?start=1" className="inline-flex min-h-11 items-center gap-2 border-b py-2">♡ {dating("settingsLink")}</Link>
       {/* Notifications Section */}
       <Card>
         <CardHeader>

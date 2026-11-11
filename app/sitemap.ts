@@ -261,6 +261,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/calendar", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/venues", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/festivals", priority: 0.8, changeFrequency: "weekly" as const },
+    { path: "/dating", priority: 0.8, changeFrequency: "weekly" as const },
     { path: "/about", priority: 0.6, changeFrequency: "monthly" as const },
 
     // Venue type landing pages (programmatic SEO - targets "dalat [venue type]" keywords)

@@ -290,3 +290,35 @@ catalog check pass locally. Nothing was run against the production database, a
 real QR scan, a live Google round trip or a phone at the venue. The eleven
 non-English UI strings and the Vietnamese card deck were machine-written and
 have not had independent review.
+
+### Complimentary menu and paid orders
+
+The drink sheet separates **Complimentary by EZViet** from **Paid**, using the
+server's event-specific eligible item IDs and the guest's RSVP eligibility. It
+shows item names and prices first; details and paid-item options open on tap.
+Venue photos use the menu's existing image field, with icon placeholders when
+there is no photo. Venue menu editors can upload/remove a photo and edit the
+name, description, price and availability. Existing menu translation and original
+text controls apply to these same public menu records.
+
+Managers can expand **Edit drink offer** in the event's EZViet tab to select exact
+menu items and the RSVP limit. Saving affects that occurrence only. Explicit
+choices survive future menu-section and event-schedule updates. A hidden item
+stays removable from the offer. Series-default sections continue to supply new
+occurrences that have not been customized. Configuration changes never rewrite
+saved order prices, sponsor credit or guest amounts due; previously promised free
+drinks remain covered. Changing eligibility cannot be used to retroactively bill
+a guest.
+
+The intended Social House default is lime water, ginger tea and iced coffee.
+The owner authorized pricing lime water and ginger tea at the cheapest listed
+drink price (35,000 VND), and iced coffee at the existing Black Coffee price
+(40,000 VND). Iced coffee is black coffee served chilled, with no hot option.
+The scoped setup script replaces the old broad beverage-section configuration.
+Do not substitute unrelated menu items or zero prices to make sponsor accounting
+appear complete. Special quota promotions beyond the existing RSVP limit remain
+future work.
+
+The preview/release also runs playlist share-image generation in the Node runtime:
+its translated dependencies exceed Vercel's Edge function size limit. This changes
+where the same image is rendered, not its content or access policy.

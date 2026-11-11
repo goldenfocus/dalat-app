@@ -38,8 +38,13 @@ export function resolveEditorialPublicationCandidate(input: {
   review: EditorialReviewLike;
   verificationStatus: 'published' | 'experimental' | 'draft';
   existingUrl: boolean;
+  /** The post is live as published and this run is re-verifying it. */
+  alreadyPublished?: boolean;
 }): 'published' | 'draft' {
-  if (!input.freshness.autoPublishEligible) return 'draft';
+  // The age gate decides what may newly appear. A published story whose
+  // evidence still verifies stays published when it is re-checked later;
+  // otherwise every re-verification would drop it out of the archive.
+  if (!input.freshness.autoPublishEligible && !input.alreadyPublished) return 'draft';
   if (!input.existingUrl && !editorialReviewApprovesNewArticle(input.review)) return 'draft';
   return input.verificationStatus === 'published' ? 'published' : 'draft';
 }

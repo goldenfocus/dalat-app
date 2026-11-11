@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.101';
+const SW_VERSION = '1.0.103';
 
 const APP_URL = self.location.origin;
 
@@ -165,9 +165,12 @@ self.addEventListener('fetch', (event) => {
           const canStore = response.ok && !response.redirected &&
             response.headers.get('content-type')?.includes('text/html') &&
             !/\b(?:private|no-store)\b/i.test(cacheControl);
+          // Clone before returning: once the cache has opened, the page may
+          // already be reading the body and clone() throws.
+          const copy = canStore ? response.clone() : null;
           event.waitUntil(
-            caches.open(PAGES_CACHE).then(cache => canStore
-              ? putPage(cache, request, response.clone())
+            caches.open(PAGES_CACHE).then(cache => copy
+              ? putPage(cache, request, copy)
               : cache.delete(request))
           );
           // Preserve real HTTP errors; never mask a 404 or security denial.

@@ -218,37 +218,9 @@ export const getCachedEventCounts = unstable_cache(
     const supabase = createStaticClient();
     if (!supabase) return null;
 
-    const { data, error } = await supabase
-      .from("rsvps")
-      .select("status, plus_ones")
-      .eq("event_id", eventId);
-
-    if (error) {
-      console.error("Error fetching event counts:", error);
-      return null;
-    }
-
-    // Aggregate counts
-    const counts: EventCounts = {
-      event_id: eventId,
-      going_count: 0,
-      going_spots: 0,
-      waitlist_count: 0,
-      interested_count: 0,
-    };
-
-    for (const rsvp of data || []) {
-      if (rsvp.status === "going") {
-        counts.going_count++;
-        counts.going_spots += 1 + (rsvp.plus_ones || 0);
-      } else if (rsvp.status === "waitlist") {
-        counts.waitlist_count++;
-      } else if (rsvp.status === "interested") {
-        counts.interested_count++;
-      }
-    }
-
-    return counts;
+    const { data, error } = await supabase.rpc("get_event_counts", { p_event_id: eventId });
+    if (error) { console.error("Error fetching event counts:", error); return null; }
+    return data as EventCounts;
   },
   ["event-counts"],
   {

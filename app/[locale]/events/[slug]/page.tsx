@@ -1846,6 +1846,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Attendees */}
+              {!isLoggedIn && <div id="attendees" className="scroll-mt-20"><Link className="inline-flex min-h-11 items-center underline" href={`/auth/login?next=${encodeURIComponent(`/events/${event.slug}#attendees`)}`}>{t("signInToSeeAttendees")}</Link></div>}
               {isLoggedIn && <AttendeeList
                 attendees={attendees}
                 waitlist={waitlist}

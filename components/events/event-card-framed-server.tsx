@@ -145,6 +145,10 @@ export function EventCardFramedServer({
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
                     aria-hidden="true"
+                    // Same URL as the image below: an eager backdrop would
+                    // download offscreen cards and have React preload them.
+                    loading={priority ? "eager" : "lazy"}
+                    decoding="async"
                   />
                 )}
                 {/* eslint-disable-next-line @next/next/no-img-element */}

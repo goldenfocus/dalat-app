@@ -28,6 +28,9 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
         <div className="flex items-center gap-0.5 min-[360px]:gap-1.5">
           <Link
             href="/"
+            // On every page: prefetching the homepage replays its hero image
+            // preload here, a wasted high-priority download per page view.
+            prefetch={false}
             data-fog-wordmark
             className="font-bold text-base min-[360px]:text-lg"
           >

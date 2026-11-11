@@ -112,7 +112,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
           </nav>
           {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={load} />}
           {visibleTab === "orders" && data.access.canOrder && <HostOrders orders={data.orders} busy={busy} act={act} />}
-          {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <DrinkOfferSettings key={data.event.sponsorship.rsvpLimit} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} onSaved={load} />}<SponsorLedger data={data} busy={busy} act={act} /></>}
+          {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <details className="mb-6"><summary className="cursor-pointer py-3 font-medium">{t("registration.editOffer")}</summary><DrinkOfferSettings key={`${data.event.sponsorship.rsvpLimit}:${data.event.sponsorship.eligibleItemIds.join(",")}`} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} itemIds={data.event.sponsorship.eligibleItemIds} menu={data.menu} onSaved={load} /></details>}<SponsorLedger data={data} busy={busy} act={act} /></>}
           {visibleTab === "team" && data.access.canManage && <HostTeam staff={data.staff} busy={busy} act={act} />}
         </>}
       </>}
