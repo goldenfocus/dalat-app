@@ -3,10 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
-	"unicode"
 
 	"go.mau.fi/whatsmeow/proto/waE2E"
 )
@@ -235,6 +233,21 @@ func decide(in inbound, history []memMsg, ex extractor, now time.Time) (*eventDr
 			draft.Meta["title_needs_review"] = true
 		}
 	}
+	announceText := announcementCorpus(in, draft)
+	if clockAmbiguous(announceText) {
+		if draft.Meta == nil {
+			draft.Meta = map[string]any{}
+		}
+		draft.Meta["ambiguous_time"] = true
+	}
+	hasClock := announcementHasClock(announceText)
+	if !merged && !in.IsEdit {
+		if reason := skipIncompleteAnnouncement(firstNonEmpty(in.Text, announceText), draft.IsEventFlyer && strings.TrimSpace(draft.ReadableText) != "", draft.Title, draft.Location, hasClock, draft.Meta["title_needs_review"] == true); reason != "" {
+			logf("skipped message %s: %s", in.ID, reason)
+			return nil, fmt.Errorf("%s", reason)
+		}
+	}
+
 	flyerText := ""
 	if draft.IsEventFlyer {
 		flyerText = draft.ReadableText
@@ -585,25 +598,16 @@ func mergeText(base, extra string) string {
 	return base + "\n\n" + extra
 }
 
-var placeholderNounRe = regexp.MustCompile(`(?i)(^|[^\p{L}])(open mic|` + eventNouns + `|gathering|club)([^\p{L}]|$)`)
-
-// placeholderTitle names the kind of event and the venue ("Open Mic at Cù
-// Rú", "Event at Vui Va Cafe"); Review must still rename it.
+// placeholderTitle is a neutral stand-in ("Event at Haven Jazz") when the
+// caption has no title of its own. It does not invent a kind from a noun
+// later in the text ("jazz festival tomorrow night" must not become
+// "Festival at Haven Jazz"). Review still has to rename it.
 func placeholderTitle(caption, location string) string {
-	kind := "Event"
-	if m := placeholderNounRe.FindStringSubmatch(stripCommunity(caption)); m != nil {
-		words := strings.Fields(strings.ToLower(m[2]))
-		for i, w := range words {
-			r := []rune(w)
-			r[0] = unicode.ToUpper(r[0])
-			words[i] = string(r)
-		}
-		kind = strings.Join(words, " ")
+	if loc := strings.TrimSpace(location); loc != "" && !isSectionHeader(loc) {
+		return truncateTitle("Event at "+loc, 100)
 	}
-	if loc := strings.TrimSpace(location); loc != "" {
-		return truncateTitle(kind+" at "+loc, 100)
-	}
-	return kind
+	_ = caption
+	return "Event"
 }
 
 func weakTitle(title string) bool {

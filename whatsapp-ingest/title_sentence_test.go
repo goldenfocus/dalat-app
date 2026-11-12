@@ -55,15 +55,10 @@ func TestRealCaptionsNeverGetSentenceTitles(t *testing.T) {
 	}
 
 	sent = time.Date(2026, 10, 23, 7, 43, 0, 0, testLoc)
-	th, _ := decide(inbound{ID: "3AC2032902FE9B624DC3", GroupJID: "g", GroupName: "Coffee Meetups & More", Sender: "105158432301057@lid", Text: thichnMoreCaption, Timestamp: sent}, nil, nil, sent)
-	if th == nil {
-		t.Fatal("thichnmore: no draft")
-	}
-	if isChatSentenceTitle(th.Title) || strings.Contains(th.Title, "Looking forward") || th.Meta["title_needs_review"] != true {
-		t.Fatalf("thichnmore title %q meta %v", th.Title, th.Meta["title_needs_review"])
-	}
-	if !strings.HasPrefix(th.Title, "Gathering") {
-		t.Fatalf("thichnmore placeholder %q", th.Title)
+	th, err := decide(inbound{ID: "3AC2032902FE9B624DC3", GroupJID: "g", GroupName: "Coffee Meetups & More", Sender: "105158432301057@lid", Text: thichnMoreCaption, Timestamp: sent}, nil, nil, sent)
+	// "tomorrow" with no clock and no flyer is not an announcement we draft.
+	if th != nil || err == nil {
+		t.Fatalf("thichnmore should be skipped, draft=%v err=%v", th, err)
 	}
 }
 

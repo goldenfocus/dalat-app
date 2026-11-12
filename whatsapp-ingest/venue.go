@@ -84,12 +84,24 @@ func normalizeVenueName(raw string) string {
 			break
 		}
 	}
+	s = trimVenueContinuation(s)
 	if strings.Count(s, "(") > strings.Count(s, ")") {
 		if i := strings.LastIndex(s, "("); i > 0 {
 			s = strings.TrimSpace(s[:i])
 		}
 	}
 	return calmShouting(s)
+}
+
+// venueContinuationRe cuts a venue name that ran into the next sentence:
+// "Socialhouse. If it's yours", "Open Studio. I'll send details".
+var venueContinuationRe = regexp.MustCompile(`(?i)[.!?]\s+(I'll|I will|I am|I'm|If|We|We'll|We will|We're|It's|It is|You|You'll|Please|Just|So|And|But|Message|Text|Let|Also|Someone|Thank)\b`)
+
+func trimVenueContinuation(s string) string {
+	if loc := venueContinuationRe.FindStringIndex(s); loc != nil {
+		s = strings.TrimSpace(s[:loc[0]])
+	}
+	return strings.TrimRight(s, ".,;:!?-–—~*/|… \"'")
 }
 
 func calmShouting(s string) string {
@@ -132,6 +144,9 @@ func plausibleVenueName(name string) bool {
 		return false
 	}
 	if sentenceWordRe.MatchString(name) || timeRe.MatchString(name) || dateRe.MatchString(name) {
+		return false
+	}
+	if isSectionHeader(name) || containsURL(name) {
 		return false
 	}
 	return strings.IndexFunc(name, unicode.IsLetter) >= 0
@@ -285,7 +300,8 @@ func labeledVenue(text string) (venueCandidate, bool) {
 				}
 			}
 		}
-		if looksLikeURL(value) {
+		if looksLikeURL(value) || isSectionHeader(value) {
+			// "📍 EVENT DETAILS" is a heading; keep looking for the real venue line.
 			continue
 		}
 		name, address := splitVenueValue(value)

@@ -16,7 +16,10 @@ type clockHit struct {
 	hasEnd       bool
 	endHour      int
 	endMinute    int
-	rank         int // 0 main act, 1 neutral, 2 bar/happy-hour/promo line
+	rank         int  // -1 labeled Time:/When: line, 0 main act, 1 neutral, 2 bar/promo
+	ambiguous    bool // 8-11 without am/pm and no morning/evening hint
+	meridian     bool // am/pm (or an evening/morning word) was written next to the clock
+	paddedHour   bool // "07:30" is already 24-hour; do not shift to 19:30
 }
 
 const clockPart = `(\d{1,2})(?:(:)([0-5]\d)|([hH])([0-5]\d)?)?\s*(am\b|pm\b|a\.m\.|p\.m\.)?`
@@ -68,6 +71,10 @@ func to24(hour int, mer string) (int, bool) {
 func atoi(s string) int {
 	n, _ := strconv.Atoi(s)
 	return n
+}
+
+func hourTokenPadded(raw string) bool {
+	return len(raw) >= 2 && raw[0] == '0'
 }
 
 // dateSeparatorBefore is true when the match continues a date such as
@@ -134,7 +141,7 @@ func findClock(text string) (clockHit, bool) {
 		if sh > 23 || eh > 23 {
 			continue
 		}
-		hits = append(hits, clockHit{pos: m[0], hour: sh, minute: sm, hasEnd: true, endHour: eh, endMinute: em})
+		hits = append(hits, clockHit{pos: m[0], hour: sh, minute: sm, hasEnd: true, endHour: eh, endMinute: em, meridian: startMer != "" || endMer != "", paddedHour: hourTokenPadded(g(1))})
 	}
 	for _, m := range clockColonRe.FindAllStringSubmatchIndex(text, -1) {
 		if dateSeparatorBefore(text, m[0]) {
@@ -148,7 +155,7 @@ func findClock(text string) (clockHit, bool) {
 		if !ok {
 			continue
 		}
-		hits = append(hits, clockHit{pos: m[0], hour: h, minute: atoi(text[m[4]:m[5]])})
+		hits = append(hits, clockHit{pos: m[0], hour: h, minute: atoi(text[m[4]:m[5]]), meridian: mer != "", paddedHour: hourTokenPadded(text[m[2]:m[3]])})
 	}
 	for _, m := range clockHRe.FindAllStringSubmatchIndex(text, -1) {
 		if dateSeparatorBefore(text, m[0]) {
@@ -172,7 +179,7 @@ func findClock(text string) (clockHit, bool) {
 		if !ok {
 			continue
 		}
-		hits = append(hits, clockHit{pos: m[0], hour: h})
+		hits = append(hits, clockHit{pos: m[0], hour: h, meridian: true})
 	}
 	for _, m := range vietHourRe.FindAllStringSubmatchIndex(text, -1) {
 		h := atoi(text[m[2]:m[3]])
@@ -191,24 +198,151 @@ func findClock(text string) (clockHit, bool) {
 		if h > 23 {
 			continue
 		}
-		hits = append(hits, clockHit{pos: m[0], hour: h})
+		hits = append(hits, clockHit{pos: m[0], hour: h, meridian: m[4] >= 0})
 	}
+	hits = append(hits, atClockHits(text, hits)...)
 	if len(hits) == 0 {
 		return clockHit{}, false
 	}
 	for i := range hits {
 		hits[i].rank = lineRank(text, hits[i].pos)
+		applyBareClock(&hits[i], lineAt(text, hits[i].pos))
 	}
-	// A time on the main-act line (DJ, music, show) beats one on a neutral
-	// line, which beats bar-hours / happy-hour / promo lines. Within a rank the
-	// earliest position wins; at the same position a range beats a single time.
+	// Prefer a firm clock over an ambiguous one, a labeled Time:/When: line
+	// over prose, a range over a later single agenda time, then earlier text.
 	sort.SliceStable(hits, func(i, j int) bool {
+		if hits[i].ambiguous != hits[j].ambiguous {
+			return !hits[i].ambiguous
+		}
 		if hits[i].rank != hits[j].rank {
 			return hits[i].rank < hits[j].rank
+		}
+		if hits[i].hasEnd != hits[j].hasEnd {
+			return hits[i].hasEnd
 		}
 		return hits[i].pos < hits[j].pos
 	})
 	return hits[0], true
+}
+
+var atClockRe = regexp.MustCompile(`(?i)\bat\s+(\d{1,2})(?::([0-5]\d))?\b`)
+
+func alreadyHit(hits []clockHit, pos int) bool {
+	for _, h := range hits {
+		if h.pos == pos || (pos >= h.pos && pos <= h.pos+4) {
+			return true
+		}
+	}
+	return false
+}
+
+// atClockHits reads "at 2" / "at 2:00" when that span is not already a clock.
+func atClockHits(text string, existing []clockHit) []clockHit {
+	var extra []clockHit
+	for _, m := range atClockRe.FindAllStringSubmatchIndex(text, -1) {
+		if alreadyHit(existing, m[0]) {
+			continue
+		}
+		rest := text[m[1]:]
+		if len(rest) > 0 && (strings.HasPrefix(strings.ToLower(strings.TrimLeft(rest, " ")), "am") || strings.HasPrefix(strings.ToLower(strings.TrimLeft(rest, " ")), "pm") || strings.HasPrefix(strings.ToLower(strings.TrimLeft(rest, " ")), "a.m") || strings.HasPrefix(strings.ToLower(strings.TrimLeft(rest, " ")), "p.m")) {
+			continue
+		}
+		h := atoi(text[m[2]:m[3]])
+		mm := 0
+		if m[4] >= 0 {
+			mm = atoi(text[m[4]:m[5]])
+		}
+		if h > 23 {
+			continue
+		}
+		extra = append(extra, clockHit{pos: m[0], hour: h, minute: mm})
+	}
+	return extra
+}
+
+func lineAt(text string, pos int) string {
+	if pos < 0 || pos > len(text) {
+		return text
+	}
+	if pos == len(text) {
+		pos--
+	}
+	if pos < 0 {
+		return text
+	}
+	ls := strings.LastIndexByte(text[:pos], '\n') + 1
+	le := strings.IndexByte(text[pos:], '\n')
+	if le < 0 {
+		return text[ls:]
+	}
+	return text[ls : pos+le]
+}
+
+var timeLabelLineRe = regexp.MustCompile(`(?i)^(?:time|times|when|schedule|hours?|thời gian|giờ)\s*[:：–-]|🗓️|⏰`)
+
+// applyBareClock defaults a 1-7 hour with no am/pm to the afternoon (14:00
+// for "2:00") and flags 8-11 without am/pm as ambiguous unless the line
+// itself says morning or evening.
+func applyBareClock(c *clockHit, line string) {
+	if c.meridian {
+		return
+	}
+	shift := func(h int, padded bool) (int, bool, bool) { // hour, ambiguous, ok
+		if padded || h >= 13 && h <= 23 {
+			return h, false, true
+		}
+		if h >= 1 && h <= 7 {
+			return h + 12, false, true
+		}
+		if h == 0 || h == 12 {
+			return h, false, true
+		}
+		// 8-11
+		low := strings.ToLower(line)
+		if hasMorningHint(low) {
+			return h, false, true
+		}
+		if hasEveningHint(low) {
+			return h + 12, false, true
+		}
+		return h, true, true
+	}
+	h, amb, ok := shift(c.hour, c.paddedHour)
+	if !ok {
+		return
+	}
+	c.hour, c.ambiguous = h, amb
+	if c.hasEnd {
+		eh, eamb, eok := shift(c.endHour, c.paddedHour)
+		if eok {
+			c.endHour = eh
+			c.ambiguous = c.ambiguous || eamb
+		}
+	}
+}
+
+func hasMorningHint(low string) bool {
+	for _, w := range []string{"morning", "sunrise", "breakfast", "sáng"} {
+		if strings.Contains(low, w) {
+			return true
+		}
+	}
+	return false
+}
+
+// clockAmbiguous reports that the only clocks in the texts are bare 8-11
+// hours with no am/pm.
+func clockAmbiguous(sources ...string) bool {
+	saw := false
+	for _, src := range sources {
+		if c, ok := findClock(src); ok {
+			if !c.ambiguous {
+				return false
+			}
+			saw = true
+		}
+	}
+	return saw
 }
 
 var (
@@ -274,6 +408,8 @@ func lineRank(text string, pos int) int {
 	}
 	line := text[ls:le]
 	switch {
+	case timeLabelLineRe.MatchString(strings.TrimSpace(trimLeadingSymbols(stripEmoji(line)))) || timeLabelLineRe.MatchString(line):
+		return -1
 	case ancillaryLineRe.MatchString(line):
 		return 2
 	case mainActLineRe.MatchString(line):
@@ -303,18 +439,22 @@ func extractStartTime(text string, loc *time.Location, ref time.Time) (time.Time
 // source order), then a weekday. Relative days resolve against ref in loc.
 // Year-less dates roll forward to their next occurrence. The clock is the
 // first one found in any source; a range sets the end. Without any clock the
-// start is midnight (20:00 for "tonight") and flagged as inferred.
+// start is midnight and flagged as inferred.
 func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.Time, *time.Time, bool, error) {
 	ref = ref.In(loc)
-	joined := strings.Join(sources, "\n")
-
 	var clock *clockHit
+	ambiguous := false
 	for _, src := range sources {
 		if c, ok := findClock(src); ok {
+			if c.ambiguous {
+				ambiguous = true
+				continue
+			}
 			clock = &c
 			break
 		}
 	}
+	_ = ambiguous
 
 	// "Wednesday, 7pm" in the caption and "7PM–9PM" on the flyer: keep the
 	// caption's start and take the end from a range that starts at the same time.
@@ -328,7 +468,7 @@ func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.
 	}
 
 	var day time.Time
-	found, evening, kind, yearExplicit := false, false, "", false
+	found, _, kind, yearExplicit := false, false, "", false
 	for _, src := range sources {
 		if strings.TrimSpace(src) == "" {
 			continue
@@ -340,7 +480,7 @@ func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.
 		}
 		if rel, ok := relativeDay(src, ref, loc); ok {
 			day = time.Date(rel.year, rel.month, rel.day, 0, 0, 0, 0, loc)
-			found, kind, evening = true, "relative", rel.evening
+			found, kind = true, "relative"
 			break
 		}
 	}
@@ -358,12 +498,11 @@ func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.
 	}
 
 	hour, minute, inferred := 0, 0, true
-	switch {
-	case clock != nil:
+	if clock != nil {
 		hour, minute, inferred = clock.hour, clock.minute, false
-	case hasEveningHint(joined) || evening:
-		hour = 20
 	}
+	// A missing clock stays midnight and inferred; never invent 20:00 for
+	// "tonight" or other evening words when the text wrote no time.
 	start := time.Date(day.Year(), day.Month(), day.Day(), hour, minute, 0, 0, loc)
 	switch kind {
 	case "calendar":

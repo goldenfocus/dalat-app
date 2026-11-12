@@ -18,6 +18,8 @@ import {
   rejectReviewEvent,
   isChatSentenceTitle,
   isScheduleLine,
+  isSectionHeaderLine,
+  isUrlOrCtaTitle,
   type ReviewEventSnapshot,
   whatsappPmTimeMismatch,
 } from "./review-gate";
@@ -273,6 +275,79 @@ describe("evaluateDraftQuality", () => {
     expect(placeholder.map((reason) => reason.code)).toContain(
       "title_sentence_like",
     );
+  });
+
+  it("flags section-header titles/venues, URL titles, and ambiguous times", () => {
+    expect(isSectionHeaderLine("Food & Drinks")).toBe(true);
+    expect(isSectionHeaderLine("📍 EVENT DETAILS")).toBe(true);
+    expect(isSectionHeaderLine("Food & Drinks Festival")).toBe(false);
+    expect(
+      isUrlOrCtaTitle(
+        "Details here: https://www.facebook.com/share/1HncP1adB8/",
+      ),
+    ).toBe(true);
+    expect(isUrlOrCtaTitle("Paint With BRIGHT WATER!")).toBe(false);
+    const headerTitle = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Food & Drinks",
+        location_name: "Nông trại của mẹ",
+        source_metadata: {
+          message_id: "AC4753",
+          time_inferred: false,
+          source_text_evidence: "Time: Sunday, 15th Nov | 4–7 PM",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(headerTitle.map((reason) => reason.code)).toContain(
+      "title_section_header",
+    );
+    const headerVenue = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "DANCE TALK",
+        location_name: "Event Details",
+        source_metadata: {
+          message_id: "ACD8CC",
+          time_inferred: false,
+          source_text_evidence: "Indochinois House, 81 An Binh",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(headerVenue.map((reason) => reason.code)).toContain(
+      "venue_section_header",
+    );
+    const cta = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Details here: https://www.facebook.com/share/1HncP1adB8/",
+        location_name: "Loisongdep",
+        source_metadata: {
+          message_id: "ACCB62",
+          time_inferred: false,
+          source_text_evidence: "Paint With BRIGHT WATER! Sat 14 Dec, 2 pm",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(cta.map((reason) => reason.code)).toContain("title_url_or_cta");
+    const amb = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Free trial workshop",
+        location_name: "Open Studio",
+        source_metadata: {
+          message_id: "AC8EE7",
+          time_inferred: false,
+          ambiguous_time: true,
+          source_text_evidence: "workshop tomorrow at 8:00",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(amb.map((reason) => reason.code)).toContain("ambiguous_time");
   });
 
   it("flags WhatsApp drafts whose stored time contradicts PM times in the text", () => {

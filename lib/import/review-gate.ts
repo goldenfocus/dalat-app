@@ -30,6 +30,10 @@ export type ReviewReasonCode =
   | "time_text_mismatch"
   | "title_sentence_like"
   | "title_schedule_line"
+  | "title_section_header"
+  | "title_url_or_cta"
+  | "venue_section_header"
+  | "ambiguous_time"
   | "personal_photo_hero"
   | "not_a_draft"
   | "not_found";
@@ -269,6 +273,34 @@ export function evaluateWhatsAppDraftEvidence(
         "Title is a schedule/agenda line (time slot + activity), not the event's name; use the flyer/series name",
     });
   }
+  if (isSectionHeaderLine(event.title ?? "")) {
+    reasons.push({
+      code: "title_section_header",
+      message:
+        "Title is a section header (Event Details, Food & Drinks, Schedule, …), not the event's name",
+    });
+  }
+  if (isUrlOrCtaTitle(event.title ?? "")) {
+    reasons.push({
+      code: "title_url_or_cta",
+      message:
+        "Title is a URL or a call-to-action line (Details here: …), not the event's name",
+    });
+  }
+  if (isSectionHeaderLine(event.location_name ?? "")) {
+    reasons.push({
+      code: "venue_section_header",
+      message:
+        "Location is a section header (Event Details, Location, …), not the venue",
+    });
+  }
+  if (meta.ambiguous_time === true) {
+    reasons.push({
+      code: "ambiguous_time",
+      message:
+        "A clock hour 8–11 was written without am/pm, so the start time is ambiguous",
+    });
+  }
   if (
     meta.time_inferred !== true &&
     event.starts_at &&
@@ -383,6 +415,80 @@ const SCHEDULE_LEAD_RE = new RegExp(
  * Mirrors whatsapp-ingest isScheduleLine: "💃 6:30–7:30 PM — Dance class",
  * "18h-19h: Yoga", "7:30 PM onwards — Social dancing" are agenda slots.
  */
+
+const SECTION_HEADERS = new Set([
+  "event details",
+  "food & drinks",
+  "food and drinks",
+  "food & drink",
+  "food and drink",
+  "schedule",
+  "agenda",
+  "location",
+  "when",
+  "where",
+  "details",
+  "tickets",
+  "ticket",
+  "time",
+  "times",
+  "date",
+  "dates",
+  "venue",
+  "address",
+  "price",
+  "prices",
+  "entry",
+  "admission",
+  "how to book",
+  "what to bring",
+  "about",
+  "highlights",
+  "menu",
+  "info",
+  "information",
+  "chi tiết",
+  "thông tin",
+  "thời gian",
+  "địa điểm",
+  "địa chỉ",
+  "lịch trình",
+]);
+
+function headerKey(line: string): string {
+  return line
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .replace(/[&]+/g, "and")
+    .replace(/[:：.–—\s]+$/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+/** A known flyer/chat section heading, never a title or venue. */
+export function isSectionHeaderLine(line: string): boolean {
+  const key = headerKey(line);
+  return Boolean(key) && SECTION_HEADERS.has(key);
+}
+
+const TITLE_URL_RE =
+  /https?:\/\/|\bwww\.|wa\.me\/|facebook\.com\/|fb\.me\/|instagram\.com\/|maps\.app\.goo\.gl\//i;
+const CTA_TITLE_RE =
+  /^(details here|detail here|see more|see here|more (info|information|details)|click here|tap here|link|sign up here|book here|info here|full (info|details)|xem (thêm|chi tiết|thông tin)|đăng ký tại đây)\b/i;
+
+/** A title that is a URL or a "Details here:" call-to-action. */
+export function isUrlOrCtaTitle(title: string): boolean {
+  const core = title
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .trim();
+  if (!core) return false;
+  return TITLE_URL_RE.test(core) || CTA_TITLE_RE.test(core);
+}
+
 export function isScheduleLine(title: string): boolean {
   const core = title
     .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
