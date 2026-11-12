@@ -121,10 +121,87 @@ var invisibleRe = regexp.MustCompile("[\u200b\u200c\u200d\u2060\ufeff\u00ad]")
 func cleanLine(s string) string { return strings.TrimSpace(invisibleRe.ReplaceAllString(s, "")) }
 
 // labelRe matches "Price: …", "When - …", "Giá: …", "Địa điểm: …" detail lines.
-var labelRe = regexp.MustCompile(`(?i)^\s*(price|prices|time|times|when|where|date|dates|venue|location|address|entry|admission|fee|fees|cost|ticket|tickets|rsvp|contact|booking|register|registration|dress code|age|ages|giá|giá vé|vé|phí|thời gian|địa điểm|địa chỉ|ngày|giờ|liên hệ|đăng ký)\s*[:：–-]`)
+var labelRe = regexp.MustCompile(`(?i)^\s*(price|prices|time|times|when|where|date|dates|venue|location|address|entry|admission|fee|fees|cost|ticket|tickets|rsvp|contact|booking|register|registration|dress code|age|ages|title|event|event details|food(?:\s*&\s*|\s+and\s+)drinks|schedule|agenda|details|how to book|what to bring|about|highlights|menu|giá|giá vé|vé|phí|thời gian|địa điểm|địa chỉ|ngày|giờ|liên hệ|đăng ký|chi tiết|thông tin|lịch trình)\s*[:：–-]`)
+
+// sectionHeaderNames are standalone heading lines. They label a block; they
+// are never the event title or the venue ("Food & Drinks", "Event Details").
+var sectionHeaderNames = map[string]bool{
+	"event details": true, "food & drinks": true, "food and drinks": true,
+	"food & drink": true, "food and drink": true, "schedule": true, "agenda": true,
+	"location": true, "when": true, "where": true, "details": true, "tickets": true,
+	"ticket": true, "time": true, "times": true, "date": true, "dates": true,
+	"venue": true, "address": true, "price": true, "prices": true, "entry": true,
+	"admission": true, "fee": true, "fees": true, "cost": true, "rsvp": true,
+	"contact": true, "booking": true, "register": true, "registration": true,
+	"how to book": true, "what to bring": true, "about": true, "highlights": true,
+	"menu": true, "info": true, "information": true, "chi tiết": true,
+	"thông tin": true, "thời gian": true, "địa điểm": true, "địa chỉ": true,
+	"lịch trình": true, "giá vé": true, "vé": true, "đăng ký": true,
+}
+
+var headerPunctRe = regexp.MustCompile(`^[\s*•\-–—:：.]+|[\s*•\-–—:：.]+$`)
+
+func headerKey(line string) string {
+	core := strings.ToLower(strings.Join(strings.Fields(stripEmoji(cleanLine(line))), " "))
+	core = strings.TrimSpace(trimLeadingSymbols(core))
+	core = headerPunctRe.ReplaceAllString(core, "")
+	core = strings.NewReplacer("&", "and", "’", "'").Replace(core)
+	return strings.Join(strings.Fields(core), " ")
+}
+
+// isSectionHeader reports a known heading used as a section label, with or
+// without emoji or a trailing colon. "Food & Drinks" and "📍 EVENT DETAILS"
+// are headers; "Food & Drinks Festival" is not.
+func isSectionHeader(line string) bool {
+	return sectionHeaderNames[headerKey(line)]
+}
 
 func isLabelLine(line string) bool {
-	return labelRe.MatchString(trimLeadingSymbols(stripEmoji(cleanLine(line))))
+	core := trimLeadingSymbols(stripEmoji(cleanLine(line)))
+	if isSectionHeader(core) {
+		return true
+	}
+	return labelRe.MatchString(core)
+}
+
+// labelValue splits a "Label: value" line. ok is true when the line is a
+// known label and value is the rest (which may be empty).
+func labelValue(line string) (label, value string, ok bool) {
+	core := trimLeadingSymbols(stripEmoji(cleanLine(line)))
+	m := labelRe.FindStringSubmatch(core)
+	if m == nil {
+		return "", "", false
+	}
+	return strings.ToLower(strings.TrimSpace(m[1])), strings.TrimSpace(core[len(m[0]):]), true
+}
+
+var urlInTextRe = regexp.MustCompile(`(?i)https?://|\bwww\.|wa\.me/|facebook\.com/|fb\.me/|instagram\.com/|maps\.app\.goo\.gl/`)
+
+func containsURL(s string) bool { return urlInTextRe.MatchString(s) }
+
+var ctaTitleRe = regexp.MustCompile(`(?i)^(details here|detail here|see more|see here|more (info|information|details)|click here|tap here|link|sign up here|book here|info here|full (info|details)|xem (thêm|chi tiết|thông tin)|đăng ký tại đây)\b`)
+
+func isCTATitle(line string) bool {
+	core := trimLeadingSymbols(stripEmoji(cleanLine(line)))
+	if _, value, ok := labelValue(core); ok {
+		if containsURL(value) || strings.TrimSpace(value) == "" {
+			return true
+		}
+		core = value
+	}
+	return ctaTitleRe.MatchString(core) || containsURL(core)
+}
+
+func isRejectedTitle(line string) bool {
+	return isSectionHeader(line) || isCTATitle(line) || containsURL(line)
+}
+
+func isNameLabel(label string) bool {
+	switch strings.ToLower(strings.TrimSpace(label)) {
+	case "title", "event", "event name", "name", "show", "workshop":
+		return true
+	}
+	return false
 }
 
 // truncateTitle cuts at a word boundary, never mid-word, and drops a dangling
@@ -224,7 +301,7 @@ func isHeadlineCase(line string) bool {
 }
 
 func skipTitleLine(line string) bool {
-	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isFluffTitle(line) || isFragmentTitle(line) || isChatSentenceTitle(line) || isScheduleLine(line)
+	return line == "" || isDateOrTimeOnly(line) || isDateLine(line) || isLabelLine(line) || isSectionHeader(line) || isRejectedTitle(line) || isFluffTitle(line) || isFragmentTitle(line) || isChatSentenceTitle(line) || isScheduleLine(line)
 }
 
 var fragmentLead = map[string]bool{
@@ -319,6 +396,11 @@ func heuristicTitle(text string) string {
 			}
 		}
 	}
+	for line := range strings.Lines(text) {
+		if phrase := colonTitle(line); phrase != "" {
+			return phrase
+		}
+	}
 	for _, l := range lines {
 		if !isSentence(l) && isHeadlineCase(l) {
 			return l
@@ -328,6 +410,51 @@ func heuristicTitle(text string) string {
 		if !isSentence(l) && len(strings.Fields(l)) >= 2 {
 			return l
 		}
+	}
+	return ""
+}
+
+func trimWrappingQuotes(s string) string {
+	return strings.TrimFunc(s, func(r rune) bool {
+		switch r {
+		case 0x22, 0x27, 0x60, 0x201C, 0x201D, 0x2018, 0x2019:
+			return true
+		}
+		return false
+	})
+}
+
+// colonTitle reads a short event name after a colon ("workshop: Paint With BRIGHT WATER!").
+func colonTitle(line string) string {
+	line = cleanLine(stripEmoji(line))
+	if line == "" || !strings.Contains(line, ":") {
+		return ""
+	}
+	if label, value, ok := labelValue(line); ok {
+		// Only "Title:" / "Event:" style labels can yield a title; "Price: free" cannot.
+		if !isNameLabel(label) {
+			return ""
+		}
+		value = strings.TrimSpace(trimWrappingQuotes(value))
+		if value != "" && !skipTitleLine(value) && !isSentence(value) && !isRejectedTitle(value) {
+			return truncateTitle(value, 100)
+		}
+		return ""
+	}
+	_, rest, ok := strings.Cut(line, ":")
+	if !ok {
+		return ""
+	}
+	rest = strings.TrimSpace(trimWrappingQuotes(rest))
+	// Keep only the first sentence of the value.
+	if i := strings.IndexAny(rest, "\n"); i >= 0 {
+		rest = strings.TrimSpace(rest[:i])
+	}
+	if rest == "" || skipTitleLine(rest) || isSentence(rest) || isRejectedTitle(rest) {
+		return ""
+	}
+	if hasEventNoun(line) && (isHeadlineCase(rest) || hasEventNoun(rest) || strings.HasSuffix(rest, "!")) && len(strings.Fields(rest)) >= 2 && len([]rune(rest)) <= 80 {
+		return truncateTitle(rest, 100)
 	}
 	return ""
 }

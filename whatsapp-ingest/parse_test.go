@@ -105,9 +105,9 @@ func TestExtractStartTime(t *testing.T) {
 			want: time.Date(2026, 9, 2, 20, 0, 0, 0, testLoc),
 		},
 		{
-			name:         "tonight without a clock is 20:00",
+			name:         "tonight without a clock stays midnight and inferred",
 			text:         "Live set tonight",
-			want:         time.Date(2026, 9, 1, 20, 0, 0, 0, testLoc),
+			want:         time.Date(2026, 9, 1, 0, 0, 0, 0, testLoc),
 			wantInferred: true,
 		},
 	}

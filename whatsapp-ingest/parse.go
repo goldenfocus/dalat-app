@@ -210,20 +210,76 @@ type relDay struct {
 	evening   bool
 }
 
+func hasTomorrowWord(low string) bool {
+	return containsWord(low, "ngày mai") || containsWord(low, "ngay mai") || containsWord(low, "tomorrow")
+}
+
+func hasTonightWord(low string) bool {
+	return containsWord(low, "tối nay") || containsWord(low, "toi nay") || containsWord(low, "tonight") || containsWord(low, "this evening")
+}
+
+func hasTodayWord(low string) bool {
+	return containsWord(low, "hôm nay") || containsWord(low, "hom nay") || containsWord(low, "today")
+}
+
+// relativeDay resolves today/tonight/tomorrow against ref in loc.
+// When a post says both ("Tonight we have X, who play the festival tomorrow
+// night. Come down from 7-9pm"), tonight/today wins unless the clock sits in
+// a tomorrow sentence and not in a tonight/today sentence.
 func relativeDay(text string, ref time.Time, loc *time.Location) (relDay, bool) {
 	low := strings.ToLower(text)
 	ref = ref.In(loc)
+	tomorrow := hasTomorrowWord(low)
+	tonight := hasTonightWord(low)
+	today := hasTodayWord(low)
+	if tomorrow && (tonight || today) {
+		if tomorrowOwnsClock(text) {
+			n := ref.AddDate(0, 0, 1)
+			return relDay{n.Year(), n.Day(), n.Month(), containsWord(low, "tomorrow night") || containsWord(low, "tối mai") || containsWord(low, "toi mai")}, true
+		}
+		tomorrow = false
+	}
 	switch {
-	case containsWord(low, "ngày mai") || containsWord(low, "ngay mai") || containsWord(low, "tomorrow"):
+	case tomorrow:
 		n := ref.AddDate(0, 0, 1)
 		return relDay{n.Year(), n.Day(), n.Month(), containsWord(low, "tomorrow night") || containsWord(low, "tối mai") || containsWord(low, "toi mai")}, true
-	case containsWord(low, "tối nay") || containsWord(low, "toi nay") || containsWord(low, "tonight") || containsWord(low, "this evening"):
+	case tonight:
 		return relDay{ref.Year(), ref.Day(), ref.Month(), true}, true
-	case containsWord(low, "hôm nay") || containsWord(low, "hom nay") || containsWord(low, "today"):
+	case today:
 		return relDay{ref.Year(), ref.Day(), ref.Month(), false}, true
 	default:
 		return relDay{}, false
 	}
+}
+
+func sentenceCuts(text string) []string {
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	parts := regexp.MustCompile("(?m)(?:\n+|[.!?]\\s+)").Split(text, -1)
+	out := parts[:0]
+	for _, p := range parts {
+		p = strings.TrimSpace(p)
+		if p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func tomorrowOwnsClock(text string) bool {
+	var tomClock, todayClock bool
+	for _, sent := range sentenceCuts(text) {
+		low := strings.ToLower(sent)
+		if _, _, ok := parseClock(sent); !ok {
+			continue
+		}
+		if hasTomorrowWord(low) && !hasTonightWord(low) && !hasTodayWord(low) {
+			tomClock = true
+		}
+		if hasTonightWord(low) || hasTodayWord(low) {
+			todayClock = true
+		}
+	}
+	return tomClock && !todayClock
 }
 
 func containsWord(text, phrase string) bool {
