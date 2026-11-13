@@ -1,15 +1,17 @@
 import type { ArrivalParticipant } from "@/lib/arrival/types";
+import { learningTargets } from "@/lib/arrival/languages";
 
 export type Participation = "playing" | "visiting" | "break" | "left" | "hosting";
 export type Presence = "pending" | "present" | "absent";
 export type FloorPolicy = "balanced" | "downstairs" | "upstairs";
 export type Table = { number: number; floor: "downstairs" | "upstairs"; capacity: number; available: boolean; bar?: boolean };
 export type TableAssignment = { groupIndex: number; tableNumber: number; floor: Table["floor"] };
-export type Person = { id: string; name: string; speaks: string[]; learns: string | null; number?: number; avatarUrl?: string; learningLevel?: string | null; speakingLevels?: Record<string, string> };
+export type Person = { id: string; name: string; speaks: string[]; learns: string | null; learningLanguages?: string[]; arrived?: boolean; presence?: Presence; receiptCode?: string; number?: number; avatarUrl?: string; learningLevel?: string | null; speakingLevels?: Record<string, string> };
+export type Seating = { groups: Person[][]; assignments: TableAssignment[]; locked?: boolean };
 export type Round = { number: number; startedAt: string; minutes: number; groups: Person[][]; endsAt?: string; pausedAt?: string; remainingSeconds?: number; endedAt?: string; changeoverEndsAt?: string; assignments?: TableAssignment[] };
 export type Draft = { id: string; round: number; minutes: number; groups: Person[][]; assignments: TableAssignment[]; rosterFingerprint: string; createdAt: string };
-export type PracticeState = { rounds: Round[]; participation?: Record<string, Participation>; presence?: Record<string, Exclude<Presence, "pending">>; numbers?: Record<string, number>; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
-export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null; myTable?: TableAssignment | null; participation?: Participation | null; presence?: Presence | null; participants?: (Person & { participation: Participation; presence?: Presence })[]; revision?: number; serverNow?: string; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
+export type PracticeState = { rounds: Round[]; seating?: Seating; participation?: Record<string, Participation>; presence?: Record<string, Exclude<Presence, "pending">>; numbers?: Record<string, number>; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
+export type PracticeView = { canStart: boolean; count: number; round: Round | null; me: Person | null; groups: Person[][]; myGroup?: Person[]; myGroupNumber?: number | null; myTable?: TableAssignment | null; planned?: boolean; assignments?: TableAssignment[]; participation?: Participation | null; presence?: Presence | null; participants?: (Person & { participation: Participation; presence?: Presence })[]; revision?: number; serverNow?: string; tables?: Table[]; floorPolicy?: FloorPolicy; draft?: Draft | null };
 
 export const DEFAULT_ROUND_MINUTES = 20;
 
@@ -39,6 +41,9 @@ export function arrivalPerson(p: ArrivalParticipant): Person {
     id: p.id, name: p.nickname,
     speaks: prefs ? prefs.speaks.filter(s => ["native", "fluent", "intermediate"].includes(s.level)).map(s => s.language) : legacySpeaks,
     learns: prefs?.learning.language || (p.practice_language === "english" ? "en" : p.practice_language === "vietnamese" ? "vi" : null),
+    ...(prefs ? { learningLanguages: learningTargets(prefs).map(item => item.language) } : {}),
+    arrived: true,
+    receiptCode: p.id.slice(0, 8).toUpperCase(),
     ...(prefs ? { learningLevel: prefs.learning.level, speakingLevels: Object.fromEntries(prefs.speaks.map(s => [s.language, s.level])) } : {}),
   };
 }
@@ -47,9 +52,9 @@ export function participantStatus(state: PracticeState, personId: string, staffI
   return state.participation?.[personId] || (staffIds.has(personId) ? "hosting" : "playing");
 }
 
-/** A check-in is history, not a roll-call answer. Preserve already-running games. */
-export function presenceStatus(state: PracticeState, personId: string): Presence {
-  return state.presence?.[personId] ?? (state.rounds.some(round => round.groups.some(group => group.some(person => person.id === personId))) ? "present" : "pending");
+/** Arrival confirms presence; an explicit host no-show or return takes precedence. */
+export function presenceStatus(state: PracticeState, personId: string, person?: Person): Presence {
+  return state.presence?.[personId] ?? (person?.arrived !== undefined ? person.arrived ? "present" : "pending" : state.rounds.some(round => round.groups.some(group => group.some(member => member.id === personId))) ? "present" : "pending");
 }
 
 export function numberPeople(state: PracticeState, people: Person[]): Person[] {
@@ -59,7 +64,7 @@ export function numberPeople(state: PracticeState, people: Person[]): Person[] {
 }
 
 export function eligiblePeople(state: PracticeState, people: Person[], staffIds: ReadonlySet<string> = new Set()): Person[] {
-  return numberPeople(state, people).filter(p => participantStatus(state, p.id, staffIds) === "playing" && presenceStatus(state, p.id) === "present");
+  return numberPeople(state, people).filter(p => participantStatus(state, p.id, staffIds) === "playing" && presenceStatus(state, p.id, p) === "present");
 }
 
 /** Comparing a draft to fresh arrival data also catches changed language preferences. */
@@ -84,15 +89,15 @@ export function pairRound(people: Person[], previous: Round[], minutes = DEFAULT
   const roster = [...new Map(people.map(p => [p.id, p])).values()];
   if (roster.length < 2 || roster.length > 150) throw new Error("invalid_roster");
   const met = metPairs(previous);
-  const count = Math.max(1, Math.round(roster.length / 3.5));
+  const count = Math.max(1, Math.ceil(roster.length / 4));
   const targets = Array.from({ length: count }, (_, i) => Math.floor(roster.length / count) + (i < roster.length % count ? 1 : 0));
   const anchors = roster.filter(speaksVietnamese).sort((a, b) => Number(a.speaks.includes("en")) - Number(b.speaks.includes("en")));
   const seeded = anchors.slice(0, count);
   const others = [...anchors.slice(count), ...roster.filter(p => !speaksVietnamese(p))];
   const foreignMatch = (a: Person, b: Person) =>
     a.speaks.filter(language => !["en", "vi"].includes(language) && b.speaks.includes(language)).length +
-    (a.learns && !["en", "vi"].includes(a.learns) && b.speaks.includes(a.learns) ? 1 : 0) +
-    (b.learns && !["en", "vi"].includes(b.learns) && a.speaks.includes(b.learns) ? 1 : 0);
+    (a.learningLanguages || [a.learns]).filter(language => language && !["en", "vi"].includes(language) && b.speaks.includes(language)).length +
+    (b.learningLanguages || [b.learns]).filter(language => language && !["en", "vi"].includes(language) && a.speaks.includes(language)).length;
   const cost = (person: Person, group: Person[]) => group.reduce((sum, member) =>
     sum + (met.has(pairKey(person.id, member.id)) ? 30 : 0) + (member.learns === person.learns ? 4 : 0) - foreignMatch(person, member) * 100, group.length);
   const score = (groups: Person[][]) => groups.reduce((sum, group) => sum +
@@ -276,21 +281,29 @@ export function updateClock(round: Round, action: "pause" | "resume" | "extend" 
 /** A participant receives only their own published assignment, never draft/other names. */
 export function practiceView(state: PracticeState, people: Person[], ownId: string | null, canStart: boolean, revision = -1, staffIds: ReadonlySet<string> = new Set(), now = new Date()): PracticeView {
   const current = state.rounds.at(-1) || null;
-  const groups = current?.groups || [];
-  const myGroupIndex = groups.findIndex(g => g.some(p => p.id === ownId));
   const numbered = numberPeople(state, people);
+  const publicPerson = (person: Person): Person => {
+    const { receiptCode: _receiptCode, ...publicFields } = person;
+    return canStart ? person : publicFields;
+  };
+  const livePeople = new Map(numbered.map(person => [person.id, { ...publicPerson(person), presence: presenceStatus(state, person.id, person) }]));
+  const groups = (state.seating?.groups || current?.groups || []).map(group => group.map(person => livePeople.get(person.id) || person));
+  const assignments = state.seating?.assignments || current?.assignments;
+  const myGroupIndex = groups.findIndex(g => g.some(p => p.id === ownId));
   return {
     canStart, revision, serverNow: now.toISOString(),
-    count: eligiblePeople(state, people, staffIds).length, me: numbered.find(p => p.id === ownId) || null,
+    count: eligiblePeople(state, people, staffIds).length, me: numbered.find(p => p.id === ownId) ? publicPerson(numbered.find(p => p.id === ownId)!) : null,
     participation: ownId && people.some(p => p.id === ownId) ? participantStatus(state, ownId, staffIds) : null,
-    presence: ownId && people.some(p => p.id === ownId) ? presenceStatus(state, ownId) : null,
+    presence: ownId && people.some(p => p.id === ownId) ? presenceStatus(state, ownId, people.find(p => p.id === ownId)) : null,
     round: current ? { ...current, groups: [], assignments: canStart ? current.assignments : current.assignments?.filter(a => a.groupIndex === myGroupIndex) } : null,
     groups: canStart ? groups : groups.filter(g => g.some(p => p.id === ownId)),
     myGroup: myGroupIndex < 0 ? [] : groups[myGroupIndex],
     myGroupNumber: myGroupIndex < 0 ? null : myGroupIndex + 1,
-    myTable: current?.assignments?.find(a => a.groupIndex === myGroupIndex) || null,
+    myTable: assignments?.find(a => a.groupIndex === myGroupIndex) || null,
+    planned: !current,
+    ...(canStart ? { assignments } : {}),
     tables: state.tables || DEFAULT_TABLES, floorPolicy: state.floorPolicy || "balanced",
     draft: canStart ? state.draft || null : null,
-    ...(canStart ? { participants: numbered.map(p => ({ ...p, participation: participantStatus(state, p.id, staffIds), presence: presenceStatus(state, p.id) })) } : {}),
+    ...(canStart ? { participants: numbered.map(p => ({ ...p, participation: participantStatus(state, p.id, staffIds), presence: presenceStatus(state, p.id, p) })) } : {}),
   };
 }

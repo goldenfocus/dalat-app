@@ -7,16 +7,29 @@ export const LANGUAGE_CODES = [
 ] as const;
 export const LANGUAGE_LEVELS = ["native", "fluent", "intermediate", "beginner", "new"] as const;
 const languageSchema = z.enum(LANGUAGE_CODES);
+const learningTargetSchema = z.object({ language: languageSchema, level: z.enum(["fluent", "intermediate", "beginner", "new"]) }).strict();
 export const languagePreferencesSchema = z.object({
   speaks: z.array(z.object({ language: languageSchema, level: z.enum(LANGUAGE_LEVELS) }).strict())
     .min(1).max(8).refine(items => new Set(items.map(item => item.language)).size === items.length, "Duplicate language"),
-  learning: z.object({ language: languageSchema, level: z.enum(["fluent", "intermediate", "beginner", "new"]) }).strict(),
-}).strict();
+  learning: learningTargetSchema,
+  additionalLearning: z.array(learningTargetSchema).max(7).optional(),
+}).strict().refine(value => {
+  const languages = [value.learning, ...(value.additionalLearning || [])].map(item => item.language);
+  return new Set(languages).size === languages.length;
+}, "Duplicate learning language");
 export type LanguagePreferences = z.infer<typeof languagePreferencesSchema>;
 export type LanguageLevel = typeof LANGUAGE_LEVELS[number];
 export const DEFAULT_LANGUAGE_PREFERENCES: LanguagePreferences = {
   speaks: [], learning: { language: "vi", level: "new" },
 };
+
+export function learningTargets(preferences: LanguagePreferences) {
+  return [preferences.learning, ...(preferences.additionalLearning || [])];
+}
+
+const FLAGS: Record<string, string> = { vi: "🇻🇳", en: "🇬🇧", fr: "🇫🇷", es: "🇪🇸", de: "🇩🇪", ko: "🇰🇷", ja: "🇯🇵", zh: "🇨🇳", ru: "🇷🇺", th: "🇹🇭", id: "🇮🇩", ms: "🇲🇾", it: "🇮🇹", pt: "🇵🇹", ar: "🇸🇦", hi: "🇮🇳" };
+/** Flags are language shortcuts, never inferred nationality or proficiency. */
+export function languageFlag(code: string) { return FLAGS[code] || "🌐"; }
 
 const PRIORITY_LANGUAGES: readonly string[] = ["en", "vi", "fr", "es"];
 

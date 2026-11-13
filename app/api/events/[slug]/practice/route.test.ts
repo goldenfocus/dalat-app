@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ read: vi.fn(), mutate: vi.fn(), recover: vi.fn() }));
-vi.mock("@/lib/practice/server", () => ({ readPractice: mocks.read, mutatePractice: mocks.mutate, recoverPractice: mocks.recover }));
+const mocks = vi.hoisted(() => ({ read: vi.fn(), mutate: vi.fn(), recover: vi.fn(), issue: vi.fn(), claim: vi.fn() }));
+vi.mock("@/lib/practice/server", () => ({ readPractice: mocks.read, mutatePractice: mocks.mutate, recoverPractice: mocks.recover, issuePracticeTicket: mocks.issue, claimPracticeTicket: mocks.claim }));
 import { GET, POST } from "./route";
 const context = { params: Promise.resolve({ slug: "language-exchange-social-house-z8oc-20261028" }) };
 function request(body: unknown, origin = "https://dalat.app") {
@@ -78,4 +78,15 @@ it("accepts a bounded one-click game start and rejects cross-site starts", async
   expect(mocks.mutate).toHaveBeenLastCalledWith("language-exchange-social-house-z8oc-20261028", { action: "startGame", expectedRevision: 0, minutes: 20 });
   expect((await POST(request({ action: "startGame", expectedRevision: 0, minutes: 31 }), context)).status).toBe(400);
   expect((await POST(request({ action: "startGame", expectedRevision: 0 }, "https://other.example"), context)).status).toBe(403);
+});
+
+it("issues host tickets and accepts bounded claims only on the same origin", async () => {
+  mocks.issue.mockResolvedValue({ token: "signed" });
+  expect((await POST(request({ action: "ticket", participantId: "guest" }), context)).status).toBe(200);
+  mocks.claim.mockResolvedValue({ view: { canStart: false }, cookie: "guest_receipt", token: "signed" });
+  const response = await POST(request({ action: "claim", token: "signed" }), context);
+  expect(response.status).toBe(200);
+  expect(response.headers.get("set-cookie")).toContain("HttpOnly");
+  expect((await POST(request({ action: "claim", token: "x".repeat(513) }), context)).status).toBe(400);
+  expect((await POST(request({ action: "claim", token: "signed" }, "https://other.example"), context)).status).toBe(403);
 });

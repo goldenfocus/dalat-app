@@ -9,19 +9,19 @@ const people: Person[] = [
 ];
 const eight: Person[] = [...people, ...people.map((person, index) => ({ ...person, id: "efgh"[index], name: ["Em", "Finn", "Giang", "Hugo"][index] }))];
 describe("practice from event attendance", () => {
-  it("includes every checked-in person exactly once and keeps five people at one table", () => {
+  it("includes every checked-in person exactly once and splits five people into a trio and a pair", () => {
     const roster = [...people, { ...people[0], id: "e", name: "Em" }];
     const round = pairRound([...roster, roster[0]], [], 10);
-    expect(round.groups.map(g => g.length)).toEqual([5]);
+    expect(round.groups.map(g => g.length)).toEqual([3, 2]);
     expect(round.groups.flat().map(p => p.id).sort()).toEqual(["a", "b", "c", "d", "e"]);
   });
-  it("forms tables of three or four from six people up, and one table below that", () => {
+  it("forms tables of three or four from six people up, with a pair for five", () => {
     const many = (count: number) => Array.from({ length: count }, (_, i) => ({ ...people[i % 4], id: `n${i}` }));
-    for (const count of [2, 3, 4, 5]) expect(pairRound(many(count), []).groups.map(g => g.length)).toEqual([count]);
+    for (const count of [2, 3, 4]) expect(pairRound(many(count), []).groups.map(g => g.length)).toEqual([count]);
     for (let count = 6; count <= 60; count++) {
       const groups = pairRound(many(count), []).groups;
       expect(groups.flat().map(p => p.id).sort()).toEqual(many(count).map(p => p.id).sort());
-      expect(groups.length).toBe(Math.round(count / 3.5));
+      expect(groups.length).toBe(Math.ceil(count / 4));
       for (const group of groups) expect([3, 4]).toContain(group.length);
     }
     expect(pairRound(many(7), []).groups.map(g => g.length)).toEqual([4, 3]);
@@ -65,7 +65,7 @@ describe("practice from event attendance", () => {
   });
   it("preserves explicit language choices without guessing fluency", () => {
     const p = arrivalPerson({ id: "p", event_id: "e", user_id: null, nickname: "Person", checked_in_at: "now", practice_language: "english", english_level: null, vietnamese_level: null });
-    expect(p).toEqual({ id: "p", name: "Person", speaks: [], learns: "en" });
+    expect(p).toMatchObject({ id: "p", name: "Person", speaks: [], learns: "en", arrived: true });
     expect(() => pairRound([p], [], 10)).toThrow("invalid_roster");
   });
   it("reads who can help from a quick check-in's comfortable legacy levels", () => {

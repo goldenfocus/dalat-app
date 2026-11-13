@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Völlig freiwillig. Dein Check-in bleibt so oder so."
   },
   "eventPractice": {
+    "arriveNow": "Ich bin da",
+    "playCards": "Spielen",
+    "moveToTable": "Zu Tisch {number} verschieben",
+    "previewGuest": "Teilnehmeransicht",
     "startGame": "Spiel starten",
     "title": "Gemeinsam üben",
     "ready": "{count} spielen mit",

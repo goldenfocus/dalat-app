@@ -9,6 +9,6 @@ export function PracticeLanguage() {
   const pathname = usePathname();
   const router = useRouter();
   return <nav aria-label={t("languageLabel")} className="flex items-center gap-4 text-sm">
-    {([['en', 'English'], ['vi', 'Tiếng Việt']] as const).map(([value, label]) => <button type="button" key={value} lang={value} aria-current={locale === value ? "true" : undefined} className="practice-language min-h-11 border-b-2 border-transparent font-medium text-muted-foreground" onClick={() => router.replace(`${pathname}${window.location.search}`, { locale: value })}>{label}</button>)}
+    {([['en', '🇬🇧'], ['vi', '🇻🇳']] as const).map(([value, label]) => <button type="button" key={value} lang={value} aria-label={value === "en" ? "English" : "Tiếng Việt"} aria-current={locale === value ? "true" : undefined} className="practice-language min-h-11 min-w-11 border-b-2 border-transparent text-xl text-muted-foreground" onClick={() => router.replace(`${pathname}${window.location.search}`, { locale: value })}>{label}</button>)}
   </nav>;
 }

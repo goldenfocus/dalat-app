@@ -14,6 +14,7 @@ import { readSelection } from "@/lib/menu/options";
 import { cartLines, type ArrivalQuantities } from "./arrival-menu";
 import { ArrivalOrderView } from "./arrival-receipt";
 import { DrinkMenuSheet, canChooseFreeDrink, reservationQuantities } from "./drink-menu-sheet";
+import { EventPractice } from "@/components/practice/event-practice";
 import { ExistingDrinkOffer } from "./existing-drink-offer";
 
 type PreparationContext = ArrivalContext & { rsvpStatus?: string | null };
@@ -80,6 +81,7 @@ export function EventPreparation({ slug }: { slug: string }) {
     {step !== "done" && <Link href={`/events/${slug}`} className="mb-6 inline-flex min-h-11 items-center gap-2 text-sm text-muted-foreground"><ArrowLeft className="h-4 w-4" aria-hidden />{common("backToEvent")}</Link>}
     <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">{step === "done" && <Check className="h-7 w-7 shrink-0 text-primary" aria-hidden />}{t(step === "done" ? "ready" : "prepare")}</h1>
     {context && <p className="mt-2 text-sm text-muted-foreground">{context.event.title}</p>}
+    {context?.rsvpStatus === "going" && /^language-exchange-social-house-z8oc-\d{8}$/.test(slug) && <EventPractice slug={slug} />}
     {loading ? <p className="py-8" role="status">{common("loading")}</p> : !context ? <p className="py-8" role="alert">{common("loadError")}</p> : context.rsvpStatus !== "going" ? <section className="mt-8 space-y-4"><p>{t("rsvpFirst")}</p><Button asChild><Link href={`/events/${slug}`}>{common("backToEvent")}</Link></Button></section> : <>
       {step !== "done" && <div className="my-6 flex items-center gap-3 border-y py-4">
         {profile?.avatar_url && <Image src={profile.avatar_url} alt="" width={48} height={48} className="h-12 w-12 rounded-lg object-cover" />}

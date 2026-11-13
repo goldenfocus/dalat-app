@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Pilihan sepenuhnya. Daftar masuk anda kekal walau apa pun."
   },
   "eventPractice": {
+    "arriveNow": "Saya sudah tiba",
+    "playCards": "Main",
+    "moveToTable": "Pindahkan ke meja {number}",
+    "previewGuest": "Paparan peserta",
     "startGame": "Mulakan permainan",
     "title": "Berlatih bersama",
     "ready": "{count} orang bermain",

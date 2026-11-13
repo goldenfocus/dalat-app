@@ -17,6 +17,12 @@ export function useRsvpLanguages(slug?: string) {
   const pending = useRef(false);
   const continuation = useRef<() => Promise<unknown>>(async () => {});
   const endpoint = "/api/arrival/languages";
+  async function completeRsvp() {
+    await continuation.current();
+    // Plan through the same authenticated API the guest immediately reads.
+    if (/^language-exchange-social-house-z8oc-\d{8}$/.test(slug!)) await fetch(`/api/events/${encodeURIComponent(slug!)}/practice`, { cache: "no-store" });
+    window.dispatchEvent(new Event("dalat:rsvp-change"));
+  }
 
   async function beforeRsvp(proceed: () => Promise<unknown>) {
     if (!slug) { await proceed(); return; }
@@ -32,7 +38,7 @@ export function useRsvpLanguages(slug?: string) {
       const saved = languagePreferencesSchema.safeParse(result.preferences);
       if (saved.success) {
         setValue(saved.data);
-        await proceed();
+        await completeRsvp();
       } else {
         setOpen(true);
       }
@@ -50,7 +56,7 @@ export function useRsvpLanguages(slug?: string) {
       const response = await fetch(endpoint, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(value) });
       if (!response.ok) throw new Error("preferences_not_saved");
       setOpen(false);
-      await continuation.current();
+      await completeRsvp();
     } catch { setError(true); setOpen(true); }
     finally { setBusy(false); pending.current = false; }
   }

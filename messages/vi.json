@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Không bắt buộc đâu. Lượt check-in của bạn vẫn được giữ nguyên."
   },
   "eventPractice": {
+    "arriveNow": "Tôi đã đến",
+    "playCards": "Chơi",
+    "moveToTable": "Chuyển đến bàn {number}",
+    "previewGuest": "Góc nhìn của khách",
     "startGame": "Bắt đầu trò chơi",
     "title": "Cùng luyện tập",
     "ready": "{count} người chơi",

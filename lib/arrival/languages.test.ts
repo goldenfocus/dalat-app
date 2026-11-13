@@ -56,3 +56,11 @@ describe("private language preferences", () => {
     }
   });
 });
+
+it("keeps old single targets and permits distinct additional practice languages", () => {
+  const old = { speaks: [{ language: "vi", level: "native" }], learning: { language: "en", level: "beginner" } };
+  expect(languagePreferencesSchema.parse(old)).toEqual(old);
+  expect(languagePreferencesSchema.safeParse({ ...old, additionalLearning: [{ language: "es", level: "new" }, { language: "fr", level: "intermediate" }] }).success).toBe(true);
+  expect(languagePreferencesSchema.safeParse({ ...old, additionalLearning: [{ language: "en", level: "new" }] }).success).toBe(false);
+  expect(languagePreferencesSchema.safeParse({ ...old, additionalLearning: null }).success).toBe(false);
+});

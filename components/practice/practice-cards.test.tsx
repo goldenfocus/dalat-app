@@ -10,15 +10,15 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 const cardAt = (level: 1 | 2 | 3, seed: number, step: number) => { const cards = cardsForLevel(level); return cards[(cardStartOffset(seed + level, cards.length) + step) % cards.length]; };
 
 describe("practice table cards", () => {
-  it("shows one bilingual card with labelled languages and no network or microphone use", () => {
+  it("shows one bilingual card with semantic language tags and no network or microphone use", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     const { container } = render(<PracticeCards seed={125} />);
     const card = cardAt(1, 125, 0);
     expect(screen.getByRole("heading", { name: tr("cardsTitle") })).toBeVisible();
     expect(screen.getByText(tr("cardsHint"))).toBeVisible();
-    expect(screen.getByText("Tiếng Việt")).toHaveAttribute("lang", "vi");
-    expect(screen.getByText("English")).toHaveAttribute("lang", "en");
+    expect(screen.queryByText("Tiếng Việt")).toBeNull();
+    expect(screen.queryByText("English")).toBeNull();
     expect(screen.getByText(card.vi)).toHaveAttribute("lang", "vi");
     expect(screen.getByText(card.en)).toHaveAttribute("lang", "en");
     expect(screen.getByText(tr("cardsCounter", { current: 1, total: 12 }))).toBeVisible();
@@ -39,6 +39,7 @@ describe("practice table cards", () => {
   });
   it("steps between three levels and stops at both ends", () => {
     render(<PracticeCards seed={3} />);
+    fireEvent.click(screen.getByText(tr("cardsLevel", { level: 1 })));
     const easier = screen.getByRole("button", { name: tr("cardsEasier") });
     const harder = screen.getByRole("button", { name: tr("cardsHarder") });
     expect(easier).toBeDisabled();
@@ -58,10 +59,11 @@ describe("practice table cards", () => {
   it("can open on the level a learner reported", () => {
     render(<PracticeCards seed={0} initialLevel={3} />);
     expect(screen.getByText(cardAt(3, 0, 0).vi)).toBeVisible();
+    fireEvent.click(screen.getByText(tr("cardsLevel", { level: 3 })));
     expect(screen.getByRole("button", { name: tr("cardsHarder") })).toBeDisabled();
   });
   it("keeps every control at a comfortable touch height", () => {
     render(<PracticeCards />);
-    for (const button of screen.getAllByRole("button")) expect(button.className).toContain("min-h-12");
+    for (const button of screen.getAllByRole("button")) expect(button.className).toMatch(/min-h-(12|16)/);
   });
 });

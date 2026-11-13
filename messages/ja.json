@@ -4318,6 +4318,10 @@
     "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
+    "arriveNow": "到着しました",
+    "playCards": "プレイ",
+    "moveToTable": "テーブル{number}へ移動",
+    "previewGuest": "参加者の画面",
     "startGame": "ゲーム開始",
     "title": "一緒に練習しよう",
     "ready": "{count}人が参加",

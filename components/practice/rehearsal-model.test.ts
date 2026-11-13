@@ -16,7 +16,8 @@ describe("isolated host rehearsal", () => {
     const uncheckedDraft = act(session, { action: "draft" });
     expect(uncheckedDraft.state.draft?.groups.flat()).toHaveLength(2);
     const started = act(uncheckedDraft, { action: "start", draftId: uncheckedDraft.state.draft!.id });
-    expect(started.state.rounds[0].groups.flat().map(person => person.id)).not.toContain("sample-3");
+    expect(started.state.rounds[0].groups.flat().map(person => person.id)).toContain("sample-3");
+    expect(rehearsalView(started).count).toBe(2);
     session = act(session, { action: "presence", participantId: "sample-3", status: "absent" });
     expect(() => act({ ...session, mode: "attendee" }, { action: "presence", participantId: "sample-3", status: "present" })).toThrow("forbidden");
     session = act(session, { action: "draft" });
@@ -59,7 +60,7 @@ describe("isolated host rehearsal", () => {
     for (const id of ["sample-1", "sample-2", "sample-3", "sample-4", "sample-5", "sample-6"]) session = act(session, { action: "presence", participantId: id, status: "present" });
     session = act(session, { action: "draft" });
     session = act(session, { action: "start", draftId: session.state.draft!.id });
-    expect(session.state.rounds[0].groups.map(group => group.length)).toEqual([3, 3]);
+    expect(session.state.rounds[0].groups.map(group => group.length)).toEqual([3, 4]);
     session = act(session, { action: "presence", participantId: "sample-7", status: "present" });
     expect(session.state.rounds[0].groups.flat().map(person => person.id)).toContain("sample-7");
     expect(session.state.rounds[0].groups.map(group => group.length).sort()).toEqual([3, 4]);

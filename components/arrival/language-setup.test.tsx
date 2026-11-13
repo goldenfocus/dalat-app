@@ -13,17 +13,17 @@ function preferences() { return JSON.parse(screen.getByTestId("preferences").tex
 describe("reusable language setup", () => {
   it("shows the priority languages first in both pickers and excludes existing spoken languages", () => {
     render(<Form initial={{ speaks: [{ language: "en", level: "native" }], learning: { language: "vi", level: "new" } }} />);
-    fireEvent.click(screen.getByRole("button", { name: "addLanguage" }));
-    expect(within(screen.getByRole("group", { name: "addLanguage" })).getAllByRole("button").slice(0, 3).map(button => button.textContent)).toEqual(["Vietnamese", "French", "Spanish"]);
+    fireEvent.click(screen.getAllByRole("button", { name: "addLanguage" })[0]);
+    expect(within(screen.getByRole("group", { name: "addLanguage" })).getAllByRole("button").slice(0, 3).map(button => button.querySelector("span.flex-1")?.textContent)).toEqual(["Vietnamese", "French", "Spanish"]);
     fireEvent.click(screen.getByRole("button", { name: "French" }));
     expect(preferences().speaks.map((entry: { language: string }) => entry.language)).toEqual(["en", "fr"]);
-    fireEvent.click(screen.getByRole("button", { name: "chooseLearning" }));
-    expect(within(screen.getByRole("group", { name: "chooseLearning" })).getAllByRole("button").slice(0, 4).map(button => button.textContent)).toEqual(["English", "Vietnamese", "French", "Spanish"]);
+    fireEvent.click(screen.getByRole("button", { name: "Vietnamese" }));
+    expect(within(screen.getByRole("group", { name: "chooseLearning" })).getAllByRole("button").slice(0, 4).map(button => button.querySelector("span.flex-1")?.textContent)).toEqual(["English", "Vietnamese", "French", "Spanish"]);
   });
   it("starts with Vietnamese and lets guests change their practice level", () => {
     render(<Form />);
-    expect(screen.getByText("Vietnamese")).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "levels.beginner" }));
+    expect(screen.getByRole("button", { name: "Vietnamese" })).toBeVisible();
+    fireEvent.change(screen.getByRole("combobox", { name: "level" }), { target: { value: "beginner" } });
     expect(preferences().learning).toEqual({ language: "vi", level: "beginner" });
     expect(screen.queryByRole("button", { name: "levels.native" })).toBeNull();
   });
@@ -33,9 +33,9 @@ describe("reusable language setup", () => {
     fireEvent.change(screen.getByRole("textbox", { name: "search" }), { target: { value: "francais" } });
     fireEvent.click(screen.getByRole("button", { name: "French" }));
     expect(preferences().speaks).toEqual([{ language: "fr", level: "native" }]);
-    fireEvent.click(screen.getAllByRole("button", { name: "levels.fluent" })[0]);
+    fireEvent.change(screen.getAllByRole("combobox", { name: "level" })[0], { target: { value: "fluent" } });
     expect(preferences().speaks[0].level).toBe("fluent");
-    fireEvent.click(screen.getByRole("button", { name: "removeLanguage" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "removeLanguage" })[0]);
     expect(preferences().speaks).toEqual([]);
   });
   it("keeps all controls disabled while a parent submits", () => {

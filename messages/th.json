@@ -4318,6 +4318,10 @@
     "saveAccountLater": "ไม่บังคับ การเช็กอินของคุณยังอยู่เหมือนเดิม"
   },
   "eventPractice": {
+    "arriveNow": "มาถึงแล้ว",
+    "playCards": "เล่น",
+    "moveToTable": "ย้ายไปโต๊ะ {number}",
+    "previewGuest": "มุมมองผู้เข้าร่วม",
     "startGame": "เริ่มเกม",
     "title": "ฝึกด้วยกัน",
     "ready": "เล่น {count} คน",

@@ -4318,6 +4318,10 @@
     "saveAccountLater": "선택 사항이에요. 어느 쪽이든 체크인은 그대로 유지돼요."
   },
   "eventPractice": {
+    "arriveNow": "도착했어요",
+    "playCards": "시작",
+    "moveToTable": "{number}번 테이블로 이동",
+    "previewGuest": "참가자 화면",
     "startGame": "게임 시작",
     "title": "함께 연습해요",
     "ready": "{count}명 참여",

@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Totalmente opcional. Tu check-in se queda igual."
   },
   "eventPractice": {
+    "arriveNow": "Ya llegué",
+    "playCards": "Jugar",
+    "moveToTable": "Mover a la mesa {number}",
+    "previewGuest": "Vista del participante",
     "startGame": "Iniciar juego",
     "title": "Practicar juntos",
     "ready": "{count} en juego",

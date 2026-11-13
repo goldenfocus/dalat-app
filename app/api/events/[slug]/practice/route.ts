@@ -1,13 +1,16 @@
 import { z } from "zod";
 import { arrivalFailure, arrivalJson, arrivalMutationAllowed, readArrivalBody } from "@/lib/arrival/http";
 import { DEFAULT_ROUND_MINUTES } from "@/lib/practice/model";
-import { mutatePractice, readPractice, recoverPractice } from "@/lib/practice/server";
+import { claimPracticeTicket, issuePracticeTicket, mutatePractice, readPractice, recoverPractice } from "@/lib/practice/server";
 
 export const dynamic = "force-dynamic";
 type Context = { params: Promise<{ slug: string }> };
 const revision = z.number().int().min(-1);
 const tableSchema = z.object({ number: z.number().int().min(1).max(99), floor: z.enum(["downstairs", "upstairs"]), capacity: z.number().int().min(1).max(12), available: z.boolean(), bar: z.boolean().optional() }).strict();
 const schema = z.discriminatedUnion("action", [
+  z.object({ action: z.literal("arrive"), expectedRevision: revision }).strict(),
+  z.object({ action: z.literal("move"), expectedRevision: revision, participantId: z.string().min(1).max(100), withParticipantId: z.string().min(1).max(100) }).strict(),
+  z.object({ action: z.literal("moveToTable"), expectedRevision: revision, participantId: z.string().min(1).max(100), tableNumber: z.number().int().min(1).max(99) }).strict(),
   z.object({ action: z.literal("presence"), expectedRevision: revision, status: z.enum(["present", "absent"]), participantId: z.string().min(1).max(100) }).strict(),
   z.object({ action: z.literal("participation"), expectedRevision: revision, status: z.enum(["playing", "visiting", "break", "left", "hosting"]), participantId: z.string().min(1).max(100).optional() }).strict(),
   z.object({ action: z.literal("settings"), expectedRevision: revision, tables: z.array(tableSchema).min(1).max(30).refine(tables => new Set(tables.map(t => t.number)).size === tables.length), floorPolicy: z.enum(["balanced", "downstairs", "upstairs"]) }).strict(),
@@ -20,6 +23,8 @@ const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("end"), expectedRevision: revision }).strict(),
   z.object({ action: z.literal("extend"), expectedRevision: revision, seconds: z.number().int().min(30).max(600) }).strict(),
 ]);
+const ticketSchema = z.object({ action: z.literal("ticket"), participantId: z.string().min(1).max(100) }).strict();
+const claimSchema = z.object({ action: z.literal("claim"), token: z.string().min(1).max(512) }).strict();
 const recoverySchema = z.object({ action: z.literal("find"), code: z.string().trim().regex(/^[a-f0-9]{8}$/i) }).strict();
 export async function GET(_request: Request, { params }: Context) {
   try { return arrivalJson(await readPractice((await params).slug)); }
@@ -28,6 +33,21 @@ export async function GET(_request: Request, { params }: Context) {
 export async function POST(request: Request, { params }: Context) {
   if (!arrivalMutationAllowed(request)) return arrivalJson({ code: "forbidden" }, 403);
   const raw = await readArrivalBody(request);
+  const ticket = ticketSchema.safeParse(raw);
+  if (ticket.success) {
+    try { return arrivalJson(await issuePracticeTicket((await params).slug, ticket.data.participantId)); }
+    catch (error) { return arrivalFailure(error); }
+  }
+  const claim = claimSchema.safeParse(raw);
+  if (claim.success) {
+    try {
+      const { slug } = await params;
+      const result = await claimPracticeTicket(slug, claim.data.token);
+      const response = arrivalJson(result.view);
+      response.cookies.set(result.cookie, result.token, { httpOnly: true, secure: new URL(request.url).protocol === "https:", sameSite: "lax", path: `/api/events/${slug}/practice`, maxAge: 6 * 3600 });
+      return response;
+    } catch (error) { return arrivalFailure(error); }
+  }
   const recovery = recoverySchema.safeParse(raw);
   if (recovery.success) {
     try {
@@ -41,6 +61,6 @@ export async function POST(request: Request, { params }: Context) {
   }
   const body = schema.safeParse(raw);
   if (!body.success) return arrivalJson({ code: "invalid_request" }, 400);
-  try { return arrivalJson(await mutatePractice((await params).slug, body.data)); }
+  try { return arrivalJson(await mutatePractice((await params).slug, body.data.action === "moveToTable" ? { ...body.data, action: "move" } : body.data)); }
   catch (error) { return arrivalFailure(error); }
 }

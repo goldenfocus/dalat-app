@@ -1,95 +1,50 @@
-# Host rehearsal
+# Language-exchange tables
 
-Route: `/practice/rehearsal` (or `/<locale>/practice/rehearsal`). Public, no login,
-noindex, sample-only. It reuses EventPractice and PracticeHost with an injected
-in-memory response transport and the real pairing, table allocation and clock model.
-It does not call the event practice API, reveal attendees or start a real round.
-Automatic PWA updates do not reload this route mid-rehearsal. A deliberate refresh
-still resets its sample state.
+The Social House pilot is restricted to `language-exchange-social-house-z8oc-YYYYMMDD`.
+It uses the existing private `event_language_profiles` store. A person saves spoken
+languages and levels once, plus a primary and optional additional practice languages.
+Old single-language profiles remain valid. No cross-app account linking is implied.
 
-Live event pages and their host/arrival subpages use normal page scrolling. The
-site header, bottom navigation, playback controls and actionable notices stay in
-the document flow. The floating camera shortcut, duplicate mobile RSVP bar and
-completed-upload notification are removed; the page's RSVP and Moments actions
-remain available. The presence roster has no separate scrolling area, so its
-last attendee and the draft action can be reached with the same page scroll.
+## Guest journey
 
-The compact sample toolbar offers ten or 34 players, Host / Mai and reset.
-English and Tiếng Việt stay visible above it. The slate/ice-blue glass treatment is
-scoped to practice, including the rehearsal shell; other app themes are preserved.
+RSVP collects missing preferences and immediately requests the persisted table plan.
+The event and `/prepare` show the table before the game starts. Plans may rebalance
+while everyone is still expected. The first arrival or manual host move locks seats;
+subsequent arrivals fill vacancies without moving people already assigned.
 
-Choose ten or 34 sample players. Morgan is a working host and Casey is a visitor;
-both remain out of pairing unless deliberately changed. The full available table
-inventory matches the event model, with the bar unavailable initially. Reset,
-changing sample attendance, or refreshing clears the sample event. Switching Host /
-Attendee preserves it. Nothing persists across tabs or refreshes. Language navigation also starts a new
-sample session. In a real event the server retains published rounds.
+Check-in is the presence confirmation. An RSVP identity changes into its arrival
+identity without losing its table. Guests get only their own table and teammates,
+with quiet arrival marks. Recovery codes never appear in other guests' responses.
+The main action opens offline bilingual conversation cards. During play the table
+number becomes a subtle watermark; the chevron reveals the floor and teammates.
+Profile editing and participation sit behind small controls.
 
-Attendees see names/avatars, their physical table/floor, countdown and bilingual
-conversation cards inside DaLat. Hosts use **Start Game** to seat confirmed players
-and start a 20-minute round in one action, with no EZViet navigation. Optional draft
-review and swaps remain available before starting a reviewed round.
-Pairing first spreads Vietnamese and English speakers to cover every table when
-the roster allows it, then prioritizes other matching learning languages over
-avoiding repeat partners. Missing speakers are never inferred from nationality.
-Balanced seating targets 60% of players upstairs and 40% downstairs using whole
-groups; closed tables/floors still apply. Small tables may use up to two pulled-up
-chairs, consistent with the existing soft seating behavior.
-Visible group numbers and the participation form are removed. A compact status
-button offers Playing or sitting out. Joining during a live round explicitly says
-Play next round and never changes that round. A host sees icon controls for
-pause/resume, +2 minutes and end; table settings, roster and published groups open
-from quiet utility icons. Existing DaLat account relationships provide avatars;
-guests use initials. No external account inference or identity bridge is added.
+The host may issue a signed, six-hour QR receipt for a guest added at the door.
+`/events/<slug>/play#ticket=...` consumes the fragment, removes it from the address bar,
+and sets an HttpOnly, event-scoped cookie. It grants that guest's view, never staff
+permission. The existing eight-character receipt recovery remains available.
 
-Rehearse: open table settings, block an occupied table, select a floor preference
-and save. Draft groups, review the proposed physical tables and partners, then start.
-New rounds default to 20 minutes. Tap one person then a person in another group to
-swap them; desktop drag/drop uses the same action. Only unpublished drafts change.
-Each swap generates a new draft ID and retains roster/revision/capacity checks.
-In a real event, arrivals after a draft do not block starting its reviewed groups.
-Those arrivals wait for the next draft; existing participants, tables and language
-preferences must still match the reviewed draft before it can start.
-Switch to Attendee (Mai) to find the published table, partner and countdown. Return
-to Host to pause, add two minutes, resume or end. Draft/review/start a second round
-and check Mai's new assignment. A large balanced draft should use both floors.
+## Host journey
 
-Rehearsal activity links open the generic EZViệt practice/challenge hub without
-sample event or participant identity. These external activities are separate from
-the in-memory rehearsal.
+The table board shows present/expected counts and distinct expected/no-show marks.
+Tap two people to swap, drag a person to another table, or select a person and tap
+an available seat. A host confirmation of an expected account performs the actual
+check-in. The eye opens a read-only guest preview without impersonation.
+Start Game starts a 20-minute round while preserving the assigned seats. Pause,
+resume, add two minutes, end, floor preference and available tables remain available.
+English and Vietnamese speakers are distributed first when the roster allows it;
+additional languages improve matches. Flags represent selected languages only.
 
-This page proves UI and model behavior with synthetic data. It cannot establish
-real host authorization, cross-device refresh, venue connectivity, physical table
-availability, identity linking or actual challenge acceptance. Those remain release
-checks on the real event flow. It grants no additional server permission.
+## Verification
 
-## Live event translation boundaries
+`/practice/rehearsal` remains an isolated sample with no event API writes. It shares
+the planner and controls but is not evidence of an authenticated guest journey.
 
-The event `/host` and `/arrive` pages also render `EventPractice`. Their nested
-`NextIntlClientProvider` message sets must include `eventPractice` alongside
-`arrival`, `menuOptions` and `translations`: a nested message set replaces the
-parent set rather than merging it. Loading the namespace in the route island alone
-does not reach these panels. Both pages ship the practice messages for the request
-locale, including button labels and accessible names, in all 12 supported locales.
-
-`components/practice/route-translations.test.tsx` exercises both page boundaries
-with the real practice panel and language provider, including settings and roster
-controls. Its sample transport does not call or mutate a real event.
-
-## Local verification, 2 November 2026
-
-At `http://localhost:3215/practice/rehearsal`, Chrome at 375×812:
-- Ten players: blocked table 4, preferred upstairs, saved and drafted. Round 1 gave
-  Mai table 8 upstairs with Alex. Sample host and visitor remained excluded.
-- Started round 1; attendee showed stable numbers and a running countdown. Checked
-  both Evening Café and Morning Mist themes; controls and names fit without clipping.
-- Host paused, extended two minutes, resumed, ended, and received the 90-second
-  changeover. Drafted and started round 2: Mai table 12 upstairs with Jamie.
-- Vietnamese route: localized host draft/review/start and attendee table, floor,
-  partner, countdown and activity control verified at 375px; no horizontal overflow.
-- Reset to 34 players: 17 draft groups spread across both floors, with shared-table
-  group numbers clear and no bar assignment.
-
-Screenshots: `/tmp/dalat-rehearsal-375-dark.png` and
-`/tmp/dalat-rehearsal-375-light.png`. These are local synthetic evidence, not a
-production or multi-device rehearsal claim.
+Release checks use separate authenticated host and guest browser sessions against
+a disposable local PostgreSQL, Supabase Auth and PostgREST stack. They exercise
+saved languages, actual RSVP, pre-start seats, check-in, refresh, host moves,
+no-shows, Start Game, cards, receipt recovery, authorization and revision conflicts.
+A regression checks JSONB key-order changes cannot cause polling to rewrite seats.
+SQL tests validate both old and multiple-target profiles and immutable snapshots.
+All 12 locale boundaries include `eventPractice`, including `/prepare` and `/play`.
+No test account or synthetic RSVP is inserted into a public production event.

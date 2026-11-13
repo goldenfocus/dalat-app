@@ -8,6 +8,7 @@ import { CONTENT_LOCALES } from "@/lib/types";
 import type { PracticeView } from "@/lib/practice/model";
 import { EventPractice } from "./event-practice";
 import HostPage from "@/app/[locale]/events/[slug]/host/page";
+import PreparePage from "@/app/[locale]/events/[slug]/prepare/page";
 import ArrivalPage from "@/app/[locale]/events/[slug]/arrive/page";
 
 vi.mock("next-intl/server", () => ({ getMessages: vi.fn(), getTranslations: vi.fn() }));
@@ -26,18 +27,19 @@ vi.mock("@/lib/i18n/routing", () => ({
 vi.mock("@/components/arrival/host-workspace", () => ({ HostWorkspace: () => <EventPractice slug="sample" transport={transport} /> }));
 vi.mock("@/components/arrival/guest-arrival", () => ({ GuestArrival: () => <EventPractice slug="sample" transport={transport} /> }));
 
+vi.mock("@/components/arrival/event-preparation", () => ({ EventPreparation: () => <EventPractice slug="sample" transport={transport} /> }));
 const host: PracticeView = {
   canStart: true, count: 2, me: null, revision: 1, serverNow: "2026-11-04T12:00:00Z",
   tables: [{ number: 4, floor: "downstairs", capacity: 2, available: true }],
   floorPolicy: "balanced", draft: null, participation: null, myTable: null,
-  round: null, groups: [], myGroup: [], myGroupNumber: null,
+  round: null, groups: [[{id:"sample",name:"Mai",speaks:["vi"],learns:"en"}]], assignments: [{groupIndex:0,tableNumber:4,floor:"downstairs"}], myGroup: [], myGroupNumber: null,
   participants: [{ id: "sample", name: "Mai", number: 1, speaks: ["vi"], learns: "en", participation: "playing", presence: "present" }],
 };
 const transport = async () => new Response(JSON.stringify(host), { status: 200 });
 
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 
-describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage]] as const)("%s practice translations", (_name, Page) => {
+describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage], ["RSVP preparation", PreparePage]] as const)("%s practice translations", (_name, Page) => {
   it.each(CONTENT_LOCALES)("renders labels and accessible controls in %s through the page provider", async locale => {
     const messages = JSON.parse(readFileSync(`messages/${locale}.json`, "utf8"));
     vi.mocked(getMessages).mockResolvedValue(messages);
@@ -51,19 +53,16 @@ describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage]] as cons
       </NextIntlClientProvider>,
     );
 
-    expect(await screen.findByRole("button", { name: t("draft") })).toBeVisible();
-    expect(screen.getByRole("button", { name: t("startGame") })).toBeVisible();
+    expect(await screen.findByRole("button", { name: t("startGame") })).toBeVisible();
     expect(container.querySelector('a[href*="ezviet.org"]')).toBeNull();
-    expect(screen.getByRole("status")).toHaveTextContent(t("ready", { count: 2 }));
-    expect(screen.getByRole("status")).toHaveTextContent(t("minutesShort", { count: 20 }));
-    expect(screen.getByRole("region", { name: t("rollCall") })).toHaveTextContent(t("rollCallHint"));
-    expect(screen.getByRole("button", { name: t("confirmPresent", { name: "Mai" }) })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: t("markAbsent", { name: "Mai" }) })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByText(t("present"))).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: /Mai/ }));
+    expect(screen.getByRole("button", { name: t("previewGuest") })).toBeVisible();
+    expect(screen.getByRole("button", { name: t("confirmPresent", { name: "Mai" }) })).toBeVisible();
+    expect(screen.getByRole("button", { name: t("markAbsent", { name: "Mai" }) })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: t("settings") }));
-    expect(screen.getByLabelText(t("duration"))).toBeVisible();
+    expect(screen.getByLabelText(t("floorPolicy"))).toBeVisible();
     expect(screen.getByRole("button", { name: t("saveSettings") })).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: t("hostParticipants") }));
-    expect(screen.getByRole("region", { name: t("hostParticipants") })).toHaveTextContent("Mai");
     expect(container.textContent).not.toMatch(/eventPractice\./);
     for (const control of container.querySelectorAll("[aria-label], [title]")) {
       expect(control.getAttribute("aria-label") ?? control.getAttribute("title")).not.toMatch(/eventPractice\./);

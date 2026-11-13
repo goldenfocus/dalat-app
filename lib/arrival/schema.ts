@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { languageLevelSchema } from "./legacy-languages";
+import { languagePreferencesSchema } from "./languages";
 
 const orderItem = z.object({ item_id: z.uuid(), qty: z.number().int().min(1).max(20), selected_options: z.record(z.string().max(40), z.string().max(40)).refine(v => Object.keys(v).length <= 8).optional() }).strict();
 const orderKey = (item: z.infer<typeof orderItem>) => item.item_id + JSON.stringify(Object.entries(item.selected_options || {}).sort());
@@ -20,6 +21,7 @@ export const arrivalSchema = z.object({
   participantId: z.uuid().optional(),
   // Printed on the host's door QR only. Proves presence; never forwarded to the database.
   doorKey: z.string().max(64).optional(),
+  languagePreferences: languagePreferencesSchema.optional(),
 }).strict().superRefine((value, ctx) => {
   if (!value.staffEntry && (value.userId || value.participantId)) {
     ctx.addIssue({ code: "custom", message: "invalid_identity" });

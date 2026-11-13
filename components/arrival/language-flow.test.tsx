@@ -79,8 +79,8 @@ describe("RSVP language capture", () => {
     fireEvent.click(screen.getByRole("button", { name: "Confirm RSVP" }));
     await screen.findByRole("alert");
     expect(proceed).not.toHaveBeenCalled();
-    expect(screen.getByText("English")).toBeVisible();
-    expect(screen.getByRole("button", { name: "Native" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "English" })).toBeVisible();
+    expect(screen.getAllByRole("combobox", { name: "Your level" })[0]).toHaveValue("native");
     fireEvent.click(screen.getByRole("button", { name: "Confirm RSVP" }));
     await waitFor(() => expect(proceed).toHaveBeenCalledTimes(1));
     expect(fetcher.mock.calls[0][0]).toBe("/api/arrival/languages");

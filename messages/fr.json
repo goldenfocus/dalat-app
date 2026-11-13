@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
+    "arriveNow": "Je suis là",
+    "playCards": "Jouer",
+    "moveToTable": "Déplacer à la table {number}",
+    "previewGuest": "Vue du participant",
     "startGame": "Démarrer le jeu",
     "title": "Pratiquons ensemble",
     "ready": "En jeu : {count}",

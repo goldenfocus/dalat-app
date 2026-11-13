@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
+    "arriveNow": "Saya sudah tiba",
+    "playCards": "Main",
+    "moveToTable": "Pindahkan ke meja {number}",
+    "previewGuest": "Tampilan peserta",
     "startGame": "Mulai permainan",
     "title": "Berlatih bersama",
     "ready": "{count} orang bermain",

@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocked = vi.hoisted(() => ({ context: vi.fn(), guestToken: vi.fn(), ownReceipt: vi.fn(), cookie: vi.fn() }));
+const mocked = vi.hoisted(() => ({ context: vi.fn(), guestToken: vi.fn(), ownReceipt: vi.fn(), cookie: vi.fn(), rpc: vi.fn() }));
 vi.mock("server-only", () => ({}));
 vi.mock("next/headers", () => ({ cookies: async () => ({ get: mocked.cookie }) }));
 vi.mock("@/lib/arrival/server", () => ({ arrivalContext: mocked.context, guestToken: mocked.guestToken, ownReceipt: mocked.ownReceipt, participantColumns: "id,user_id,nickname", tokenHash: (value: string) => `hash:${value}` }));
-import { confirmArrival, mutatePractice, readPractice } from "./server";
+import { claimPracticeTicket, issuePracticeTicket, confirmArrival, mutatePractice, readPractice } from "./server";
 import type { PracticeState } from "./model";
 
 type Row = Record<string, unknown>;
@@ -17,6 +17,7 @@ let writes: number;
 
 function database() {
   return {
+    rpc: mocked.rpc,
     from(table: string) {
       let filters: ((row: Row) => boolean)[] = [];
       let update: Row | null = null;
@@ -75,23 +76,16 @@ beforeEach(() => {
 });
 
 describe("practice mutations", () => {
-  it("starts with two confirmed players while leaving unchecked arrivals out of the round", async () => {
+  it("uses arrival as presence and seats pending RSVPs before the host starts", async () => {
     rows.event_practice_rooms = [];
-    rows.event_arrival_participants.push({ id: "unchecked", event_id: "event", user_id: null, nickname: "Unchecked", checked_in_at: "now", practice_language: "english" });
     const initial = await readPractice(slug);
-    expect(initial.count).toBe(0);
-    expect(initial.participants?.find(person => person.id === "player-a")?.presence).toBe("pending");
-    await expect(mutatePractice(slug, { action: "draft", expectedRevision: -1 })).rejects.toThrow("invalid_roster");
-    expect(writes).toBe(0);
-    await mutatePractice(slug, { action: "presence", participantId: "player-a", status: "present", expectedRevision: -1 });
-    await expect(mutatePractice(slug, { action: "draft", expectedRevision: revision() })).rejects.toThrow("invalid_roster");
-    await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "present", expectedRevision: revision() });
-    const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
-    expect(draft.draft?.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
-    expect(draft.participants?.find(person => person.id === "unchecked")?.presence).toBe("pending");
-    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
-    expect(started.groups.flat().map(person => person.id).sort()).toEqual(["player-a", "player-b"]);
-    expect(rows.event_arrival_participants).toHaveLength(4);
+    expect(initial.count).toBe(2);
+    expect(initial.participants?.find(person => person.id === "player-a")?.presence).toBe("present");
+    expect(initial.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b", "rsvp:no-show"]);
+    const started = await mutatePractice(slug, { action: "startGame", expectedRevision: revision() });
+    expect(started.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b", "rsvp:no-show"]);
+    expect(started.count).toBe(2);
+    expect(rows.event_arrival_participants).toHaveLength(3);
   });
   it("persists an X, preserves arrivals and invalidates the draft until absence is corrected", async () => {
     const draft = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
@@ -123,7 +117,8 @@ describe("practice mutations", () => {
     await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
     const published = structuredClone(state()!.rounds[0]);
     await mutatePractice(slug, { action: "presence", participantId: "player-b", status: "absent", expectedRevision: revision() });
-    expect(state()!.rounds[0]).toEqual(published);
+    expect(state()!.rounds[0].assignments).toEqual(published.assignments);
+    expect(state()!.rounds[0].groups.flat().map(p => p.id)).toContain("player-b");
     expect((await readPractice(slug)).count).toBe(1);
   });
   it("excludes working venue owner and no-shows by default; drafting publishes nothing", async () => {
@@ -145,33 +140,17 @@ describe("practice mutations", () => {
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: draft.revision! })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(1);
   });
-  it("starts the reviewed groups after a late arrival and includes that arrival in the next draft", async () => {
-    const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
+  it("seats a late arrival immediately without changing existing physical tables", async () => {
+    const first = await mutatePractice(slug, { action: "startGame", expectedRevision: revision() });
+    const table = first.assignments![0].tableNumber;
     rows.event_arrival_participants.push({ id: "late", event_id: "event", user_id: "late-user", nickname: "Late", checked_in_at: "now", practice_language: "english" });
-    const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
-    expect(started.count).toBe(2);
-    expect(started.groups).toEqual(draft.draft!.groups);
-    expect(started.round?.assignments).toEqual(draft.draft!.assignments);
-    expect(started.round?.minutes).toBe(12);
-    expect(state()?.rounds).toHaveLength(1);
-    actor = { id: "late-user" }; host = false;
-    const waiting = await readPractice(slug);
-    expect(waiting.me?.id).toBe("late");
-    expect(waiting.myGroup).toEqual([]);
-    expect(waiting.groups).toEqual([]);
-    actor = { id: "owner" }; host = true;
-    const published = structuredClone(state()!.rounds[0]);
-    await mutatePractice(slug, { action: "presence", participantId: "late", status: "present", expectedRevision: revision() });
-    // Confirmed during the running round: seated at once, nobody else moves.
-    expect(state()!.rounds[0].groups[0].map(person => person.id)).toEqual([...published.groups[0].map(person => person.id), "late"]);
-    expect(state()!.rounds[0].assignments).toEqual(published.assignments);
     actor = { id: "late-user" }; host = false;
     const seated = await readPractice(slug);
-    expect(seated.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
-    expect(seated.myTable?.tableNumber).toBe(published.assignments![0].tableNumber);
-    actor = { id: "owner" }; host = true;
-    const next = await mutatePractice(slug, { action: "draft", expectedRevision: revision() });
-    expect(next.draft?.groups.flat().map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+    expect(seated.me?.id).toBe("late");
+    expect(seated.presence).toBe("present");
+    expect(seated.myGroup?.map(p => p.id).sort()).toEqual(["late", "player-a", "player-b", "rsvp:no-show"]);
+    expect(seated.myTable?.tableNumber).toBe(table);
+    expect(seated.participants).toBeUndefined();
   });
   it.each(["departure", "language", "tables", "floor"])("still rejects a reviewed draft after a %s change", async change => {
     const draft = await mutatePractice(slug, { action: "draft", minutes: 12, expectedRevision: revision() });
@@ -261,7 +240,7 @@ describe("editable pre-start practice drafts", () => {
     expect(edited.round).toBeNull();
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() })).rejects.toThrow("status_conflict");
     const started = await mutatePractice(slug, { action: "start", draftId: edited.draft!.id, expectedRevision: revision() });
-    expect(started.groups).toEqual(edited.draft!.groups);
+    expect(started.groups.map(g => g.map(p => p.id))).toEqual(edited.draft!.groups.map(g => g.map(p => p.id)));
     expect(started.round?.minutes).toBe(20);
   });
   it("rejects non-host edits, stale rosters, same-group swaps and concurrent changes", async () => {
@@ -328,16 +307,17 @@ describe("door and staff arrival confirmation", () => {
     expect(revision()).toBe(before + 1);
     expect(state()!.presence!.late).toBe("present");
     expect(state()!.rounds[0].groups[0].map(person => person.id)).toContain("late");
-    expect(state()!.rounds[0].groups[0].at(-1)).toMatchObject({ id: "late", speaks: ["en"], learns: "vi" });
+    expect(state()!.rounds[0].groups.flat().find(p => p.id === "late")).toMatchObject({ id: "late", speaks: ["en"], learns: "vi" });
     expect(state()!.draft?.id).toBe(nextDraft.draft!.id);
     mocked.guestToken.mockResolvedValue("receipt");
     mocked.ownReceipt.mockResolvedValue({ participant: { id: "late" } });
     const view = await readPractice(slug);
     expect(view.myTable?.tableNumber).toBeTruthy();
-    expect(view.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
+    expect(view.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b", "rsvp:no-show"]);
   });
   it("is idempotent and never seats working staff", async () => {
     await startRound();
+    await confirmArrival(slug, "player-a");
     const settled = revision();
     expect(await confirmArrival(slug, "player-a")).toBe(true);
     expect(revision()).toBe(settled);
@@ -373,7 +353,7 @@ describe("door and staff arrival confirmation", () => {
 it("starts the game and persists table assignments in one host mutation", async () => {
   const started = await mutatePractice(slug, { action: "startGame", expectedRevision: revision() });
   expect(started.round?.minutes).toBe(20);
-  expect(started.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b"]);
+  expect(started.groups.flat().map(p => p.id).sort()).toEqual(["player-a", "player-b", "rsvp:no-show"]);
   expect(started.round?.assignments).toHaveLength(1);
   expect(started.draft).toBeNull();
   expect(writes).toBe(1);
@@ -387,4 +367,60 @@ it("restricts one-click game start to staff and the open event window", async ()
   mocked.context.mockResolvedValue({ admin: database(), user: actor, event: { id: "event", isOpen: false }, access: { canManage: true } });
   await expect(mutatePractice(slug, { action: "startGame", expectedRevision: revision() })).rejects.toThrow("event_not_open_for_arrival");
   expect(writes).toBe(0);
+});
+
+
+describe("private host-issued guest receipts", () => {
+  it("requires host authority to issue and exposes only the claimed table", async () => {
+    process.env.SUPABASE_SERVICE_ROLE_KEY = "local-unit-test-secret";
+    await readPractice(slug);
+    const issued = await issuePracticeTicket(slug, "player-b");
+    actor = null; host = false;
+    await expect(issuePracticeTicket(slug, "player-b")).rejects.toThrow("forbidden");
+    const claim = await claimPracticeTicket(slug, issued.token);
+    expect(claim.view.me?.id).toBe("player-b");
+    expect(claim.view.canStart).toBe(false);
+    expect(claim.view.participants).toBeUndefined();
+    expect(JSON.stringify(claim.view)).not.toContain("receiptCode");
+    await expect(claimPracticeTicket(slug, issued.token + "tampered")).rejects.toThrow("invalid_request");
+  });
+});
+
+it("does not rewrite unchanged JSONB seating when PostgreSQL returns keys in another order", async () => {
+  await readPractice(slug);
+  const reverseKeys = (value: unknown): unknown => Array.isArray(value) ? value.map(reverseKeys) : value && typeof value === "object" ? Object.fromEntries(Object.entries(value).reverse().map(([key, item]) => [key, reverseKeys(item)])) : value;
+  rows.event_practice_rooms[0].state = reverseKeys(state());
+  const before = { revision: revision(), writes };
+  await readPractice(slug);
+  await readPractice(slug);
+  expect(revision()).toBe(before.revision);
+  expect(writes).toBe(before.writes);
+});
+
+it("honors a ticket issued before an RSVP becomes an arrival", async () => {
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "local-unit-test-secret";
+  const issued = await issuePracticeTicket(slug, "rsvp:no-show");
+  rows.event_arrival_participants.push({ id: "new-arrival", event_id: "event", user_id: "absent", nickname: "Not arrived", checked_in_at: "now", practice_language: "english" });
+  actor = null; host = false;
+  expect((await claimPracticeTicket(slug, issued.token)).view.me?.id).toBe("new-arrival");
+});
+
+it("checks in only the RSVP named by a valid guest receipt and keeps the reserved table", async () => {
+  process.env.SUPABASE_SERVICE_ROLE_KEY = "local-unit-test-secret";
+  const planned = await readPractice(slug);
+  const table = planned.assignments?.find(a => planned.groups[a.groupIndex].some(p => p.id === "rsvp:no-show"))?.tableNumber;
+  const issued = await issuePracticeTicket(slug, "rsvp:no-show");
+  rows.event_language_profiles = [{ user_id: "absent", preferences: { speaks: [{ language: "vi", level: "native" }], learning: { language: "en", level: "new" } } }];
+  actor = null; host = false;
+  mocked.cookie.mockReturnValue({ value: issued.token });
+  mocked.rpc.mockImplementation(async (name, args) => {
+    expect(name).toBe("arrival_submit");
+    expect(args.p_actor_id).toBe("absent");
+    rows.event_arrival_participants.push({ id: "claimed-arrival", user_id: "absent", event_id: "event", nickname: "Not arrived", checked_in_at: "now", practice_language: "english" });
+    return { data: {}, error: null };
+  });
+  const arrived = await mutatePractice(slug, { action: "arrive", expectedRevision: revision() });
+  expect(arrived.me?.id).toBe("claimed-arrival");
+  expect(arrived.presence).toBe("present");
+  expect(arrived.myTable?.tableNumber).toBe(table);
 });

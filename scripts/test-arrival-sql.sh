@@ -220,3 +220,7 @@ END $$;
 SQL
 wait "$inherit_writer"
 echo 'Concurrent new-occurrence menu sync passed.'
+for file in supabase/migrations/20261203_001_multiple_practice_languages.sql supabase/tests/multiple-practice-languages.sql; do
+ docker exec -i "$container" psql -X -q -U postgres -v ON_ERROR_STOP=1 < "$repo_root/$file"
+done
+echo 'Multiple-language profile compatibility passed.'

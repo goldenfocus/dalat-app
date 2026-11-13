@@ -20,5 +20,5 @@ export default async function PreparationPage({ params }: Props) {
   const { data: { user } } = await db.auth.getUser();
   if (!user) redirect(`/auth/login?next=${encodeURIComponent(`${locale === "en" ? "" : `/${locale}`}/events/${slug}/prepare`)}`);
   const messages = await getMessages({ locale });
-  return <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations }}><EventPreparation slug={slug} /></NextIntlClientProvider>;
+  return <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations, eventPractice: messages.eventPractice }}><EventPreparation slug={slug} /></NextIntlClientProvider>;
 }

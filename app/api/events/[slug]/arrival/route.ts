@@ -5,7 +5,6 @@ import { arrivalSchema } from "@/lib/arrival/schema";
 import { visibleArrivalReceipt } from "@/lib/arrival/receipt";
 import { getLanguagePreferences } from "@/lib/arrival/preferences";
 import { linkGuestArrival } from "@/lib/arrival/link-account";
-import { validDoorKey } from "@/lib/arrival/door";
 import { confirmArrival } from "@/lib/practice/server";
 import type { ArrivalReceipt } from "@/lib/arrival/types";
 
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
     const { slug } = await params;
     const { admin, user, event, access } = await arrivalContext(slug);
     // The door key only proves presence; it never reaches the database payload.
-    const { doorKey, ...payload } = parsed.data;
+    const { doorKey: _doorKey, languagePreferences, ...payload } = parsed.data;
     if (payload.staffEntry && (!user || !access.canWelcome)) return arrivalJson({ code: "forbidden" }, 403);
     const token = await guestToken(event.id);
     if (!payload.staffEntry && !token) return arrivalJson({ code: "invalid_session" }, 400);
@@ -79,10 +78,16 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
       p_request_id: payload.requestId, p_payload: payload,
     });
     if (error) throw error;
+    if (languagePreferences && (data as ArrivalReceipt | null)?.participant?.id && !(data as ArrivalReceipt).participant.language_preferences) {
+      const update = await admin.from("event_arrival_participants").update({ language_preferences: languagePreferences })
+        .eq("event_id", event.id).eq("id", (data as ArrivalReceipt).participant.id);
+      if (update.error) throw update.error;
+      (data as ArrivalReceipt).participant.language_preferences = languagePreferences;
+    }
     // A staff check-in or a door QR scan means the person is in the room: confirm
     // presence and seat them now. This never fails the saved check-in.
     const participantId = (data as ArrivalReceipt | null)?.participant?.id;
-    if (participantId && (payload.staffEntry || validDoorKey(event.id, doorKey))) await confirmArrival(slug, participantId);
+    if (participantId) await confirmArrival(slug, participantId);
     return arrivalJson(visibleArrivalReceipt(data as ArrivalReceipt, payload.staffEntry, access));
   } catch (error) { return arrivalFailure(error); }
 }

@@ -4318,6 +4318,10 @@
     "saveAccountLater": "Совершенно необязательно. Ваша отметка сохранится в любом случае."
   },
   "eventPractice": {
+    "arriveNow": "Я на месте",
+    "playCards": "Играть",
+    "moveToTable": "Переместить за стол {number}",
+    "previewGuest": "Экран участника",
     "startGame": "Начать игру",
     "title": "Практикуемся вместе",
     "ready": "Участвуют: {count}",
