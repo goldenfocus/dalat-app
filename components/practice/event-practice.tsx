@@ -144,8 +144,8 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
     {!transport && <div className="flex justify-end"><PracticeLanguage /></div>}
     <h2 id="practice-heading" className="sr-only">{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
     {!view && <p role="status">{t("loading")}</p>}
-    {view?.me && !view.canStart && <PracticeGuest view={view} busy={busy} act={act} remaining={remaining} onProfile={profile?.id ? () => setShowProfile(true) : undefined} />}
-    {profile?.id && <PracticeProfile key={profile.id} open={showProfile} onClose={() => { setShowProfile(false); void load(); }} />}
+    {view?.me && !view.canStart && <PracticeGuest view={view} busy={busy} act={act} remaining={remaining} onProfile={!transport && profile?.id ? () => setShowProfile(true) : undefined} />}
+    {!transport && profile?.id && <PracticeProfile key={profile.id} open={showProfile} onClose={() => { setShowProfile(false); void load(); }} />}
     {view && !view.me && !view.canStart && <div className="space-y-2">
       <Button asChild className="practice-primary min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("arrival")}</Link></Button>
       <details><summary className="min-h-11 cursor-pointer py-2 text-sm font-medium text-muted-foreground">{t("findHint")}</summary>
@@ -156,7 +156,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
         </form>
       </details>
     </div>}
-    {view?.canStart && <PracticeHost view={view} ticket={issueTicket} busy={busy} act={act} remaining={remaining} changeoverRemaining={changeoverRemaining} />}
+    {view?.canStart && <PracticeHost view={view} ticket={transport ? undefined : issueTicket} busy={busy} act={act} remaining={remaining} changeoverRemaining={changeoverRemaining} />}
     {(error || actionError) && <div role="alert" className="flex items-center justify-between gap-2 text-sm"><p>{t(actionError ?? (view ? "stale" : "error"))}</p><Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("refresh")} disabled={busy} onClick={() => void load()}><RefreshCw aria-hidden className="h-4 w-4" /></Button></div>}
   </section>;
 }
