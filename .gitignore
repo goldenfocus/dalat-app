@@ -2,6 +2,11 @@
 
 # dependencies
 /node_modules
+# npm is the only package manager: package-lock.json is the one lockfile (see README)
+bun.lock
+bun.lockb
+yarn.lock
+pnpm-lock.yaml
 /.pnp
 .pnp.*
 .yarn/*
