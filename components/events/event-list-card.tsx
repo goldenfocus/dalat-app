@@ -82,7 +82,8 @@ export const EventListCard = memo(function EventListCard({
   return (
     <Link
       href={`/events/${event.slug}`}
-      className="flex gap-3 p-3 rounded-lg border border-border/50 bg-card hover:border-foreground/20 hover:bg-accent/50 transition-all active:scale-[0.99] active:opacity-90 touch-manipulation"
+      // contain:layout keeps the inline default-image lightbox (position: fixed) scoped to the card
+      className="[contain:layout] flex gap-3 p-3 rounded-lg border border-border/50 bg-card hover:border-foreground/20 hover:bg-accent/50 transition-all active:scale-[0.99] active:opacity-90 touch-manipulation"
       onClick={() => triggerHaptic("selection")}
       onMouseEnter={handlePrefetch}
       onTouchStart={handlePrefetch}

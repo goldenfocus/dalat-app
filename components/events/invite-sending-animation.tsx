@@ -234,7 +234,7 @@ export function InviteSendingAnimation({
               <div
                 key={invitee.type === "email" ? invitee.email : invitee.type === "user" ? invitee.user.id : `aud-${invitee.key}`}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-500",
+                  "relative flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-500",
                   status === "waiting" && "opacity-30",
                   status === "decoding" && "opacity-100 bg-[#00ff41]/5",
                   status === "sending" && "opacity-100 bg-[#00ff41]/10",

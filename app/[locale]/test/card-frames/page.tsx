@@ -57,7 +57,7 @@ function FramedCard({ event, locale, variant }: FramedCardProps) {
 
   return (
     <Link href={`/events/${event.slug}`} className="block touch-manipulation">
-      <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98]">
+      <Card className="[contain:layout] overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98]">
         {/* Frame container */}
         <div className={frameStyles[variant]}>
           {/* Image container */}
