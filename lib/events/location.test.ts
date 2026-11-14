@@ -33,6 +33,28 @@ describe("canonical venue locations", () => {
     expect(result.google_maps_url).toBe(venue.google_maps_url);
     expect(getLocationMapLinks(result).directions).toBeNull();
   });
+  it("keeps street geocodes out of event directions and calendar coordinates", () => {
+    const approximate: LocationVenue = {
+      ...venue,
+      name: "Thỏ Khoai Tây",
+      address: "Công viên khu quy hoạch Hoàng Diệu, Đà Lạt",
+      geocode_source: "osm_street",
+      google_maps_url: "https://www.google.com/maps/search/?api=1&query=Tho+Khoai+Tay+Hoang+Dieu+Da+Lat",
+    };
+    const result = resolveEventLocation({ ...stale, latitude: 1, longitude: 2 }, approximate);
+    expect(result).toMatchObject({ latitude: null, longitude: null });
+    expect(getLocationMapLinks(result)).toEqual({ map: approximate.google_maps_url, directions: null });
+    expect(getCalendarLocation(result)).toEqual({
+      text: `${approximate.name}, ${approximate.address}`,
+      mapUrl: approximate.google_maps_url,
+      geo: null,
+    });
+  });
+  it("uses a name and address search for a street geocode with no saved map link", () => {
+    const result = resolveEventLocation(stale, { ...venue, geocode_source: "osm_street", google_maps_url: null });
+    expect(getLocationMapLinks(result).map).toContain(encodeURIComponent(`${venue.name}, ${venue.address}`));
+    expect(getLocationMapLinks(result).directions).toBeNull();
+  });
   it.each([{ has_private_details: true }, { is_online: true }])("does not inherit a physical venue for %j", (flags) => {
     const record = { ...stale, ...flags };
     expect(resolveEventLocation(record, venue)).toBe(record);

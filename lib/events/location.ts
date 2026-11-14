@@ -17,9 +17,10 @@ export interface LocationVenue {
   google_maps_url: string | null;
   latitude: number | null;
   longitude: number | null;
+  geocode_source?: "google" | "osm" | "osm_street" | null;
 }
 
-export const LOCATION_VENUE_FIELDS = "id, slug, name, address, google_maps_url, latitude, longitude";
+export const LOCATION_VENUE_FIELDS = "id, slug, name, address, google_maps_url, latitude, longitude, geocode_source";
 
 export function hasCoordinates(location: EventLocation): boolean {
   return typeof location.latitude === "number" && Number.isFinite(location.latitude)
@@ -56,12 +57,13 @@ export function resolveEventLocation<T extends EventLocation>(
   venue: LocationVenue | null | undefined,
 ): T {
   if (!venue || event.has_private_details || event.is_online) return event;
+  const approximate = venue.geocode_source === "osm_street";
   const location = {
     ...event,
     location_name: venue.name,
     address: venue.address,
-    latitude: venue.latitude,
-    longitude: venue.longitude,
+    latitude: approximate ? null : venue.latitude,
+    longitude: approximate ? null : venue.longitude,
     google_maps_url: venue.google_maps_url,
   };
   return { ...location, google_maps_url: getLocationMapLinks(location).map };
