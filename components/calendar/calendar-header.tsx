@@ -1,6 +1,8 @@
 "use client";
 
-import { format, addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from "date-fns";
+import { useLocale, useTranslations } from "next-intl";
+import { formatCalendarDate } from "@/lib/calendar";
+import { addDays, addWeeks, addMonths, subDays, subWeeks, subMonths } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { triggerHaptic } from "@/lib/haptics";
 import { ViewSwitcher, type CalendarView } from "./view-switcher";
@@ -26,6 +28,10 @@ export function CalendarHeader({
   onToday,
   onTagChange,
 }: CalendarHeaderProps) {
+  const locale = useLocale();
+  const t = useTranslations("calendarView");
+  const common = useTranslations("common");
+  const date = (value: Date, options: Intl.DateTimeFormatOptions) => formatCalendarDate(value, locale, options);
   const handlePrevious = () => {
     triggerHaptic("selection");
     switch (view) {
@@ -61,43 +67,32 @@ export function CalendarHeader({
     onToday();
   };
 
-  // Format title based on view
   const getTitle = () => {
-    switch (view) {
-      case "day":
-        return format(currentDate, "EEE, MMM d, yyyy");
-      case "week":
-        const weekEnd = addDays(currentDate, 6);
-        // If week spans two months, show both
-        if (format(currentDate, "MMM") !== format(weekEnd, "MMM")) {
-          return `${format(currentDate, "MMM d")} - ${format(weekEnd, "MMM d, yyyy")}`;
-        }
-        return `${format(currentDate, "MMM d")} - ${format(weekEnd, "d, yyyy")}`;
-      case "month":
-        return format(currentDate, "MMMM yyyy");
-    }
+    if (view === "day") return date(currentDate, { weekday: "short", month: "short", day: "numeric" });
+    if (view === "month") return date(currentDate, { month: "long", year: "numeric" });
+    return `${date(currentDate, { month: "short", day: "numeric" })} – ${date(addDays(currentDate, 6), { month: "short", day: "numeric" })}`;
   };
 
   return (
     <div className="border-b bg-background">
       {/* Navigation row */}
       <div className="p-4 pb-2 lg:pb-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between gap-1 sm:gap-4">
+          <div className="flex min-w-0 items-center gap-1">
             <button
               onClick={handlePrevious}
               className="p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
-              aria-label={`Previous ${view}`}
+              aria-label={common("previous")}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 className="text-lg font-semibold min-w-[180px] text-center">
+            <h2 suppressHydrationWarning className="text-sm sm:text-lg font-semibold text-center whitespace-nowrap">
               {getTitle()}
             </h2>
             <button
               onClick={handleNext}
               className="p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
-              aria-label={`Next ${view}`}
+              aria-label={common("next")}
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -112,9 +107,9 @@ export function CalendarHeader({
             <TagFilterBar selectedTag={selectedTag} onTagChange={onTagChange} />
             <button
               onClick={handleToday}
-              className="px-3 py-1.5 text-sm font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors active:scale-95"
+              className="shrink-0 whitespace-nowrap px-3 py-1.5 text-sm font-medium bg-muted hover:bg-muted/80 rounded-lg transition-colors active:scale-95"
             >
-              Today
+              {t("today")}
             </button>
           </div>
         </div>

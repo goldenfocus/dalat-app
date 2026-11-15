@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback } from "react";
 import {
   Music, Flower2, Brain, Dumbbell, Footprints, Palette,
@@ -41,6 +42,9 @@ interface TagFilterBarProps {
 }
 
 export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterBarProps) {
+  const t = useTranslations("eventTags");
+  const map = useTranslations("mapPage");
+  const common = useTranslations("common");
   const handleTagClick = useCallback((tag: EventTag | null) => {
     triggerHaptic("selection");
     onTagChange(tag);
@@ -60,7 +64,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
         <DropdownMenuTrigger asChild>
           <button
             className={cn(
-              "inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all active:scale-95",
+              "inline-flex shrink-0 whitespace-nowrap items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all active:scale-95",
               selectedTag
                 ? "bg-foreground/10 text-foreground border border-foreground/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted"
@@ -72,7 +76,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
               <SlidersHorizontal className="w-4 h-4" />
             )}
             <span>
-              {selectedTag ? selectedConfig?.label : "Filter"}
+              {selectedTag ? t(selectedTag) : map("filters")}
             </span>
           </button>
         </DropdownMenuTrigger>
@@ -82,7 +86,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
             onClick={() => handleTagClick(null)}
             className="py-2.5 px-3 cursor-pointer"
           >
-            <span className="flex-1">All Events</span>
+            <span className="flex-1">{map("presets.allUpcoming")}</span>
             {selectedTag === null && <Check className="w-4 h-4 ml-2" />}
           </DropdownMenuItem>
 
@@ -99,7 +103,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
                 className="py-2.5 px-3 cursor-pointer"
               >
                 <IconComponent className="w-4 h-4 mr-2 text-muted-foreground" />
-                <span className="flex-1">{config.label}</span>
+                <span className="flex-1">{t(tag)}</span>
                 {isSelected && <Check className="w-4 h-4 ml-2" />}
               </DropdownMenuItem>
             );
@@ -112,7 +116,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
         <button
           onClick={handleClear}
           className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-all active:scale-95"
-          aria-label="Clear filter"
+          aria-label={common("clear")}
         >
           <X className="w-4 h-4" />
         </button>

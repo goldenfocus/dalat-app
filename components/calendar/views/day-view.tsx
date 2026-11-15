@@ -10,14 +10,14 @@ import {
 } from "date-fns";
 import { toZonedTime } from "date-fns-tz";
 import { Calendar as CalendarIcon, Sunrise, Sun, Sunset, Moon } from "lucide-react";
-import type { Event } from "@/lib/types";
+import type { CalendarEvent } from "@/lib/calendar";
 import { DALAT_TIMEZONE } from "@/lib/timezone";
 import { EventCardFull } from "../event-cards/event-card-full";
 import { cn } from "@/lib/utils";
 
 interface DayViewProps {
-  events: Event[];
-  eventsByDate: Record<string, Event[]>;
+  events: CalendarEvent[];
+  eventsByDate: Record<string, CalendarEvent[]>;
   currentDate: Date;
 }
 
@@ -47,11 +47,11 @@ export function DayView({
 
   // Get events for the current date
   const dateKey = format(currentDate, "yyyy-MM-dd");
-  const dayEvents = eventsByDate[dateKey] || [];
+  const dayEvents = useMemo(() => eventsByDate[dateKey] || [], [eventsByDate, dateKey]);
 
   // Group events by time period
   const groupedEvents = useMemo(() => {
-    const groups: Record<string, Event[]> = {
+    const groups: Record<string, CalendarEvent[]> = {
       morning: [],
       afternoon: [],
       evening: [],

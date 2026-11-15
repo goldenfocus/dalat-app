@@ -143,7 +143,7 @@ export const ROUTE_MESSAGE_ISLANDS: RouteIsland[] = [
   },
   {
     test: (p) => inSection(p, "calendar"),
-    namespaces: ["calendar", "calendarView", "eventTags", "categories"],
+    namespaces: ["calendar", "calendarView", "eventTags", "categories", "mapPage"],
   },
   {
     test: (p) => inSection(p, "settings", "protected"),

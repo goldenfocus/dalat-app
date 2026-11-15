@@ -10,7 +10,6 @@ import {
   addDays,
   isSameMonth,
   isSameDay,
-  isToday,
   isBefore,
   startOfDay,
   endOfDay,
@@ -19,19 +18,17 @@ import {
   isWithinInterval,
 } from "date-fns";
 import { Calendar as CalendarIcon, CalendarDays, LayoutGrid, List } from "lucide-react";
-import { useTranslations } from "next-intl";
-import { Link } from "@/lib/i18n/routing";
-import type { Event } from "@/lib/types";
-import { formatInDaLat } from "@/lib/timezone";
-import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
+import { useLocale, useTranslations } from "next-intl";
+import { formatCalendarDate, parseCalendarDate, todayInDaLat, type CalendarEvent } from "@/lib/calendar";
+import { CalendarEventCard } from "../event-cards/event-card-compact";
 import { triggerHaptic } from "@/lib/haptics";
-import { cn, decodeUnicodeEscapes } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 type MonthMode = "calendar" | "rolling" | "list";
 
 interface MonthViewProps {
-  events: Event[];
-  eventsByDate: Record<string, Event[]>;
+  events: CalendarEvent[];
+  eventsByDate: Record<string, CalendarEvent[]>;
   currentMonth: Date;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
@@ -48,17 +45,19 @@ export function MonthView({
   tripStartDate,
   tripEndDate,
 }: MonthViewProps) {
+  const locale = useLocale();
+  const dateLabel = (date: Date, options: Intl.DateTimeFormatOptions) => formatCalendarDate(date, locale, options);
   const tripModeActive = !!(tripStartDate && tripEndDate);
   const t = useTranslations("calendarView");
   // Default to "rolling" (Next 30 Days) for event discovery
   const [mode, setMode] = useState<MonthMode>("rolling");
-  const today = useMemo(() => startOfDay(new Date()), []);
+  const today = parseCalendarDate(todayInDaLat())!;
 
   // Get calendar days grid based on mode
   const calendarDays = useMemo(() => {
     if (mode === "rolling" || mode === "list") {
-      // Rolling 35-day view starting from today
-      return Array.from({ length: 35 }, (_, i) => addDays(today, i));
+      // Rolling month follows the selected date and the header arrows.
+      return Array.from({ length: 30 }, (_, i) => addDays(currentMonth, i));
     }
 
     // Traditional calendar view
@@ -68,14 +67,14 @@ export function MonthView({
     const calendarEnd = endOfWeek(monthEnd);
 
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd });
-  }, [currentMonth, mode, today]);
+  }, [currentMonth, mode]);
 
   // Get upcoming events for list view (sorted by date)
   const upcomingEvents = useMemo(() => {
     if (mode !== "list") return [];
 
-    // Get all events in the next 35 days
-    const upcoming: { date: Date; events: Event[] }[] = [];
+    // Get all events in the displayed 30 days
+    const upcoming: { date: Date; events: CalendarEvent[] }[] = [];
 
     calendarDays.forEach(day => {
       const dateKey = format(day, "yyyy-MM-dd");
@@ -106,12 +105,10 @@ export function MonthView({
   };
 
   // Check if a date is within the trip range
-  const isInTripRange = useMemo(() => {
-    if (!tripStartDate || !tripEndDate) return () => false;
-    const start = startOfDay(parseISO(tripStartDate));
-    const end = endOfDay(parseISO(tripEndDate));
-    return (date: Date) => isWithinInterval(date, { start, end });
-  }, [tripStartDate, tripEndDate]);
+  const isInTripRange = (date: Date) => {
+    if (!tripStartDate || !tripEndDate) return false;
+    return isWithinInterval(date, { start: startOfDay(parseISO(tripStartDate)), end: endOfDay(parseISO(tripEndDate)) });
+  };
 
   // Get day headers based on mode
   const dayHeaders = useMemo(() => {
@@ -120,12 +117,12 @@ export function MonthView({
       t("days.thu"), t("days.fri"), t("days.sat")
     ];
     if (mode === "rolling") {
-      // For rolling view, headers are based on today's day of week
-      const todayDayOfWeek = today.getDay();
+      // Rolling headers follow the displayed start date
+      const todayDayOfWeek = currentMonth.getDay();
       return Array.from({ length: 7 }, (_, i) => days[(todayDayOfWeek + i) % 7]);
     }
     return days;
-  }, [mode, today, t]);
+  }, [mode, currentMonth, t]);
 
   return (
     <div className="h-full flex flex-col">
@@ -192,9 +189,9 @@ export function MonthView({
                   <div className="flex items-center gap-2 mb-3 sticky top-0 bg-background py-1">
                     <div className={cn(
                       "text-sm font-semibold",
-                      isToday(date) && "text-primary"
+                      format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd") && "text-primary"
                     )}>
-                      {isToday(date) ? t("today") : format(date, "EEEE, MMM d")}
+                      {format(date, "yyyy-MM-dd") === format(today, "yyyy-MM-dd") ? t("today") : dateLabel(date, { weekday: "long", month: "short", day: "numeric" })}
                     </div>
                     <span className="text-xs text-muted-foreground">
                       {dayEvents.length === 1 ? t("eventCount", { count: 1 }) : t("eventsCount", { count: dayEvents.length })}
@@ -204,34 +201,7 @@ export function MonthView({
                   {/* Events for this date */}
                   <div className="space-y-2">
                     {dayEvents.map(event => (
-                      <Link
-                        key={event.id}
-                        href={`/events/${event.slug}`}
-                        className="block p-3 rounded-lg border hover:bg-muted transition-colors"
-                      >
-                        <div className="flex gap-3">
-                          {event.image_url && (
-                            <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
-                              <img
-                                src={event.image_url}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm line-clamp-2">
-                              {event.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {hasLamVienTbdSchedule(event.source_metadata)
-                                ? "TBD"
-                                : formatInDaLat(event.starts_at, "h:mm a")}
-                              {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
+                      <CalendarEventCard key={event.id} event={event} />
                     ))}
                   </div>
                 </div>
@@ -265,13 +235,15 @@ export function MonthView({
                 const hasEvents = dayEvents.length > 0;
                 const isSelected = selectedDate && isSameDay(day, selectedDate);
                 const isCurrentMonth = mode === "rolling" || isSameMonth(day, currentMonth);
-                const isTodayDate = isToday(day);
+                const isTodayDate = format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
                 const isPast = isBefore(startOfDay(day), today);
                 const inTripRange = isInTripRange(day);
 
                 return (
                   <button
                     key={`${dateKey}-${index}`}
+                    data-calendar-date={dateKey}
+                    aria-label={dateLabel(day, { dateStyle: "full" })}
                     onClick={() => handleDateClick(day)}
                     className={cn(
                       "relative aspect-square flex flex-col items-center justify-center rounded-lg transition-all",
@@ -288,7 +260,7 @@ export function MonthView({
                     {/* Show month indicator on first day of each month in rolling mode */}
                     {mode === "rolling" && format(day, "d") === "1" && (
                       <span className="absolute -top-0.5 text-[8px] font-medium text-muted-foreground">
-                        {format(day, "MMM")}
+                        {dateLabel(day, { month: "short" })}
                       </span>
                     )}
 
@@ -333,7 +305,7 @@ export function MonthView({
               <div className="p-4">
                 <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                   <CalendarIcon className="w-4 h-4" />
-                  {format(selectedDate, "EEEE, MMMM d, yyyy")}
+                  <span suppressHydrationWarning>{dateLabel(selectedDate, { dateStyle: "full" })}</span>
                 </h3>
 
                 {selectedDateEvents.length === 0 ? (
@@ -343,34 +315,7 @@ export function MonthView({
                 ) : (
                   <div className="space-y-2">
                     {selectedDateEvents.map(event => (
-                      <Link
-                        key={event.id}
-                        href={`/events/${event.slug}`}
-                        className="block p-3 rounded-lg border hover:bg-muted transition-colors"
-                      >
-                        <div className="flex gap-3">
-                          {event.image_url && (
-                            <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
-                              <img
-                                src={event.image_url}
-                                alt=""
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-sm line-clamp-2">
-                              {event.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {hasLamVienTbdSchedule(event.source_metadata)
-                                ? "TBD"
-                                : formatInDaLat(event.starts_at, "h:mm a")}
-                              {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
-                            </p>
-                          </div>
-                        </div>
-                      </Link>
+                      <CalendarEventCard key={event.id} event={event} />
                     ))}
                   </div>
                 )}

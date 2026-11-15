@@ -2647,6 +2647,9 @@
     "showMyLocation": "Hiện vị trí của tôi"
   },
   "calendarView": {
+    "views": {"day": "Ngày", "week": "Tuần", "month": "Tháng"},
+    "view": "Chế độ lịch",
+    "selectDay": "Chọn một ngày",
     "days": {
       "sun": "CN",
       "mon": "T2",

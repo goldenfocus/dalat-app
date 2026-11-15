@@ -2635,6 +2635,9 @@
     "showMyLocation": "Meinen Standort anzeigen"
   },
   "calendarView": {
+    "views": {"day": "Tag", "week": "Woche", "month": "Monat"},
+    "view": "Kalenderansicht",
+    "selectDay": "Tag auswählen",
     "days": {
       "sun": "So",
       "mon": "Mo",

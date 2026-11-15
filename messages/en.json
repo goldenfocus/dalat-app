@@ -2678,6 +2678,9 @@
     "showMyLocation": "Show my location"
   },
   "calendarView": {
+    "views": {"day": "Day", "week": "Week", "month": "Month"},
+    "view": "Calendar view",
+    "selectDay": "Select a day",
     "days": {
       "sun": "Sun",
       "mon": "Mon",

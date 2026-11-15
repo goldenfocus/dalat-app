@@ -2635,6 +2635,9 @@
     "showMyLocation": "現在地を表示"
   },
   "calendarView": {
+    "views": {"day": "日", "week": "週", "month": "月"},
+    "view": "カレンダー表示",
+    "selectDay": "日付を選択",
     "days": {
       "sun": "日",
       "mon": "月",

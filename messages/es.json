@@ -2694,6 +2694,9 @@
     "showMyLocation": "Mostrar mi ubicación"
   },
   "calendarView": {
+    "views": {"day": "Día", "week": "Semana", "month": "Mes"},
+    "view": "Vista del calendario",
+    "selectDay": "Selecciona un día",
     "days": {
       "sun": "Dom",
       "mon": "Lun",

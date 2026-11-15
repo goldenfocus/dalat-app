@@ -2635,6 +2635,9 @@
     "showMyLocation": "แสดงตำแหน่งของฉัน"
   },
   "calendarView": {
+    "views": {"day": "วัน", "week": "สัปดาห์", "month": "เดือน"},
+    "view": "มุมมองปฏิทิน",
+    "selectDay": "เลือกวัน",
     "days": {
       "sun": "อา",
       "mon": "จ",

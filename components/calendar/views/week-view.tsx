@@ -4,20 +4,18 @@ import { useMemo } from "react";
 import {
   addDays,
   isSameDay,
-  isToday,
   format,
 } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
-import { Link } from "@/lib/i18n/routing";
-import type { Event } from "@/lib/types";
-import { formatInDaLat } from "@/lib/timezone";
-import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
+import { useLocale, useTranslations } from "next-intl";
+import { formatCalendarDate, todayInDaLat, type CalendarEvent } from "@/lib/calendar";
+import { CalendarEventCard } from "../event-cards/event-card-compact";
 import { triggerHaptic } from "@/lib/haptics";
-import { cn, decodeUnicodeEscapes } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface WeekViewProps {
-  events: Event[];
-  eventsByDate: Record<string, Event[]>;
+  events: CalendarEvent[];
+  eventsByDate: Record<string, CalendarEvent[]>;
   startDate: Date;
   selectedDate: Date | null;
   onDateSelect: (date: Date) => void;
@@ -30,6 +28,9 @@ export function WeekView({
   selectedDate,
   onDateSelect,
 }: WeekViewProps) {
+  const locale = useLocale();
+  const t = useTranslations("calendarView");
+  const today = todayInDaLat();
   // Get 7 days starting from startDate (rolling window)
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => addDays(startDate, i));
@@ -57,11 +58,13 @@ export function WeekView({
             const dayEvents = eventsByDate[dateKey] || [];
             const hasEvents = dayEvents.length > 0;
             const isSelected = selectedDate && isSameDay(day, selectedDate);
-            const isTodayDate = isToday(day);
+            const isTodayDate = format(day, "yyyy-MM-dd") === today;
 
             return (
               <button
                 key={dateKey}
+                data-calendar-date={dateKey}
+                aria-label={formatCalendarDate(day, locale, { dateStyle: "full" })}
                 onClick={() => handleDateClick(day)}
                 className={cn(
                   "relative flex flex-col items-center rounded-lg transition-all py-3",
@@ -75,7 +78,7 @@ export function WeekView({
                   "text-xs font-medium mb-1",
                   isSelected ? "text-background/70" : "text-muted-foreground"
                 )}>
-                  {format(day, "EEE")}
+                  {t(`days.${["sun", "mon", "tue", "wed", "thu", "fri", "sat"][day.getDay()]}`)}
                 </span>
 
                 {/* Day number */}
@@ -121,51 +124,24 @@ export function WeekView({
             <>
               <h3 className="font-semibold text-sm mb-3 flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4" />
-                {format(selectedDate, "EEEE, MMMM d")}
+                <span suppressHydrationWarning>{formatCalendarDate(selectedDate, locale, { dateStyle: "full" })}</span>
               </h3>
 
               {selectedDateEvents.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">
-                  No events on this day
+                  {t("noEventsOnThisDay")}
                 </p>
               ) : (
                 <div className="space-y-2">
                   {selectedDateEvents.map(event => (
-                    <Link
-                      key={event.id}
-                      href={`/events/${event.slug}`}
-                      className="block p-3 rounded-lg border hover:bg-muted transition-colors"
-                    >
-                      <div className="flex gap-3">
-                        {event.image_url && (
-                          <div className="w-16 h-16 rounded-md overflow-hidden flex-shrink-0 bg-muted">
-                            <img
-                              src={event.image_url}
-                              alt=""
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm line-clamp-2">
-                            {event.title}
-                          </h4>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {hasLamVienTbdSchedule(event.source_metadata)
-                              ? "TBD"
-                              : formatInDaLat(event.starts_at, "h:mm a")}
-                            {event.location_name && ` · ${decodeUnicodeEscapes(event.location_name)}`}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
+                    <CalendarEventCard key={event.id} event={event} />
                   ))}
                 </div>
               )}
             </>
           ) : (
             <p className="text-sm text-muted-foreground py-8 text-center">
-              Select a day to see events
+              {t("selectDay")}
             </p>
           )}
         </div>

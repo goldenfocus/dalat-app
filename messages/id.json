@@ -2694,6 +2694,9 @@
     "showMyLocation": "Tampilkan lokasi saya"
   },
   "calendarView": {
+    "views": {"day": "Hari", "week": "Minggu", "month": "Bulan"},
+    "view": "Tampilan kalender",
+    "selectDay": "Pilih hari",
     "days": {
       "sun": "Min",
       "mon": "Sen",

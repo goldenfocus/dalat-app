@@ -1,10 +1,13 @@
 import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
-import { setRequestLocale } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
 import type { Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { EventCalendar } from "@/components/calendar/event-calendar";
 import type { Event } from "@/lib/types";
+import { todayInDaLat, type CalendarEvent } from "@/lib/calendar";
+import { getEventTranslationsBatch } from "@/lib/translations";
 import type { Metadata } from "next";
 import { generateLocalizedMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema } from "@/lib/structured-data";
@@ -32,19 +35,17 @@ async function getEvents(): Promise<Event[]> {
   const supabase = await createClient();
 
   // Fetch upcoming and happening events for the calendar
-  const { data: upcomingEvents, error: upcomingError } = await supabase.rpc("get_events_by_lifecycle", {
-    p_lifecycle: "upcoming",
-    p_limit: 200,
-  });
+  const [upcoming, happening] = await Promise.all([
+    supabase.rpc("get_events_by_lifecycle", { p_lifecycle: "upcoming", p_limit: 200 }),
+    supabase.rpc("get_events_by_lifecycle", { p_lifecycle: "happening", p_limit: 50 }),
+  ]);
+  const { data: upcomingEvents, error: upcomingError } = upcoming;
 
   if (upcomingError) {
     console.error("Error fetching upcoming events:", upcomingError);
   }
 
-  const { data: happeningEvents } = await supabase.rpc("get_events_by_lifecycle", {
-    p_lifecycle: "happening",
-    p_limit: 50,
-  });
+  const { data: happeningEvents } = happening;
 
   return [
     ...(upcomingEvents || []),
@@ -61,7 +62,17 @@ function CalendarLoading() {
 }
 
 async function CalendarContent({ locale }: { locale: Locale }) {
-  const events = await getEvents();
+  const [events, messages] = await Promise.all([getEvents(), getMessages()]);
+  const titles = await getEventTranslationsBatch(events.map(event => event.id), locale);
+  const calendarEvents: CalendarEvent[] = events.map(event => {
+    const title = event.source_locale === locale ? event.title : titles.get(event.id)?.title || event.title;
+    return {
+      id: event.id, slug: event.slug, title, image_url: event.image_url,
+      starts_at: event.starts_at, ends_at: event.ends_at, location_name: event.location_name,
+      ai_tags: event.ai_tags, source_metadata: event.source_metadata, source_locale: event.source_locale,
+      ...(title !== event.title ? { originalTitle: event.title } : {}),
+    };
+  });
 
   // Generate structured data for SEO
   const breadcrumbSchema = generateBreadcrumbSchema(
@@ -96,7 +107,9 @@ async function CalendarContent({ locale }: { locale: Locale }) {
   return (
     <>
       <JsonLd data={[breadcrumbSchema, calendarSchema]} />
-      <EventCalendar events={events} />
+      <NextIntlClientProvider locale={locale} messages={{ calendar: messages.calendar, calendarView: messages.calendarView, eventTags: messages.eventTags, mapPage: messages.mapPage, common: messages.common, nav: messages.nav, translations: messages.translations, events: messages.events }}>
+        <EventCalendar events={calendarEvents} initialToday={todayInDaLat()} />
+      </NextIntlClientProvider>
     </>
   );
 }

@@ -2635,6 +2635,9 @@
     "showMyLocation": "显示我的位置"
   },
   "calendarView": {
+    "views": {"day": "日", "week": "周", "month": "月"},
+    "view": "日历视图",
+    "selectDay": "选择日期",
     "days": {
       "sun": "日",
       "mon": "一",

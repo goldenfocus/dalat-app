@@ -2635,6 +2635,9 @@
     "showMyLocation": "내 위치 표시"
   },
   "calendarView": {
+    "views": {"day": "일", "week": "주", "month": "월"},
+    "view": "캘린더 보기",
+    "selectDay": "날짜를 선택하세요",
     "days": {
       "sun": "일",
       "mon": "월",

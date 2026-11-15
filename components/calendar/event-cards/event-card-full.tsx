@@ -2,7 +2,8 @@
 
 import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
-import type { Event } from "@/lib/types";
+import type { CalendarEvent } from "@/lib/calendar";
+import { OriginalText } from "@/components/ui/original-text";
 import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { cn, decodeUnicodeEscapes } from "@/lib/utils";
@@ -10,7 +11,7 @@ import { MapPin, Clock } from "lucide-react";
 import { cloudflareLoader } from "@/lib/image-cdn";
 
 interface EventCardFullProps {
-  event: Event;
+  event: CalendarEvent;
   isPast?: boolean;
 }
 
@@ -20,6 +21,7 @@ export function EventCardFull({ event, isPast }: EventCardFullProps) {
   const endTime = !timeTbd && event.ends_at ? formatInDaLat(event.ends_at, "h:mm a") : null;
 
   return (
+    <div>
     <Link
       href={`/events/${event.slug}`}
       className={cn(
@@ -80,5 +82,7 @@ export function EventCardFull({ event, isPast }: EventCardFullProps) {
         </div>
       </div>
     </Link>
+    {event.originalTitle && <OriginalText text={event.originalTitle} sourceLocale={event.source_locale ?? undefined} className="px-2" />}
+    </div>
   );
 }

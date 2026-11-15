@@ -1,22 +1,22 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+import type { CalendarView } from "@/lib/calendar";
+export type { CalendarView } from "@/lib/calendar";
+
 import { triggerHaptic } from "@/lib/haptics";
 import { cn } from "@/lib/utils";
 
-export type CalendarView = "day" | "week" | "month";
 
 interface ViewSwitcherProps {
   value: CalendarView;
   onChange: (view: CalendarView) => void;
 }
 
-const views: { value: CalendarView; label: string }[] = [
-  { value: "day", label: "Day" },
-  { value: "week", label: "Week" },
-  { value: "month", label: "Month" },
-];
+const views: CalendarView[] = ["day", "week", "month"];
 
 export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
+  const t = useTranslations("calendarView");
   const handleChange = (view: CalendarView) => {
     if (view !== value) {
       triggerHaptic("selection");
@@ -28,18 +28,18 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
     <div
       className="inline-flex w-full lg:w-auto bg-muted rounded-lg p-1 lg:p-0.5"
       role="tablist"
-      aria-label="Calendar view"
+      aria-label={t("view")}
     >
       {views.map(view => {
-        const isSelected = value === view.value;
+        const isSelected = value === view;
 
         return (
           <button
-            key={view.value}
+            key={view}
             type="button"
             role="tab"
             aria-selected={isSelected}
-            onClick={() => handleChange(view.value)}
+            onClick={() => handleChange(view)}
             className={cn(
               // Mobile: full-width with touch-friendly height
               "flex-1 h-11 flex items-center justify-center",
@@ -53,7 +53,7 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
                 : "text-muted-foreground hover:text-foreground hover:bg-background/50"
             )}
           >
-            {view.label}
+            {t(`views.${view}`)}
           </button>
         );
       })}

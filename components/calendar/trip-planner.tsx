@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
+import { formatCalendarDate, todayInDaLat } from "@/lib/calendar";
 import { ChevronDown, Plane, X } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { triggerHaptic } from "@/lib/haptics";
 import {
   Collapsible,
@@ -26,6 +27,7 @@ export function TripPlanner({
   onClear,
   eventCount,
 }: TripPlannerProps) {
+  const locale = useLocale();
   const t = useTranslations("calendar.tripPlanner");
   const [isOpen, setIsOpen] = useState(false);
   const [tempStart, setTempStart] = useState(startDate || "");
@@ -34,7 +36,7 @@ export function TripPlanner({
   const hasActiveRange = startDate && endDate;
 
   const handleApply = () => {
-    if (tempStart && tempEnd) {
+    if (tempStart && tempEnd && tempEnd >= tempStart) {
       triggerHaptic("selection");
       onApply(tempStart, tempEnd);
       setIsOpen(false);
@@ -65,11 +67,7 @@ export function TripPlanner({
     const start = parseISO(startDate);
     const end = parseISO(endDate);
 
-    // If same month, use shorter format
-    if (format(start, "MMM") === format(end, "MMM")) {
-      return `${format(start, "MMM d")} - ${format(end, "d")}`;
-    }
-    return `${format(start, "MMM d")} - ${format(end, "MMM d")}`;
+    return `${formatCalendarDate(start, locale, { month: "short", day: "numeric" })} – ${formatCalendarDate(end, locale, { month: "short", day: "numeric" })}`;
   };
 
   return (
@@ -104,32 +102,34 @@ export function TripPlanner({
             {/* Date inputs */}
             <div className="flex gap-3 items-end">
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs text-muted-foreground">
+                <label htmlFor="calendar-trip-start" className="text-xs text-muted-foreground">
                   {t("arriving")}
                 </label>
                 <input
+                  id="calendar-trip-start"
                   type="date"
                   value={tempStart}
                   onChange={(e) => {
                     setTempStart(e.target.value);
                     triggerHaptic("selection");
                   }}
-                  min={format(new Date(), "yyyy-MM-dd")}
+                  min={todayInDaLat()}
                   className="block w-full px-3 py-2.5 text-sm border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
               <div className="flex-1 space-y-1.5">
-                <label className="text-xs text-muted-foreground">
+                <label htmlFor="calendar-trip-end" className="text-xs text-muted-foreground">
                   {t("leaving")}
                 </label>
                 <input
+                  id="calendar-trip-end"
                   type="date"
                   value={tempEnd}
                   onChange={(e) => {
                     setTempEnd(e.target.value);
                     triggerHaptic("selection");
                   }}
-                  min={tempStart || format(new Date(), "yyyy-MM-dd")}
+                  min={tempStart || todayInDaLat()}
                   className="block w-full px-3 py-2.5 text-sm border rounded-lg bg-background focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                 />
               </div>
@@ -148,7 +148,7 @@ export function TripPlanner({
               )}
               <button
                 onClick={handleApply}
-                disabled={!tempStart || !tempEnd}
+                disabled={!tempStart || !tempEnd || tempEnd < tempStart}
                 className="flex-1 px-4 py-2.5 text-sm bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("apply")}

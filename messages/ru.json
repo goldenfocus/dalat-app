@@ -2635,6 +2635,9 @@
     "showMyLocation": "Показать моё местоположение"
   },
   "calendarView": {
+    "views": {"day": "День", "week": "Неделя", "month": "Месяц"},
+    "view": "Вид календаря",
+    "selectDay": "Выберите день",
     "days": {
       "sun": "Вс",
       "mon": "Пн",
