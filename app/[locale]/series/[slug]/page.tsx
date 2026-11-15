@@ -25,6 +25,8 @@ import { JsonLd, generateEventSeriesSchema } from "@/lib/structured-data";
 import { buildEventSeriesMetadata } from "@/lib/series/seo";
 import { buildAlternates } from "@/lib/metadata";
 import { activitySeriesDescriptionForLocale } from "@/lib/activity-graph/translations";
+import { getSeriesTranslation, weeklyScheduleLabel } from "@/lib/series/translation";
+import { OriginalText } from "@/components/ui/original-text";
 import type {
   EventSeries,
   Event,
@@ -82,7 +84,7 @@ export async function generateMetadata({
   const { data: row } = await supabase
     .from("event_series")
     .select(
-      `slug, title, description, image_url, location_name, address, is_online, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name), venues(${LOCATION_VENUE_FIELDS})`,
+      `id, slug, title, description, image_url, location_name, address, is_online, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name), venues(${LOCATION_VENUE_FIELDS})`,
     )
     .eq("slug", slug)
     .single();
@@ -92,6 +94,7 @@ export async function generateMetadata({
   }
 
   const series = resolveEventLocation(row, row.venues as unknown as LocationVenue | null);
+  const translation = await getSeriesTranslation(supabase, series, locale);
   const recurrenceLabel = getShortRRuleLabel(series.rrule);
   const organizerRelation = series.organizers as
     | { name: string }
@@ -100,19 +103,19 @@ export async function generateMetadata({
   const sourceName = Array.isArray(organizerRelation)
     ? organizerRelation[0]?.name
     : organizerRelation?.name;
-  const localizedDescription =
+  const localizedDescription = translation?.description ?? (
     series.source_platform === "activity-graph"
       ? activitySeriesDescriptionForLocale(
           locale,
           series,
           sourceName || series.location_name || series.title,
         )
-      : series.description;
+      : series.description);
   const description = localizedDescription
     ? `${localizedDescription.slice(0, 150)}${localizedDescription.length > 150 ? "..." : ""}`
     : `${recurrenceLabel}${series.location_name ? ` · ${series.location_name}` : ""} · ĐàLạt.app`;
   const metadata = buildEventSeriesMetadata({
-    series,
+    series: { ...series, title: translation?.title || series.title },
     locale: locale as Locale,
     description,
   });
@@ -218,27 +221,30 @@ export default async function SeriesPage({ params }: PageProps) {
     sponsors,
   } = data;
 
+  const translation = await getSeriesTranslation(await createClient(), series, locale);
+  const localizedTitle = translation?.title || series.title;
+
   const recurrenceDescription =
     series.source_platform === "activity-graph" &&
     series.rrule.split(";").includes("FREQ=DAILY")
       ? t("series.everyDay")
       : describeRRule(series.rrule);
-  const recurrenceWithTime = series.starts_at_time
+  const recurrenceWithTime = weeklyScheduleLabel(series.rrule, series.starts_at_time, series.duration_minutes, locale) || (series.starts_at_time
     ? t("series.recurrenceAtTime", {
         pattern: recurrenceDescription,
         time: series.starts_at_time.slice(0, 5),
       })
-    : recurrenceDescription;
-  const localizedDescription =
+    : recurrenceDescription);
+  const localizedDescription = translation?.description ?? (
     series.source_platform === "activity-graph"
       ? activitySeriesDescriptionForLocale(
           locale,
           series,
           series.organizers?.name || series.location_name || series.title,
         )
-      : series.description;
+      : series.description);
   const seriesSchema = generateEventSeriesSchema(
-    { ...series, description: localizedDescription },
+    { ...series, title: localizedTitle, description: localizedDescription },
     locale,
     upcomingEvents,
   );
@@ -286,6 +292,11 @@ export default async function SeriesPage({ params }: PageProps) {
                   alt={eventImageAlt(series, series.title)}
                   className="w-full h-full rounded-t-lg object-cover"
                 />
+                {series.source_metadata?.activity_media_provenance === "ai_generated" && (
+                  <span className="absolute bottom-2 left-2 rounded bg-black/70 px-2 py-1 text-xs text-white">
+                    {t("tribes.illustrativeCover")}
+                  </span>
+                )}
                 {officialMediaCredit && officialMediaSourceUrl && (
                   <a
                     href={officialMediaSourceUrl}
@@ -311,7 +322,10 @@ export default async function SeriesPage({ params }: PageProps) {
               </Badge>
 
               {/* Title */}
-              <h1 className="text-2xl font-bold">{series.title}</h1>
+              <h1 className="text-2xl font-bold">{localizedTitle}</h1>
+              {localizedTitle !== series.title && (
+                <OriginalText text={series.title} sourceLocale={translation?.sourceLocale || undefined} />
+              )}
 
               {/* Recurrence Pattern */}
               <div className="flex items-center gap-2 text-muted-foreground">
@@ -338,9 +352,14 @@ export default async function SeriesPage({ params }: PageProps) {
 
               {/* Description */}
               {localizedDescription && (
-                <p className="text-muted-foreground whitespace-pre-wrap">
-                  {localizedDescription}
-                </p>
+                <div>
+                  <p className="text-muted-foreground whitespace-pre-wrap">
+                    {localizedDescription}
+                  </p>
+                  {series.description && localizedDescription !== series.description && (
+                    <OriginalText text={series.description} sourceLocale={translation?.sourceLocale || undefined} />
+                  )}
+                </div>
               )}
 
               {/* External Link */}
@@ -364,8 +383,8 @@ export default async function SeriesPage({ params }: PageProps) {
           <div className="flex-1">
             {nextEvent ? (
               <AddToCalendar
-                title={series.title}
-                description={series.description}
+                title={localizedTitle}
+                description={localizedDescription}
                 locationName={series.location_name}
                 address={series.address}
                 googleMapsUrl={series.google_maps_url}
@@ -378,8 +397,8 @@ export default async function SeriesPage({ params }: PageProps) {
               />
             ) : (
               <AddToCalendar
-                title={series.title}
-                description={series.description}
+                title={localizedTitle}
+                description={localizedDescription}
                 locationName={series.location_name}
                 address={series.address}
                 googleMapsUrl={series.google_maps_url}

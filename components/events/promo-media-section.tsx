@@ -480,6 +480,8 @@ function PromoThumbnail({
   canDelete?: boolean;
   onDelete?: () => void;
 }) {
+  const t = useTranslations("tribes");
+  const illustrative = /ai[- ]generated/i.test(`${item.title || ""} ${item.caption || ""}`);
   const isVideo = item.media_type === "video";
   const isYouTube = item.media_type === "youtube";
   const isPdf = item.media_type === "pdf";
@@ -499,7 +501,7 @@ function PromoThumbnail({
       {(item.media_type === "image" || isVideo) && thumbnailUrl && (
         <img
           src={thumbnailUrl}
-          alt={item.title || "Promo"}
+          alt={illustrative ? t("illustrativeCover") : item.title || "Promo"}
           className="w-full h-full object-cover transition-transform group-hover:scale-105"
         />
       )}
@@ -532,6 +534,11 @@ function PromoThumbnail({
           <ImageIcon className="w-8 h-8 text-muted-foreground" />
         </div>
       )}
+      {illustrative && (
+        <span className="absolute bottom-1 inset-x-1 rounded bg-black/70 px-1 py-1 text-[10px] leading-tight text-white">
+          {t("illustrativeCover")}
+        </span>
+      )}
 
       {/* Video/YouTube play icon overlay */}
       {(isVideo || isYouTube || isSoundCloud) && (
@@ -560,13 +567,18 @@ function PromoThumbnail({
 }
 
 function PromoLightboxContent({ item }: { item: EventPromoMedia }) {
+  const t = useTranslations("tribes");
+  const illustrative = /ai[- ]generated/i.test(`${item.title || ""} ${item.caption || ""}`);
   if (item.media_type === "image" && item.media_url) {
     return (
-      <img
-        src={item.media_url}
-        alt={item.title || "Promo"}
-        className="max-w-full max-h-full object-contain"
-      />
+      <figure className="flex h-full max-h-full w-full flex-col items-center justify-center p-4 pb-12">
+        <img
+          src={item.media_url}
+          alt={illustrative ? t("illustrativeCover") : item.title || "Promo"}
+          className="min-h-0 max-w-full flex-1 object-contain"
+        />
+        {illustrative && <figcaption className="pt-2 text-sm text-white">{t("illustrativeCover")}</figcaption>}
+      </figure>
     );
   }
 
