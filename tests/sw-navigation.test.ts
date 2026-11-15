@@ -77,3 +77,32 @@ describe('public page navigation', () => {
     expect(network).not.toHaveBeenCalled();
   });
 });
+
+describe('image cache integrity', () => {
+  const imagePath = '/cdn-cgi/image/width=640/https://cdn.dalat.app/event.png';
+  const image = () => new Response('image bytes', { headers: { 'content-type': 'image/webp' } });
+  it('reuses a valid cached image without a network request', async () => {
+    const cached = image();
+    const network = vi.fn();
+    expect(await worker(network, cached).navigate(imagePath)).toBe(cached);
+    expect(network).not.toHaveBeenCalled();
+  });
+  it('discards a cached HTML error and fetches the actual image', async () => {
+    const fresh = image();
+    const { navigate, cache } = worker(vi.fn(async () => fresh), html('challenge'));
+    expect(await navigate(imagePath)).toBe(fresh);
+    expect(cache.delete).toHaveBeenCalledOnce();
+    expect(cache.put).toHaveBeenCalledOnce();
+  });
+  it('does not cache an HTTP 200 HTML error as an image', async () => {
+    const { navigate, cache } = worker(vi.fn(async () => html('not an image')));
+    await navigate(imagePath);
+    expect(cache.put).not.toHaveBeenCalled();
+  });
+  it('still displays the network image if cache storage is full', async () => {
+    const fresh = image();
+    const { navigate, cache } = worker(vi.fn(async () => fresh));
+    cache.put.mockRejectedValue(new Error('quota exceeded'));
+    expect(await navigate(imagePath)).toBe(fresh);
+  });
+});

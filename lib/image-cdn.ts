@@ -95,13 +95,19 @@ export function optimizedImageUrl(
   if (width) cfOptions.push(`width=${width}`);
   if (height) cfOptions.push(`height=${height}`);
   if (quality !== 80) cfOptions.push(`quality=${quality}`);
-  if (format !== "auto") cfOptions.push(`format=${format}`);
+  // The URL API does not default to automatic format negotiation. Omitting
+  // this was serving much larger PNG/JPEG variants to mobile browsers.
+  if (format !== "original") cfOptions.push(`format=${format}`);
   if (fit !== "scale-down") cfOptions.push(`fit=${fit}`);
   if (gravity !== "auto") cfOptions.push(`gravity=${gravity}`);
   if (dpr && dpr > 1) cfOptions.push(`dpr=${dpr}`);
 
   // Always strip metadata for smaller files
   cfOptions.push("metadata=none");
+
+  // Same-zone originals can recover at the edge, before JavaScript loads.
+  // Cloudflare cannot redirect to the legacy cross-zone Supabase origin.
+  if (R2_STORAGE_PATTERN.test(src)) cfOptions.push("onerror=redirect");
 
   // If no options specified, return original URL
   if (cfOptions.length === 1) {
@@ -240,6 +246,7 @@ export function cloudflareLoader({
     "format=auto",
     "fit=scale-down",
     "metadata=none",
+    ...(R2_STORAGE_PATTERN.test(src) ? ["onerror=redirect"] : []),
   ].join(",");
 
   return `/cdn-cgi/image/${cfOptions}/${src}`;

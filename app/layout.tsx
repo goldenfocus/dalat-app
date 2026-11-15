@@ -1,6 +1,7 @@
 import { AccountBridge } from '@/components/deovia/AccountBridge';
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque } from "next/font/google";
+import { imageLoadBootstrap } from "@/lib/image-load-bootstrap";
 import "./globals.css";
 
 // Headline face (h1–h3 and the wordmark). Not preloaded: it swaps in after
@@ -93,6 +94,7 @@ export default function RootLayout({
       <head>
         {/* Keep static rendering while declaring the URL locale before body content parses. */}
         <script dangerouslySetInnerHTML={{ __html: localeBootstrapScript }} />
+        <script dangerouslySetInnerHTML={{ __html: imageLoadBootstrap }} />
         {/* Critical resource hints for faster connections */}
         <link
           rel="preconnect"

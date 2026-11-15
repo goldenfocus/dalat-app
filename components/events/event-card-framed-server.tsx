@@ -5,6 +5,7 @@ import { Calendar, MapPin, Users } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { SeriesBadge } from "@/components/events/series-badge";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
+import { ResilientImage } from "@/components/ui/resilient-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -47,7 +48,7 @@ interface EventCardFramedServerProps {
 
 /**
  * Server-rendered framed event card — zero hydration for the card shell.
- * Only video covers pull in a tiny LazyVideoCover client island.
+ * Media uses a small client island for video playback or image recovery.
  *
  * Uses resolved CDN URLs (not next/image loader fn) so props stay serializable
  * when nested under the client Link from next-intl.
@@ -141,9 +142,9 @@ export function EventCardFramedServer({
             ) : (
               <>
                 {event.image_fit !== "cover" && resolvedCover && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <ResilientImage
                     src={resolvedCover}
+                    fallbackSrc={coverUrl!}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
                     aria-hidden="true"
@@ -153,9 +154,9 @@ export function EventCardFramedServer({
                     decoding="async"
                   />
                 )}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <ResilientImage
                   src={resolvedCover!}
+                  fallbackSrc={coverUrl!}
                   alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
                   className={`absolute inset-0 w-full h-full transition-transform group-hover:scale-105 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
                   style={

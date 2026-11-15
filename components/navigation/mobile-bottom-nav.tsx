@@ -1,7 +1,7 @@
 "use client";
 import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import {
@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
+import { useViewportBottom } from "@/lib/hooks/use-viewport-bottom";
 
 const NAV_ITEMS = [
   {
@@ -179,18 +180,22 @@ export function MobileBottomNav() {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const normalizedPath = normalizePath(pathname ?? "/");
+  const navRef = useRef<HTMLElement>(null);
+  const hidden = normalizedPath === "/moments" || isExperienceEditorPath(pathname ?? "");
+  useViewportBottom(navRef, !hidden);
 
   // Hide nav on moments (fullscreen experience)
-  if (normalizedPath === "/moments" || isExperienceEditorPath(pathname ?? "")) {
+  if (hidden) {
     return null;
   }
 
   return (
-    // Pinned to the layout viewport's bottom edge. Deliberately no backdrop
+    // Pinned to the visible viewport's bottom edge. Deliberately no backdrop
     // blur or transform: on iOS either one makes WebKit
     // re-composite the bar while the address bar collapses mid-scroll, which
     // reads as the bar jumping. Height is fixed (4rem + safe area), never vh.
     <nav
+      ref={navRef}
       data-floating-chrome="bottom-nav"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tNav("primary")}

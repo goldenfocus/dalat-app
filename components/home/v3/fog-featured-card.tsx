@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { ArrowUpRight, Clock, Users } from "lucide-react";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
+import { ResilientImage } from "@/components/ui/resilient-image";
 import { FogCanvas } from "./fog-canvas";
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { HERO_IMAGE_SIZES, heroImageSources } from "@/lib/events/hero-image";
@@ -39,8 +40,7 @@ interface FogFeaturedCardProps {
 
 /**
  * Server-rendered homepage featured card: one full-bleed photo, one action.
- * No card-level hydration; only the fog canvas (and a video cover, when the
- * event has one) are client islands.
+ * The card shell stays on the server; media has a small recovery island.
  * Image sources come from heroImageSources so the page's LCP preload matches.
  */
 export function FogFeaturedCard({
@@ -85,17 +85,17 @@ export function FogFeaturedCard({
       ) : sources ? (
         <>
           {!fillsFrame && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={sources.src}
+            <ResilientImage
+              {...sources}
+              fallbackSrc={coverUrl!}
               alt=""
               className="absolute inset-0 h-full w-full scale-110 object-cover opacity-60 blur-xl"
               aria-hidden="true"
             />
           )}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <ResilientImage
             {...sources}
+            fallbackSrc={coverUrl!}
             alt={isFallbackCover ? displayTitle : eventImageAlt(event, displayTitle)}
             className={`absolute inset-0 h-full w-full ${fillsFrame ? "fog-drift object-cover" : "object-contain"}`}
             style={focalStyle}

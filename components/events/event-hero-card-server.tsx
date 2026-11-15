@@ -2,6 +2,7 @@ import Image from "next/image";
 import { Link } from "@/lib/i18n/routing";
 import { MapPin, Users, Clock, Radio } from "lucide-react";
 import { LazyVideoCover } from "@/components/events/lazy-video-cover";
+import { ResilientImage } from "@/components/ui/resilient-image";
 import { formatInDaLat } from "@/lib/timezone";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -87,17 +88,17 @@ export function EventHeroCardServer({
               ) : (
                 <>
                   {event.image_fit !== "cover" && resolvedCover && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <ResilientImage
                       src={resolvedCover}
+                      fallbackSrc={coverUrl!}
                       alt=""
                       className="absolute inset-0 w-full h-full object-cover blur-xl scale-110 opacity-60"
                       aria-hidden="true"
                     />
                   )}
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <ResilientImage
                     src={resolvedCover!}
+                    fallbackSrc={coverUrl!}
                     alt={displayTitle}
                     className={`absolute inset-0 w-full h-full group-hover:scale-105 transition-transform duration-500 ${event.image_fit === "cover" ? "object-cover" : "object-contain"}`}
                     style={

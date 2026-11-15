@@ -3,7 +3,7 @@
 //
 // IMPORTANT: Update SW_VERSION when deploying new features
 // This triggers the update flow for all users
-const SW_VERSION = '1.0.107';
+const SW_VERSION = '1.0.108';
 
 const APP_URL = self.location.origin;
 
@@ -112,12 +112,16 @@ self.addEventListener('fetch', (event) => {
   if (url.pathname.startsWith('/cdn-cgi/image/')) {
     event.respondWith(
       caches.open(IMAGE_CACHE).then(cache =>
-        cache.match(request).then(cached => {
-          if (cached) return cached;
+        cache.match(request).then(async cached => {
+          const isImage = response => response.ok &&
+            response.headers.get('content-type')?.toLowerCase().startsWith('image/');
+          if (cached && isImage(cached)) return cached;
+          if (cached) await cache.delete(request);
           return fetch(request).then(response => {
-            // Only cache successful responses
-            if (response.ok) {
-              cache.put(request, response.clone());
+            // A 200 HTML error/challenge page is not a usable image. Do not
+            // persist it across visits, and never let a full cache break load.
+            if (isImage(response)) {
+              event.waitUntil(cache.put(request, response.clone()).catch(() => {}));
             }
             return response;
           });
