@@ -48,6 +48,7 @@ export function ViewSwitcher({ value, onChange, currentDate, selectedDate }: Vie
             role="tab"
             aria-selected={isSelected}
             onClick={(event) => {
+              if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
               // Before hydration this is a working native link. After it,
               // re-use the loaded data for an instant view change.
               event.preventDefault();
