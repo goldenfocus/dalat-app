@@ -86,7 +86,7 @@ export function EventCalendar({ events, initialToday }: EventCalendarProps) {
 
   return (
     <div className="h-full flex flex-col" data-calendar>
-      <CalendarHeader view={view} currentDate={currentDate} selectedTag={selectedTag} onViewChange={handleViewChange} onDateChange={handleDateChange} onToday={handleToday} onTagChange={setSelectedTag} />
+      <CalendarHeader view={view} currentDate={currentDate} selectedDate={selectedDate} selectedTag={selectedTag} onViewChange={handleViewChange} onDateChange={handleDateChange} onToday={handleToday} onTagChange={setSelectedTag} />
       <div className="border-b bg-background">
         <TripPlanner startDate={tripStartDate} endDate={tripEndDate} onApply={handleTripApply} onClear={() => updateCalendar({ ...calendar, tripStartDate: null, tripEndDate: null })} eventCount={tripEventCount} />
       </div>

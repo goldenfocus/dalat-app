@@ -12,6 +12,7 @@ import type { EventTag } from "@/lib/constants/event-tags";
 interface CalendarHeaderProps {
   view: CalendarView;
   currentDate: Date;
+  selectedDate: Date;
   selectedTag: EventTag | null;
   onViewChange: (view: CalendarView) => void;
   onDateChange: (date: Date) => void;
@@ -22,6 +23,7 @@ interface CalendarHeaderProps {
 export function CalendarHeader({
   view,
   currentDate,
+  selectedDate,
   selectedTag,
   onViewChange,
   onDateChange,
@@ -100,7 +102,7 @@ export function CalendarHeader({
 
           {/* Desktop: view switcher inline */}
           <div className="hidden lg:block">
-            <ViewSwitcher value={view} onChange={onViewChange} />
+            <ViewSwitcher value={view} onChange={onViewChange} currentDate={currentDate} selectedDate={selectedDate} />
           </div>
 
           <div className="flex shrink-0 items-center gap-1 sm:gap-2">
@@ -117,7 +119,7 @@ export function CalendarHeader({
 
       {/* Mobile: view switcher row */}
       <div className="px-4 pb-4 lg:hidden">
-        <ViewSwitcher value={view} onChange={onViewChange} />
+        <ViewSwitcher value={view} onChange={onViewChange} currentDate={currentDate} selectedDate={selectedDate} />
       </div>
     </div>
   );

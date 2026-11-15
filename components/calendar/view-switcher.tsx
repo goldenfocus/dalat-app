@@ -1,6 +1,8 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useSearchParams } from "next/navigation";
+import { format } from "date-fns";
 import type { CalendarView } from "@/lib/calendar";
 export type { CalendarView } from "@/lib/calendar";
 
@@ -11,12 +13,15 @@ import { cn } from "@/lib/utils";
 interface ViewSwitcherProps {
   value: CalendarView;
   onChange: (view: CalendarView) => void;
+  currentDate: Date;
+  selectedDate: Date;
 }
 
 const views: CalendarView[] = ["day", "week", "month"];
 
-export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
+export function ViewSwitcher({ value, onChange, currentDate, selectedDate }: ViewSwitcherProps) {
   const t = useTranslations("calendarView");
+  const searchParams = useSearchParams();
   const handleChange = (view: CalendarView) => {
     if (view !== value) {
       triggerHaptic("selection");
@@ -32,14 +37,22 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
     >
       {views.map(view => {
         const isSelected = value === view;
+        const params = new URLSearchParams(searchParams?.toString());
+        params.set("view", view);
+        params.set("date", format(view === "day" ? selectedDate : currentDate, "yyyy-MM-dd"));
 
         return (
-          <button
+          <a
             key={view}
-            type="button"
+            href={`?${params.toString()}`}
             role="tab"
             aria-selected={isSelected}
-            onClick={() => handleChange(view)}
+            onClick={(event) => {
+              // Before hydration this is a working native link. After it,
+              // re-use the loaded data for an instant view change.
+              event.preventDefault();
+              handleChange(view);
+            }}
             className={cn(
               // Mobile: full-width with touch-friendly height
               "flex-1 h-11 flex items-center justify-center",
@@ -54,7 +67,7 @@ export function ViewSwitcher({ value, onChange }: ViewSwitcherProps) {
             )}
           >
             {t(`views.${view}`)}
-          </button>
+          </a>
         );
       })}
     </div>

@@ -36,6 +36,7 @@ describe("calendar interactions", () => {
     mount();
     expect(dates()).toEqual(["2026-11-15", "2026-11-16", "2026-11-17", "2026-11-18", "2026-11-19", "2026-11-20", "2026-11-21"]);
     expect(screen.getByText("Planning a trip to Đà Lạt?")).toBeInTheDocument();
+    expect(screen.getAllByRole("tab", { name: "Month" })[0]).toHaveAttribute("href", "?utm_source=test&view=month&date=2026-11-15");
   });
   it("switches to month immediately and keeps subsequent date navigation coherent", () => {
     const replace = vi.spyOn(window.history, "replaceState");
@@ -68,6 +69,7 @@ describe("calendar interactions", () => {
     mount();
     fireEvent.click(document.querySelector('[data-calendar-date="2026-11-17"]')!);
     expect(dates()[0]).toBe("2026-11-15");
+    expect(screen.getAllByRole("tab", { name: "Day" })[0]).toHaveAttribute("href", "?utm_source=test&view=day&date=2026-11-17");
     tab("Day");
     expect(window.location.search).toContain("date=2026-11-17");
   });
