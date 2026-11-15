@@ -63,6 +63,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
+            aria-label={selectedTag ? t(selectedTag) : map("filters")}
             className={cn(
               "inline-flex shrink-0 whitespace-nowrap items-center gap-2 px-3 py-2 rounded-lg text-sm transition-all active:scale-95",
               selectedTag
@@ -75,7 +76,7 @@ export function TagFilterBar({ selectedTag, onTagChange, className }: TagFilterB
             ) : (
               <SlidersHorizontal className="w-4 h-4" />
             )}
-            <span>
+            <span className="hidden sm:inline">
               {selectedTag ? t(selectedTag) : map("filters")}
             </span>
           </button>

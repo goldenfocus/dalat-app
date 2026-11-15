@@ -78,20 +78,20 @@ export function CalendarHeader({
       {/* Navigation row */}
       <div className="p-4 pb-2 lg:pb-4">
         <div className="flex items-center justify-between gap-1 sm:gap-4">
-          <div className="flex min-w-0 items-center gap-1">
+          <div className="flex min-w-0 flex-1 items-center gap-1">
             <button
               onClick={handlePrevious}
-              className="p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
+              className="shrink-0 p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
               aria-label={common("previous")}
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <h2 suppressHydrationWarning className="text-sm sm:text-lg font-semibold text-center whitespace-nowrap">
+            <h2 suppressHydrationWarning className="min-w-0 flex-1 truncate text-sm sm:text-lg font-semibold text-center whitespace-nowrap">
               {getTitle()}
             </h2>
             <button
               onClick={handleNext}
-              className="p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
+              className="shrink-0 p-2 hover:bg-muted rounded-lg transition-colors active:scale-95"
               aria-label={common("next")}
             >
               <ChevronRight className="w-5 h-5" />
@@ -103,7 +103,7 @@ export function CalendarHeader({
             <ViewSwitcher value={view} onChange={onViewChange} />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex shrink-0 items-center gap-1 sm:gap-2">
             <TagFilterBar selectedTag={selectedTag} onTagChange={onTagChange} />
             <button
               onClick={handleToday}
