@@ -468,7 +468,28 @@
     "deoviaSignIn": "使用 DaLat.app 继续",
     "deoviaConnect": "关联账号",
     "deoviaLater": "暂时不用",
-    "deoviaReplace": "替换之前的关联。已保存的数据仍保留在各自账号中。"
+    "deoviaReplace": "替换之前的关联。已保存的数据仍保留在各自账号中。",
+    "phone": {
+      "number": "手机号码",
+      "send": "发送验证码",
+      "help": "输入越南手机号，其他国家请加上+国家代码。无需邮箱或密码。",
+      "sent": "验证码已发送至 {phone}",
+      "code": "验证码",
+      "verify": "验证并继续",
+      "resend": "重新发送",
+      "resendIn": "{seconds}秒后重发",
+      "change": "更换号码",
+      "invalidPhone": "请输入有效的手机号码。",
+      "invalidCode": "验证码无效或已过期，请重试或获取新验证码。",
+      "rateLimited": "请等待一分钟再获取验证码。",
+      "unavailable": "手机登录暂不可用，请使用邮箱或Google。",
+      "sendFailed": "验证码发送失败，请检查网络后重试。",
+      "working": "请稍候…",
+      "existing": "已有账号？请使用原有登录方式以保留个人资料。",
+      "continue": "使用手机继续",
+      "useEmail": "使用邮箱",
+      "usePhone": "使用手机"
+    }
   },
   "errors": {
     "somethingWentWrong": "抱歉，出了点问题。",

@@ -468,7 +468,28 @@
     "deoviaSignIn": "Tiếp tục với DaLat.app",
     "deoviaConnect": "Kết nối tài khoản",
     "deoviaLater": "Để sau",
-    "deoviaReplace": "Thay kết nối trước đó. Dữ liệu vẫn ở từng tài khoản."
+    "deoviaReplace": "Thay kết nối trước đó. Dữ liệu vẫn ở từng tài khoản.",
+    "phone": {
+      "number": "Số điện thoại",
+      "send": "Gửi mã xác thực",
+      "help": "Nhập số di động Việt Nam hoặc +mã quốc gia nếu dùng số nước ngoài. Không cần email hay mật khẩu.",
+      "sent": "Đã gửi mã đến {phone}",
+      "code": "Mã xác thực",
+      "verify": "Xác thực và tiếp tục",
+      "resend": "Gửi lại mã",
+      "resendIn": "Gửi lại sau {seconds} giây",
+      "change": "Đổi số điện thoại",
+      "invalidPhone": "Vui lòng nhập số di động hợp lệ.",
+      "invalidCode": "Mã không đúng hoặc đã hết hạn. Hãy thử lại hoặc yêu cầu mã mới.",
+      "rateLimited": "Vui lòng đợi một phút trước khi yêu cầu mã khác.",
+      "unavailable": "Đăng nhập bằng điện thoại tạm thời không khả dụng. Vui lòng dùng email hoặc Google.",
+      "sendFailed": "Không gửi được mã. Hãy kiểm tra kết nối và thử lại.",
+      "working": "Vui lòng đợi…",
+      "existing": "Đã có tài khoản? Hãy dùng cách đăng nhập hiện tại để giữ hồ sơ của bạn.",
+      "continue": "Tiếp tục bằng điện thoại",
+      "useEmail": "Dùng email",
+      "usePhone": "Dùng số điện thoại"
+    }
   },
   "errors": {
     "somethingWentWrong": "Xin lỗi, đã xảy ra lỗi.",

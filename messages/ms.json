@@ -468,7 +468,28 @@
     "deoviaSignIn": "Teruskan dengan DaLat.app",
     "deoviaConnect": "Pautkan akaun",
     "deoviaLater": "Bukan sekarang",
-    "deoviaReplace": "Menggantikan pautan terdahulu. Data yang disimpan kekal dalam setiap akaun."
+    "deoviaReplace": "Menggantikan pautan terdahulu. Data yang disimpan kekal dalam setiap akaun.",
+    "phone": {
+      "number": "Nombor telefon",
+      "send": "Hantar kod pengesahan",
+      "help": "Gunakan nombor mudah alih Vietnam atau +kod negara bagi negara lain. Tanpa e-mel atau kata laluan.",
+      "sent": "Kod dihantar ke {phone}",
+      "code": "Kod pengesahan",
+      "verify": "Sahkan dan teruskan",
+      "resend": "Hantar semula kod",
+      "resendIn": "Hantar semula dalam {seconds} saat",
+      "change": "Tukar nombor",
+      "invalidPhone": "Masukkan nombor mudah alih yang sah.",
+      "invalidCode": "Kod tidak sah atau telah tamat tempoh. Cuba lagi atau minta kod baharu.",
+      "rateLimited": "Tunggu seminit sebelum meminta kod lain.",
+      "unavailable": "Log masuk telefon tidak tersedia buat sementara waktu. Gunakan e-mel atau Google.",
+      "sendFailed": "Kod gagal dihantar. Semak sambungan dan cuba lagi.",
+      "working": "Sila tunggu…",
+      "existing": "Sudah ada akaun? Gunakan kaedah log masuk sedia ada untuk mengekalkan profil anda.",
+      "continue": "Teruskan dengan telefon",
+      "useEmail": "Gunakan e-mel",
+      "usePhone": "Gunakan telefon"
+    }
   },
   "errors": {
     "somethingWentWrong": "Maaf, sesuatu tidak kena.",
