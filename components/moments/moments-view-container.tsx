@@ -529,24 +529,9 @@ export function MomentsViewContainer({
     }
   };
 
-  // Don't render until we've loaded the preference from localStorage
-  // to avoid flash of wrong view mode
-  if (!isLoaded) {
-    return (
-      <div className="space-y-4">
-        {/* Skeleton header */}
-        <div className="flex items-center justify-end">
-          <div className="h-9 w-32 bg-muted rounded-lg animate-pulse" />
-        </div>
-        {/* Skeleton grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="aspect-square bg-muted rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // The grid is server-rendered (real <img> tags in the first HTML for crawlers
+  // and LCP). Only the view-mode switcher depends on the stored preference, so
+  // it alone waits for `isLoaded`; its placeholder keeps the toolbar height.
 
   return (
     <>
@@ -637,10 +622,14 @@ export function MomentsViewContainer({
             onChange={setMediaTypeFilter}
             hasVideos={hasVideos}
           />
-          <ViewModeSwitcher
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-          />
+          {isLoaded ? (
+            <ViewModeSwitcher
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
+          ) : (
+            <div className="h-9 w-32 rounded-lg bg-muted animate-pulse" aria-hidden="true" />
+          )}
         </div>
       )}
 
