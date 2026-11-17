@@ -36,7 +36,7 @@ function pickNamespaces(all: Messages, namespaces: readonly string[]): Messages 
   return out;
 }
 
-async function loadLocaleMessages(locale: Locale): Promise<Messages> {
+export async function loadLocaleMessages(locale: Locale): Promise<Messages> {
   const cached = localeCache.get(locale);
   if (cached) return cached;
   const loader = LOCALE_LOADERS[locale];
