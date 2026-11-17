@@ -19,6 +19,7 @@ const CinemaSlideshow = dynamic(
     import("./cinema-mode/cinema-slideshow").then((m) => m.CinemaSlideshow),
   { ssr: false }
 );
+import { useCinemaModeStore } from "@/lib/stores/cinema-mode-store";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
 import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
@@ -256,6 +257,8 @@ export function MomentsViewContainer({
     setShowCinema(true);
     setShowImmersive(false);
 
+    // Remember whether music was already on, so closing cinema can restore it.
+    useCinemaModeStore.getState().captureMusicBaseline();
     const audio = useAudioPlayerStore.getState();
     if (audio.tracks.length > 0 && !audio.isPlaying) {
       audio.show();
@@ -501,6 +504,17 @@ export function MomentsViewContainer({
     setShowCinema(false);
   };
 
+  // Gallery button in cinema: back to the grid, scrolled to the moment being watched
+  const showGridAtMoment = (momentId?: string) => {
+    switchToGrid();
+    if (!momentId) return;
+    // Wait two frames: the grid is un-hidden by the state change above.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const tile = document.querySelector(`a[href*="/moments/${CSS.escape(momentId)}"]`);
+      tile?.scrollIntoView({ block: "center" });
+    }));
+  };
+
   // Switch to immersive view from cinema
   const _switchToImmersive = () => {
     setViewMode("immersive");
@@ -693,6 +707,7 @@ export function MomentsViewContainer({
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
           hasMore={hasMoreMoments}
           onClose={closeCinema}
+          onShowGrid={showGridAtMoment}
           onLoadMore={handleLoadMore}
         />
       )}

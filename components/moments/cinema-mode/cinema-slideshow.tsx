@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useState, useRef, useMemo } from "react";
+import { useEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Pause } from "lucide-react";
 import { CinemaPhotoSlide } from "./cinema-photo-slide";
@@ -10,6 +10,7 @@ import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { createEffectScheduler, type EffectSchedulerState } from "@/lib/cinema/ken-burns-effects";
 import { triggerHaptic } from "@/lib/haptics";
+import { useTranslations } from "next-intl";
 
 import {
   useCinemaModeStore,
@@ -20,11 +21,14 @@ import {
   useCinemaTotalCount,
   useCinemaMoments,
   useCinemaTimerDuration,
+  useCinemaShowControls,
 } from "@/lib/stores/cinema-mode-store";
-import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 import type { MomentWithProfile } from "@/lib/types";
 import type { CinemaEventMeta } from "../moments-view-container";
 import { CinemaEndCard } from "./cinema-end-card";
+import { CinemaTrackAnnouncer } from "./cinema-music-chip";
+import { CinemaFirstVisitHint, useFirstVisitHint } from "./cinema-first-visit-hint";
+import { useCinemaInput } from "./use-cinema-input";
 
 interface CinemaSlideshowProps {
   moments: MomentWithProfile[];
@@ -34,6 +38,8 @@ interface CinemaSlideshowProps {
   totalCount?: number;
   hasMore?: boolean;
   onClose: () => void;
+  /** Leave for the grid view, scrolled to the given moment. Falls back to onClose. */
+  onShowGrid?: (momentId?: string) => void;
   onLoadMore?: () => Promise<void>;
 }
 
@@ -45,9 +51,12 @@ export function CinemaSlideshow({
   totalCount,
   hasMore = false,
   onClose,
+  onShowGrid,
   onLoadMore,
 }: CinemaSlideshowProps) {
   const router = useRouter();
+  const t = useTranslations("moments.cinemaControls");
+  const rootRef = useRef<HTMLDivElement>(null);
   const effectSchedulerRef = useRef<EffectSchedulerState>(createEffectScheduler());
 
   const handleEffectSelected = useCallback((newState: EffectSchedulerState) => {
@@ -60,13 +69,10 @@ export function CinemaSlideshow({
   const start = store.getState().start;
   const exit = store.getState().exit;
   const play = store.getState().play;
-  const togglePlayback = store.getState().togglePlayback;
-  const next = store.getState().next;
-  const previous = store.getState().previous;
   const goTo = store.getState().goTo;
   const onVideoEnded = store.getState().onVideoEnded;
   const onVideoTimeUpdate = store.getState().onVideoTimeUpdate;
-  const showControlsTemporarily = store.getState().showControlsTemporarily;
+  const revealChrome = store.getState().revealChrome;
 
   // Use selector hooks for reactive state (only re-render when specific values change)
   const moments = useCinemaMoments();
@@ -79,16 +85,6 @@ export function CinemaSlideshow({
 
   const isPaused = playbackState === "paused";
   const isEnded = playbackState === "ended";
-
-  // Brief icon flash when toggling play/pause (Instagram Stories style)
-  const [flashIcon, setFlashIcon] = useState<"play" | "pause" | null>(null);
-  const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const showFlash = useCallback((icon: "play" | "pause") => {
-    if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
-    setFlashIcon(icon);
-    flashTimeoutRef.current = setTimeout(() => setFlashIcon(null), 600);
-  }, []);
 
   // Extract unique contributors for end card
   const contributors = useMemo(() => {
@@ -114,7 +110,6 @@ export function CinemaSlideshow({
 
     return () => {
       exit();
-      if (flashTimeoutRef.current) clearTimeout(flashTimeoutRef.current);
     };
   }, []); // Only run once on mount
 
@@ -238,104 +233,35 @@ export function CinemaSlideshow({
     };
   }, []);
 
-  // Keyboard controls
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "Escape":
-          e.preventDefault();
-          handleExit();
-          break;
-        case " ":
-          e.preventDefault();
-          handleToggleTap();
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          previous();
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          next();
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  // Touch/swipe handling — distinguish taps from swipes
-  const touchStartRef = useRef<{ x: number; y: number; time: number } | null>(null);
-  const didSwipeRef = useRef(false);
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartRef.current = {
-      x: e.touches[0].clientX,
-      y: e.touches[0].clientY,
-      time: Date.now(),
-    };
-    didSwipeRef.current = false;
-  };
-
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (!touchStartRef.current) return;
-
-    const deltaX = e.changedTouches[0].clientX - touchStartRef.current.x;
-    const deltaY = e.changedTouches[0].clientY - touchStartRef.current.y;
-
-    // Horizontal swipe (left/right navigation)
-    if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
-      didSwipeRef.current = true;
-      if (deltaX > 0) {
-        previous();
-      } else {
-        next();
-      }
-      triggerHaptic("selection");
-    }
-
-    // Vertical swipe down = exit
-    if (deltaY > 100 && Math.abs(deltaY) > Math.abs(deltaX)) {
-      didSwipeRef.current = true;
-      triggerHaptic("selection");
-      handleExit();
-    }
-
-    touchStartRef.current = null;
-  };
-
-  // Tap = toggle play/pause (only if it wasn't a swipe)
-  // Also unlocks audio player on the first user gesture if autoplay was blocked
-  const handleToggleTap = useCallback(() => {
-    const state = useCinemaModeStore.getState();
-    if (state.playbackState === "playing") {
-      showFlash("pause");
-    } else {
-      showFlash("play");
-    }
-    triggerHaptic("selection");
-    togglePlayback();
-    showControlsTemporarily();
-
-    // Unlock music if browser blocked autoplay (first tap provides user gesture)
-    const audio = useAudioPlayerStore.getState();
-    if (audio.autoplayBlocked && !audio.isPlaying) {
-      audio.play();
-    }
-  }, [togglePlayback, showControlsTemporarily, showFlash]);
-
-  const handleClick = useCallback(() => {
-    // On touch devices, onClick fires after touchEnd.
-    // Only toggle if it wasn't a swipe.
-    if (didSwipeRef.current) return;
-    handleToggleTap();
-  }, [handleToggleTap]);
-
   const handleExit = useCallback(() => {
     exit();
     onClose();
   }, [exit, onClose]);
+
+  const handleShowGallery = useCallback((momentId?: string) => {
+    exit();
+    if (onShowGrid) onShowGrid(momentId);
+    else onClose();
+  }, [exit, onClose, onShowGrid]);
+
+  const { flashIcon, showFlash, handleClick, handleTouchStart, handleTouchEnd } =
+    useCinemaInput(handleExit);
+
+  // First-visit hint: chrome starts hidden so the hint teaches the tap.
+  const chromeVisible = useCinemaShowControls();
+  const hintVisible = useFirstVisitHint(chromeVisible);
+  useEffect(() => {
+    if (hintVisible) useCinemaModeStore.getState().hideControls();
+  }, [hintVisible]);
+
+  // Focus management: take focus on open, give it back on close.
+  useEffect(() => {
+    const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    rootRef.current?.focus({ preventScroll: true });
+    return () => {
+      if (opener?.isConnected) opener.focus({ preventScroll: true });
+    };
+  }, []);
 
   const handleLoop = useCallback(() => {
     triggerHaptic("selection");
@@ -346,8 +272,8 @@ export function CinemaSlideshow({
   const handleVideoPlayRequest = useCallback(() => {
     play();
     showFlash("play");
-    showControlsTemporarily();
-  }, [play, showControlsTemporarily, showFlash]);
+    revealChrome();
+  }, [play, revealChrome, showFlash]);
 
   const handleAddMoment = useCallback(() => {
     triggerHaptic("selection");
@@ -365,7 +291,11 @@ export function CinemaSlideshow({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black"
+      ref={rootRef}
+      role="dialog"
+      aria-label={t("dialogLabel")}
+      tabIndex={-1}
+      className="fixed inset-0 z-50 bg-black outline-none"
       onClick={handleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
@@ -430,8 +360,13 @@ export function CinemaSlideshow({
           eventSlug={eventSlug}
           eventTitle={eventMeta?.title}
           onExit={handleExit}
+          onShowGallery={handleShowGallery}
+          focusFallbackRef={rootRef}
         />
       )}
+
+      <CinemaFirstVisitHint visible={hintVisible} />
+      <CinemaTrackAnnouncer />
     </div>
   );
 }
