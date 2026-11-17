@@ -53,7 +53,7 @@ export function UploadNotifications() {
         : notice.phase === 'pending' ? t('status.pending') : t('readyNotice');
       const options = {
         id, toasterId: 'uploads', className: 'upload-status-toast',
-        description: notice.phase === 'processing' ? t('processingCount', { count: notice.processing }) : notice.eventTitle,
+        description: notice.phase === 'processing' ? t('status.processing') : notice.eventTitle,
         duration: needsQueue ? 8000 : 5000, closeButton: true, dismissible: true,
         action: {
           label: needsQueue ? t('openQueue') : t('view'),
