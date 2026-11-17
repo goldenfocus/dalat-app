@@ -16,12 +16,39 @@ export function cliFailure(engine: "claude" | "codex", code: number | null, stdo
   return new Error(`${engine} unavailable (exit ${code}); check CLI authentication and quota`);
 }
 
+/** Validate the small JSON-schema vocabulary used by the translation worker. */
+export function validateCliOutput(value: any, schema?: JsonSchema, path = "response"): any {
+  if (!schema) return value;
+  if (schema.enum && !(schema.enum as unknown[]).includes(value))
+    throw new Error(`Invalid structured output at ${path}`);
+  if (schema.type === "object") {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+      throw new Error(`Invalid structured output at ${path}`);
+    const properties = (schema.properties || {}) as Record<string, JsonSchema>;
+    if ((schema.required as string[] | undefined)?.some((key) => !(key in value)) ||
+        (schema.additionalProperties === false && Object.keys(value).some((key) => !(key in properties))))
+      throw new Error(`Invalid structured output keys at ${path}`);
+    for (const [key, child] of Object.entries(properties))
+      if (key in value) validateCliOutput(value[key], child, `${path}.${key}`);
+  } else if (schema.type === "array") {
+    if (!Array.isArray(value)) throw new Error(`Invalid structured output at ${path}`);
+    for (const item of value) validateCliOutput(item, schema.items as JsonSchema, `${path}[]`);
+  } else if (schema.type === "string") {
+    if (typeof value !== "string" || value.length < Number(schema.minLength || 0))
+      throw new Error(`Invalid structured output at ${path}`);
+  } else if (schema.type === "boolean" && typeof value !== "boolean") {
+    throw new Error(`Invalid structured output at ${path}`);
+  }
+  return value;
+}
+
 /** No API keys, source text in argv, repository tools or persistent model sessions. */
 export async function cliJson(
   engine: "claude" | "codex",
   prompt: string,
   schema?: JsonSchema,
   attempt = 0,
+  plainJson = false,
 ): Promise<Record<string, any>> {
   const dir = await mkdtemp(join(tmpdir(), "dalat-translation-"));
   const allowedEnvironment = new Set([
@@ -69,10 +96,9 @@ export async function cliJson(
           "--no-session-persistence",
           "--output-format",
           "json",
-          "--json-schema",
-          JSON.stringify(
+          ...(!plainJson ? ["--json-schema", JSON.stringify(
             schema || { type: "object", additionalProperties: true },
-          ),
+          )] : []),
         ]
       : [
           "exec",
@@ -118,7 +144,9 @@ export async function cliJson(
           ? resolve(stdout)
           : reject(cliFailure(engine, code, stdout));
       });
-      child.stdin.end(prompt);
+      child.stdin.end(plainJson && schema
+        ? `${prompt}\nReturn strict JSON only, matching this schema exactly: ${JSON.stringify(schema)}`
+        : prompt);
     });
     let raw = engine === "codex" ? await readFile(output, "utf8") : text;
     if (engine === "claude") {
@@ -127,14 +155,14 @@ export async function cliJson(
         envelope.structured_output &&
         typeof envelope.structured_output === "object"
       )
-        return envelope.structured_output;
+        return validateCliOutput(envelope.structured_output, schema);
       raw = envelope.result || raw;
     }
     const start = raw.indexOf("{"),
       end = raw.lastIndexOf("}");
     if (start < 0 || end < start) throw new Error(`${engine} returned no JSON`);
     try {
-      return JSON.parse(raw.slice(start, end + 1));
+      return validateCliOutput(JSON.parse(raw.slice(start, end + 1)), schema);
     } catch {
       if (attempt >= 1) throw new Error(`${engine} returned malformed JSON`);
       return cliJson(
@@ -143,8 +171,15 @@ export async function cliJson(
           "\nYour output must be strict JSON. Escape all quote characters and newlines inside strings. Do not include prose or markdown fences.",
         schema,
         attempt + 1,
+        plainJson,
       );
     }
+  } catch (error) {
+    // Same model, same exact schema and independent review. Avoid repeatedly
+    // failing the provider's structured-output wrapper when ordinary JSON works.
+    if (engine === "claude" && !plainJson && /structured output/.test(String(error)))
+      return cliJson(engine, prompt, schema, 0, true);
+    throw error;
   } finally {
     await rm(dir, { recursive: true, force: true });
   }

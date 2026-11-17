@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cliFailure } from "./cli";
+import { cliFailure, validateCliOutput } from "./cli";
+import { rowResponseSchema } from "./work-plan";
 import { RetrySchedule } from "./retry-schedule";
 
 describe("structured-output recovery", () => {
@@ -21,5 +22,15 @@ describe("structured-output recovery", () => {
     expect(schedule.deferred("event:bad", 5_099)).toBe(true);
     expect(schedule.deferred("event:bad", 5_100)).toBe(false);
     expect(schedule.deferred("event:new", 101)).toBe(false);
+  });
+
+  it("enforces the exact locale and field schema for ordinary JSON retries", () => {
+    const schema = rowResponseSchema({ title: "Source" }, ["en", "vi"], true);
+    const value = { source_locale: "vi", translations: { en: { title: "Source" }, vi: { title: "Nguồn" } }, approved: true, issues: [] };
+    expect(validateCliOutput(value, schema)).toEqual(value);
+    expect(() => validateCliOutput({ ...value, translations: { en: { title: "Source" } } }, schema)).toThrow();
+    expect(() => validateCliOutput({ ...value, source_locale: "made-up" }, schema)).toThrow();
+    expect(() => validateCliOutput({ ...value, approved: "true" }, schema)).toThrow();
+    expect(() => validateCliOutput({ ...value, extra: "not allowed" }, schema)).toThrow();
   });
 });
