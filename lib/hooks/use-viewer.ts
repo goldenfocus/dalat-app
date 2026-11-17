@@ -2,6 +2,7 @@
 
 import { useEffect, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
+import type { AuthChangeEvent } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/lib/types";
 
@@ -67,7 +68,10 @@ export function useViewer() {
   useEffect(() => {
     if (!loading) loading = refreshViewer().finally(() => { loading = null; });
     const supabase = createClient();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
+      // Every new subscriber is replayed the current session; the request
+      // above already covers it, so this would only repeat it per component.
+      if (event === "INITIAL_SESSION") return;
       // Do not call Supabase methods inside its auth callback/lock.
       setTimeout(() => { void refreshViewer(); }, 0);
     });
