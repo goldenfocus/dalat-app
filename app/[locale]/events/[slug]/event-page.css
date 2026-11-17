@@ -8,12 +8,10 @@ body:has([data-event-page]) [data-floating-chrome] {
   backdrop-filter: none;
 }
 
-body:has([data-event-page]) [data-floating-chrome="upload-fab"],
-body:has([data-event-page]) [data-floating-chrome="upload-tray"][data-upload-complete="true"] {
+body:has([data-event-page]) [data-floating-chrome="upload-fab"] {
   display: none;
 }
 
-body:has([data-event-page]) [data-floating-chrome="upload-tray"],
 body:has([data-event-page]) [data-floating-chrome="locale-prompt"],
 body:has([data-event-page]) [data-floating-chrome="install-prompt"],
 body:has([data-event-page]) [data-floating-chrome="identity-indicator"] {
@@ -32,7 +30,7 @@ body:has([data-event-page]) [data-app-footer] {
 }
 
 /* Keep actionable notices, but place them in the document instead of over it. */
-body:has([data-event-page]) [data-sonner-toaster] {
+body:has([data-event-page]) [data-sonner-toaster]:not(.upload-notifications) {
   position: static;
   inset: auto;
   transform: none;
@@ -42,7 +40,7 @@ body:has([data-event-page]) [data-sonner-toaster] {
   z-index: auto;
 }
 
-body:has([data-event-page]) [data-sonner-toast] {
+body:has([data-event-page]) [data-sonner-toast]:not(.upload-status-toast) {
   position: relative;
   inset: auto;
   transform: none;
@@ -52,11 +50,11 @@ body:has([data-event-page]) [data-sonner-toast] {
   touch-action: auto;
 }
 
-body:has([data-event-page]) [data-sonner-toast][data-visible="false"] {
+body:has([data-event-page]) [data-sonner-toast]:not(.upload-status-toast)[data-visible="false"] {
   display: none;
 }
 
-body:has([data-event-page]) [data-sonner-toast] [data-close-button] {
+body:has([data-event-page]) [data-sonner-toast]:not(.upload-status-toast) [data-close-button] {
   position: static;
   transform: none;
   margin-inline-start: auto;

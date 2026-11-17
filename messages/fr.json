@@ -2079,7 +2079,9 @@
       "cancel": "Annuler",
       "captionError": "Enregistrement impossible. Réessayez.",
       "savedDrafts": "{count} fichiers d’une session précédente sont déjà enregistrés. Ajoutez-les à l’album sans les renvoyer.",
-      "recoverDrafts": "Ajouter les fichiers enregistrés"
+      "recoverDrafts": "Ajouter les fichiers enregistrés",
+      "readyNotice": "Vos photos et vidéos sont prêtes",
+      "attentionNotice": "Certains envois nécessitent votre attention"
     },
     "albumTitle": "{event} — {count, plural, one {# moment} many {# moments} other {# moments}}",
     "albumDescription": "Photos et vidéos partagées par la communauté lors de {event}.",

@@ -2065,7 +2065,9 @@
       "cancel": "Cancelar",
       "captionError": "No se pudo guardar. Inténtalo de nuevo.",
       "savedDrafts": "Ya hay {count} archivos guardados de una sesión anterior. Añádelos al álbum sin volver a subirlos.",
-      "recoverDrafts": "Añadir archivos guardados"
+      "recoverDrafts": "Añadir archivos guardados",
+      "readyNotice": "Tus fotos y videos están listos",
+      "attentionNotice": "Algunas cargas requieren atención"
     },
     "albumTitle": "{event} — {count, plural, one {# momento} many {# momentos} other {# momentos}}",
     "albumDescription": "Fotos y vídeos compartidos por la comunidad en {event}.",

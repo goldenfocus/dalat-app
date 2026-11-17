@@ -2065,7 +2065,9 @@
       "cancel": "Hủy",
       "captionError": "Chưa lưu được. Vui lòng thử lại.",
       "savedDrafts": "Có {count} tệp từ lần trước đã được lưu. Thêm vào album mà không cần tải lại.",
-      "recoverDrafts": "Thêm các tệp đã lưu vào album"
+      "recoverDrafts": "Thêm các tệp đã lưu vào album",
+      "readyNotice": "Ảnh và video của bạn đã sẵn sàng",
+      "attentionNotice": "Một số nội dung tải lên cần được xử lý"
     },
     "albumTitle": "{event} — {count, plural, other {# khoảnh khắc}}",
     "albumDescription": "Ảnh và video được cộng đồng chia sẻ tại {event}.",

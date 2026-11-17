@@ -2065,7 +2065,9 @@
       "cancel": "取消",
       "captionError": "无法保存，请重试。",
       "savedDrafts": "之前的 {count} 个文件已保存，无需重新上传即可添加到相册。",
-      "recoverDrafts": "将已保存文件添加到相册"
+      "recoverDrafts": "将已保存文件添加到相册",
+      "readyNotice": "您的照片和视频已就绪",
+      "attentionNotice": "部分上传需要处理"
     },
     "albumTitle": "{event} — {count, plural, other {# 个瞬间}}",
     "albumDescription": "社区成员在 {event} 分享的照片和视频。",

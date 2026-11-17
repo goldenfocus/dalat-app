@@ -2065,7 +2065,9 @@
       "cancel": "Abbrechen",
       "captionError": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
       "savedDrafts": "{count} Dateien von zuvor sind gespeichert. Füge sie ohne erneuten Upload zum Album hinzu.",
-      "recoverDrafts": "Gespeicherte Dateien hinzufügen"
+      "recoverDrafts": "Gespeicherte Dateien hinzufügen",
+      "readyNotice": "Deine Fotos und Videos sind bereit",
+      "attentionNotice": "Einige Uploads erfordern deine Aufmerksamkeit"
     },
     "albumTitle": "{event} — {count, plural, one {# Moment} other {# Momente}}",
     "albumDescription": "Fotos und Videos, die die Community bei {event} geteilt hat.",

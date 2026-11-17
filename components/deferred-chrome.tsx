@@ -19,8 +19,8 @@ export const DeferredUploadFAB = dynamic(
   { ssr: false }
 );
 
-export const DeferredUploadTray = dynamic(
-  () => import("@/components/moments/upload-tray").then((m) => m.UploadTray),
+export const DeferredUploadNotifications = dynamic(
+  () => import("@/components/moments/upload-notifications").then((m) => m.UploadNotifications),
   { ssr: false }
 );
 
