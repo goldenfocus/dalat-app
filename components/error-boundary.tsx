@@ -1,10 +1,17 @@
 "use client";
 
-import { Component, type ReactNode } from "react";
-import { unstable_rethrow, usePathname } from "next/navigation";
+import { Component, startTransition, useEffect, type ReactNode } from "react";
+import { unstable_rethrow, usePathname, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { AlertTriangle, RefreshCw } from "lucide-react";
+import { AlertTriangle, Loader2, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  planRecovery,
+  reloadOnce,
+  rememberErrorLabels,
+  whenReachable,
+  type ErrorLabels,
+} from "@/lib/errors/recovery";
 
 interface Props {
   children: ReactNode;
@@ -13,23 +20,26 @@ interface Props {
 
 interface InnerProps extends Props {
   pathname: string | null;
-  labels: {
-    title: string;
-    description: string;
-    tryAgain: string;
-    refreshPage: string;
-  };
+  labels: ErrorLabels & { loading: string };
+  /** Re-fetches the route's server data. */
+  onRefetch: () => void;
 }
 
 interface State {
   hasError: boolean;
   error: Error | null;
+  /** An automatic retry is pending: show a spinner, not the error screen. */
+  recovering: boolean;
 }
 
+const CLEAR: State = { hasError: false, error: null, recovering: false };
+
 class ErrorBoundaryInner extends Component<InnerProps, State> {
+  private recovery: AbortController | null = null;
+
   constructor(props: InnerProps) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = CLEAR;
   }
 
   static getDerivedStateFromError(error: Error): State {
@@ -37,7 +47,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
     // handle itself — catching them here would replace the 404 page with
     // a generic error screen.
     unstable_rethrow(error);
-    return { hasError: true, error };
+    return { hasError: true, error, recovering: true };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
@@ -46,6 +56,23 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
       // TODO: Send to error tracking service (Sentry, etc.)
     }
     console.error("ErrorBoundary caught:", error, errorInfo);
+
+    // Usually a navigation or refresh that lost its connection mid-stream, or
+    // a tab older than the current build: both heal without the visitor.
+    const plan = planRecovery(error);
+    if (plan === "reload" && reloadOnce()) return;
+    if (plan !== "retry" || navigator.onLine === false) {
+      this.setState({ recovering: false });
+    }
+    if (plan === "retry") {
+      this.recovery?.abort();
+      this.recovery = new AbortController();
+      whenReachable(this.recovery.signal).then(this.handleRetry, () => {});
+    }
+  }
+
+  componentWillUnmount() {
+    this.recovery?.abort();
   }
 
   componentDidUpdate(prevProps: InnerProps) {
@@ -53,18 +80,37 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
     // client-side navigations — without this reset, one caught error
     // would keep showing the error screen on every subsequent route.
     if (this.state.hasError && prevProps.pathname !== this.props.pathname) {
-      this.setState({ hasError: false, error: null });
+      this.recovery?.abort();
+      this.setState(CLEAR);
     }
   }
 
-  handleReset = () => {
-    this.setState({ hasError: false, error: null });
+  // Clearing the error alone re-renders the same failed payload, so the retry
+  // re-fetches it in the same transition.
+  handleRetry = () => {
+    this.recovery?.abort();
+    startTransition(() => {
+      this.props.onRefetch();
+      this.setState(CLEAR);
+    });
   };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
+      }
+
+      if (this.state.recovering) {
+        return (
+          <div
+            role="status"
+            aria-label={this.props.labels.loading}
+            className="flex min-h-[400px] items-center justify-center"
+          >
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" aria-hidden="true" />
+          </div>
+        );
       }
 
       return (
@@ -79,7 +125,7 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
             </p>
           </div>
           <div className="flex gap-2">
-            <Button onClick={this.handleReset} variant="outline" size="sm">
+            <Button onClick={this.handleRetry} variant="outline" size="sm">
               <RefreshCw className="mr-2 h-4 w-4" />
               {this.props.labels.tryAgain}
             </Button>
@@ -113,17 +159,25 @@ class ErrorBoundaryInner extends Component<InnerProps, State> {
 
 export function ErrorBoundary({ children, fallback }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const t = useTranslations("errors");
+  const tCommon = useTranslations("common");
+  const title = t("somethingWentWrong");
+  const description = t("unexpectedError");
+  const tryAgain = t("tryAgain");
+  const refreshPage = t("refreshPage");
+
+  // The root error screens render outside the i18n provider and reuse these.
+  useEffect(() => {
+    rememberErrorLabels({ title, description, tryAgain, refreshPage });
+  }, [title, description, tryAgain, refreshPage]);
+
   return (
     <ErrorBoundaryInner
       pathname={pathname}
       fallback={fallback}
-      labels={{
-        title: t("somethingWentWrong"),
-        description: t("unexpectedError"),
-        tryAgain: t("tryAgain"),
-        refreshPage: t("refreshPage"),
-      }}
+      onRefetch={router.refresh}
+      labels={{ title, description, tryAgain, refreshPage, loading: tCommon("loading") }}
     >
       {children}
     </ErrorBoundaryInner>

@@ -334,9 +334,11 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     return result;
   }, [dateFilteredEvents, selectedTags]);
 
-  // Events with location data
-  const eventsWithLocation = filteredEvents.filter(
-    event => event.latitude && event.longitude
+  // Events with location data. Memoized: a fresh array every render would
+  // rebuild the cluster index and re-create every marker on each render.
+  const eventsWithLocation = useMemo(
+    () => filteredEvents.filter(event => event.latitude && event.longitude),
+    [filteredEvents]
   );
 
   // Create cluster index from events
@@ -386,10 +388,21 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
       setIsLoading(false);
     };
 
-    // Tiles that never arrive (offline, blocked host) end in the error state
-    const timeoutId = setTimeout(() => {
-      if (!mapInitializedRef.current) fail("timed out");
-    }, 15000);
+    // Tiles that never arrive (offline, blocked host) end in the error state.
+    // Only time spent visible counts: a background tab pauses rendering, so a
+    // map opened there cannot finish loading until it is looked at.
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const startTimeout = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        if (!mapInitializedRef.current && document.visibilityState === "visible") fail("timed out");
+      }, 15000);
+    };
+    const restartWhenVisible = () => {
+      if (document.visibilityState === "visible" && !mapInitializedRef.current) startTimeout();
+    };
+    document.addEventListener("visibilitychange", restartWhenVisible);
+    startTimeout();
 
     loadMapLibre()
       .then((maplibregl) => {
@@ -441,6 +454,7 @@ export function EventMap({ events, happeningEventIds = [], venues = [] }: EventM
     return () => {
       cancelled = true;
       clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", restartWhenVisible);
       instance?.remove();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

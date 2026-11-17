@@ -1,38 +1,7 @@
 "use client";
 
-import { lazy, Suspense, type ReactNode } from "react";
-
-// Dynamically import TanStack Query to enable code splitting
-// The library loads async but the provider is always rendered (via Suspense)
-const LazyQueryClientProvider = lazy(() =>
-  import("@tanstack/react-query").then((mod) => {
-    // Create a stable QueryClient outside the component to avoid re-creation
-    const queryClient = new mod.QueryClient({
-      defaultOptions: {
-        queries: {
-          staleTime: 60_000,
-          gcTime: 5 * 60_000,
-          refetchOnWindowFocus: false,
-          retry: 1,
-          refetchOnReconnect: true,
-        },
-        mutations: {
-          retry: 0,
-        },
-      },
-    });
-
-    return {
-      default: function StableQueryProvider({ children }: { children: ReactNode }) {
-        return (
-          <mod.QueryClientProvider client={queryClient}>
-            {children}
-          </mod.QueryClientProvider>
-        );
-      },
-    };
-  })
-);
+import { lazy, Suspense, useState, type ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Only import DevTools in development
 const ReactQueryDevtools =
@@ -45,26 +14,44 @@ const ReactQueryDevtools =
     : null;
 
 /**
- * TanStack Query provider with code splitting.
+ * TanStack Query provider.
  *
- * The @tanstack/react-query library (~70KB) is loaded asynchronously.
- * The Suspense fallback MUST be null (not {children}): rendering children
- * without a QueryClient crashes any component using useQuery — fatal during
- * static prerender (broke `next build` on /[locale]/moments). The import
- * resolves in a microtask and prerender waits for allReady, so the final
- * HTML always contains the real content, never the fallback.
+ * Imported statically on purpose: it wraps every page, so loading it lazily
+ * saved nothing. Hydration of the whole app waited on that extra chunk, and a
+ * failed chunk request took down the entire page instead of one component.
+ *
+ * The Suspense boundary stays: client components that read search params
+ * during static prerender rely on one existing above them.
  */
 export function QueryProvider({ children }: { children: ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60_000,
+            gcTime: 5 * 60_000,
+            refetchOnWindowFocus: false,
+            retry: 1,
+            refetchOnReconnect: true,
+          },
+          mutations: {
+            retry: 0,
+          },
+        },
+      })
+  );
+
   return (
     <Suspense fallback={null}>
-      <LazyQueryClientProvider>
+      <QueryClientProvider client={queryClient}>
         {children}
         {ReactQueryDevtools && (
           <Suspense fallback={null}>
             <ReactQueryDevtools initialIsOpen={false} buttonPosition="bottom-left" />
           </Suspense>
         )}
-      </LazyQueryClientProvider>
+      </QueryClientProvider>
     </Suspense>
   );
 }
