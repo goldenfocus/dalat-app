@@ -48,7 +48,9 @@ export async function cliJson(
   prompt: string,
   schema?: JsonSchema,
   attempt = 0,
-  plainJson = false,
+  // Claude's structured wrapper can spend a minute retrying valid translation
+  // shapes. Prompt for JSON directly and enforce the same schema locally.
+  plainJson = engine === "claude",
 ): Promise<Record<string, any>> {
   const dir = await mkdtemp(join(tmpdir(), "dalat-translation-"));
   const allowedEnvironment = new Set([
