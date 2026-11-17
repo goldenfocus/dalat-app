@@ -65,7 +65,7 @@ async function CalendarContent({ locale }: { locale: Locale }) {
   const [events, messages] = await Promise.all([getEvents(), getMessages()]);
   const titles = await getEventTranslationsBatch(events.map(event => event.id), locale);
   const calendarEvents: CalendarEvent[] = events.map(event => {
-    const title = event.source_locale === locale ? event.title : titles.get(event.id)?.title || event.title;
+    const title = titles.get(event.id)?.title || event.title;
     return {
       id: event.id, slug: event.slug, title, image_url: event.image_url,
       starts_at: event.starts_at, ends_at: event.ends_at, location_name: event.location_name,

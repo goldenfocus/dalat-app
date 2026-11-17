@@ -48,6 +48,7 @@ import {
 import { getEventIndexingReadiness } from "@/lib/translations-readiness";
 import { buildSocialCardImageUrl } from "@/lib/events/share-preview";
 import { TranslatedFrom } from "@/components/ui/translation-badge";
+import { EventTranslationRefresh } from "@/components/events/event-translation-refresh";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   RsvpButton,
@@ -141,16 +142,12 @@ export async function generateMetadata({
   const joined = row as unknown as { venues: LocationVenue | null; event_series: { venues: LocationVenue | null } | null };
   const event = resolveEventLocation(row, row.venue_id ? joined.venues : joined.event_series?.venues);
 
-  // Get translated content for the current locale
-  // Skip translation lookup if viewing in the original language
+  // Mixed-language posts can have a translated title even in the description's
+  // source language. Prefer stored field translations; originals remain fallback.
   const sourceLocale = event.source_locale;
-  const shouldSkipTranslation =
-    sourceLocale &&
-    isValidContentLocale(sourceLocale) &&
-    locale === sourceLocale;
 
   const translations =
-    !shouldSkipTranslation && isValidContentLocale(locale)
+    isValidContentLocale(locale)
       ? await getTranslationsWithFallback(
           "event",
           event.id,
@@ -164,6 +161,8 @@ export async function generateMetadata({
             technical_content: null,
             meta_description: null,
           },
+          undefined,
+          sourceLocale,
         )
       : { title: event.title, description: event.description };
 
@@ -967,20 +966,6 @@ async function getEventTranslations(
       ? (sourceLocale as ContentLocale)
       : null;
 
-  // If viewing in the same language as the original content, return original (no translation needed)
-  if (validSourceLocale && locale === validSourceLocale) {
-    return {
-      title: originalTitle,
-      description: originalDescription,
-      imageAlt: originalImageAlt,
-      imageDescription: originalImageDescription,
-      originalTitle,
-      originalDescription,
-      isTranslated: false,
-      sourceLocale: validSourceLocale,
-    };
-  }
-
   const translations = await getTranslationsWithFallback(
     "event",
     eventId,
@@ -996,6 +981,8 @@ async function getEventTranslations(
       image_alt: originalImageAlt,
       image_description: originalImageDescription,
     },
+    undefined,
+    validSourceLocale,
   );
 
   const translatedTitle = translations.title || originalTitle;
@@ -1454,6 +1441,12 @@ export default async function EventPage({ params, searchParams }: PageProps) {
       initiallyJoin={(await searchParams).fromCommunity === event.tribes?.slug}>
     <CelebrationProvider>
       <main className="min-h-screen">
+        <EventTranslationRefresh
+          eventId={event.id}
+          locale={locale}
+          title={eventTranslations.title}
+          description={eventTranslations.description}
+        />
         {/* JSON-LD Structured Data for SEO/AEO */}
         <JsonLd
           data={[

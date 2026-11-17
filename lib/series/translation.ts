@@ -21,7 +21,7 @@ export async function getSeriesTranslation(
     .order("starts_at", { ascending: true })
     .limit(1)
     .maybeSingle();
-  if (!occurrence || occurrence.source_locale === locale) return null;
+  if (!occurrence) return null;
   const fields = await getTranslations("event", occurrence.id, locale as ContentLocale);
   return {
     title: fields.get("title"),

@@ -133,10 +133,8 @@ export function EventGrid({
             {/* Events for this date */}
             <div className={cn("flex flex-col", LIST_CLASSES[effectiveDensity])}>
               {dateEvents.map((event) => {
-                // Skip translation if viewing in the event's original language
-                const translation = event.source_locale === locale
-                  ? undefined
-                  : eventTranslations.get(event.id);
+                // Mixed-language fields may need translation in the source locale too.
+                const translation = eventTranslations.get(event.id);
                 return (
                   <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
                     <EventListCard
@@ -161,10 +159,8 @@ export function EventGrid({
     return (
       <div className={cn("grid", IMMERSIVE_CLASSES[effectiveDensity])}>
         {filteredEvents.map((event, index) => {
-          // Skip translation if viewing in the event's original language
-          const translation = event.source_locale === locale
-            ? undefined
-            : eventTranslations.get(event.id);
+          // Mixed-language fields may need translation in the source locale too.
+          const translation = eventTranslations.get(event.id);
           return (
             <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
               <EventImmersiveCard
@@ -187,10 +183,8 @@ export function EventGrid({
     return (
       <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
         {filteredEvents.map((event, index) => {
-          // Skip translation if viewing in the event's original language
-          const translation = event.source_locale === locale
-            ? undefined
-            : eventTranslations.get(event.id);
+          // Mixed-language fields may need translation in the source locale too.
+          const translation = eventTranslations.get(event.id);
           return (
             <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
               <EventCardCompact
@@ -212,10 +206,8 @@ export function EventGrid({
   return (
     <div className={cn("grid", GRID_CLASSES[effectiveDensity])}>
       {filteredEvents.map((event, index) => {
-        // Skip translation if viewing in the event's original language
-        const translation = event.source_locale === locale
-          ? undefined
-          : eventTranslations.get(event.id);
+        // Mixed-language fields may need translation in the source locale too.
+        const translation = eventTranslations.get(event.id);
         return (
           <MaybeVenueMore key={event.id} more={moreAtVenue?.[event.id]}>
             <EventCardFramed

@@ -71,21 +71,26 @@ function hasStrayBracket(text: string): boolean {
  */
 export async function detectLanguage(
   text: string,
-  options?: { timeoutMs?: number },
+  options?: { timeoutMs?: number; strict?: boolean },
 ): Promise<ContentLocale> {
   try {
     const result = await aiChatJson<{ locale: string }>({
       system:
         `Identify the language of the user's text. Respond with JSON {"locale": "xx"} where xx is one of: ${CONTENT_LOCALES.join(', ')}. ` +
-        'If the language is not in the list, pick the closest match or "en".',
+        (options?.strict
+          ? 'If uncertain or outside that list, return "und"; do not guess English.'
+          : 'If the language is not in the list, pick the closest match or "en".'),
       prompt: text.slice(0, 500),
       maxTokens: 20,
       temperature: 0,
       timeoutMs: options?.timeoutMs,
     });
     const locale = (result.locale || '').toLowerCase().slice(0, 2);
-    return CONTENT_LOCALES.includes(locale as ContentLocale) ? (locale as ContentLocale) : 'en';
+    if (CONTENT_LOCALES.includes(locale as ContentLocale)) return locale as ContentLocale;
+    if (options?.strict) throw new Error('Source language could not be detected');
+    return 'en';
   } catch (err) {
+    if (options?.strict) throw err;
     console.warn('[translate] detectLanguage failed, defaulting to en:', err);
     return 'en';
   }

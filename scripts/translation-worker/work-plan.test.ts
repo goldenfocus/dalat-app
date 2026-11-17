@@ -158,3 +158,28 @@ it("translates unsupported source languages into English instead of copying them
   expect(schema.properties.translations.required).toEqual(CONTENT_LOCALES);
   expect(schema.properties.translations.required).not.toContain("und");
 });
+
+it("keeps field-by-field translations for an English event title with a Vietnamese description", () => {
+  const source = {
+    title: "Potluck around the lake",
+    description: "Cùng nhau đi bộ quanh hồ Xuân Hương.",
+    image_description: "Friends drinking tea beside the lake.",
+  };
+  const translations = {
+    vi: {
+      title: "Tiệc góp món bên hồ",
+      description: source.description,
+      image_description: "Bạn bè uống trà bên hồ.",
+    },
+    en: {
+      title: source.title,
+      description: "Walk together around Xuân Hương Lake.",
+      image_description: source.image_description,
+    },
+  };
+  expect(sourceLocaleTranslations(translations, "events", "vi", source, ["en", "vi"]))
+    .toEqual(translations);
+  expect(sourceLocaleTranslations(translations, "events", "en", source, ["en", "vi"]))
+    .toEqual(translations);
+  expect(source.description).toBe("Cùng nhau đi bộ quanh hồ Xuân Hương.");
+});

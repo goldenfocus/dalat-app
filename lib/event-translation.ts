@@ -401,8 +401,10 @@ export async function translatePublishedEvent(
   let sourceLocale: ContentLocale | "und" | null = event.source_locale === "und"
     ? "und" : isSupportedContentLocale(event.source_locale) ? event.source_locale : null;
   if (!sourceLocale) {
-    sourceLocale = await detectLanguage(fields.map((field) => field.text).join("\n"), {
+    // Titles are often English even when the author's longer prose is not.
+    sourceLocale = await detectLanguage(event.description?.trim() || event.title || "", {
       timeoutMs: EVENT_PROVIDER_TIMEOUT_MS,
+      strict: true,
     });
     await persistSourceLocale(supabase, eventId, sourceLocale);
   }
@@ -689,9 +691,9 @@ export function withEventTranslationStamp(
 export function schedulePublishedEventTranslation(eventId: string): void {
   if (!eventId) return;
   try {
-    after(() => {
-      void runPublishedEventTranslation(eventId);
-    });
+    // Returning the promise keeps the serverless invocation alive until every
+    // locale finishes. A detached promise can be frozen as soon as after exits.
+    after(() => runPublishedEventTranslation(eventId));
   } catch (error) {
     console.warn(
       "[event-translation] could not schedule after(); cron will sweep",

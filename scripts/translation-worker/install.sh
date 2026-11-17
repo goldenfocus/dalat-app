@@ -10,7 +10,7 @@ env -u ANTHROPIC_API_KEY -u ANTHROPIC_AUTH_TOKEN -u ANTHROPIC_BASE_URL claude au
 codex login status >/dev/null 2>&1 || { echo 'Sign in to Codex CLI on this Mac before installation.' >&2; exit 1; }
 export DALAT_TRANSLATION_CHECKOUT="$worker_root"
 python3 - <<'PY'
-import os,plistlib,datetime
+import os,plistlib,datetime,shutil
 root=os.environ['DALAT_TRANSLATION_CHECKOUT']
 state=os.path.expanduser('~/.local/state/dalat-translation')
 path=os.path.expanduser('~/Library/LaunchAgents/com.goldenfocus.dalat-subscription-translation.plist')
@@ -19,7 +19,13 @@ os.makedirs(os.path.dirname(path),exist_ok=True)
 old=plistlib.load(open(path,'rb')) if os.path.exists(path) else {}
 pin=old.get('EnvironmentVariables',{}).get('TRANSLATION_REVIEW_AFTER',datetime.datetime.now(datetime.timezone.utc).isoformat())
 job={'Label':'com.goldenfocus.dalat-subscription-translation','ProgramArguments':['/bin/bash',root+'/scripts/translation-worker/run.sh'],'WorkingDirectory':root,'RunAtLoad':True,'KeepAlive':True,'ThrottleInterval':60,'StandardOutPath':state+'/worker.log','StandardErrorPath':state+'/worker.log','EnvironmentVariables':{'TRANSLATION_STATE_DIR':state,'TRANSLATION_REVIEW_AFTER':pin,'TRANSLATION_ITEMS_PER_TYPE':'8'}}
+if os.path.exists(path):
+    shutil.copy2(path, state+'/launch-agent.before-install.plist')
 with open(path,'wb') as f:plistlib.dump(job,f)
+fast_state=state+'/recent-events'
+os.makedirs(fast_state,mode=0o700,exist_ok=True)
+fast={**job,'Label':'com.goldenfocus.dalat-recent-event-translation','ProgramArguments':['/bin/bash',root+'/scripts/translation-worker/run.sh','--recent-events'],'StandardOutPath':fast_state+'/worker.log','StandardErrorPath':fast_state+'/worker.log','EnvironmentVariables':{'TRANSLATION_STATE_DIR':fast_state,'TRANSLATION_REVIEW_AFTER':pin,'TRANSLATION_ITEMS_PER_TYPE':'2'}}
+with open(os.path.expanduser('~/Library/LaunchAgents/com.goldenfocus.dalat-recent-event-translation.plist'),'wb') as f:plistlib.dump(fast,f)
 PY
 worker_label="gui/$(id -u)/com.goldenfocus.dalat-subscription-translation"
 launchctl bootout "$worker_label" 2>/dev/null || true
@@ -39,3 +45,8 @@ if [ "$translation_bootstrapped" -ne 1 ]; then
   exit 1
 fi
 echo 'Installed worker. Verify heartbeat and a reviewed write before stopping any previous worker.'
+
+fast_label="gui/$(id -u)/com.goldenfocus.dalat-recent-event-translation"
+launchctl bootout "$fast_label" 2>/dev/null || true
+launchctl bootstrap "gui/$(id -u)" "$HOME/Library/LaunchAgents/com.goldenfocus.dalat-recent-event-translation.plist"
+echo 'Installed recent-event lane: checks new and edited events every five seconds.'

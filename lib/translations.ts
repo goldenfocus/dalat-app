@@ -57,12 +57,14 @@ export async function getTranslationsWithFallback(
   contentId: string,
   targetLocale: ContentLocale,
   fallbackFields: Partial<Record<TranslationFieldName, string | null>>,
-  freshAfter?: string | null
+  freshAfter?: string | null,
+  sourceLocale?: string | null
 ): Promise<Record<string, string | null>> {
   // Try requested locale first
   const translations = await getTranslations(contentType, contentId, targetLocale, freshAfter);
 
   const result: Record<string, string | null> = {};
+  let englishTranslations: Map<TranslationFieldName, string> | undefined;
 
   for (const [fieldName, originalValue] of Object.entries(fallbackFields)) {
     // Use translation if available
@@ -73,8 +75,8 @@ export async function getTranslationsWithFallback(
     }
 
     // Try English fallback if not the requested locale
-    if (targetLocale !== FALLBACK_LOCALE) {
-      const englishTranslations = await getTranslations(contentType, contentId, FALLBACK_LOCALE, freshAfter);
+    if (originalValue && targetLocale !== FALLBACK_LOCALE && targetLocale !== sourceLocale) {
+      englishTranslations ??= await getTranslations(contentType, contentId, FALLBACK_LOCALE, freshAfter);
       const englishTranslation = englishTranslations.get(fieldName as TranslationFieldName);
       if (englishTranslation) {
         result[fieldName] = englishTranslation;
@@ -124,19 +126,10 @@ export async function getEventWithTranslations(
   }
 
   // Determine source locale
-  const sourceLocale = (event as Event & { source_locale?: string }).source_locale || 'en';
+  const sourceLocale = (event as Event & { source_locale?: string }).source_locale;
 
-  // If target locale matches source, return original content without translation lookup
-  if (targetLocale === sourceLocale) {
-    return {
-      ...event,
-      translated_title: event.title,
-      translated_description: event.description,
-      is_translated: false,
-    } as TranslatedEvent;
-  }
-
-  // Fetch translations for this event
+  // Event fields can mix languages; prefer translations even when the dominant
+  // source locale matches, with the byte-preserved original as fallback.
   const translations = await getTranslationsWithFallback(
     'event',
     event.id,
@@ -149,7 +142,9 @@ export async function getEventWithTranslations(
       story_content: null,
       technical_content: null,
       meta_description: null,
-    }
+    },
+    undefined,
+    sourceLocale
   );
 
   return {

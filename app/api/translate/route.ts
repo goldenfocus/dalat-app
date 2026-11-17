@@ -16,6 +16,9 @@ import type { EventIndexingReadiness } from "@/lib/translations-readiness";
 const RATE_LIMIT = 50; // requests per window
 const RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
+// The response stays immediate; after() needs time to finish the locale fan-out.
+export const maxDuration = 300;
+
 interface TranslateRequest {
   operation?: "queue" | "discover" | "complete";
   content_type: TranslationContentType;

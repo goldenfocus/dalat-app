@@ -28,9 +28,11 @@ describe("series translations from matching public occurrences", () => {
     expect(await getSeriesTranslation(client(null).db, series, "fr")).toBeNull();
     expect(getTranslations).not.toHaveBeenCalled();
   });
-  it("does not substitute translations for the source language", async () => {
-    expect(await getSeriesTranslation(client({ id: "event-1", source_locale: "en" }).db, series, "en")).toBeNull();
-    expect(getTranslations).not.toHaveBeenCalled();
+  it("uses translated fields even in the dominant source language for mixed-language posts", async () => {
+    getTranslations.mockResolvedValue(new Map([["title", "Market"], ["description", "Every Sunday"]]));
+    expect(await getSeriesTranslation(client({ id: "event-1", source_locale: "en" }).db, series, "en"))
+      .toEqual({ title: "Market", description: "Every Sunday", sourceLocale: "en" });
+    expect(getTranslations).toHaveBeenCalledWith("event", "event-1", "en");
   });
   it("keeps null descriptions distinct from modified occurrence copy", async () => {
     const { db, query } = client(null);

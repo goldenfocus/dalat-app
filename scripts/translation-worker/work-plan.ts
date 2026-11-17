@@ -122,7 +122,12 @@ export function batchResponseSchema(
   });
 }
 
-/** Metadata can mix English AI copy and speech in another language; no single source copy is valid. */
+/** Event titles and AI image copy can differ from the description's language. */
+export function hasMixedLanguageFields(table: string): boolean {
+  return table === "events" || table === "moment_metadata";
+}
+
+/** A dominant language label must not copy mixed-language fields into a target. */
 export function sourceLocaleTranslations(
   translations: Record<string, SourceFields>,
   table: string,
@@ -130,7 +135,7 @@ export function sourceLocaleTranslations(
   fields: SourceFields,
   targets: readonly string[],
 ): Record<string, SourceFields> {
-  return table !== "moment_metadata" && targets.includes(source)
+  return !hasMixedLanguageFields(table) && targets.includes(source)
     ? { ...translations, [source]: { ...fields } }
     : translations;
 }

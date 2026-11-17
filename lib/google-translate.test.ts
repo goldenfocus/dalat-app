@@ -5,10 +5,26 @@ vi.mock("@/lib/ai/provider", () => ({ aiChatJson: (...args: unknown[]) => aiChat
 
 import {
   TOKEN_INSTRUCTION,
+  detectLanguage,
   translateFieldsToLocale,
   translationMaxTokens,
   translationTokensMismatch,
 } from "./google-translate";
+
+describe("event source detection", () => {
+  it("does not label a provider timeout as English", async () => {
+    aiChatJson.mockRejectedValueOnce(new Error("provider timeout"));
+    await expect(detectLanguage("Chúng mình đi bộ quanh hồ", { strict: true }))
+      .rejects.toThrow("provider timeout");
+  });
+
+  it("leaves an uncertain source pending instead of guessing English", async () => {
+    aiChatJson.mockResolvedValueOnce({ locale: "und" });
+    await expect(detectLanguage("Uncertain language", { strict: true }))
+      .rejects.toThrow("could not be detected");
+    aiChatJson.mockClear();
+  });
+});
 
 describe("translationTokensMismatch", () => {
   it("flags hallucinated and dropped tokens", () => {

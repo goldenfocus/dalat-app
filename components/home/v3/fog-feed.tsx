@@ -161,15 +161,12 @@ export async function FogFeed({
   // Serializable translations for the client view-switcher
   const translationsRecord: Record<string, { title?: string } | undefined> = {};
   for (const event of upcomingCardEvents) {
-    if (event.source_locale === locale) continue;
     const tr = eventTranslations.get(event.id);
     if (tr) translationsRecord[event.id] = { title: tr.title };
   }
 
   const translatedTitle = (event: CardEvent) =>
-    event.source_locale === locale
-      ? undefined
-      : eventTranslations.get(event.id)?.title;
+    eventTranslations.get(event.id)?.title;
 
   let featuredTime = "";
   if (featured && featuredCardEvent) {

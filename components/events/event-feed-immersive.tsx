@@ -85,10 +85,8 @@ export async function EventFeedImmersive({
         lifecycleCounts={lifecycleCounts}
       >
         {events.map((event, index) => {
-          // Skip translation if viewing in the event's original language
-          const translation = event.source_locale === locale
-            ? undefined
-            : eventTranslations.get(event.id);
+          // Mixed-language fields may need translation in the source locale too.
+          const translation = eventTranslations.get(event.id);
           return (
             <EventCardImmersive
               key={event.id}

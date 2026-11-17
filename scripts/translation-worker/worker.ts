@@ -23,6 +23,7 @@ import {
   rowResponseSchema,
   batchResponseSchema,
   sourceLocaleTranslations,
+  hasMixedLanguageFields,
   SOURCE_LOCALES,
   type DetectedSourceLocale,
 } from "./work-plan";
@@ -46,6 +47,11 @@ const selected = new Set(
 );
 const audit = process.argv.includes("--audit");
 const loop = process.argv.includes("--loop");
+const recentEvents = process.argv.includes("--recent-events");
+if (recentEvents) {
+  selected.clear();
+  selected.add("event");
+}
 const maxItems = Number(process.env.TRANSLATION_MAX_ITEMS || "0");
 const PAGE = 500;
 const workOptions = {
@@ -94,6 +100,10 @@ async function rows(def: SourceDefinition) {
           referencedTable: "profiles",
         });
     for (const [field, value] of def.filters) q = q.eq(field, value);
+    // A small independent lane keeps new posts out of the historical backlog.
+    // The full sweep still recovers older revisions or work missed offline.
+    if (recentEvents)
+      q = q.gte("updated_at", new Date(Date.now() - 15 * 60_000).toISOString());
     if ("publicRecaps" in def)
       q = q.or(
         "status.eq.published,and(status.eq.experimental,source.eq.news_scrape),and(status.eq.draft,event_id.not.is.null,recap_published_at.not.is.null)",
@@ -162,6 +172,7 @@ function valid(
   translations: any,
   locales: ContentLocale[],
   source: DetectedSourceLocale,
+  mixedLanguageFields = false,
 ) {
   for (const locale of locales) {
     const output = translations?.[locale];
@@ -193,6 +204,7 @@ function valid(
       }
       if (
         locale !== source &&
+        !mixedLanguageFields &&
         !["photos", "observations", "tags"].includes(key) &&
         value.length > 100 &&
         result === value
@@ -280,8 +292,8 @@ async function processRow(
   if (!Object.keys(fields).length) return;
   const languageContext = sourceLanguageContext(sourceSnapshot, fields);
   const mixedLanguageInstruction =
-    def.table === "moment_metadata"
-      ? "These metadata fields may be in different languages (for example English AI descriptions and a Vietnamese transcript). Translate EACH field from its own language into EVERY requested locale, including the dominant source_locale; never copy the whole record as one source-language block. source_locale is only the dominant language label."
+    hasMixedLanguageFields(def.table)
+      ? "These fields may be in different languages (for example an English event title or image description and a Vietnamese description). Translate EACH field from its own language into EVERY requested locale, including the dominant source_locale. Text already in a target language may remain unchanged. Never copy the whole record as one source-language block. Detect source_locale from the authored description or transcript before the title and generated image copy; it is only the dominant language label."
       : "";
   const chars = Object.values(fields).join("").length;
   const chunkSize = retrySchedule.small(retryKey(def, row.id))
@@ -319,7 +331,7 @@ async function processRow(
     fields,
     missing,
   );
-  valid(fields, translated, missing, source);
+  valid(fields, translated, missing, source, hasMixedLanguageFields(def.table));
   const review =
     prepared?.review ||
     (await cliJson(
@@ -339,7 +351,7 @@ async function processRow(
     fields,
     missing,
   );
-  valid(fields, review.translations, missing, source);
+  valid(fields, review.translations, missing, source, hasMixedLanguageFields(def.table));
   if (!(await current(def, row, sourceSnapshot)))
     throw new Error(`${tag}: source changed before write`);
   if (
@@ -485,8 +497,8 @@ async function processBatch(def: SourceDefinition, tasks: Work[]) {
   );
   const locales = tasks[0].missing;
   const mixedLanguageInstruction =
-    def.table === "moment_metadata"
-      ? "Each record can have mixed-language fields: translate each field from its own language into every target, including the dominant source_locale. Do not copy all fields unchanged for any one language."
+    hasMixedLanguageFields(def.table)
+      ? "Each record can have mixed-language fields: translate each field from its own language into every target, including the dominant source_locale. Text already in a target language may remain unchanged. Detect the dominant source_locale from the authored description or transcript before the title and generated image copy. Do not copy all fields unchanged for any one language."
       : "";
   const draft = await cliJson(
     "claude",
@@ -617,7 +629,7 @@ async function sweep() {
           stop ||
           retrySchedule.deferred(retryKey(def, row.id), Date.now()) ||
           (maxItems && processed >= maxItems) ||
-          tasks.length >= Number(process.env.TRANSLATION_ITEMS_PER_TYPE || 20)
+          tasks.length >= Number(process.env.TRANSLATION_ITEMS_PER_TYPE || (recentEvents ? 2 : 20))
         )
           continue;
         tasks.push({
@@ -722,7 +734,7 @@ async function main() {
   }
   do {
     if (Date.now() >= retryAfter) await sweep();
-    if (loop && !stop) await new Promise((r) => setTimeout(r, 60_000));
+    if (loop && !stop) await new Promise((r) => setTimeout(r, recentEvents ? 5_000 : 60_000));
   } while (loop && !stop);
 }
 main().catch((e) => {

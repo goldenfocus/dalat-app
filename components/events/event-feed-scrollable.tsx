@@ -193,7 +193,6 @@ export async function EventFeedScrollable({
   // Serializable translations for the client view-switcher
   const translationsRecord: Record<string, { title?: string } | undefined> = {};
   for (const event of [...happeningCardEvents, ...upcomingCardEvents]) {
-    if (event.source_locale === locale) continue;
     const tr = eventTranslations.get(event.id);
     if (tr) translationsRecord[event.id] = { title: tr.title };
   }
@@ -218,9 +217,7 @@ export async function EventFeedScrollable({
           <div className="space-y-4">
             {happeningCardEvents.map((event) => {
               const translation =
-                event.source_locale === locale
-                  ? undefined
-                  : eventTranslations.get(event.id);
+                eventTranslations.get(event.id);
               const more = moreAtVenue[event.id];
               return (
                 <div key={event.id}>
@@ -277,9 +274,7 @@ export async function EventFeedScrollable({
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-5">
               {upcomingCardEvents.map((event, index) => {
                 const translation =
-                  event.source_locale === locale
-                    ? undefined
-                    : eventTranslations.get(event.id);
+                  eventTranslations.get(event.id);
                 const goingSpots = counts[event.id]?.going_spots ?? 0;
                 const pastProof = getPastProof(social[event.id]);
 
