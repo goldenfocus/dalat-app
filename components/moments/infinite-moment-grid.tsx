@@ -335,6 +335,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
             <MomentCard
               key={moment.id}
               moment={moment}
+              priority={index < 2}
               eventSlug={eventSlug}
               from="event"
               commentCount={commentCounts.get(moment.id)}
@@ -405,6 +406,7 @@ function InnerGridWithLightbox({
         <MomentCard
           key={moment.id}
           moment={moment}
+          priority={index < 2}
           eventSlug={eventSlug}
           from="event"
           commentCount={commentCounts.get(moment.id)}

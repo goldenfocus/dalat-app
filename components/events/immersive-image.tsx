@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
+import { responsiveImageSources, type ResponsiveImageProfile } from "@/lib/moments/image-sources";
 
 // Tiny gradient placeholder for perceived instant loading (only ~150 bytes)
 const BLUR_DATA_URL =
@@ -15,6 +16,11 @@ interface ImmersiveImageProps {
   priority?: boolean;
   imageFit?: "cover" | "contain";
   focalPoint?: string | null;
+  /**
+   * Opt in to an explicit width ladder (plain <img>, small fallback src)
+   * instead of Next's default device-size srcset, whose `src` is 1920 wide.
+   */
+  profile?: ResponsiveImageProfile;
 }
 
 /**
@@ -27,7 +33,7 @@ interface ImmersiveImageProps {
  * LCP optimization: For priority images, defer aspect ratio detection to avoid
  * blocking the initial render with a state update.
  */
-export function ImmersiveImage({ src, alt, children, priority = false, imageFit, focalPoint }: ImmersiveImageProps) {
+export function ImmersiveImage({ src, alt, children, priority = false, imageFit, focalPoint, profile }: ImmersiveImageProps) {
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const [imageElement, setImageElement] = useState<HTMLImageElement | null>(null);
 
@@ -84,21 +90,35 @@ export function ImmersiveImage({ src, alt, children, priority = false, imageFit,
       )}
 
       {/* Main image - smart object-fit based on aspect ratio */}
-      <Image
-        loader={cloudflareLoader}
-        src={src}
-        alt={alt}
-        fill
-        sizes="(max-width: 768px) 100vw, 50vw"
-        priority={priority}
-        loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
-        placeholder="blur"
-        blurDataURL={BLUR_DATA_URL}
-        onLoad={handleLoad}
-        className={`z-10 ${useObjectCover ? "object-cover" : "object-contain"}`}
-        style={useObjectCover && focalPoint ? { objectPosition: focalPoint } : undefined}
-      />
+      {profile ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          {...responsiveImageSources(src, profile)}
+          alt={alt}
+          loading={priority ? "eager" : "lazy"}
+          decoding="async"
+          fetchPriority={priority ? "high" : "auto"}
+          onLoad={handleLoad}
+          className={`absolute inset-0 z-10 h-full w-full ${useObjectCover ? "object-cover" : "object-contain"}`}
+          style={useObjectCover && focalPoint ? { objectPosition: focalPoint } : undefined}
+        />
+      ) : (
+        <Image
+          loader={cloudflareLoader}
+          src={src}
+          alt={alt}
+          fill
+          sizes="(max-width: 768px) 100vw, 50vw"
+          priority={priority}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          placeholder="blur"
+          blurDataURL={BLUR_DATA_URL}
+          onLoad={handleLoad}
+          className={`z-10 ${useObjectCover ? "object-cover" : "object-contain"}`}
+          style={useObjectCover && focalPoint ? { objectPosition: focalPoint } : undefined}
+        />
+      )}
 
       {/* Overlay children (e.g., expand icon) */}
       {children}
