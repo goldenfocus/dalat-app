@@ -4,6 +4,18 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { JsonSchema } from "./work-plan";
 
+/** Classify provider status without putting source prose or model output in logs. */
+export function cliFailure(engine: "claude" | "codex", code: number | null, stdout: string): Error {
+  if (engine === "claude") {
+    try {
+      const response = JSON.parse(stdout);
+      if (response.subtype === "error_max_structured_output_retries")
+        return new Error("claude structured output failed; retry smaller locale groups");
+    } catch { /* Not a structured response. */ }
+  }
+  return new Error(`${engine} unavailable (exit ${code}); check CLI authentication and quota`);
+}
+
 /** No API keys, source text in argv, repository tools or persistent model sessions. */
 export async function cliJson(
   engine: "claude" | "codex",
@@ -104,11 +116,7 @@ export async function cliJson(
         clearTimeout(timeout);
         code === 0
           ? resolve(stdout)
-          : reject(
-              new Error(
-                `${engine} unavailable (exit ${code}); check CLI authentication and quota`,
-              ),
-            );
+          : reject(cliFailure(engine, code, stdout));
       });
       child.stdin.end(prompt);
     });

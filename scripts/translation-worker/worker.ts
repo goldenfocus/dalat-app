@@ -678,6 +678,7 @@ async function sweep() {
                 keys,
                 Date.now(),
                 /timed out/.test(String(error)),
+                /structured output/.test(String(error)),
               );
               report.errors.push({
                 type: def.type,

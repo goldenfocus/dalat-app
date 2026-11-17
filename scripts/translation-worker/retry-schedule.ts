@@ -42,12 +42,12 @@ export class RetrySchedule {
       });
   }
 
-  failed(keys: string[], now: number, timedOut: boolean) {
+  failed(keys: string[], now: number, timedOut: boolean, structuredOutput = false) {
     for (const key of keys)
       this.attempts.set(key, {
         attemptedAt: this.priority(key) || now,
-        retryAt: now + 15 * 60_000,
-        small: timedOut || this.small(key),
+        retryAt: now + (structuredOutput ? 5_000 : 15 * 60_000),
+        small: timedOut || structuredOutput || this.small(key),
       });
   }
 
