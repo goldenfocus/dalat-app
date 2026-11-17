@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cliFailure, validateCliOutput } from "./cli";
+import { cliFailure, parseCliOutput, validateCliOutput } from "./cli";
 import { rowResponseSchema } from "./work-plan";
 import { RetrySchedule } from "./retry-schedule";
 
@@ -32,5 +32,14 @@ describe("structured-output recovery", () => {
     expect(() => validateCliOutput({ ...value, source_locale: "made-up" }, schema)).toThrow();
     expect(() => validateCliOutput({ ...value, approved: "true" }, schema)).toThrow();
     expect(() => validateCliOutput({ ...value, extra: "not allowed" }, schema)).toThrow();
+  });
+
+  it("preserves interior quotation marks without accepting missing locales", () => {
+    const schema = rowResponseSchema({ title: "Source" }, ["de"]);
+    const raw = '{"source_locale":"vi","translations":{"de":{"title":"Musik „Giá Như Anh Là Em" mit Lệ Quyên"}}}';
+    expect(parseCliOutput(raw, schema).translations.de.title).toBe('Musik „Giá Như Anh Là Em" mit Lệ Quyên');
+    expect(() => parseCliOutput('{"source_locale":"vi","translations":{}}', schema)).toThrow();
+    const valid = { source_locale: "vi", translations: { de: { title: 'A "quoted" title' } } };
+    expect(parseCliOutput(JSON.stringify(valid), schema)).toEqual(valid);
   });
 });

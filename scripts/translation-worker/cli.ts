@@ -42,6 +42,29 @@ export function validateCliOutput(value: any, schema?: JsonSchema, path = "respo
   return value;
 }
 
+/** Escape only syntactically impossible inner quotes/newlines, then validate. */
+export function parseCliOutput(raw: string, schema?: JsonSchema): any {
+  try { return validateCliOutput(JSON.parse(raw), schema); } catch { /* Try lossless escaping. */ }
+  let inString = false;
+  let escaped = false;
+  let repaired = "";
+  for (let index = 0; index < raw.length; index++) {
+    const char = raw[index];
+    if (escaped) { repaired += char; escaped = false; continue; }
+    if (inString && char === "\\") { repaired += char; escaped = true; continue; }
+    if (char === '"') {
+      const next = raw.slice(index + 1).trimStart()[0];
+      if (inString && next && ![",", ":", "}", "]"].includes(next)) {
+        repaired += '\\"';
+        continue;
+      }
+      inString = !inString;
+    }
+    repaired += inString && char === "\n" ? "\\n" : inString && char === "\r" ? "\\r" : char;
+  }
+  return validateCliOutput(JSON.parse(repaired), schema);
+}
+
 /** No API keys, source text in argv, repository tools or persistent model sessions. */
 export async function cliJson(
   engine: "claude" | "codex",
@@ -164,7 +187,7 @@ export async function cliJson(
       end = raw.lastIndexOf("}");
     if (start < 0 || end < start) throw new Error(`${engine} returned no JSON`);
     try {
-      return validateCliOutput(JSON.parse(raw.slice(start, end + 1)), schema);
+      return parseCliOutput(raw.slice(start, end + 1), schema);
     } catch {
       if (attempt >= 1) throw new Error(`${engine} returned malformed JSON`);
       return cliJson(
