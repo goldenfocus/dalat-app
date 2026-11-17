@@ -24,6 +24,8 @@ export interface PlaylistInfo {
   eventTitle: string;
   eventImageUrl: string | null;
   eventId?: string;
+  /** True when the tracks are the house soundtrack, not the event's own music. */
+  isHouse?: boolean;
 }
 
 export type RepeatMode = "none" | "one" | "all";

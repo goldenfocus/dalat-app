@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "播放列表",
+    "houseSoundtrack": "平台配乐",
     "tracks": "{count, plural, one {#首} other {#首}}",
     "totalDuration": "{minutes}分钟",
     "nowPlaying": "正在播放",

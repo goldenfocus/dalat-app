@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Lista de reproducción",
+    "houseSoundtrack": "Banda sonora de la casa",
     "tracks": "{count, plural, one {# pista} other {# pistas}}",
     "totalDuration": "{minutes} min",
     "nowPlaying": "Reproduciendo ahora",

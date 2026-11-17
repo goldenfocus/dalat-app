@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Playlist",
+    "houseSoundtrack": "House soundtrack",
     "tracks": "{count, plural, one {# track} other {# tracks}}",
     "totalDuration": "{minutes} min",
     "nowPlaying": "Now playing",

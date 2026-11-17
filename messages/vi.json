@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Danh sách phát",
+    "houseSoundtrack": "Nhạc nền của dalat.app",
     "tracks": "{count, plural, one {# bài} other {# bài}}",
     "totalDuration": "{minutes} phút",
     "nowPlaying": "Đang phát",

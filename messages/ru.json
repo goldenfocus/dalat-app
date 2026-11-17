@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Плейлист",
+    "houseSoundtrack": "Фоновая музыка приложения",
     "tracks": "{count, plural, one {# трек} few {# трека} other {# треков}}",
     "totalDuration": "{minutes} мин",
     "nowPlaying": "Сейчас играет",

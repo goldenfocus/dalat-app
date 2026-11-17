@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Liste de lecture",
+    "houseSoundtrack": "Bande-son maison",
     "tracks": "{count, plural, one {# piste} other {# pistes}}",
     "totalDuration": "{minutes} min",
     "nowPlaying": "En cours de lecture",

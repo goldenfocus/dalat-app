@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Daftar Putar",
+    "houseSoundtrack": "Soundtrack bawaan",
     "tracks": "{count, plural, one {# lagu} other {# lagu}}",
     "totalDuration": "{minutes} menit",
     "nowPlaying": "Sedang diputar",

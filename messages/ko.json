@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "재생목록",
+    "houseSoundtrack": "하우스 사운드트랙",
     "tracks": "{count, plural, one {#곡} other {#곡}}",
     "totalDuration": "{minutes}분",
     "nowPlaying": "지금 재생 중",

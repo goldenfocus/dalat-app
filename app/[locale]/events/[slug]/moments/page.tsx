@@ -18,6 +18,7 @@ import type { Locale } from "@/lib/i18n/routing";
 import type { Event, MomentContentType, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
+import { loadHouseSoundtrack } from "@/lib/cinema/load-house-soundtrack";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
 
 const INITIAL_PAGE_SIZE = 20;
@@ -414,7 +415,8 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
   const [{ moments, hasMore, totalCount }, canPost, playlist, titles] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
-    getEventPlaylist(event.slug, event.title, event.image_url),
+    getEventPlaylist(event.slug, event.title, event.image_url).then(async (own) =>
+      own ?? loadHouseSoundtrack(await createClient(), event)),
     getEventTranslationsBatch([event.id], locale as Locale),
   ]);
   const eventTitle = titles.get(event.id)?.title || event.title;

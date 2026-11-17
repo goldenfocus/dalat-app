@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Senarai Main",
+    "houseSoundtrack": "Runut bunyi rumah",
     "tracks": "{count, plural, one {# lagu} other {# lagu}}",
     "totalDuration": "{minutes} min",
     "nowPlaying": "Sedang dimainkan",

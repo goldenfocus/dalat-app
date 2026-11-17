@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "เพลย์ลิสต์",
+    "houseSoundtrack": "เพลงประกอบประจำแอป",
     "tracks": "{count, plural, one {# เพลง} other {# เพลง}}",
     "totalDuration": "{minutes} นาที",
     "nowPlaying": "กำลังเล่น",

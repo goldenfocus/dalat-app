@@ -3192,6 +3192,7 @@
   },
   "playlist": {
     "title": "Wiedergabeliste",
+    "houseSoundtrack": "Hausmusik",
     "tracks": "{count, plural, one {# Titel} other {# Titel}}",
     "totalDuration": "{minutes} Min",
     "nowPlaying": "Wird abgespielt",
