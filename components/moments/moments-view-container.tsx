@@ -84,6 +84,8 @@ export function MomentsViewContainer({
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
   const hasAutoOpenedRef = useRef(false);
   const hasAutoPlayedRef = useRef(false);
+  // Whether music was already playing when this page was opened, before our own autoplay.
+  const musicBeforeLandingRef = useRef<boolean | null>(null);
   const gridRef = useRef<InfiniteMomentGridHandle>(null);
 
   // Audio player store for auto-play
@@ -179,7 +181,15 @@ export function MomentsViewContainer({
         setViewMode("immersive");
         setShowImmersive(true);
       } else {
-        // Default to cinema mode for the "slideshow" experience
+        // Default to cinema mode for the "slideshow" experience.
+        // The page's own autoplay can start the soundtrack before cinema records its
+        // baseline, so pin the baseline to what was playing before this visit:
+        // closing cinema then stops music the visitor never started.
+        useCinemaModeStore.setState({
+          musicBaseline:
+            musicBeforeLandingRef.current ?? useAudioPlayerStore.getState().isPlaying,
+        });
+        musicBeforeLandingRef.current = null;
         setViewMode("cinema");
         setShowCinema(true);
       }
@@ -193,6 +203,7 @@ export function MomentsViewContainer({
       return;
     }
     hasAutoPlayedRef.current = true;
+    musicBeforeLandingRef.current = useAudioPlayerStore.getState().isPlaying;
 
     // Use pre-fetched playlist (no client RPC delay)
     if (initialPlaylist) {

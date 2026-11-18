@@ -91,6 +91,16 @@ describe("restoring music on close", () => {
     expect(useAudioPlayerStore.getState().isPlaying).toBe(false);
   });
 
+  it("keeps a pinned baseline when the page's autoplay started before cinema", () => {
+    const audio = installFakeAudio(true); // autoplay already running
+    useCinemaModeStore.setState({ musicBaseline: false }); // silent on arrival
+    cinema().start(moments, "evt");
+
+    cinema().exit();
+    expect(audio.pause).toHaveBeenCalled();
+    expect(useAudioPlayerStore.getState().isPlaying).toBe(false);
+  });
+
   it("leaves music playing when it was playing before cinema opened", () => {
     const audio = installFakeAudio(true);
     cinema().start(moments, "evt");
