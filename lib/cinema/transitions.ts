@@ -6,64 +6,55 @@
  */
 
 import type { MomentContentType } from "@/lib/types";
+import { hashToUint32 } from "./seeded-hash";
 
 export type TransitionType = "crossfade" | "fade-black" | "zoom-blur" | "slide-push";
 
-export interface TransitionConfig {
+/**
+ * PERSISTED FORMAT: transition ids are stored in recap specs. Never rename or
+ * remove an id, only add new ones.
+ */
+export interface TransitionPreset {
+  id: TransitionType;
   type: TransitionType;
-  duration: number;
+  /** Total visible length of the transition in ms */
+  durationMs: number;
   easing: string;
 }
 
+/** Kept as an alias for existing callers. */
+export type TransitionConfig = TransitionPreset;
+
+export const CINEMA_TRANSITIONS: Readonly<Record<TransitionType, TransitionPreset>> =
+  Object.freeze({
+    crossfade: { id: "crossfade", type: "crossfade", durationMs: 800, easing: "ease-in-out" },
+    "fade-black": { id: "fade-black", type: "fade-black", durationMs: 600, easing: "ease-in-out" },
+    "zoom-blur": { id: "zoom-blur", type: "zoom-blur", durationMs: 500, easing: "ease-out" },
+    "slide-push": { id: "slide-push", type: "slide-push", durationMs: 700, easing: "ease-in-out" },
+  });
+
 /**
- * Select appropriate transition based on content types
- *
- * @param fromType - Content type of the outgoing moment
- * @param toType - Content type of the incoming moment
- * @returns Transition configuration
+ * Pure, seeded transition choice from content types. Photo to photo is a
+ * crossfade, except a deterministic ~10% that slide-push for variety.
  */
 export function selectTransition(
   fromType: MomentContentType | null,
-  toType: MomentContentType | null
-): TransitionConfig {
+  toType: MomentContentType | null,
+  seed: string,
+  momentId: string,
+  index: number,
+): TransitionPreset {
   const fromIsVideo = fromType === "video";
   const toIsVideo = toType === "video";
 
-  // Video -> Photo: Use fade-black for clean separation
-  if (fromIsVideo && !toIsVideo) {
-    return {
-      type: "fade-black",
-      duration: 600,
-      easing: "ease-in-out",
-    };
-  }
-
-  // Photo -> Video: Use zoom-blur for dramatic entry
-  if (!fromIsVideo && toIsVideo) {
-    return {
-      type: "zoom-blur",
-      duration: 500,
-      easing: "ease-out",
-    };
-  }
-
-  // Photo -> Photo: Crossfade (90%) or slide-push (10%) for variety
+  if (fromIsVideo && !toIsVideo) return CINEMA_TRANSITIONS["fade-black"];
+  if (!fromIsVideo && toIsVideo) return CINEMA_TRANSITIONS["zoom-blur"];
   if (!fromIsVideo && !toIsVideo) {
-    if (Math.random() > 0.9) {
-      return {
-        type: "slide-push",
-        duration: 700,
-        easing: "ease-in-out",
-      };
+    if (hashToUint32(`tr|${seed}|${momentId}|${index}`) % 10 === 9) {
+      return CINEMA_TRANSITIONS["slide-push"];
     }
   }
-
-  // Default: crossfade
-  return {
-    type: "crossfade",
-    duration: 800,
-    easing: "ease-in-out",
-  };
+  return CINEMA_TRANSITIONS.crossfade;
 }
 
 /**
