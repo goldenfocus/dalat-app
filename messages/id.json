@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
+    "learningLabel": "Belajar",
+    "speaksLabel": "Berbicara",
+
+    "byEzviet": "Oleh EZViet",
+    "playAudio": "Dengarkan {text}",
+    "turnPlayer": "Giliran {name}",
+    "audioUnavailable": "Audio tidak tersedia. Coba lagi.",
+
     "arriveNow": "Saya sudah tiba",
     "playCards": "Main",
     "moveToTable": "Pindahkan ke meja {number}",

@@ -48,3 +48,11 @@ A regression checks JSONB key-order changes cannot cause polling to rewrite seat
 SQL tests validate both old and multiple-target profiles and immutable snapshots.
 All 12 locale boundaries include `eventPractice`, including `/prepare` and `/play`.
 No test account or synthetic RSVP is inserted into a public production event.
+
+## Shared-phone game (18 November 2026)
+
+The public `/practice/rehearsal` starts with 50 fictional checked-in guests and three hosts. The 10/34-person scenarios remain available for check-in practice. This uses the same guest and staff components as the real event, with isolated browser-only state. Reset never writes to an event.
+
+At a table, Play is available before the host starts a timed round. One phone shows the current speaker and a language partner as two avatars with names, then a bilingual card with a play button beneath each language. Each next turn rotates speakers and uses that speaker's saved learning level; there is no manual word/phrase selector, mission title, twist, or reward claim. Beginner/unknown levels use words, intermediate uses short phrases, and fluent/native uses longer phrases. The host roster shows Learning plus flags; selecting a person reveals Speaks plus flags.
+
+Real-event turn position is stored only on the shared device, keyed by event, table, and round. Seating and attendance still use the existing authenticated server state; game progress does not synchronize between devices. Rehearsal progress resets on reload. Audio is reused from existing exact-text EZViet recordings and served from local static assets (no microphone, speech scoring, or paid generation). The small By EZViet link opens https://ezviet.org in a separate tab. Learning cards intentionally retain both source languages; the interface supports all 12 locales.

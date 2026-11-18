@@ -4355,6 +4355,14 @@
     "saveAccountLater": "ไม่บังคับ การเช็กอินของคุณยังอยู่เหมือนเดิม"
   },
   "eventPractice": {
+    "learningLabel": "กำลังเรียน",
+    "speaksLabel": "พูดได้",
+
+    "byEzviet": "โดย EZViet",
+    "playAudio": "ฟัง {text}",
+    "turnPlayer": "ตาของ {name}",
+    "audioUnavailable": "เล่นเสียงไม่ได้ ลองอีกครั้ง",
+
     "arriveNow": "มาถึงแล้ว",
     "playCards": "เล่น",
     "moveToTable": "ย้ายไปโต๊ะ {number}",

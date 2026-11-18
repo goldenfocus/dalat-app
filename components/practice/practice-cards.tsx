@@ -1,46 +1,74 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Play, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { CARD_LEVELS, cardsForLevel, cardStartOffset, type CardLevel } from "@/lib/practice/cards";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { tableTurn } from "@/lib/practice/cards";
+import { PRACTICE_AUDIO } from "@/lib/practice/audio";
+import type { Person } from "@/lib/practice/model";
 
-/** Read-aloud table cards. Local state only: no network, no microphone. */
-export function PracticeCards({ seed = 0, initialLevel = 1 }: { seed?: number; initialLevel?: CardLevel }) {
+function Player({ person, active = false }: { person: Person; active?: boolean }) {
+  return <div className="flex min-w-0 flex-1 flex-col items-center gap-2">
+    <Avatar className={`h-16 w-16 border-2 ${active ? "border-primary" : "border-transparent"}`}>
+      <AvatarImage src={person.avatarUrl || undefined} alt="" />
+      <AvatarFallback>{person.name.trim().split(/\s+/).slice(0, 2).map(word => word[0]).join("")}</AvatarFallback>
+    </Avatar>
+    <span className={`max-w-full break-words text-center text-lg ${active ? "font-semibold" : ""}`}>{person.name}</span>
+  </div>;
+}
+
+/** One shared phone per table. Only the turn position is saved on this device. */
+export function PracticeCards({ seed = 0, people = [], storageKey }: { seed?: number; people?: Person[]; storageKey?: string }) {
   const t = useTranslations("eventPractice");
-  const [level, setLevel] = useState<CardLevel>(initialLevel);
   const [step, setStep] = useState(0);
-  const cards = cardsForLevel(level);
-  // Offset by level too, so changing level does not always land on the same position.
-  const card = cards[(cardStartOffset(seed + level, cards.length) + step) % cards.length];
-  const lowest = CARD_LEVELS[0], highest = CARD_LEVELS[CARD_LEVELS.length - 1];
-  const changeLevel = (next: number) => { setLevel(Math.min(highest, Math.max(lowest, next)) as CardLevel); setStep(0); };
-  const move = (by: number) => setStep(current => (current + by + cards.length) % cards.length);
-  return <section aria-labelledby="practice-cards-heading" className="space-y-4">
-    <div className="sr-only">
-      <h3 id="practice-cards-heading" className="text-base font-semibold">{t("cardsTitle")}</h3>
-      <p className="mt-1 text-sm text-muted-foreground">{t("cardsHint")}</p>
+  const [ready, setReady] = useState(false);
+  const [playing, setPlaying] = useState<string | null>(null);
+  const [audioError, setAudioError] = useState(false);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  useEffect(() => {
+    try {
+      const saved = storageKey ? Number(localStorage.getItem(storageKey)) : 0;
+      setStep(Number.isSafeInteger(saved) && saved >= 0 ? saved : 0);
+    } catch { /* Storage can be disabled; the game still runs. */ }
+    setReady(true);
+  }, [storageKey]);
+  useEffect(() => {
+    if (ready && storageKey) { try { localStorage.setItem(storageKey, String(step)); } catch { /* Optional persistence. */ } }
+  }, [ready, storageKey, step]);
+  useEffect(() => () => { audio.current?.pause(); }, []);
+  const { speaker, partner, card } = tableTurn(people, step, seed);
+  function stop() { audio.current?.pause(); audio.current = null; setPlaying(null); }
+  function move(by: number) { stop(); setAudioError(false); setStep(current => Math.max(0, current + by)); }
+  async function listen(language: "en" | "vi", text: string) {
+    const key = `${language}:${text}`;
+    if (playing === key) { stop(); return; }
+    stop(); setAudioError(false);
+    const player = new Audio(PRACTICE_AUDIO[key]);
+    audio.current = player; setPlaying(key);
+    player.onended = () => { if (audio.current === player) setPlaying(null); };
+    player.onerror = () => { if (audio.current === player) { setPlaying(null); setAudioError(true); } };
+    try { await player.play(); } catch { if (audio.current === player) { setPlaying(null); setAudioError(true); } }
+  }
+  return <section aria-label={t("cardsTitle")} className="space-y-7">
+    {speaker && <div className="flex items-center justify-center gap-4" aria-label={t("turnPlayer", { name: speaker.name })}>
+      <Player person={speaker} active />
+      {partner && <><span aria-hidden className="text-sm text-muted-foreground">vs</span><Player person={partner} /></>}
+    </div>}
+    <div aria-live="polite" className="grid grid-cols-2 gap-5 py-3">
+      {(["vi", "en"] as const).map(language => <div key={language} className="flex min-w-0 flex-col items-center gap-3 text-center">
+        <p lang={language} className="flex-1 break-words text-2xl font-semibold leading-snug">{card[language]}</p>
+        <Button type="button" variant="outline" className="min-h-12 min-w-12" aria-label={t("playAudio", { text: card[language] })} aria-pressed={playing === `${language}:${card[language]}`} onClick={() => void listen(language, card[language])}>
+          {playing === `${language}:${card[language]}` ? <Square aria-hidden className="h-4 w-4" /> : <Play aria-hidden className="h-4 w-4" />}
+        </Button>
+      </div>)}
     </div>
-    <div aria-live="polite" className="space-y-5 py-4">
-      <p className="sr-only">{t("cardsCounter", { current: step + 1, total: cards.length })}</p>
-      <div>
-        {/* Endonyms label the two languages for everyone at the table, whatever the interface locale. */}
-        <p aria-hidden className="text-xl">🇻🇳</p>
-        <p lang="vi" className="mt-1 break-words text-2xl font-semibold leading-snug">{card.vi}</p>
-      </div>
-      <div>
-        <p lang="en" className="mt-1 break-words text-xl font-medium leading-snug">{card.en}</p>
-      </div>
+    {audioError && <p role="status" className="text-center text-sm text-muted-foreground">{t("audioUnavailable")}</p>}
+    <div className="grid grid-cols-[48px_1fr] gap-3">
+      <Button type="button" variant="outline" className="min-h-12" disabled={step === 0} aria-label={t("cardsPrevious")} onClick={() => move(-1)}><ChevronLeft aria-hidden className="h-4 w-4" /></Button>
+      <Button type="button" className="practice-primary min-h-16" aria-label={t("cardsNext")} onClick={() => move(1)}><ChevronRight aria-hidden className="h-5 w-5" /></Button>
     </div>
-    <div className="grid grid-cols-[44px_1fr] gap-3">
-      <Button type="button" variant="outline" className="h-auto min-h-12 whitespace-normal" aria-label={t("cardsPrevious")} onClick={() => move(-1)}><ChevronLeft aria-hidden className="h-4 w-4 shrink-0" /></Button>
-      <Button type="button" className="practice-primary h-auto min-h-16 whitespace-normal" aria-label={t("cardsNext")} onClick={() => move(1)}><ChevronRight aria-hidden className="h-4 w-4 shrink-0" /></Button>
-    </div>
-    <details><summary className="cursor-pointer py-2 text-center text-xs text-muted-foreground">{t("cardsLevel", { level })}</summary><div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2">
-      <Button type="button" variant="ghost" className="h-auto min-h-12 whitespace-normal" disabled={level === lowest} onClick={() => changeLevel(level - 1)}>{t("cardsEasier")}</Button>
-      <span aria-hidden />
-      <Button type="button" variant="ghost" className="h-auto min-h-12 whitespace-normal" disabled={level === highest} onClick={() => changeLevel(level + 1)}>{t("cardsHarder")}</Button>
-    </div></details>
+    <a href="https://ezviet.org" target="_blank" rel="noopener noreferrer" className="block py-2 text-center text-xs text-muted-foreground">{t("byEzviet")}</a>
   </section>;
 }

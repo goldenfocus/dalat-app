@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
+    "learningLabel": "Apprend",
+    "speaksLabel": "Parle",
+
+    "byEzviet": "Par EZViet",
+    "playAudio": "Écouter {text}",
+    "turnPlayer": "Au tour de {name}",
+    "audioUnavailable": "Audio indisponible. Réessayez.",
+
     "arriveNow": "Je suis là",
     "playCards": "Jouer",
     "moveToTable": "Déplacer à la table {number}",

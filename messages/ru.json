@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Совершенно необязательно. Ваша отметка сохранится в любом случае."
   },
   "eventPractice": {
+    "learningLabel": "Изучает",
+    "speaksLabel": "Говорит",
+
+    "byEzviet": "От EZViet",
+    "playAudio": "Слушать: {text}",
+    "turnPlayer": "Ход: {name}",
+    "audioUnavailable": "Аудио недоступно. Попробуйте ещё раз.",
+
     "arriveNow": "Я на месте",
     "playCards": "Играть",
     "moveToTable": "Переместить за стол {number}",

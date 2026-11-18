@@ -54,7 +54,7 @@ describe.each([["staff desk", HostPage], ["guest arrival", ArrivalPage], ["RSVP 
     );
 
     expect(await screen.findByRole("button", { name: t("startGame") })).toBeVisible();
-    expect(container.querySelector('a[href*="ezviet.org"]')).toBeNull();
+    expect(container.querySelector('a[href*="ezviet.org"]:not([target="_blank"])')).toBeNull();
     expect(screen.queryByText(t("present"))).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: /Mai/ }));
     expect(screen.getByRole("button", { name: t("previewGuest") })).toBeVisible();

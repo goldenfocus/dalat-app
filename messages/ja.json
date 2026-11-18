@@ -4355,6 +4355,14 @@
     "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
+    "learningLabel": "学習中",
+    "speaksLabel": "話せる言語",
+
+    "byEzviet": "提供：EZViet",
+    "playAudio": "{text}を聞く",
+    "turnPlayer": "{name}の番",
+    "audioUnavailable": "音声を再生できません。もう一度お試しください。",
+
     "arriveNow": "到着しました",
     "playCards": "プレイ",
     "moveToTable": "テーブル{number}へ移動",

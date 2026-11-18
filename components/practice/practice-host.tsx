@@ -253,7 +253,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
       </div>
       {person && (
         <div className="mt-4 flex items-center gap-2">
-          <span className="mr-auto text-sm">{person.name}</span>
+          <span className="mr-auto min-w-0 flex-1"><PracticePerson person={person} showSpeaks /></span>
           {ticket && (
             <Button
               variant="ghost"

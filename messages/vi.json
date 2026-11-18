@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Không bắt buộc đâu. Lượt check-in của bạn vẫn được giữ nguyên."
   },
   "eventPractice": {
+    "learningLabel": "Đang học",
+    "speaksLabel": "Nói được",
+
+    "byEzviet": "Bởi EZViet",
+    "playAudio": "Nghe {text}",
+    "turnPlayer": "Lượt của {name}",
+    "audioUnavailable": "Không phát được âm thanh. Thử lại.",
+
     "arriveNow": "Tôi đã đến",
     "playCards": "Chơi",
     "moveToTable": "Chuyển đến bàn {number}",

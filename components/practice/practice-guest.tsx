@@ -7,7 +7,6 @@ import type { PracticeView } from "@/lib/practice/model";
 import { PracticePerson } from "./practice-person";
 import { PracticeCards } from "./practice-cards";
 import { PracticeParticipation } from "./practice-participation";
-import { startingCardLevel } from "@/lib/practice/cards";
 
 export function PracticeGuest({
   view,
@@ -16,6 +15,7 @@ export function PracticeGuest({
   readOnly = false,
   onProfile,
   remaining = 0,
+  gameKey,
 }: {
   view: PracticeView;
   busy: boolean;
@@ -23,6 +23,7 @@ export function PracticeGuest({
   readOnly?: boolean;
   onProfile?: () => void;
   remaining?: number;
+  gameKey?: string;
 }) {
   const t = useTranslations("eventPractice");
   const [playing, setPlaying] = useState(false),
@@ -117,7 +118,8 @@ export function PracticeGuest({
           <PracticeCards
             key={seed}
             seed={seed}
-            initialLevel={startingCardLevel(view.me.learningLevel)}
+            people={group.filter(person => person.presence === "present").length > 0 ? group.filter(person => person.presence === "present") : [view.me]}
+            storageKey={gameKey ? `${gameKey}:${seed}` : undefined}
           />
         </div>
       ) : (

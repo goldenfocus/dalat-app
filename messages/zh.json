@@ -4355,6 +4355,14 @@
     "saveAccountLater": "完全自愿。无论如何，你的签到都会保留。"
   },
   "eventPractice": {
+    "learningLabel": "正在学习",
+    "speaksLabel": "会说",
+
+    "byEzviet": "由 EZViet 提供",
+    "playAudio": "播放{text}",
+    "turnPlayer": "轮到{name}",
+    "audioUnavailable": "音频不可用，请重试。",
+
     "arriveNow": "我到了",
     "playCards": "开始",
     "moveToTable": "移至{number}号桌",

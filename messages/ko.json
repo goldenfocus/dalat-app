@@ -4355,6 +4355,14 @@
     "saveAccountLater": "선택 사항이에요. 어느 쪽이든 체크인은 그대로 유지돼요."
   },
   "eventPractice": {
+    "learningLabel": "학습 중",
+    "speaksLabel": "구사 언어",
+
+    "byEzviet": "제공: EZViet",
+    "playAudio": "{text} 듣기",
+    "turnPlayer": "{name} 차례",
+    "audioUnavailable": "오디오를 재생할 수 없습니다. 다시 시도하세요.",
+
     "arriveNow": "도착했어요",
     "playCards": "시작",
     "moveToTable": "{number}번 테이블로 이동",

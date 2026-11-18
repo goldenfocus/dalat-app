@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Totalmente opcional. Tu check-in se queda igual."
   },
   "eventPractice": {
+    "learningLabel": "Aprende",
+    "speaksLabel": "Habla",
+
+    "byEzviet": "Por EZViet",
+    "playAudio": "Escuchar {text}",
+    "turnPlayer": "Turno de {name}",
+    "audioUnavailable": "Audio no disponible. Inténtalo de nuevo.",
+
     "arriveNow": "Ya llegué",
     "playCards": "Jugar",
     "moveToTable": "Mover a la mesa {number}",

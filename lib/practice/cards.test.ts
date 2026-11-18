@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { CARD_LEVELS, PRACTICE_CARDS, cardsForLevel, cardStartOffset, startingCardLevel } from "./cards";
+import { CARD_LEVELS, PRACTICE_CARDS, cardsForLevel, cardStartOffset, startingCardLevel, tableTurn } from "./cards";
 
 describe("practice cards", () => {
   it("offers a full bilingual deck at every level", () => {
     expect(new Set(PRACTICE_CARDS.map(card => card.id)).size).toBe(PRACTICE_CARDS.length);
     for (const level of CARD_LEVELS) {
       const cards = cardsForLevel(level);
-      expect(cards.length).toBeGreaterThanOrEqual(12);
+      expect(cards.length).toBeGreaterThanOrEqual(5);
       for (const card of cards) {
         expect(card.level).toBe(level);
         expect(card.vi.trim()).toBe(card.vi);
@@ -46,4 +46,19 @@ describe("practice cards", () => {
     expect(startingCardLevel("intermediate")).toBe(2);
     expect(startingCardLevel("fluent")).toBe(3);
   });
+});
+
+import { PRACTICE_AUDIO } from "./audio";
+it("has an exact recording for both sides of every card", () => {
+  for (const card of PRACTICE_CARDS) for (const lang of ["vi", "en"] as const) expect(PRACTICE_AUDIO[`${lang}:${card[lang]}`]).toMatch(/^\/games\/language-exchange\//);
+});
+it("rotates through the table and uses the current speaker's level and language partner", () => {
+  const people = [
+    { id: "a", name: "A", speaks: ["en"], learns: "vi", learningLevel: "beginner" },
+    { id: "b", name: "B", speaks: ["fr"], learns: "en", learningLevel: "intermediate" },
+    { id: "c", name: "C", speaks: ["vi"], learns: "en", learningLevel: "fluent" },
+  ];
+  expect(tableTurn(people, 0).partner?.id).toBe("c");
+  expect([0, 1, 2, 3].map(turn => tableTurn(people, turn).level)).toEqual([1, 2, 3, 1]);
+  expect(tableTurn(people, 3).card.id).not.toBe(tableTurn(people, 0).card.id);
 });

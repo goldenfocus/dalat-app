@@ -4355,6 +4355,14 @@
     "saveAccountLater": "Völlig freiwillig. Dein Check-in bleibt so oder so."
   },
   "eventPractice": {
+    "learningLabel": "Lernt",
+    "speaksLabel": "Spricht",
+
+    "byEzviet": "Von EZViet",
+    "playAudio": "{text} anhören",
+    "turnPlayer": "{name} ist dran",
+    "audioUnavailable": "Audio nicht verfügbar. Erneut versuchen.",
+
     "arriveNow": "Ich bin da",
     "playCards": "Spielen",
     "moveToTable": "Zu Tisch {number} verschieben",

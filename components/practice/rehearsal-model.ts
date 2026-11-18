@@ -6,9 +6,10 @@ import { moveSeat, planSeating } from "@/lib/practice/seating";
 export type Rehearsal = { state: PracticeState; revision: number; people: Person[]; mode: "host" | "attendee" };
 export function createRehearsal(count = 10): Rehearsal {
   const names = ["Mai", "Alex", "Linh", "Sam", "An", "Taylor", "Minh", "Robin", "Hoa", "Jamie"];
-  const people: Person[] = Array.from({ length: count }, (_, i) => ({ id: `sample-${i + 1}`, name: `${names[i % names.length]}${i >= names.length ? ` ${Math.floor(i / names.length) + 1}` : ""}`, arrived: false, speaks: [i % 2 ? "en" : "vi"], learns: i % 2 ? "vi" : "en", learningLevel: i % 3 ? "beginner" : "intermediate", speakingLevels: { [i % 2 ? "en" : "vi"]: "native" } }));
+  const people: Person[] = Array.from({ length: count }, (_, i) => ({ id: `sample-${i + 1}`, name: `${names[i % names.length]}${i >= names.length ? ` ${Math.floor(i / names.length) + 1}` : ""}`, arrived: count === 50, speaks: [i % 2 ? "en" : "vi"], learns: i % 2 ? "vi" : "en", learningLevel: i % 3 ? "beginner" : "intermediate", speakingLevels: { [i % 2 ? "en" : "vi"]: "native" } }));
   people.push({ id: "sample-host", name: "Morgan", speaks: ["en"], learns: "vi" }, { id: "sample-visitor", name: "Casey", speaks: ["en"], learns: "vi" });
-  let state: PracticeState = { rounds: [], participation: { "sample-host": "hosting", "sample-visitor": "visiting" }, tables: DEFAULT_TABLES.map(t => ({ ...t })), floorPolicy: "balanced" };
+  if (count === 50) people.push({ id: "sample-host-2", name: "Linh (host)", speaks: ["vi"], learns: "en" }, { id: "sample-host-3", name: "Alex (host)", speaks: ["en"], learns: "vi" });
+  let state: PracticeState = { rounds: [], participation: { "sample-host": "hosting", "sample-host-2": "hosting", "sample-host-3": "hosting", "sample-visitor": "visiting" }, tables: DEFAULT_TABLES.map(t => ({ ...t })), floorPolicy: "balanced" };
   state = { ...state, numbers: Object.fromEntries(numberPeople(state, people).map(p => [p.id, p.number!])) };
   return { state, revision: 0, people, mode: "host" };
 }

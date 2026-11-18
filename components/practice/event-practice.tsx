@@ -144,7 +144,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
     {!transport && <div className="flex justify-end"><PracticeLanguage /></div>}
     <h2 id="practice-heading" className="sr-only">{t(view?.me ? "yourPartner" : view?.canStart ? "title" : "findPartner")}</h2>
     {!view && <p role="status">{t("loading")}</p>}
-    {view?.me && !view.canStart && <PracticeGuest view={view} busy={busy} act={act} remaining={remaining} onProfile={!transport && profile?.id ? () => setShowProfile(true) : undefined} />}
+    {view?.me && !view.canStart && <PracticeGuest gameKey={transport ? undefined : `dalat-game:${slug}`} view={view} busy={busy} act={act} remaining={remaining} onProfile={!transport && profile?.id ? () => setShowProfile(true) : undefined} />}
     {!transport && profile?.id && <PracticeProfile key={profile.id} open={showProfile} onClose={() => { setShowProfile(false); void load(); }} />}
     {view && !view.me && !view.canStart && <div className="space-y-2">
       <Button asChild className="practice-primary min-h-12 w-full"><Link href={`/events/${slug}/arrive`}>{t("arrival")}</Link></Button>

@@ -53,7 +53,7 @@ describe("event table flow", () => {
     expect(screen.queryByRole("button", { name: tr("cardsNext") })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Play" }));
     expect(screen.getByRole("button", { name: tr("cardsNext") })).toBeVisible();
-    expect(document.querySelector('a[href*="ezviet.org"]')).toBeNull();
+    expect(document.querySelector('a[href*="ezviet.org"]:not([target="_blank"])')).toBeNull();
     expect(fetchMock.mock.calls.filter(([, init]) => init?.method === "POST").map(([, init]) => JSON.parse(init.body))).toEqual([{ action: "find", code: "12ABCDEF" }]);
   });
   it("lets a visitor join without another check-in through the seat disclosure", async () => {

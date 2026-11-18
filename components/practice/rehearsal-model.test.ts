@@ -92,3 +92,18 @@ it("uses twenty-minute sample defaults and the same private host-only draft swap
   expect(session.state.rounds[0].minutes).toBe(20);
   expect(session.state.rounds[0].groups[0][0].id).toBe(second.id);
 });
+
+it("provides a ready 50-guest rehearsal with three hosts, mixed tables, and guest cards before a round", () => {
+  const session = createRehearsal(50);
+  const view = rehearsalView(session);
+  expect(view.count).toBe(50);
+  expect(session.people.filter(p => session.state.participation?.[p.id] === "hosting")).toHaveLength(3);
+  const groups = view.groups;
+  expect(groups.flat()).toHaveLength(50);
+  for (const group of groups) {
+    expect(group.some(p => p.speaks.includes("vi"))).toBe(true);
+    expect(group.some(p => p.speaks.includes("en"))).toBe(true);
+  }
+  const guest = rehearsalView({ ...session, mode: "attendee" });
+  expect(guest.round).toBeNull(); expect(guest.myTable).toBeTruthy();
+});
