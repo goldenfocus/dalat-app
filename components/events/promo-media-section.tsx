@@ -15,6 +15,8 @@ import {
   fetchPublishedSeriesMoments,
   type PublishedSeriesMoment as SeriesMoment,
 } from "@/lib/events/published-series-moments";
+import { PromoMediaActions } from "./promo-media-actions";
+import { PromoYouTubePlayer } from "./promo-youtube-player";
 import type { EventPromoMedia, PromoSource, PromoUpdateScope } from "@/lib/types";
 
 interface PastMoment {
@@ -299,15 +301,17 @@ export function PromoMediaSection({
           )}
 
           {/* Promo grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+          <div className={cn("grid gap-3", promo.length === 1 ? "max-w-sm grid-cols-1" : "grid-cols-2 sm:grid-cols-4")}>
             {promo.slice(0, 8).map((item, index) => (
+              <div key={item.id} className="min-w-0 space-y-2">
               <PromoThumbnail
-                key={item.id}
                 item={item}
                 onClick={() => openLightbox(index)}
                 canDelete={canManageInline}
                 onDelete={() => handleDeletePromo(item.id)}
               />
+              {eventSlug && <PromoMediaActions item={item} eventSlug={eventSlug} compact={promo.length > 1} />}
+              </div>
             ))}
             {promo.length > 8 && (
               <button
@@ -322,8 +326,9 @@ export function PromoMediaSection({
 
           {/* Lightbox */}
           <Dialog open={lightboxIndex !== null} onOpenChange={() => closeLightbox()}>
-            <DialogContent className="max-w-4xl p-0 bg-black/95 border-none">
-              <div className="relative w-full h-[80vh] flex items-center justify-center">
+            <DialogContent className="max-w-4xl p-0 bg-black/95 border-none overflow-hidden">
+              <DialogTitle className="sr-only">{t("title")}</DialogTitle>
+              <div className="relative w-full h-[70dvh] flex items-center justify-center">
                 <button type="button" onClick={closeLightbox} className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors">
                   <X className="w-5 h-5" />
                 </button>
@@ -337,13 +342,14 @@ export function PromoMediaSection({
                     <ChevronRight className="w-6 h-6" />
                   </button>
                 )}
-                {lightboxIndex !== null && <PromoLightboxContent item={promo[lightboxIndex]} />}
+                {lightboxIndex !== null && <PromoLightboxContent item={promo[lightboxIndex]} onEnded={closeLightbox} />}
                 {lightboxIndex !== null && (
                   <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-pill">
                     {lightboxIndex + 1} / {promo.length}
                   </div>
                 )}
               </div>
+              {lightboxIndex !== null && eventSlug && <div className="px-3 pb-3 text-white"><PromoMediaActions item={promo[lightboxIndex]} eventSlug={eventSlug} /></div>}
             </DialogContent>
           </Dialog>
         </div>
@@ -488,15 +494,15 @@ function PromoThumbnail({
   const isSoundCloud = item.media_type === "soundcloud";
 
   const thumbnailUrl = item.thumbnail_url || item.media_url;
-  const youTubeThumbnail = item.youtube_video_id
+  const youTubeThumbnail = item.thumbnail_url || (item.youtube_video_id
     ? `https://img.youtube.com/vi/${item.youtube_video_id}/mqdefault.jpg`
-    : null;
+    : null);
 
   return (
     <button
       type="button"
       onClick={onClick}
-      className="aspect-square rounded-lg overflow-hidden relative group bg-muted"
+      className="w-full aspect-square rounded-lg overflow-hidden relative group bg-muted"
     >
       {(item.media_type === "image" || isVideo) && thumbnailUrl && (
         <img
@@ -566,7 +572,8 @@ function PromoThumbnail({
   );
 }
 
-function PromoLightboxContent({ item }: { item: EventPromoMedia }) {
+export function PromoLightboxContent({ item, onEnded }: { item: EventPromoMedia; onEnded: () => void }) {
+  const promoText = useTranslations("promo");
   const t = useTranslations("tribes");
   const illustrative = /ai[- ]generated/i.test(`${item.title || ""} ${item.caption || ""}`);
   if (item.media_type === "image" && item.media_url) {
@@ -582,12 +589,14 @@ function PromoLightboxContent({ item }: { item: EventPromoMedia }) {
     );
   }
 
-  if (item.media_type === "video" && item.media_url) {
+  if ((item.media_type === "video" || item.media_type === "youtube") && item.media_url) {
     return (
       <video
         src={item.media_url}
         controls
         autoPlay
+        playsInline
+        onEnded={onEnded}
         className="max-w-full max-h-full"
       />
     );
@@ -595,12 +604,7 @@ function PromoLightboxContent({ item }: { item: EventPromoMedia }) {
 
   if (item.media_type === "youtube" && item.youtube_video_id) {
     return (
-      <iframe
-        src={`https://www.youtube.com/embed/${item.youtube_video_id}?autoplay=1`}
-        className="w-full h-full max-w-3xl aspect-video"
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        allowFullScreen
-      />
+      <PromoYouTubePlayer videoId={item.youtube_video_id} title={item.title || promoText("title")} onEnded={onEnded} />
     );
   }
 

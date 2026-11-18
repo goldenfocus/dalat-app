@@ -132,7 +132,7 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   // Filter moments by media type
   const filteredMoments = useMemo(() => {
     if (mediaTypeFilter === "all") return moments;
-    return moments.filter((m) => m.content_type === mediaTypeFilter);
+    return moments.filter((m) => m.content_type === mediaTypeFilter || (mediaTypeFilter === "video" && m.content_type === "youtube"));
   }, [moments, mediaTypeFilter]);
 
   // Fetch comment counts for all visible moments

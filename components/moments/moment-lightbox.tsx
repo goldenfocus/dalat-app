@@ -440,8 +440,9 @@ export function MomentLightbox({
           </div>
         )}
 
+        {moment.content_type === "youtube" && moment.media_url && <video src={moment.media_url} controls autoPlay playsInline onEnded={onClose} className="max-h-[80dvh] max-w-full" />}
         {/* YouTube - show thumbnail with direct link (embedding often blocked) */}
-        {moment.content_type === "youtube" &&
+        {moment.content_type === "youtube" && !moment.media_url &&
           (() => {
             // Get video ID from stored field or extract from URL
             const videoId =

@@ -2,17 +2,12 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { momentFilename, asciiFilename } from "@/lib/moments/download";
 import { getCfStreamDownloadUrl } from "@/lib/media-utils";
+import { isAllowedMediaDownloadUrl } from "@/lib/media-download-url";
 import { enableVideoDownloads } from "@/lib/cloudflare-stream";
 
 interface Params {
   params: Promise<{ id: string }>;
 }
-
-/** Hosts we're willing to proxy. Guards against SSRF via a doctored media_url. */
-const ALLOWED_HOSTS = new Set([
-  "cdn.dalat.app",
-  "aljcmodwjqlznzcydyor.supabase.co", // legacy Supabase Storage originals
-]);
 
 /**
  * GET /api/moments/[id]/download
@@ -61,7 +56,7 @@ export async function GET(request: Request, { params }: Params) {
     } catch {
       return NextResponse.json({ error: "Invalid media URL" }, { status: 422 });
     }
-    if (upstream.protocol !== "https:" || !ALLOWED_HOSTS.has(upstream.hostname)) {
+    if (!isAllowedMediaDownloadUrl(moment.media_url)) {
       console.warn(`[moment-download] refused ${upstream.protocol}//${upstream.hostname} for ${id}`);
       return NextResponse.json({ error: "Unsupported media host" }, { status: 422 });
     }

@@ -427,7 +427,7 @@ export function MomentCard({
   }
 
   // YouTube moments: always open YouTube directly in new tab
-  if (moment.content_type === "youtube" && youtubeDirectUrl) {
+  if (moment.content_type === "youtube" && youtubeDirectUrl && !moment.media_url) {
     return withDeleteOverlay(
       <a
         href={youtubeDirectUrl}
