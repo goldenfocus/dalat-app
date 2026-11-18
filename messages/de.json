@@ -4355,6 +4355,9 @@
     "saveAccountLater": "Völlig freiwillig. Dein Check-in bleibt so oder so."
   },
   "eventPractice": {
+    "findingTable": "Wir suchen deinen Tisch…",
+    "waitingList": "Wartend",
+
     "waitingPartner": "Warten auf einen Sprachpartner",
     "learningLabel": "Lernt",
     "speaksLabel": "Spricht",

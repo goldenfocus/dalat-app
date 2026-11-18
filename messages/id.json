@@ -4355,6 +4355,9 @@
     "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
+    "findingTable": "Mencari meja untukmu…",
+    "waitingList": "Menunggu",
+
     "waitingPartner": "Menunggu teman bertukar bahasa",
     "learningLabel": "Belajar",
     "speaksLabel": "Berbicara",

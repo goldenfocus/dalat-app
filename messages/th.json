@@ -4355,6 +4355,9 @@
     "saveAccountLater": "ไม่บังคับ การเช็กอินของคุณยังอยู่เหมือนเดิม"
   },
   "eventPractice": {
+    "findingTable": "กำลังหาโต๊ะให้คุณ…",
+    "waitingList": "กำลังรอ",
+
     "waitingPartner": "กำลังรอเพื่อนแลกเปลี่ยนภาษา",
     "learningLabel": "กำลังเรียน",
     "speaksLabel": "พูดได้",

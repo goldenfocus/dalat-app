@@ -4355,6 +4355,9 @@
     "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
+    "findingTable": "Nous cherchons votre table…",
+    "waitingList": "En attente",
+
     "waitingPartner": "En attente d’un partenaire linguistique",
     "learningLabel": "Apprend",
     "speaksLabel": "Parle",

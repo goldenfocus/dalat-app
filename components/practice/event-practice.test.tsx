@@ -135,6 +135,6 @@ it("waits for a checked-in language partner before enabling the game", async () 
   const view = { ...found, me: partner, myGroup: [partner, englishOnly], groups: [[partner, englishOnly]] };
   fetchView(view);
   render(<EventPractice slug="test" />);
-  expect(await screen.findByRole("button", { name: "Play" })).toBeDisabled();
-  expect(screen.getByText(en.eventPractice.waitingPartner)).toBeVisible();
+  expect(await screen.findByText(en.eventPractice.waitingPartner)).toBeVisible();
+  expect(screen.queryByRole("button", { name: "Play" })).toBeNull();
 });

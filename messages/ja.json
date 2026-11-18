@@ -4355,6 +4355,9 @@
     "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
+    "findingTable": "テーブルを探しています…",
+    "waitingList": "待機中",
+
     "waitingPartner": "言語交換のパートナーを待っています",
     "learningLabel": "学習中",
     "speaksLabel": "話せる言語",

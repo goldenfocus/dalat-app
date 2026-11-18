@@ -174,7 +174,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
             >
               <h3 className="mb-4 flex items-baseline gap-3">
                 <strong className="text-xl font-medium">
-                  {table ? table.tableNumber : t("waitingPartner")}
+                  {table ? table.tableNumber : t("waitingList")}
                 </strong>
                 <span className="text-xs text-muted-foreground">
                   {table ? table.floor === "upstairs" ? "↑2" : "↓1" : ""}

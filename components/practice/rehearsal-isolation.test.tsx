@@ -12,7 +12,7 @@ it("never opens a real account editor from a signed-in sample guest", async () =
   const sample = { ...createRehearsal(), mode: "attendee" as const };
   const transport = async () => new Response(JSON.stringify(rehearsalView(sample)));
   render(<EventPractice slug="sample-rehearsal" transport={transport}/>);
-  await screen.findByRole("button", { name: "playCards" });
+  await screen.findByText("findingTable");
   expect(screen.queryByRole("button", { name: "languageLabel" })).toBeNull();
   expect(screen.queryByTestId("real-profile-editor")).toBeNull();
   expect(fetcher).not.toHaveBeenCalled();

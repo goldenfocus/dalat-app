@@ -4355,6 +4355,9 @@
     "saveAccountLater": "Totalmente opcional. Tu check-in se queda igual."
   },
   "eventPractice": {
+    "findingTable": "Buscando tu mesa…",
+    "waitingList": "En espera",
+
     "waitingPartner": "Esperando a un compañero de idiomas",
     "learningLabel": "Aprende",
     "speaksLabel": "Habla",

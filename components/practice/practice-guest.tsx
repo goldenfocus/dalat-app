@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { ArrowDown, ArrowUp, ChevronDown, Languages, Play } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronDown, Languages, Play, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { hasMixedLanguagePair, type PracticeView } from "@/lib/practice/model";
 import { PracticePerson } from "./practice-person";
@@ -65,7 +65,7 @@ export function PracticeGuest({
           >
             {!(playing && ready) && table && (
               <>
-                <strong>{table.tableNumber}</strong>
+                <strong>{t("table", { number: table.tableNumber })}</strong>
                 <span className="flex items-center text-xs text-muted-foreground">
                   {table.floor === "upstairs" ? (
                     <ArrowUp aria-hidden className="h-3 w-3" />
@@ -135,7 +135,7 @@ export function PracticeGuest({
               {t("arriveNow")}
             </Button>
           )}
-          <div className="flex justify-center py-9">
+          {ready ? <div className="flex justify-center py-9">
             <button
               type="button"
               className="practice-play disabled:opacity-40"
@@ -146,8 +146,7 @@ export function PracticeGuest({
               <Play aria-hidden />
               <span>{t("playCards")}</span>
             </button>
-          </div>
-          {!ready && <p role="status" className="pb-4 text-center text-sm text-muted-foreground">{t("waitingPartner")}</p>}
+          </div> : <p role="status" className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground"><LoaderCircle aria-hidden className="h-4 w-4 animate-spin motion-reduce:animate-none" />{t(table ? "waitingPartner" : "findingTable")}</p>}
           <div className="grid grid-cols-2 gap-4">
             {group.map((person) => (
               <PracticePerson key={person.id} person={person} />
