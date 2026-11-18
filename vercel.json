@@ -70,6 +70,10 @@
     {
       "path": "/api/cron/event-followups",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/cron/sync-venue-menus",
+      "schedule": "15 21 * * *"
     }
   ]
 }

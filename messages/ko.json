@@ -4609,5 +4609,26 @@
     "noLikes": "아직 새로 받은 좋아요가 없어요",
     "noMatches": "서로 좋아요를 보내면 매칭돼요",
     "privacyNote": "데이팅은 선택 사항이에요. 설정에서 언제든지 일시 중지할 수 있어요."
+  },
+  "venueHighlights": {
+    "title": "지난 행사 하이라이트",
+    "choose": "사진 선택",
+    "chooseHint": "표시할 순서대로 최대 6장을 선택하세요. 빈자리는 자동으로 채워집니다.",
+    "open": "사진 {number} 열기",
+    "photo": "지난 행사 사진",
+    "all": "사진 {count}장 모두 보기",
+    "less": "접기",
+    "previous": "이전 사진",
+    "next": "다음 사진",
+    "viewEvent": "행사 보기",
+    "select": "사진 선택",
+    "automatic": "자동 선택",
+    "save": "저장",
+    "error": "저장하지 못했습니다. 다시 시도하세요.",
+    "websiteFor": "{venue} 웹사이트",
+    "officialMenu": "공식 메뉴",
+    "weekly": "매주 {day}",
+    "recurring": "정기 행사",
+    "allEvents": "지난 행사 모두 보기"
   }
 }

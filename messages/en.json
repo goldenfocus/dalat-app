@@ -4609,5 +4609,26 @@
     "noLikes": "No new likes yet",
     "noMatches": "Connections start with two likes",
     "privacyNote": "Dating is optional. You can pause anytime in Settings."
+  },
+  "venueHighlights": {
+    "title": "Past event highlights",
+    "choose": "Choose photos",
+    "chooseHint": "Choose up to six, in display order. Empty slots use automatic picks.",
+    "open": "Open photo {number}",
+    "photo": "Photo from a past event",
+    "all": "All {count} photos",
+    "less": "Show less",
+    "previous": "Previous photo",
+    "next": "Next photo",
+    "viewEvent": "View event",
+    "select": "Select photo",
+    "automatic": "Automatic",
+    "save": "Save",
+    "error": "Could not save. Try again.",
+    "websiteFor": "{venue} website",
+    "officialMenu": "Official menu",
+    "weekly": "Every {day}",
+    "recurring": "Recurring event",
+    "allEvents": "All past events"
   }
 }

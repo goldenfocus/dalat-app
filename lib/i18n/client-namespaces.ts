@@ -93,6 +93,7 @@ export const CLIENT_NAMESPACES = [
   "userMenu",
   "venueClaim",
   "venueMenu",
+  "venueHighlights",
   "venues",
   "viewToggle",
 ];

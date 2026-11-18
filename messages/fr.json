@@ -4609,5 +4609,26 @@
     "noLikes": "Aucune nouvelle mention J’aime pour l’instant",
     "noMatches": "Un match commence par deux mentions J’aime",
     "privacyNote": "Les rencontres sont facultatives. Vous pouvez les mettre en pause à tout moment dans les paramètres."
+  },
+  "venueHighlights": {
+    "title": "Les moments des événements passés",
+    "choose": "Choisir les photos",
+    "chooseHint": "Choisissez jusqu’à six photos dans l’ordre d’affichage. Les places libres sont remplies automatiquement.",
+    "open": "Ouvrir la photo {number}",
+    "photo": "Photo d’un événement passé",
+    "all": "Les {count} photos",
+    "less": "Réduire",
+    "previous": "Photo précédente",
+    "next": "Photo suivante",
+    "viewEvent": "Voir l’événement",
+    "select": "Choisir la photo",
+    "automatic": "Automatique",
+    "save": "Enregistrer",
+    "error": "Échec de l’enregistrement. Réessayez.",
+    "websiteFor": "Site de {venue}",
+    "officialMenu": "Menu officiel",
+    "weekly": "Chaque {day}",
+    "recurring": "Événement récurrent",
+    "allEvents": "Tous les événements passés"
   }
 }

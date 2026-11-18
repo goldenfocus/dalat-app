@@ -4609,5 +4609,26 @@
     "noLikes": "Aún no hay nuevos «me gusta»",
     "noMatches": "Las conexiones empiezan con dos «me gusta»",
     "privacyNote": "Las citas son opcionales. Puedes pausarlas en cualquier momento en Ajustes."
+  },
+  "venueHighlights": {
+    "title": "Momentos de eventos anteriores",
+    "choose": "Elegir fotos",
+    "chooseHint": "Elige hasta seis fotos en orden de presentación. Los espacios libres se completan automáticamente.",
+    "open": "Abrir foto {number}",
+    "photo": "Foto de un evento anterior",
+    "all": "Las {count} fotos",
+    "less": "Mostrar menos",
+    "previous": "Foto anterior",
+    "next": "Foto siguiente",
+    "viewEvent": "Ver evento",
+    "select": "Elegir foto",
+    "automatic": "Automático",
+    "save": "Guardar",
+    "error": "No se pudo guardar. Inténtalo de nuevo.",
+    "websiteFor": "Sitio web de {venue}",
+    "officialMenu": "Menú oficial",
+    "weekly": "Cada {day}",
+    "recurring": "Evento recurrente",
+    "allEvents": "Todos los eventos anteriores"
   }
 }

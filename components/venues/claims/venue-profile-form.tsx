@@ -11,7 +11,7 @@ import type { OperatingHours } from "@/lib/types";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 type Fields = {
-  name: string; description: string; phone: string; email: string; website_url: string;
+  name: string; description: string; phone: string; email: string; website_url: string; menu_url?: string;
   facebook_url: string; instagram_url: string; logo_url: string;
 };
 
@@ -20,13 +20,14 @@ export function VenueProfileForm({ venue }: {
 }) {
   const t = useTranslations("venueClaim");
   const tv = useTranslations("venues");
+  const th = useTranslations("venueHighlights");
   const locale = useLocale();
   const router = useRouter();
   const dayLabel = (i: number) =>
     new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i)));
   const [f, setF] = useState<Fields>({
     name: venue.name, description: venue.description || "", phone: venue.phone || "", email: venue.email || "",
-    website_url: venue.website_url || "", facebook_url: venue.facebook_url || "",
+    website_url: venue.website_url || "", menu_url: venue.menu_url || "", facebook_url: venue.facebook_url || "",
     instagram_url: venue.instagram_url || "", logo_url: venue.logo_url || "",
   });
   const [hours, setHours] = useState<OperatingHours>(venue.operating_hours || {});
@@ -46,7 +47,7 @@ export function VenueProfileForm({ venue }: {
     e.preventDefault();
     setStatus("saving");
     try {
-      const fields = Object.fromEntries(Object.entries(f).map(([key, value]) => [key, value.trim() || null]));
+      const fields = Object.fromEntries(Object.entries(f).map(([key, value]) => [key, value?.trim() || null]));
       const res = await fetch(`/api/venues/${venue.id}/profile`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -78,6 +79,7 @@ export function VenueProfileForm({ venue }: {
       {field("phone", t("businessPhone"), "tel")}
       {field("email", t("businessEmail"), "email")}
       {field("website_url", tv("visitWebsite"), "url")}
+      {field("menu_url", th("officialMenu"), "url")}
       {field("facebook_url", "Facebook", "url")}
       {field("instagram_url", "Instagram", "url")}
       <fieldset className="space-y-2">
