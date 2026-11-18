@@ -1064,8 +1064,6 @@ input[type="range"].audio-seekbar::-moz-range-progress {
 .cinema-ken-burns {
   will-change: transform;
   backface-visibility: hidden;
-  transform-style: preserve-3d;
-  transform: translateZ(0);
 }
 
 .cinema-kb-active {
@@ -1164,8 +1162,7 @@ input[type="range"].audio-seekbar::-moz-range-progress {
   .cinema-kb-active {
     animation: none !important;
   }
-  .animate-cinema-crossfade-out,
-  .animate-cinema-crossfade-in,
+  /* crossfades are opacity-only, so they stay as the gentle reduced-motion transition */
   .animate-cinema-fade-black-out,
   .animate-cinema-fade-black-in,
   .animate-cinema-zoom-blur-out,

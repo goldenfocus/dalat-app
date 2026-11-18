@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { MomentWithProfile } from "@/lib/types";
+import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
 export type CinemaPlaybackState = "idle" | "playing" | "paused" | "ended";
 
@@ -38,6 +39,13 @@ interface CinemaModeState {
   // Sound preference for video slides (sticky across cinema sessions)
   soundOn: boolean;
 
+  // Music transport sync. `musicBaseline` is whether the soundtrack was
+  // playing before cinema opened (null = not captured yet). The flag below is
+  // true only when *we* paused the music because the slideshow paused, so a
+  // resume brings it back but never overrides the viewer's own "music off".
+  musicBaseline: boolean | null;
+  musicPausedByTransport: boolean;
+
   // Actions
   start: (
     moments: MomentWithProfile[],
@@ -60,15 +68,31 @@ interface CinemaModeState {
   appendMoments: (newMoments: MomentWithProfile[]) => void;
   setHasMore: (hasMore: boolean) => void;
   showControlsTemporarily: () => void;
+  revealChrome: () => void;
   hideControls: () => void;
   toggleSound: () => void;
+  toggleMusic: () => void;
+  captureMusicBaseline: () => void;
 }
+
+/** Chrome auto-hides this long after the last interaction while playing. */
+export const CHROME_AUTO_HIDE_MS = 3000;
 
 // Timer refs stored outside Zustand to avoid serialization issues
 let timerRefs = {
   advanceTimeout: null as ReturnType<typeof setTimeout> | null,
   progressInterval: null as ReturnType<typeof setInterval> | null,
 };
+
+type StoreGet = () => CinemaModeState;
+type StoreSet = (partial: Partial<CinemaModeState>) => void;
+
+function resumeMusicIfTransportPaused(get: StoreGet, set: StoreSet) {
+  if (!get().musicPausedByTransport) return;
+  set({ musicPausedByTransport: false });
+  const audio = useAudioPlayerStore.getState();
+  if (!audio.isPlaying) void audio.play();
+}
 
 // Generate random duration between 3-9 seconds with bell curve (favors 5-7s)
 function getRandomDuration(): number {
@@ -96,11 +120,14 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
   showControls: true,
   controlsTimeoutId: null,
   soundOn: false,
+  musicBaseline: null,
+  musicPausedByTransport: false,
 
   // Start cinema mode
   start: (moments, eventSlug, startIndex = 0, totalCount, hasMore = false) => {
-    const { clearTimer } = get();
+    const { clearTimer, captureMusicBaseline } = get();
     clearTimer();
+    captureMusicBaseline();
 
     set({
       isActive: true,
@@ -113,7 +140,9 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       timerProgress: 0,
       isTransitioning: false,
       showControls: true,
+      musicPausedByTransport: false,
     });
+    get().revealChrome();
 
     // Start the slideshow
     setTimeout(() => {
@@ -130,7 +159,18 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       clearTimeout(controlsTimeoutId);
     }
 
+    // Hand the soundtrack back the way we found it.
+    const { musicBaseline, musicPausedByTransport } = get();
+    const audio = useAudioPlayerStore.getState();
+    if (musicBaseline === false && audio.isPlaying) {
+      audio.pause();
+    } else if (musicBaseline === true && musicPausedByTransport && !audio.isPlaying) {
+      void audio.play();
+    }
+
     set({
+      musicBaseline: null,
+      musicPausedByTransport: false,
       isActive: false,
       playbackState: "idle",
       moments: [],
@@ -156,6 +196,8 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     const { timerRemaining, moments, currentIndex } = get();
 
     set({ playbackState: "playing" });
+    resumeMusicIfTransportPaused(get, set);
+    get().revealChrome();
 
     const currentMoment = moments[currentIndex];
 
@@ -193,7 +235,17 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
 
   // Pause
   pause: () => {
-    const { timerStartTime, timerDuration, clearTimer } = get();
+    const { timerStartTime, timerDuration, clearTimer, controlsTimeoutId } = get();
+
+    // One transport: pausing the slides pauses the soundtrack too.
+    const audio = useAudioPlayerStore.getState();
+    if (audio.isPlaying) {
+      audio.pause();
+      set({ musicPausedByTransport: true });
+    }
+    // Paused means chrome stays up until playback resumes.
+    if (controlsTimeoutId) clearTimeout(controlsTimeoutId);
+    set({ showControls: true, controlsTimeoutId: null });
 
     if (timerStartTime !== null) {
       const elapsed = Date.now() - timerStartTime;
@@ -292,6 +344,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     if (index < 0 || index >= moments.length) return;
 
     clearTimer();
+    resumeMusicIfTransportPaused(get, set);
 
     set({
       currentIndex: index,
@@ -307,6 +360,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       set({ isTransitioning: false });
       get().scheduleAdvance();
     }, 800);
+    get().revealChrome();
   },
 
   // Video ended callback
@@ -407,25 +461,54 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     set({ hasMore });
   },
 
-  // Show controls temporarily
-  showControlsTemporarily: () => {
+  // Reveal every control at once. While playing they auto-hide after
+  // CHROME_AUTO_HIDE_MS of no interaction; while paused they stay put.
+  revealChrome: () => {
     const { controlsTimeoutId } = get();
+    if (controlsTimeoutId) clearTimeout(controlsTimeoutId);
 
-    if (controlsTimeoutId) {
-      clearTimeout(controlsTimeoutId);
-    }
-
-    const newTimeoutId = setTimeout(() => {
-      set({ showControls: false, controlsTimeoutId: null });
-    }, 3000);
+    const shouldAutoHide = get().playbackState === "playing";
+    const newTimeoutId = shouldAutoHide
+      ? setTimeout(() => {
+          if (get().playbackState === "playing") {
+            set({ showControls: false, controlsTimeoutId: null });
+          }
+        }, CHROME_AUTO_HIDE_MS)
+      : null;
 
     set({ showControls: true, controlsTimeoutId: newTimeoutId });
+  },
+
+  // Back-compat alias for the older name
+  showControlsTemporarily: () => {
+    get().revealChrome();
   },
 
   // Toggle video sound (intentionally NOT reset by exit() — the preference
   // sticks for the rest of the browsing session)
   toggleSound: () => {
     set({ soundOn: !get().soundOn });
+  },
+
+  // Music chip: soundtrack on/off, independent of the slides.
+  toggleMusic: () => {
+    const audio = useAudioPlayerStore.getState();
+    if (audio.tracks.length === 0) return;
+    set({ musicPausedByTransport: false });
+    if (audio.isPlaying) {
+      audio.pause();
+    } else {
+      audio.show();
+      void audio.play();
+    }
+  },
+
+  // Remember whether music was already playing before cinema opened
+  // (first caller wins, so openCinema() can capture before it starts music).
+  captureMusicBaseline: () => {
+    if (get().musicBaseline === null) {
+      set({ musicBaseline: useAudioPlayerStore.getState().isPlaying });
+    }
   },
 
   // Hide controls
@@ -488,3 +571,7 @@ export const useCinemaTimerDuration = () =>
 
 export const useCinemaSoundOn = () =>
   useCinemaModeStore((state) => state.soundOn);
+
+/** True only while playing with chrome auto-hidden (immersive). */
+export const useCinemaChromeHidden = () =>
+  useCinemaModeStore((state) => state.playbackState === "playing" && !state.showControls);

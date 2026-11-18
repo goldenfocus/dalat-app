@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Film, Layers, Grid3X3, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
+import { useCinemaChromeHidden } from "@/lib/stores/cinema-mode-store";
 import type { MomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
 
 interface FloatingViewModeSwitcherProps {
@@ -28,8 +29,15 @@ export function FloatingViewModeSwitcher({
   onClose,
 }: FloatingViewModeSwitcherProps) {
   const t = useTranslations("moments");
+  // In cinema, this joins the rest of the chrome: hidden while playing, back on tap.
+  const chromeHidden = useCinemaChromeHidden();
   return (
-    <div className="fixed top-4 right-4 z-[60] flex items-center gap-1.5 pointer-events-auto">
+    <div
+      className={cn(
+        "fixed top-4 right-4 z-[60] flex items-center gap-1.5 transition-[opacity,visibility] duration-300 motion-reduce:transition-none",
+        chromeHidden ? "invisible opacity-0 pointer-events-none" : "visible opacity-100 pointer-events-auto",
+      )}
+    >
       <div className="flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md p-1">
         {modes.map(({ mode, icon: Icon, label }) => (
           <button

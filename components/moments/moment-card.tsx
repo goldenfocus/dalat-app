@@ -7,7 +7,7 @@ import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { useTranslations } from "next-intl";
 import { Play, MessageCircle, FileText, Music, File, X } from "lucide-react";
-import { cloudflareLoader } from "@/lib/image-cdn";
+import { responsiveImageSources, MOMENT_THUMB_IMAGE } from "@/lib/moments/image-sources";
 import {
   getCfStreamThumbnailUrl,
   getCfStreamPlaybackUrl,
@@ -59,6 +59,34 @@ interface MomentCardProps {
   canDelete?: boolean;
   /** Delete callback — parent owns the confirm dialog and the RPC */
   onDelete?: () => void;
+  /** Above-the-fold tile: load eagerly with high fetch priority (LCP candidate) */
+  priority?: boolean;
+}
+
+/** Square-tile thumbnail with an explicit width ladder; the tile reserves its own space. */
+function MomentThumb({
+  src,
+  alt,
+  priority,
+  onError,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+  onError?: () => void;
+}) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      {...responsiveImageSources(src, MOMENT_THUMB_IMAGE)}
+      alt={alt}
+      loading={priority ? "eager" : "lazy"}
+      decoding="async"
+      fetchPriority={priority ? "high" : "auto"}
+      onError={onError}
+      className="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
+    />
+  );
 }
 
 // Extract YouTube video ID from URL
@@ -88,6 +116,7 @@ export function MomentCard({
   onSelectionToggle,
   canDelete,
   onDelete,
+  priority,
 }: MomentCardProps) {
   const t = useTranslations("moments");
   const [thumbnailError, setThumbnailError] = useState(false);
@@ -252,17 +281,14 @@ export function MomentCard({
                   unoptimized
                 />
               ) : (
-                <Image
-                  loader={cloudflareLoader}
+                <MomentThumb
                   src={derivedThumbnailUrl}
                   alt={
                     moment.ai_description ||
                     moment.text_content ||
                     "Video thumbnail"
                   }
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                  sizes="(max-width: 640px) 50vw, 200px"
+                  priority={priority}
                   onError={() => setThumbnailError(true)}
                 />
               )
@@ -280,13 +306,10 @@ export function MomentCard({
 
       {/* Photo moments (original behavior) */}
       {moment.content_type === "photo" && moment.media_url && (
-        <Image
-          loader={cloudflareLoader}
+        <MomentThumb
           src={moment.media_url}
           alt={moment.ai_description || moment.text_content || "Moment photo"}
-          fill
-          className="object-cover transition-transform group-hover:scale-105"
-          sizes="(max-width: 640px) 50vw, 200px"
+          priority={priority}
         />
       )}
 

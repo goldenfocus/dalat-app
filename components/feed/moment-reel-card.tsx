@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/ui/user-avatar";
 import { isVideoUrl, getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { ImmersiveImage } from "@/components/events/immersive-image";
+import { MOMENT_FEED_IMAGE } from "@/lib/moments/image-sources";
 import { VideoPlayer } from "./video-player";
 import { MomentEngagementBar } from "./moment-engagement-bar";
 import { EventAttributionPill } from "./event-attribution-pill";
@@ -77,11 +78,21 @@ export function MomentReelCard({
               onMuteToggle={handleMuteToggle}
             />
           ) : moment.media_url ? (
-            <ImmersiveImage src={moment.media_url} alt="" />
+            <ImmersiveImage
+              src={moment.media_url}
+              alt={moment.text_content || moment.event_title}
+              priority={index === 0}
+              profile={MOMENT_FEED_IMAGE}
+            />
           ) : null
         ) : moment.event_image_url ? (
           // Fallback: show event image if no moment media
-          <ImmersiveImage src={moment.event_image_url} alt="" />
+          <ImmersiveImage
+            src={moment.event_image_url}
+            alt={moment.event_title}
+            priority={index === 0}
+            profile={MOMENT_FEED_IMAGE}
+          />
         ) : (
           // No media at all: gradient background for text-only moments
           <div className="absolute inset-0 bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900" />

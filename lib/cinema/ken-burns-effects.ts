@@ -212,3 +212,50 @@ export function getStaticEffect(): KenBurnsEffect {
     transformOrigin: "center center",
   };
 }
+
+/**
+ * Ken Burns run time. Deliberately independent of the slide timer: the timer
+ * value in the store is stale during the crossfade and is rewritten on resume,
+ * and changing animation-duration mid-flight makes the photo jump. A constant
+ * longer than the longest slide (9s) keeps the motion continuous until the cut.
+ */
+export const KEN_BURNS_DURATION_MS = 10000;
+
+/**
+ * Largest aspect-ratio mismatch (photo vs viewport, always >= 1) for which a
+ * photo is shown with object-cover. 1.35 means cover crops at most ~26% of the
+ * photo along one axis (4:3 on a 16:9 desktop = 1.33 -> cover; 3:2 on 16:9 =
+ * 1.19 -> cover; 16:9 on a 9:19.5 phone = 3.8 -> contain; 3:4 on that phone =
+ * 1.6 -> contain; 9:16 on that phone = 1.2 -> cover).
+ */
+export const COVER_MAX_MISMATCH = 1.35;
+
+export type PhotoFit = "cover" | "contain";
+
+/**
+ * Decide how a photo fills the viewport. "contain" means the caller should show
+ * the whole photo over a blurred, darkened copy of itself.
+ */
+export function getPhotoFit(
+  imageWidth: number,
+  imageHeight: number,
+  viewportWidth: number,
+  viewportHeight: number
+): PhotoFit {
+  if (
+    !(imageWidth > 0) ||
+    !(imageHeight > 0) ||
+    !(viewportWidth > 0) ||
+    !(viewportHeight > 0)
+  ) {
+    return "cover";
+  }
+  const ratio = imageWidth / imageHeight / (viewportWidth / viewportHeight);
+  const mismatch = ratio >= 1 ? ratio : 1 / ratio;
+  return mismatch <= COVER_MAX_MISMATCH ? "cover" : "contain";
+}
+
+/** Static effect (reduced motion) means: no pan/zoom, crossfade only. */
+export function isStaticEffect(effect: KenBurnsEffect | null): boolean {
+  return !effect || effect.name === "static";
+}

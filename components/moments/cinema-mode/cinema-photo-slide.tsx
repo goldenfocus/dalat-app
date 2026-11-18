@@ -1,14 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import {
   KenBurnsEffect,
+  KEN_BURNS_DURATION_MS,
   selectNextEffect,
   createEffectScheduler,
   prefersReducedMotion,
   getStaticEffect,
+  getPhotoFit,
+  isStaticEffect,
 } from "@/lib/cinema/ken-burns-effects";
 import { MomentWatermark } from "@/components/moments/moment-watermark";
 import { MomentCaptionOverlay } from "@/components/moments/moment-caption-overlay";
@@ -17,7 +20,9 @@ import { cn } from "@/lib/utils";
 
 interface CinemaPhotoSlideProps {
   moment: MomentWithProfile;
-  duration: number;
+  /** Unused: Ken Burns has its own constant run time (see KEN_BURNS_DURATION_MS). */
+  duration?: number;
+  /** false while paused/ended: freezes the motion in place */
   isActive: boolean;
   isTransitioning: boolean;
   effectSchedulerState?: ReturnType<typeof createEffectScheduler>;
@@ -26,144 +31,127 @@ interface CinemaPhotoSlideProps {
   ) => void;
 }
 
+/** Everything learned when a given moment's image finished loading. */
+interface LoadedPhoto {
+  id: string;
+  width: number;
+  height: number;
+  effect: KenBurnsEffect;
+}
+
+function readViewport() {
+  if (typeof window === "undefined") return { w: 0, h: 0 };
+  return { w: window.innerWidth, h: window.innerHeight };
+}
+
 export function CinemaPhotoSlide({
   moment,
-  duration,
   isActive,
   isTransitioning,
   effectSchedulerState,
   onEffectSelected,
 }: CinemaPhotoSlideProps) {
-  const [isVertical, setIsVertical] = useState(false);
-  const [imageReady, setImageReady] = useState(false);
-  const [effect, setEffect] = useState<KenBurnsEffect | null>(null);
+  // State is keyed by moment id, so a stale "loaded" flag from the previous
+  // photo can never leak onto the next one (no reset effect, no race).
+  const [loaded, setLoaded] = useState<LoadedPhoto | null>(null);
+  const [viewport, setViewport] = useState(readViewport);
 
-  // Use refs for scheduler state/callback to avoid infinite render loop.
-  const schedulerStateRef = useRef(effectSchedulerState);
-  const onEffectSelectedRef = useRef(onEffectSelected);
-  schedulerStateRef.current = effectSchedulerState;
-  onEffectSelectedRef.current = onEffectSelected;
-
-  const hasSelectedEffectRef = useRef(false);
-
-  // Detect orientation via preloader (needed before render for container sizing)
   useEffect(() => {
-    if (!moment.media_url) return;
-
-    const img = new window.Image();
-    img.onload = () => {
-      setIsVertical(img.naturalHeight > img.naturalWidth);
-    };
-    img.onerror = () => {
-      // If preload fails, default to horizontal — the Image component
-      // may still load fine through the cloudflare loader
-      setIsVertical(false);
-    };
-    img.src = moment.media_url;
-  }, [moment.media_url]);
-
-  // Select Ken Burns effect once the actual Image component has loaded
-  useEffect(() => {
-    if (!imageReady || hasSelectedEffectRef.current) return;
-
-    hasSelectedEffectRef.current = true;
-
-    if (prefersReducedMotion()) {
-      setEffect(getStaticEffect());
-      return;
-    }
-
-    const state = schedulerStateRef.current || createEffectScheduler();
-    const { effect: selectedEffect, newState } = selectNextEffect(
-      state,
-      isVertical,
-    );
-    setEffect(selectedEffect);
-
-    onEffectSelectedRef.current?.(newState);
-  }, [imageReady, isVertical]);
-
-  // Reset when moment changes
-  useEffect(() => {
-    hasSelectedEffectRef.current = false;
-    setEffect(null);
-    setImageReady(false);
-  }, [moment.id]);
+    const onResize = () => setViewport(readViewport());
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
 
   if (!moment.media_url) return null;
+
+  const ready = loaded?.id === moment.id;
+  const effect = ready ? loaded.effect : null;
+  const moving = !isStaticEffect(effect);
+  const fit = ready
+    ? getPhotoFit(loaded.width, loaded.height, viewport.w, viewport.h)
+    : "cover";
+
+  const handleLoad = (img: HTMLImageElement) => {
+    if (loaded?.id === moment.id) return;
+    const width = img.naturalWidth;
+    const height = img.naturalHeight;
+    let selected = getStaticEffect();
+    if (!prefersReducedMotion()) {
+      const result = selectNextEffect(
+        effectSchedulerState || createEffectScheduler(),
+        height > width,
+      );
+      selected = result.effect;
+      onEffectSelected?.(result.newState);
+    }
+    setLoaded({ id: moment.id, width, height, effect: selected });
+  };
 
   return (
     <div
       className={cn(
-        "absolute inset-0 flex items-center justify-center overflow-hidden",
+        "absolute inset-0 overflow-hidden bg-black",
         isTransitioning && "animate-cinema-crossfade-in",
       )}
     >
-      {/* Blurred background for vertical photos */}
-      {isVertical && imageReady && (
-        <div className="absolute inset-0">
-          <Image
-            loader={cloudflareLoader}
-            src={moment.media_url}
-            alt=""
-            fill
-            className="object-cover scale-110 blur-3xl opacity-30"
-            aria-hidden="true"
-            priority={false}
-          />
-        </div>
-      )}
-
-      {/* Main photo — always rendered so cloudflare URL loads immediately */}
-      <div
-        className={cn(
-          "relative z-10 flex items-center justify-center",
-          isVertical ? "w-[70vw] h-full" : "w-full h-full",
-        )}
-      >
+      {/* Blurred, darkened copy fills the screen when the photo is shown whole */}
+      {ready && fit === "contain" && (
         <Image
           loader={cloudflareLoader}
           src={moment.media_url}
-          alt={moment.text_content || "Photo"}
+          alt=""
           fill
-          className={cn(
-            "object-contain transition-opacity duration-300",
-            imageReady ? "opacity-100" : "opacity-0",
-            imageReady && "cinema-ken-burns",
-            effect && isActive && !isTransitioning && "cinema-kb-active",
-          )}
-          style={
-            effect
-              ? ({
-                  "--kb-start": effect.startTransform,
-                  "--kb-end": effect.endTransform,
-                  "--kb-duration": `${duration}ms`,
-                  transformOrigin: effect.transformOrigin,
-                } as React.CSSProperties)
-              : undefined
-          }
-          priority
-          onLoad={() => setImageReady(true)}
+          sizes="100vw"
+          className="object-cover scale-110 blur-2xl brightness-50"
+          aria-hidden="true"
+          priority={false}
         />
+      )}
 
-        {/* Watermark */}
-        {imageReady && (
-          <MomentWatermark
-            displayName={moment.display_name || moment.username}
-            className="z-20"
-          />
+      {/* Main photo: fills the viewport (cover) or sits whole over the blur (contain) */}
+      <Image
+        loader={cloudflareLoader}
+        src={moment.media_url}
+        alt={moment.text_content || "Photo"}
+        fill
+        sizes="100vw"
+        className={cn(
+          "z-10 transition-opacity duration-300",
+          fit === "contain" ? "object-contain" : "object-cover",
+          ready ? "opacity-100" : "opacity-0",
+          ready && "cinema-ken-burns",
+          moving && "cinema-kb-active",
         )}
+        style={
+          moving && effect
+            ? ({
+                "--kb-start": effect.startTransform,
+                "--kb-end": effect.endTransform,
+                "--kb-duration": `${KEN_BURNS_DURATION_MS}ms`,
+                transformOrigin: effect.transformOrigin,
+                animationPlayState: isActive ? "running" : "paused",
+              } as React.CSSProperties)
+            : undefined
+        }
+        priority
+        onLoad={(e) => handleLoad(e.currentTarget)}
+      />
 
-        {/* Loading state */}
-        {!imageReady && (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
-          </div>
-        )}
-      </div>
+      {ready && (
+        <MomentWatermark
+          displayName={moment.display_name || moment.username}
+          className="z-20"
+        />
+      )}
+
+      {!ready && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
+        </div>
+      )}
 
       {/* Caption — film-subtitle style, crossfades with the slide */}
-      {imageReady && moment.text_content && (
+      {ready && moment.text_content && (
         <MomentCaptionOverlay
           variant="subtitle"
           text={moment.text_content}

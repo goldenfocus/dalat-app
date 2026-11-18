@@ -255,7 +255,7 @@ export function MiniPlayer() {
               <div className="flex-1 min-w-0">
                 <p className="font-medium text-sm truncate">{displayTitle}</p>
                 <p className="text-xs text-muted-foreground truncate">
-                  {displayArtist}
+                  {playlist?.isHouse ? `${t("houseSoundtrack")} · ${displayArtist}` : displayArtist}
                 </p>
               </div>
             </button>

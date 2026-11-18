@@ -19,6 +19,7 @@ const CinemaSlideshow = dynamic(
     import("./cinema-mode/cinema-slideshow").then((m) => m.CinemaSlideshow),
   { ssr: false }
 );
+import { useCinemaModeStore } from "@/lib/stores/cinema-mode-store";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
 import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
@@ -83,6 +84,8 @@ export function MomentsViewContainer({
   const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
   const hasAutoOpenedRef = useRef(false);
   const hasAutoPlayedRef = useRef(false);
+  // Whether music was already playing when this page was opened, before our own autoplay.
+  const musicBeforeLandingRef = useRef<boolean | null>(null);
   const gridRef = useRef<InfiniteMomentGridHandle>(null);
 
   // Audio player store for auto-play
@@ -178,7 +181,15 @@ export function MomentsViewContainer({
         setViewMode("immersive");
         setShowImmersive(true);
       } else {
-        // Default to cinema mode for the "slideshow" experience
+        // Default to cinema mode for the "slideshow" experience.
+        // The page's own autoplay can start the soundtrack before cinema records its
+        // baseline, so pin the baseline to what was playing before this visit:
+        // closing cinema then stops music the visitor never started.
+        useCinemaModeStore.setState({
+          musicBaseline:
+            musicBeforeLandingRef.current ?? useAudioPlayerStore.getState().isPlaying,
+        });
+        musicBeforeLandingRef.current = null;
         setViewMode("cinema");
         setShowCinema(true);
       }
@@ -192,6 +203,7 @@ export function MomentsViewContainer({
       return;
     }
     hasAutoPlayedRef.current = true;
+    musicBeforeLandingRef.current = useAudioPlayerStore.getState().isPlaying;
 
     // Use pre-fetched playlist (no client RPC delay)
     if (initialPlaylist) {
@@ -256,6 +268,8 @@ export function MomentsViewContainer({
     setShowCinema(true);
     setShowImmersive(false);
 
+    // Remember whether music was already on, so closing cinema can restore it.
+    useCinemaModeStore.getState().captureMusicBaseline();
     const audio = useAudioPlayerStore.getState();
     if (audio.tracks.length > 0 && !audio.isPlaying) {
       audio.show();
@@ -501,6 +515,17 @@ export function MomentsViewContainer({
     setShowCinema(false);
   };
 
+  // Gallery button in cinema: back to the grid, scrolled to the moment being watched
+  const showGridAtMoment = (momentId?: string) => {
+    switchToGrid();
+    if (!momentId) return;
+    // Wait two frames: the grid is un-hidden by the state change above.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const tile = document.querySelector(`a[href*="/moments/${CSS.escape(momentId)}"]`);
+      tile?.scrollIntoView({ block: "center" });
+    }));
+  };
+
   // Switch to immersive view from cinema
   const _switchToImmersive = () => {
     setViewMode("immersive");
@@ -529,24 +554,9 @@ export function MomentsViewContainer({
     }
   };
 
-  // Don't render until we've loaded the preference from localStorage
-  // to avoid flash of wrong view mode
-  if (!isLoaded) {
-    return (
-      <div className="space-y-4">
-        {/* Skeleton header */}
-        <div className="flex items-center justify-end">
-          <div className="h-9 w-32 bg-muted rounded-lg animate-pulse" />
-        </div>
-        {/* Skeleton grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className="aspect-square bg-muted rounded-lg animate-pulse" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  // The grid is server-rendered (real <img> tags in the first HTML for crawlers
+  // and LCP). Only the view-mode switcher depends on the stored preference, so
+  // it alone waits for `isLoaded`; its placeholder keeps the toolbar height.
 
   return (
     <>
@@ -637,10 +647,14 @@ export function MomentsViewContainer({
             onChange={setMediaTypeFilter}
             hasVideos={hasVideos}
           />
-          <ViewModeSwitcher
-            viewMode={viewMode}
-            onViewModeChange={handleViewModeChange}
-          />
+          {isLoaded ? (
+            <ViewModeSwitcher
+              viewMode={viewMode}
+              onViewModeChange={handleViewModeChange}
+            />
+          ) : (
+            <div className="h-9 w-32 rounded-lg bg-muted animate-pulse" aria-hidden="true" />
+          )}
         </div>
       )}
 
@@ -704,6 +718,7 @@ export function MomentsViewContainer({
           totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
           hasMore={hasMoreMoments}
           onClose={closeCinema}
+          onShowGrid={showGridAtMoment}
           onLoadMore={handleLoadMore}
         />
       )}
