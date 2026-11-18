@@ -18,7 +18,7 @@ Goal: make the canonical Dalat.app venue page the most useful, trustworthy answe
 Run from the app checkout with existing public Supabase environment configuration:
 
 ```sh
-node scripts/seo/audit-venues.mjs --slug=social-house-dalat --locales=all
+node scripts/seo/audit-venues.mjs --slug=socialhouse-dalat --locales=all
 node scripts/seo/audit-venues.mjs --all --locales=all --out=/tmp/dalat-venue-seo/full.json
 ```
 

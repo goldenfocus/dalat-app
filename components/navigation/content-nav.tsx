@@ -16,7 +16,7 @@ export function ContentNav() {
   const pathname = usePathname();
   return (
     <div data-fog-sections className="border-t border-border/40">
-      <div className="mx-auto flex max-w-6xl items-center gap-1 px-2 min-[360px]:px-4">
+      <div className="mx-auto flex max-w-6xl items-center gap-1 overflow-x-auto overscroll-x-contain px-2 min-[360px]:px-4">
         {sections.map(({ key, href, prefix }) => {
           const active = pathname.startsWith(prefix);
           return (
@@ -24,7 +24,7 @@ export function ContentNav() {
               key={key}
               href={href}
               aria-current={active ? "page" : undefined}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center border-b-2 px-2 text-sm font-medium transition-colors active:scale-95 sm:flex-none sm:px-5 ${active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
+              className={`flex min-h-11 min-w-max flex-1 items-center justify-center whitespace-nowrap border-b-2 px-2 text-sm font-medium transition-colors active:scale-95 sm:flex-none sm:px-5 ${active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"}`}
             >
               {t(key)}
             </Link>

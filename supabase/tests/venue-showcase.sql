@@ -15,6 +15,8 @@ DO $$ DECLARE source jsonb; first_id uuid; refreshed jsonb; BEGIN
  PERFORM sync_official_venue_menu('436f8b46-d5fe-41ef-8245-e8ffb9ee7980',source);
  SELECT id INTO first_id FROM venue_menu_items WHERE source_key='coffee/1';
  UPDATE venue_menu_items SET is_sold_out=true,price_vnd=45000 WHERE id=first_id;
+ -- A public URL rename must not disconnect the official menu source.
+ UPDATE venues SET slug='socialhouse-dalat' WHERE id='436f8b46-d5fe-41ef-8245-e8ffb9ee7980';
  refreshed:=jsonb_set(source,'{0,items,0,price}','42000'::jsonb);
  PERFORM sync_official_venue_menu('436f8b46-d5fe-41ef-8245-e8ffb9ee7980',refreshed);
  IF NOT EXISTS(SELECT 1 FROM venue_menu_items WHERE id=first_id AND price_vnd=45000 AND is_sold_out) THEN RAISE EXCEPTION 'Refresh changed owner override'; END IF;

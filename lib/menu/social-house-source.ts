@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { MenuOptionGroup } from "./types";
 
 export const SOCIAL_HOUSE_MENU_SOURCE = "https://socialhousedalat.com/menu/";
+export const SOCIAL_HOUSE_VENUE_ID = "436f8b46-d5fe-41ef-8245-e8ffb9ee7980";
 const sectionAliases: Record<string, string> = {
   "Socialhouse Burrito": "burritos", "Vietnamese Coffee": "coffee", "Italian Coffee - Moka Pot": "moka-pot",
   "French Toast and Pancakes": "pancakes-french-toast", "Chocolate Signature": "chocolate", "Caffeine-free": "non-caffeine",
@@ -56,8 +57,8 @@ export async function syncSocialHouseMenu(db: SupabaseClient, html?: string) {
     if (html.length > 500000) throw new Error("Official menu is too large");
   }
   const sections = parseSocialHouseMenu(html);
-  const { data: venue, error: venueError } = await db.from("venues").select("id").eq("slug", "social-house-dalat").single();
-  if (venueError || !venue) throw new Error("Social House venue is unavailable");
+  const { data: venue, error: venueError } = await db.from("venues").select("id").eq("id", SOCIAL_HOUSE_VENUE_ID).single();
+  if (venueError || !venue) throw new Error("Socialhouse venue is unavailable");
   const { data, error } = await db.rpc("sync_official_venue_menu", { p_venue_id: venue.id, p_sections: sections });
   if (error) throw new Error(`Official menu sync failed: ${error.code}`);
   return data;

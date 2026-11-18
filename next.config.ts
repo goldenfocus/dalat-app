@@ -91,6 +91,26 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [
       {
+        source: "/social-house-dalat/:path*",
+        destination: "/socialhouse-dalat/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)/social-house-dalat/:path*",
+        destination: "/:locale/socialhouse-dalat/:path*",
+        permanent: true,
+      },
+      {
+        source: "/venues/social-house-dalat/:path*",
+        destination: "/venues/socialhouse-dalat/:path*",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en|vi|ko|zh|ru|fr|ja|ms|th|de|es|id)/venues/social-house-dalat/:path*",
+        destination: "/:locale/venues/socialhouse-dalat/:path*",
+        permanent: true,
+      },
+      {
         // The Flower Festival editorial article historically linked this short,
         // non-existent event URL. Preserve that accumulated signal by sending it
         // to the authoritative 2026 edition instead of serving a soft 404.
