@@ -9,7 +9,11 @@ export async function GET(request: Request, { params }: {params: Promise<{slug: 
   const {data} = await db.rpc("get_event_promo_media", {p_event_id: event.id});
   const item = (data as EventPromoMedia[] | null)?.find(p => p.id === id);
   if (!item) return new Response(null, {status: 404});
-  if (item.source_moment_id) return Response.redirect(new URL(`/api/moments/${item.source_moment_id}/download`, request.url), 307);
+  if (item.source_moment_id) {
+    const target = new URL(`/api/moments/${item.source_moment_id}/download`, request.url);
+    if (new URL(request.url).searchParams.get("quality") === "mobile") target.searchParams.set("quality", "mobile");
+    return Response.redirect(target, 307);
+  }
   if (!item.media_url || !isAllowedMediaDownloadUrl(item.media_url)) return new Response(null, {status: 404});
   try {
     const upstream = await fetch(item.media_url, {redirect: "manual", signal: request.signal});

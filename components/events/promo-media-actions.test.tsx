@@ -28,7 +28,7 @@ describe("mobile promo saving", () => {
     fireEvent.click(screen.getByRole("link",{name:"saveFile"}));
     expect(screen.getByRole("status").textContent).toBe("download.albumStarted");
     expect(share).not.toHaveBeenCalled();
-    complete({ok:true,blob:async()=>new Blob(["video"],{type:"video/mp4"})});
+    complete(new Response("video",{headers:{"content-type":"video/mp4","content-length":"5"}}));
     await waitFor(()=>expect(screen.getByRole("button",{name:"saveFile"})).toBeTruthy());
     expect(share).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button",{name:"saveFile"}));

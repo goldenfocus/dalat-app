@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { momentFilename, asciiFilename } from "@/lib/moments/download";
 import { getCfStreamDownloadUrl } from "@/lib/media-utils";
-import { isAllowedMediaDownloadUrl } from "@/lib/media-download-url";
+import { selectMediaDownloadUrl, isAllowedMediaDownloadUrl } from "@/lib/media-download-url";
 import { enableVideoDownloads } from "@/lib/cloudflare-stream";
 
 interface Params {
@@ -26,7 +26,7 @@ export async function GET(request: Request, { params }: Params) {
   const supabase = await createClient();
   const { data: moment, error } = await supabase
     .from("moments")
-    .select("id, media_url, content_type, original_filename, mime_type, cf_video_uid")
+    .select("id, media_url, file_url, content_type, original_filename, mime_type, cf_video_uid")
     .eq("id", id)
     // Explicit rather than leaning on RLS. RLS would return *different* bytes
     // depending on who is asking (a creator can read their own unmoderated
@@ -38,6 +38,7 @@ export async function GET(request: Request, { params }: Params) {
   if (error || !moment) {
     return NextResponse.json({ error: "Moment not found" }, { status: 404 });
   }
+  moment.media_url = selectMediaDownloadUrl(moment, new URL(request.url).searchParams.get("quality"));
   // Stream-only videos have no media_url; their downloadable MP4 lives on the
   // Cloudflare Stream customer subdomain instead.
   const streamDownloadUrl =

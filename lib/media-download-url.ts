@@ -7,3 +7,9 @@ export function isAllowedMediaDownloadUrl(value: string): boolean {
     return ['cdn.dalat.app', 'aljcmodwjqlznzcydyor.supabase.co'].includes(url.hostname);
   } catch { return false; }
 }
+
+/** Keep originals available while a smaller viewing copy serves mobile saves. */
+export function selectMediaDownloadUrl(moment: {media_url: string | null; file_url?: string | null; content_type: string}, quality: string | null): string | null {
+  if (quality !== "mobile" && ["video", "youtube"].includes(moment.content_type) && moment.file_url && isAllowedMediaDownloadUrl(moment.file_url)) return moment.file_url;
+  return moment.media_url;
+}
