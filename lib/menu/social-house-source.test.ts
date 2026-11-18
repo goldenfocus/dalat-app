@@ -11,6 +11,7 @@ it("extracts exact source prices and only supported options", () => {
   expect(sections[0].items[0]).toMatchObject({ name: "Coffee 0", price: 40000 });
   expect(sections[0].items[0].option_groups.map(g => g.id)).toEqual(["temperature", "beans"]);
   expect(sections[0].items[0].option_groups[1].choices[1]).toEqual({ id: "wineRobusta", price_vnd: 10000 });
+  expect(sections[0].items[0].option_groups[1].default).toBe("house");
 });
 it("refuses partial, malformed or mispriced source menus", () => {
   expect(() => parseSocialHouseMenu("<html>temporarily unavailable</html>")).toThrow();

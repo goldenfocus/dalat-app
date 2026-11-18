@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { MenuOptionGroup } from "./types";
 
 export const SOCIAL_HOUSE_MENU_SOURCE = "https://socialhousedalat.com/menu/";
 const sectionAliases: Record<string, string> = {
@@ -34,9 +35,9 @@ export function parseSocialHouseMenu(html: string) {
       const key = `${sectionSlug}/${slug(name)}`;
       if (keys.has(key)) throw new Error("Official menu item is duplicated");
       keys.add(key);
-      const option_groups: { id: string; choices: { id: string; price_vnd: number }[] }[] = [];
+      const option_groups: MenuOptionGroup[] = [];
       if (/hot\s*\/\s*iced/i.test(sourceName)) option_groups.push({ id: "temperature", choices: [{ id: "hot", price_vnd: 0 }, { id: "iced", price_vnd: 0 }] });
-      if (["coffee", "moka-pot"].includes(sectionSlug) && /Wine-fermented Robusta \+10,000/.test(text(section.description))) option_groups.push({ id: "beans", choices: [{ id: "house", price_vnd: 0 }, { id: "wineRobusta", price_vnd: 10000 }] });
+      if (["coffee", "moka-pot"].includes(sectionSlug) && /Wine-fermented Robusta \+10,000/.test(text(section.description))) option_groups.push({ id: "beans", default: "house", choices: [{ id: "house", price_vnd: 0 }, { id: "wineRobusta", price_vnd: 10000 }] });
       if (/chocolate\s*\/\s*matcha chocolate/i.test(sourceName)) option_groups.push({ id: "flavour", choices: [{ id: "chocolate", price_vnd: 0 }, { id: "matchaChocolate", price_vnd: 0 }] });
       return { key, name, previousName: itemAliases[name] || name, description: text(item.description) || null, price, option_groups,
         tags: [...(item.suitableForDiet === "https://schema.org/VegetarianDiet" ? ["vegetarian"] : []), ...(/hot/i.test(sourceName) ? ["hot"] : []), ...(/iced/i.test(sourceName) ? ["iced"] : [])] };
