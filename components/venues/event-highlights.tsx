@@ -16,13 +16,11 @@ export function EventHighlights({ venueId, photos, selectedIds, canManage }: {
   const [curated, setCurated] = useState(selectedIds);
   const [draft, setDraft] = useState(selectedIds);
   const [editing, setEditing] = useState(false);
-  const [expanded, setExpanded] = useState(false);
   const [active, setActive] = useState<VenueHighlight | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
   const picks = useMemo(() => selectVenueHighlights(photos, curated), [photos, curated]);
   const ordered = useMemo(() => [...picks, ...photos.filter(photo => !picks.some(pick => pick.id === photo.id))], [photos, picks]);
-  const visible = expanded ? ordered : picks;
   if (!photos.length) return null;
 
   async function save() {
@@ -50,15 +48,15 @@ export function EventHighlights({ venueId, photos, selectedIds, canManage }: {
       </Button>}
     </div>
     <div className="grid grid-cols-3 gap-2">
-      {visible.map((photo, index) => <button key={photo.id} onClick={() => setActive(photo)}
+      {picks.map((photo, index) => <button key={photo.id} onClick={() => setActive(photo)}
         aria-label={t("open", { number: index + 1 })}
         className="group aspect-square overflow-hidden rounded-xl bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
         <img src={photo.thumbnail_url || photo.media_url} alt={t("photo")} loading="lazy"
           className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
       </button>)}
     </div>
-    {photos.length > 6 && <Button variant="outline" className="mt-3 min-h-11 w-full" onClick={() => setExpanded(!expanded)}>
-      {expanded ? t("less") : t("all", { count: photos.length })}
+    {photos.length > 6 && <Button variant="outline" className="mt-3 min-h-11 w-full" onClick={() => setActive(ordered[0] || null)}>
+      {t("all", { count: photos.length })}
     </Button>}
 
     <Dialog open={!!active} onOpenChange={open => { if (!open) setActive(null); }}>
@@ -68,12 +66,13 @@ export function EventHighlights({ venueId, photos, selectedIds, canManage }: {
       }}>
         <DialogTitle className="sr-only">{t("title")}</DialogTitle>
         {active && <>
-          <img src={active.media_url} alt={t("photo")} className="mt-4 max-h-[70dvh] w-full rounded-lg object-contain" />
+          <img src={active.media_url} alt={t("photo")} className="mt-4 max-h-[65dvh] w-full rounded-lg object-contain" />
           <div className="flex items-center justify-between gap-3">
             <Button variant="ghost" className="min-h-11 min-w-11" aria-label={t("previous")} onClick={() => move(-1)}><ChevronLeft /></Button>
             <Link href={`/events/${active.event_slug}`} className="text-center text-sm underline underline-offset-4">{t("viewEvent")}</Link>
             <Button variant="ghost" className="min-h-11 min-w-11" aria-label={t("next")} onClick={() => move(1)}><ChevronRight /></Button>
           </div>
+          <p className="text-center text-xs text-muted-foreground" data-gallery-position>{ordered.findIndex(photo => photo.id === active.id) + 1} / {ordered.length}</p>
         </>}
       </DialogContent>
     </Dialog>
