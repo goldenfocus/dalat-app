@@ -2658,7 +2658,11 @@
     "showMyLocation": "Tunjukkan lokasi saya"
   },
   "calendarView": {
-    "views": {"day": "Hari", "week": "Minggu", "month": "Bulan"},
+    "views": {
+      "day": "Hari",
+      "week": "Minggu",
+      "month": "Bulan"
+    },
     "view": "Paparan kalendar",
     "selectDay": "Pilih hari",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "Acara ini sahaja",
       "future": "Acara ini dan masa depan",
       "all": "Semua acara dalam siri"
-    }
+    },
+    "saveFile": "Simpan ke Foto",
+    "openFile": "Buka fail",
+    "copyDownloadLink": "Salin pautan muat turun",
+    "downloadHelp": "Apabila sedia, ketik Simpan ke Foto, kemudian pilih Simpan Video atau Simpan Imej dalam menu kongsi iPhone. Jika tiada, buka pautan dalam Safari.",
+    "downloadLinkCopied": "Pautan disalin. Tampalkannya dalam pelayar untuk menyimpan.",
+    "downloadCopyFailed": "Salin pautan di bawah dan buka dalam pelayar anda."
   },
   "comments": {
     "title": "Komen",

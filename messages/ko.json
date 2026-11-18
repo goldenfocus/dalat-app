@@ -2658,7 +2658,11 @@
     "showMyLocation": "내 위치 표시"
   },
   "calendarView": {
-    "views": {"day": "일", "week": "주", "month": "월"},
+    "views": {
+      "day": "일",
+      "week": "주",
+      "month": "월"
+    },
     "view": "캘린더 보기",
     "selectDay": "날짜를 선택하세요",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "이 이벤트만",
       "future": "이 이벤트와 미래 이벤트",
       "all": "시리즈의 모든 이벤트"
-    }
+    },
+    "saveFile": "사진 앱에 저장",
+    "openFile": "파일 열기",
+    "copyDownloadLink": "다운로드 링크 복사",
+    "downloadHelp": "준비되면 사진 앱에 저장을 누르고 iPhone 공유 메뉴에서 비디오 저장 또는 이미지 저장을 선택하세요. 표시되지 않으면 Safari에서 링크를 여세요.",
+    "downloadLinkCopied": "다운로드 링크를 복사했습니다. 브라우저에 붙여넣어 저장하세요.",
+    "downloadCopyFailed": "아래 링크를 복사하여 브라우저에서 여세요."
   },
   "comments": {
     "title": "댓글",

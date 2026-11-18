@@ -2658,7 +2658,11 @@
     "showMyLocation": "現在地を表示"
   },
   "calendarView": {
-    "views": {"day": "日", "week": "週", "month": "月"},
+    "views": {
+      "day": "日",
+      "week": "週",
+      "month": "月"
+    },
     "view": "カレンダー表示",
     "selectDay": "日付を選択",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "このイベントのみ",
       "future": "このイベントと今後のイベント",
       "all": "シリーズのすべてのイベント"
-    }
+    },
+    "saveFile": "写真に保存",
+    "openFile": "ファイルを開く",
+    "copyDownloadLink": "ダウンロードリンクをコピー",
+    "downloadHelp": "準備ができたら写真に保存をタップし、iPhoneの共有メニューでビデオを保存または画像を保存を選択してください。表示されない場合はSafariでリンクを開いてください。",
+    "downloadLinkCopied": "リンクをコピーしました。ブラウザに貼り付けて保存してください。",
+    "downloadCopyFailed": "下のリンクをコピーしてブラウザで開いてください。"
   },
   "comments": {
     "title": "コメント",

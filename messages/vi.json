@@ -2670,7 +2670,11 @@
     "showMyLocation": "Hiện vị trí của tôi"
   },
   "calendarView": {
-    "views": {"day": "Ngày", "week": "Tuần", "month": "Tháng"},
+    "views": {
+      "day": "Ngày",
+      "week": "Tuần",
+      "month": "Tháng"
+    },
     "view": "Chế độ lịch",
     "selectDay": "Chọn một ngày",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "Chỉ sự kiện này",
       "future": "Sự kiện này và tương lai",
       "all": "Tất cả sự kiện trong chuỗi"
-    }
+    },
+    "saveFile": "Lưu vào Ảnh",
+    "openFile": "Mở tệp",
+    "copyDownloadLink": "Sao chép liên kết tải",
+    "downloadHelp": "Khi tệp sẵn sàng, nhấn Lưu vào Ảnh, rồi chọn Lưu video hoặc Lưu hình ảnh trong bảng chia sẻ iPhone. Nếu không có, mở liên kết bằng Safari.",
+    "downloadLinkCopied": "Đã sao chép liên kết tải. Dán vào trình duyệt để lưu.",
+    "downloadCopyFailed": "Sao chép liên kết bên dưới và mở trong trình duyệt."
   },
   "comments": {
     "title": "Bình luận",
