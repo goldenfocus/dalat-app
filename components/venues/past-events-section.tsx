@@ -7,12 +7,14 @@ import { Link } from "@/lib/i18n/routing";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatInDaLat } from "@/lib/timezone";
 import type { Locale } from "@/lib/types";
+import { OriginalText } from "@/components/ui/original-text";
 import { cn } from "@/lib/utils";
 
 interface PastEvent {
   id: string;
   slug: string;
   title: string;
+  original_title?: string;
   image_url: string | null;
   starts_at: string;
   ends_at: string | null;
@@ -53,7 +55,8 @@ export function PastEventsSection({ events, locale, label, totalCount, allEvents
       {isOpen && <>
         <div className="grid gap-4 sm:grid-cols-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
           {events.map((event) => (
-            <Link key={event.id} href={`/events/${event.slug}`}>
+            <div key={event.id}>
+            <Link href={`/events/${event.slug}`}>
               <Card className="hover:border-muted-foreground/30 transition-colors overflow-hidden opacity-80 hover:opacity-100">
                 <CardContent className="p-0">
                   {event.image_url && (
@@ -73,6 +76,8 @@ export function PastEventsSection({ events, locale, label, totalCount, allEvents
                 </CardContent>
               </Card>
             </Link>
+            {event.original_title && event.original_title !== event.title && <OriginalText text={event.original_title} />}
+            </div>
           ))}
         </div>
         {allEventsHref && (totalCount || 0) > events.length && <Link href={allEventsHref} className="mt-3 flex min-h-11 items-center justify-center rounded-lg border text-sm">{t("allEvents")}</Link>}

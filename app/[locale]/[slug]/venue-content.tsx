@@ -160,7 +160,9 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
     .select("id", { count: "exact", head: true })
     .eq("venue_id", venueId)
     .eq("status", "published")
-    .lt("starts_at", nowISO);
+    .eq("has_private_details", false)
+    .lt("starts_at", nowISO)
+    .or(`ends_at.lt.${nowISO},and(ends_at.is.null,starts_at.lt.${fourHoursAgo})`);
 
   return {
     venue: venue as Venue,
@@ -177,12 +179,16 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
 
 async function getPastEvents(venueId: string): Promise<PastEvent[]> {
   const supabase = await createClient();
+  const now = new Date();
+  const fourHoursAgo = new Date(now.getTime() - 4 * 3600000).toISOString();
   const { data } = await supabase
     .from("events")
     .select("id, slug, title, image_url, starts_at, ends_at")
     .eq("venue_id", venueId)
     .eq("status", "published")
-    .lt("starts_at", new Date().toISOString())
+    .eq("has_private_details", false)
+    .lt("starts_at", now.toISOString())
+    .or(`ends_at.lt.${now.toISOString()},and(ends_at.is.null,starts_at.lt.${fourHoursAgo})`)
     .order("starts_at", { ascending: false })
     .limit(12);
 
@@ -247,7 +253,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const translatedDescription =
     venueTranslations.description ?? venue.description;
   const eventTitles = await getEventTranslationsBatch(
-    [...upcoming_events, ...happening_now].map((event) => event.id),
+    [...upcoming_events, ...happening_now, ...pastEvents].map((event) => event.id),
     locale as Locale,
   );
   const translatedAddress =
@@ -781,7 +787,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
         {/* Past Events */}
         <PastEventsSection
-          events={pastEvents}
+          events={pastEvents.map(event => ({ ...event, original_title: event.title, title: eventTitles.get(event.id)?.title || event.title }))}
           locale={locale as Locale}
           label={t("pastEvents")}
           totalCount={past_events_count}
