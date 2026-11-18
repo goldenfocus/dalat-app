@@ -4640,5 +4640,23 @@
     "weekly": "Setiap {day}",
     "recurring": "Acara rutin",
     "allEvents": "Semua acara sebelumnya"
+  },
+  "friendsCommunity": {
+    "eyebrow": "Undangan kecil. Lingkaran yang terus tumbuh.",
+    "title": "Teman dari teman",
+    "tagline": "Orang baik. Hubungan nyata. Đà Lạt.",
+    "storyTitle": "Awal ceritanya",
+    "story": "Pada 18 November 2026, Zan mengajak dua teman memulai hal sederhana: lingkaran pertemanan yang hangat di Đà Lạt. Setiap orang bisa mengundang seorang teman, dan setiap perkenalan membuka jalan bagi hubungan baru.",
+    "invite": "Kami ingin mempertemukan warga lokal dan pendatang melalui makan bersama, pertukaran bahasa, budaya, dan petualangan sehari-hari. Bawa rasa ingin tahu. Ajak seorang teman.",
+    "joinTitle": "Temukan teman-temanmu",
+    "joinDescription": "Pilih tempat yang terasa nyaman. Komunitas yang sama, dimulai di Zalo.",
+    "join": "Gabung di {platform}",
+    "scan": "Pindai untuk bergabung",
+    "download": "Unduh QR",
+    "events": "Jelajahi acara Đà Lạt",
+    "note": "Tinggal di Đà Lạt? Ajak teman yang akan senang bergabung. Bersikap ramah, saling menghormati, dan bagikan hal yang bermanfaat.",
+    "footer": "Berakar di Đà Lạt. Terbuka untuk dunia.",
+    "qrAlt": "Kode QR untuk bergabung dengan Friends of Friends di {platform}",
+    "avatarAlt": "Hati hijau dengan pohon pinus Đà Lạt dan bendera Vietnam"
   }
 }

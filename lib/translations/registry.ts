@@ -1,3 +1,5 @@
+// Friends of Friends is public, versioned editorial UI in the 12 friendsCommunity catalogs.
+// No user-submitted fields or database rows: source edits and all locales ship atomically in Git.
 import { metadataLabels } from "./metadata-labels";
 // Dating profiles, messages, preferences and reports are private. Never enqueue
 // them in the public translation store. The dating UI uses reviewed catalogs.

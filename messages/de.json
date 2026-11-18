@@ -4640,5 +4640,23 @@
     "weekly": "Jeden {day}",
     "recurring": "Regelmäßiges Event",
     "allEvents": "Alle vergangenen Events"
+  },
+  "friendsCommunity": {
+    "eyebrow": "Eine kleine Einladung. Ein wachsender Kreis.",
+    "title": "Freunde von Freunden",
+    "tagline": "Nette Menschen. Echte Verbindungen. Đà Lạt.",
+    "storyTitle": "Wie alles begann",
+    "story": "Am 18. November 2026 lud Zan zwei Freundinnen ein, etwas Einfaches zu beginnen: einen offenen Freundeskreis in Đà Lạt. Jeder kann einen Freund einladen, und jede Vorstellung kann eine neue Verbindung schaffen.",
+    "invite": "Wir möchten Einheimische und Zugezogene durch gemeinsame Mahlzeiten, Sprachaustausch, Kultur und kleine Alltagsabenteuer zusammenbringen. Bring Neugier mit. Bring einen Freund mit.",
+    "joinTitle": "Finde deine Gemeinschaft",
+    "joinDescription": "Wähle den Ort, an dem du dich wohlfühlst. Eine Gemeinschaft, zunächst auf Zalo.",
+    "join": "Auf {platform} beitreten",
+    "scan": "Zum Beitreten scannen",
+    "download": "QR herunterladen",
+    "events": "Veranstaltungen in Đà Lạt entdecken",
+    "note": "Du lebst in Đà Lạt? Lade einen Freund ein, der gern dabei wäre. Seid freundlich, respektiert einander und teilt hilfreiche Dinge.",
+    "footer": "In Đà Lạt verwurzelt. Offen für die Welt.",
+    "qrAlt": "QR-Code zum Beitritt zu Friends of Friends auf {platform}",
+    "avatarAlt": "Grünes Herz mit Kiefern aus Đà Lạt und vietnamesischer Flagge"
   }
 }

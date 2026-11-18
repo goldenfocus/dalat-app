@@ -4640,5 +4640,23 @@
     "weekly": "Mỗi {day}",
     "recurring": "Sự kiện định kỳ",
     "allEvents": "Tất cả sự kiện trước"
+  },
+  "friendsCommunity": {
+    "eyebrow": "Một lời mời nhỏ. Một vòng kết nối lớn dần.",
+    "title": "Bạn của bạn",
+    "tagline": "Những người bạn tốt. Những kết nối thật. Đà Lạt.",
+    "storyTitle": "Câu chuyện bắt đầu",
+    "story": "Ngày 18 tháng 11 năm 2026, Zan mời hai người bạn cùng bắt đầu một điều giản dị: một cộng đồng thân thiện ở Đà Lạt. Mỗi người có thể mời thêm một người bạn, để từ một lời giới thiệu mở ra những kết nối mới.",
+    "invite": "Chúng mình muốn kết nối người địa phương và những người mới đến qua những bữa ăn chung, giao lưu ngôn ngữ, văn hóa và những trải nghiệm đời thường. Mang theo sự tò mò và một người bạn nhé.",
+    "joinTitle": "Tìm những người bạn đồng điệu",
+    "joinDescription": "Chọn nơi bạn thấy thoải mái. Cùng một cộng đồng, bắt đầu từ Zalo.",
+    "join": "Tham gia trên {platform}",
+    "scan": "Quét mã để tham gia",
+    "download": "Tải mã QR",
+    "events": "Khám phá sự kiện Đà Lạt",
+    "note": "Bạn sống ở Đà Lạt? Hãy mời một người bạn muốn đồng hành. Tử tế, tôn trọng nhau và chia sẻ những điều hữu ích.",
+    "footer": "Bắt đầu từ Đà Lạt. Kết nối với thế giới.",
+    "qrAlt": "Mã QR tham gia Friends of Friends trên {platform}",
+    "avatarAlt": "Trái tim xanh với rừng thông Đà Lạt và cờ Việt Nam"
   }
 }
