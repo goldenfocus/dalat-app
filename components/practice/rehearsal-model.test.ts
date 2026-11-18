@@ -94,7 +94,7 @@ it("uses twenty-minute sample defaults and the same private host-only draft swap
 });
 
 it("provides a ready 50-guest rehearsal with three hosts, mixed tables, and guest cards before a round", () => {
-  const session = createRehearsal(50);
+  const session = createRehearsal(50, true);
   const view = rehearsalView(session);
   expect(view.count).toBe(50);
   expect(session.people.filter(p => session.state.participation?.[p.id] === "hosting")).toHaveLength(3);

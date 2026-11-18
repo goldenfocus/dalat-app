@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Không bắt buộc đâu. Lượt check-in của bạn vẫn được giữ nguyên."
   },
   "eventPractice": {
+    "sampleQr": "Mã QR mẫu",
+    "checkInTab": "Điểm danh",
+    "tablesTab": "Bàn",
+    "checkIn": "Điểm danh",
+    "checkedIn": "Đã điểm danh",
+    "findGuest": "Tìm khách",
+    "noCheckedIn": "Điểm danh khách để xếp bàn",
+    "rehearsalCheckInAll": "Điểm danh tất cả khách mẫu",
+
     "findingTable": "Đang tìm bàn cho bạn…",
     "waitingList": "Đang chờ",
 

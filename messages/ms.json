@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Pilihan sepenuhnya. Daftar masuk anda kekal walau apa pun."
   },
   "eventPractice": {
+    "sampleQr": "QR contoh",
+    "checkInTab": "Daftar masuk",
+    "tablesTab": "Meja",
+    "checkIn": "Daftar masuk",
+    "checkedIn": "Sudah daftar masuk",
+    "findGuest": "Cari peserta",
+    "noCheckedIn": "Daftar masuk peserta untuk membentuk meja",
+    "rehearsalCheckInAll": "Daftar masuk semua peserta contoh",
+
     "findingTable": "Mencari meja untuk anda…",
     "waitingList": "Menunggu",
 

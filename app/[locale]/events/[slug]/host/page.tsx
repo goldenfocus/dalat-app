@@ -28,7 +28,7 @@ export default async function HostPage({ params }: Props) {
   }
   const messages = await getMessages({ locale });
   return (
-    <NextIntlClientProvider messages={{ menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations, eventPractice: messages.eventPractice }}>
+    <NextIntlClientProvider messages={{ invite: messages.invite, common: messages.common, menuOptions: messages.menuOptions, arrival: messages.arrival, translations: messages.translations, eventPractice: messages.eventPractice }}>
       <HostWorkspace slug={slug} />
     </NextIntlClientProvider>
   );

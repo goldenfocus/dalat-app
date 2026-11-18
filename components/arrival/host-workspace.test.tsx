@@ -5,6 +5,7 @@ import type { StaffArrivalContext } from "@/lib/arrival/types";
 const { translate } = vi.hoisted(() => ({ translate: (key: string) => key }));
 vi.mock("next-intl", () => ({ useLocale: () => "en", useTranslations: () => translate }));
 vi.mock("@/lib/i18n/routing", () => ({ Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a> }));
+vi.mock("@/components/events/invite-modal", () => ({ InviteModal: () => <button>Invite</button> }));
 import { HostWorkspace } from "./host-workspace";
 
 const fixture: StaffArrivalContext = {
@@ -91,4 +92,14 @@ it("does not starve a response taking longer than the five-second polling interv
  expect(screen.getByRole("button", { name: "hostWalkIn" })).toBeInTheDocument();
  await act(async () => { vi.advanceTimersByTime(5000); });
  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("opens the real staff desk on Check-in with the QR already visible and keeps tables behind their tab", async () => {
+  vi.stubGlobal("fetch",vi.fn().mockResolvedValue({ok:true,json:async()=>fixture}));
+  render(<HostWorkspace slug="language-exchange-social-house-z8oc-20261118"/>);
+  expect(await screen.findByRole("tab",{name:"checkInTab"})).toHaveAttribute("aria-selected","true");
+  expect(screen.getByRole("img",{name:"hostQrAlt"})).toBeVisible();
+  expect(screen.getByRole("searchbox",{name:"hostAccountSearch"})).toBeVisible();
+  expect(screen.getByRole("tab",{name:"tablesTab"})).toBeVisible();
+  expect(screen.queryByText("noCheckedIn")).toBeNull();
 });

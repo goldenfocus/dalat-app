@@ -23,19 +23,18 @@ describe("event table flow", () => {
       if (payload) session = mutateRehearsal(session, payload);
       return new Response(JSON.stringify(rehearsalView(session)));
     });
-    render(<EventPractice slug="sample-rehearsal" transport={transport} />);
-    expect(await screen.findByRole("button", { name: en.eventPractice.startGame })).toBeDisabled();
+    const rendered = render(<EventPractice slug="sample-rehearsal" transport={transport} hostPanel="checkIn" />);
+    await screen.findByRole("button", { name: "Confirm Mai is here" });
     for (const name of ["Mai", "Alex"]) {
-      fireEvent.click(screen.getByRole("button", { name: new RegExp(name) }));
       fireEvent.click(screen.getByRole("button", { name: `Confirm ${name} is here` }));
       await waitFor(() => expect(session.state.presence?.[name === "Mai" ? "sample-1" : "sample-2"]).toBe("present"));
     }
     if (status === "absent") {
-      fireEvent.click(screen.getByRole("button", { name: /Linh/ }));
-      fireEvent.click(screen.getByRole("button", { name: "Mark Linh absent" }));
+      session = mutateRehearsal(session, {action:"presence",participantId:"sample-3",status:"absent",expectedRevision:session.revision});
       await waitFor(() => expect(session.state.presence?.["sample-3"]).toBe("absent"));
     }
-    fireEvent.click(screen.getByRole("button", { name: en.eventPractice.startGame }));
+    rendered.rerender(<EventPractice key="tables" slug="sample-rehearsal" transport={transport} hostPanel="tables" />);
+    fireEvent.click(await screen.findByRole("button", { name: en.eventPractice.startGame }));
     await waitFor(() => expect(session.state.rounds).toHaveLength(1));
     expect(session.state.rounds[0].groups.flat().map(p => p.name).sort()).toEqual(["Alex", "Linh", "Mai"]);
     expect(rehearsalView(session).count).toBe(2);

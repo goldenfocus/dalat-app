@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Check, Copy, Plus, Search } from "lucide-react";
+import { InviteModal } from "@/components/events/invite-modal";
 import { HostAccountSearch } from "./host-account-search";
 import { HostGuestForm } from "./host-guest-form";
 import { LanguageSummary } from "./language-summary";
@@ -67,17 +68,16 @@ export function HostArrivals({ data, slug, guestPath, busy, onSaved }: { data: H
     } catch { setCopyError(true); }
   };
   return <section className="space-y-6">
-    <details className="rounded-lg border bg-card p-4">
-      <summary className="min-h-11 cursor-pointer font-medium">{t("hostGuestLink")}</summary>
-      <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+    <div className="rounded-lg border bg-card p-4">
+      <div className="flex items-center gap-4">
         {/* The QR encodes the arrival URL plus the door presence key, never host access. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={`/api/events/${encodeURIComponent(slug)}/arrival/qr?locale=${encodeURIComponent(locale)}${data.doorKey ? "&door=1" : ""}`} alt={t("hostQrAlt")} width={176} height={176} className="h-44 w-44 bg-white p-2" />
-        <div className="min-w-0">{data.doorKey && <p className="mb-2 text-sm text-muted-foreground">{t("hostDoorHint")}</p>}<a href={doorPath} target="_blank" rel="noreferrer" className="break-all text-sm underline underline-offset-4">{doorPath}</a><button type="button" onClick={() => void copy()} className="mt-3 flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm">{copied ? <Check aria-hidden className="h-4 w-4" /> : <Copy aria-hidden className="h-4 w-4" />}{t(copied ? "hostCopied" : "hostCopyLink")}</button>{copyError && <p role="alert" className="mt-2 text-sm">{t("hostCopyFailed")}</p>}</div>
+        <div className="min-w-0"><a href={doorPath} target="_blank" rel="noreferrer" className="text-base font-semibold underline underline-offset-4">{t("checkIn")}</a><button type="button" onClick={() => void copy()} className="mt-3 flex min-h-11 items-center gap-2 rounded-lg border px-4 text-sm">{copied ? <Check aria-hidden className="h-4 w-4" /> : <Copy aria-hidden className="h-4 w-4" />}{t(copied ? "hostCopied" : "hostCopyLink")}</button>{copyError && <p role="alert" className="mt-2 text-sm">{t("hostCopyFailed")}</p>}</div>
       </div>
-    </details>
+    </div>
     {selection !== null ? <HostGuestForm key={selection.participant?.id || selection.rsvp?.id || "walkin"} data={data} slug={slug} participant={selection.participant} rsvp={selection.rsvp} orderMode={selection.orderMode} onCancel={() => setSelection(null)} onSaved={async () => { setSelection(null); await onSaved(); }} /> : <>
-      <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-semibold">{t("hostCheckedCount", { count: data.participants.length + legacyArrivals.length })}</h2><button type="button" disabled={busy || checkingId !== null} onClick={() => setSelection({})} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary px-4 font-medium text-primary-foreground"><Plus aria-hidden className="h-4 w-4" />{t("hostWalkIn")}</button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-xl font-semibold">{t("hostCheckedCount", { count: data.participants.length + legacyArrivals.length })}</h2><button type="button" disabled={busy || checkingId !== null} onClick={() => setSelection({})} className="flex min-h-12 items-center gap-2 rounded-lg bg-primary px-4 font-medium text-primary-foreground"><Plus aria-hidden className="h-4 w-4" />{t("hostWalkIn")}</button><InviteModal eventSlug={slug} eventTitle={data.event.title} eventDescription={null} startsAt={data.event.startsAt} showLabel /></div>
       <label className="relative block"><span className="sr-only">{t("hostAccountSearch")}</span><Search aria-hidden className="absolute left-3 top-4 h-5 w-5 text-muted-foreground" /><input type="search" maxLength={200} autoComplete="off" autoCapitalize="none" spellCheck={false} value={search} onChange={event => setSearch(event.target.value)} placeholder={t("hostAccountSearch")} className="min-h-14 w-full rounded-lg border bg-background pl-11 pr-3" /></label>
       <HostAccountSearch query={search} slug={slug} data={data} onSelect={account => { void checkIn(account); }} />
       {checkInError && <p role="alert" className="text-sm text-destructive">{checkInError}</p>}

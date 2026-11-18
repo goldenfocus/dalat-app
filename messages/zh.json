@@ -4355,6 +4355,15 @@
     "saveAccountLater": "完全自愿。无论如何，你的签到都会保留。"
   },
   "eventPractice": {
+    "sampleQr": "示例二维码",
+    "checkInTab": "签到",
+    "tablesTab": "桌位",
+    "checkIn": "签到",
+    "checkedIn": "已签到",
+    "findGuest": "查找来宾",
+    "noCheckedIn": "来宾签到后即可安排桌位",
+    "rehearsalCheckInAll": "为所有示例来宾签到",
+
     "findingTable": "正在为你安排桌位…",
     "waitingList": "等待中",
 

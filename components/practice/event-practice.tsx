@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "@/lib/i18n/routing";
 import { useViewer } from "@/lib/hooks/use-viewer";
 import type { PracticeView } from "@/lib/practice/model";
+import { PracticeCheckIn } from "./practice-check-in";
 import { PracticeHost } from "./practice-host";
 import { PracticeGuest } from "./practice-guest";
 import { PracticeProfile } from "./practice-profile";
@@ -23,7 +24,7 @@ export function remainingSeconds(round: PracticeView["round"], now: number) {
 
 export type PracticeTransport = (payload?: Record<string, unknown>) => Promise<Response>;
 
-export function EventPractice({ slug, transport }: { slug: string; transport?: PracticeTransport }) {
+export function EventPractice({ slug, transport, hostPanel = "tables" }: { slug: string; transport?: PracticeTransport; hostPanel?: "checkIn" | "tables" }) {
   const t = useTranslations("eventPractice");
   const { profile } = useViewer();
   const [view, setView] = useState<PracticeView | null>(null);
@@ -156,7 +157,7 @@ export function EventPractice({ slug, transport }: { slug: string; transport?: P
         </form>
       </details>
     </div>}
-    {view?.canStart && <PracticeHost view={view} ticket={transport ? undefined : issueTicket} busy={busy} act={act} remaining={remaining} changeoverRemaining={changeoverRemaining} />}
+    {view?.canStart && (hostPanel === "checkIn" ? <PracticeCheckIn view={view} busy={busy} act={act} /> : <PracticeHost view={view} ticket={transport ? undefined : issueTicket} busy={busy} act={act} remaining={remaining} changeoverRemaining={changeoverRemaining} />)}
     {(error || actionError) && <div role="alert" className="flex items-center justify-between gap-2 text-sm"><p>{t(actionError ?? (view ? "stale" : "error"))}</p><Button variant="ghost" size="icon" className="h-11 w-11 shrink-0" aria-label={t("refresh")} disabled={busy} onClick={() => void load()}><RefreshCw aria-hidden className="h-4 w-4" /></Button></div>}
   </section>;
 }

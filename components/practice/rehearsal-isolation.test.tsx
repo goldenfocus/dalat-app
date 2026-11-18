@@ -18,7 +18,7 @@ it("never opens a real account editor from a signed-in sample guest", async () =
   expect(fetcher).not.toHaveBeenCalled();
 });
 it("never issues a real receipt from the sample host", async () => {
-  const transport = async () => new Response(JSON.stringify(rehearsalView(createRehearsal())));
+  const transport = async () => new Response(JSON.stringify(rehearsalView(createRehearsal(10, true))));
   render(<EventPractice slug="sample-rehearsal" transport={transport}/>);
   fireEvent.click(await screen.findByRole("button", { name: /Mai/ }));
   expect(screen.queryByRole("button", { name: "code" })).toBeNull();

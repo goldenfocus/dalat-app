@@ -4355,6 +4355,15 @@
     "saveAccountLater": "ไม่บังคับ การเช็กอินของคุณยังอยู่เหมือนเดิม"
   },
   "eventPractice": {
+    "sampleQr": "QR ตัวอย่าง",
+    "checkInTab": "เช็กอิน",
+    "tablesTab": "โต๊ะ",
+    "checkIn": "เช็กอิน",
+    "checkedIn": "เช็กอินแล้ว",
+    "findGuest": "ค้นหาผู้เข้าร่วม",
+    "noCheckedIn": "เช็กอินผู้เข้าร่วมเพื่อจัดโต๊ะ",
+    "rehearsalCheckInAll": "เช็กอินผู้เข้าร่วมตัวอย่างทั้งหมด",
+
     "findingTable": "กำลังหาโต๊ะให้คุณ…",
     "waitingList": "กำลังรอ",
 

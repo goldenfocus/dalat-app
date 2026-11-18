@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Совершенно необязательно. Ваша отметка сохранится в любом случае."
   },
   "eventPractice": {
+    "sampleQr": "Тестовый QR-код",
+    "checkInTab": "Регистрация",
+    "tablesTab": "Столы",
+    "checkIn": "Отметить",
+    "checkedIn": "Отмечен",
+    "findGuest": "Найти гостя",
+    "noCheckedIn": "Отметьте гостей, чтобы распределить их по столам",
+    "rehearsalCheckInAll": "Отметить всех тестовых гостей",
+
     "findingTable": "Подбираем вам стол…",
     "waitingList": "Ожидание",
 

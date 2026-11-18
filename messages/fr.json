@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Totalement facultatif. Votre arrivée reste enregistrée dans tous les cas."
   },
   "eventPractice": {
+    "sampleQr": "QR de démonstration",
+    "checkInTab": "Arrivées",
+    "tablesTab": "Tables",
+    "checkIn": "Enregistrer",
+    "checkedIn": "Présent",
+    "findGuest": "Trouver un invité",
+    "noCheckedIn": "Enregistrez les invités pour former les tables",
+    "rehearsalCheckInAll": "Enregistrer tous les invités fictifs",
+
     "findingTable": "Nous cherchons votre table…",
     "waitingList": "En attente",
 

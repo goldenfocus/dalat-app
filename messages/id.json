@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Sepenuhnya opsional. Check-in kamu tetap aman."
   },
   "eventPractice": {
+    "sampleQr": "QR contoh",
+    "checkInTab": "Check-in",
+    "tablesTab": "Meja",
+    "checkIn": "Check-in",
+    "checkedIn": "Sudah check-in",
+    "findGuest": "Cari peserta",
+    "noCheckedIn": "Check-in peserta untuk membentuk meja",
+    "rehearsalCheckInAll": "Check-in semua peserta contoh",
+
     "findingTable": "Mencari meja untukmu…",
     "waitingList": "Menunggu",
 

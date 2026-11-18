@@ -6,6 +6,7 @@ vi.mock("./arrival-menu", () => ({
   ArrivalMenu: ({ onChange }: { onChange: (value: Record<string, number>) => void }) => <button type="button" onClick={() => onChange({ coffee: 1 })}>TEST MENU</button>,
   cartLines: (_menu: unknown, quantities: Record<string, number>) => quantities.coffee ? [{ item_id: "coffee", qty: 1 }] : [],
 }));
+vi.mock("@/components/events/invite-modal", () => ({ InviteModal: () => <button>Invite</button> }));
 import { HostArrivals } from "./host-arrivals";
 
 const person = { id: "rsvp", user_id: "user", displayName: "Mai", username: "mai", checked_in_at: null, preferences: { practiceLanguage: "english" as const, englishLevel: "starting" as const, vietnameseLevel: "native" as const } };

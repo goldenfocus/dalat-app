@@ -9,14 +9,17 @@ import { HostOrders } from "./host-orders";
 import { HostTeam } from "./host-team";
 import { DrinkOfferSettings } from "./drink-offer-settings";
 import { SponsorLedger } from "./sponsor-ledger";
+import { HostTabs } from "@/components/practice/host-tabs";
 import { EventPractice } from "@/components/practice/event-practice";
 import type { HostData } from "./host-types";
 
-type Tab = "arrivals" | "orders" | "sponsor" | "team";
+type Tab = "tables" | "arrivals" | "orders" | "sponsor" | "team";
 
 export function HostWorkspace({ slug }: { slug: string }) {
   const t = useTranslations("arrival");
   const locale = useLocale();
+  const game = useTranslations("eventPractice");
+  const languageExchange = /^language-exchange-social-house-z8oc-\d{8}$/.test(slug);
   const [data, setData] = useState<HostData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [forbidden, setForbidden] = useState(false);
@@ -96,6 +99,7 @@ export function HostWorkspace({ slug }: { slug: string }) {
   const guestPath = `${locale === "en" ? "" : `/${locale}`}/events/${encodeURIComponent(slug)}/arrive`;
   const tabs: Tab[] = data ? [
     ...(data.access.canWelcome ? ["arrivals" as const] : []),
+    ...(languageExchange && (data.access.canWelcome || data.access.canManage) ? ["tables" as const] : []),
     ...(data.access.canOrder ? ["orders" as const] : []),
     ...(data.access.canManage && data.sponsorAccounting ? ["sponsor" as const] : []),
     ...(data.access.canManage ? ["team" as const] : []),
@@ -109,7 +113,6 @@ export function HostWorkspace({ slug }: { slug: string }) {
       </Link>
       <h1 className="text-3xl font-semibold tracking-tight">{t("staffDesk")}</h1>
       {data && <p className="mt-2 text-muted-foreground">{data.event.title}{data.event.venueName ? ` · ${data.event.venueName}` : ""}</p>}
-      {data && /^language-exchange-social-house-z8oc-\d{8}$/.test(slug) && <EventPractice slug={slug} />}
       {forbidden ? <section className="mt-8 border-l-2 border-destructive p-4"><h2 className="font-semibold">{t("hostForbidden")}</h2><p className="mt-2 text-sm text-muted-foreground">{t("hostAskAccess")}</p></section> : <>
         <div className="my-5 flex flex-wrap items-center justify-between gap-2 border-y py-2">
           <p className="text-xs text-muted-foreground" role="status">{lastUpdated ? t("hostUpdated", { time: lastUpdated.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", second: "2-digit" }) }) : t("loading")}</p>
@@ -119,17 +122,13 @@ export function HostWorkspace({ slug }: { slug: string }) {
         </div>
         {error && <p role="alert" className="mb-4 border-l-2 border-destructive bg-destructive/5 p-3 text-sm">{error}</p>}
         {data && <>
-          <nav aria-label={t("hostTabs")} className="mb-6 flex overflow-x-auto border-b">
-            {tabs.map(item => (
-              <button type="button" key={item} onClick={() => setTab(item)} aria-current={visibleTab === item ? "page" : undefined} className={`min-h-12 flex-1 whitespace-nowrap border-b-2 px-4 font-medium ${visibleTab === item ? "border-primary text-foreground" : "border-transparent text-muted-foreground"}`}>
-                {t(`host${item === "arrivals" ? "Arrivals" : item === "orders" ? "Orders" : item === "sponsor" ? "Sponsor" : "Team"}`)}
-              </button>
-            ))}
-          </nav>
+          <HostTabs value={visibleTab} onChange={setTab} label={t("hostTabs")} items={tabs.map(value=>({value,label:value === "tables" ? game("tablesTab") : value === "arrivals" ? game("checkInTab") : t(`host${value === "orders" ? "Orders" : value === "sponsor" ? "Sponsor" : "Team"}`)}))}>
+          {visibleTab === "tables" && <EventPractice slug={slug} />}
           {visibleTab === "arrivals" && data.access.canWelcome && <HostArrivals data={data} slug={slug} guestPath={guestPath} busy={busy} onSaved={reload} />}
           {visibleTab === "orders" && data.access.canOrder && <HostOrders orders={data.orders} busy={busy} act={act} />}
           {visibleTab === "sponsor" && data.access.canManage && <>{data.event.sponsorship && <details className="mb-6"><summary className="cursor-pointer py-3 font-medium">{t("registration.editOffer")}</summary><DrinkOfferSettings key={`${data.event.sponsorship.rsvpLimit}:${data.event.sponsorship.eligibleItemIds.join(",")}`} slug={slug} limit={data.event.sponsorship.rsvpLimit ?? 100} itemIds={data.event.sponsorship.eligibleItemIds} menu={data.menu} onSaved={reload} /></details>}<SponsorLedger data={data} busy={busy} act={act} /></>}
           {visibleTab === "team" && data.access.canManage && <HostTeam staff={data.staff} busy={busy} act={act} />}
+          </HostTabs>
         </>}
       </>}
     </main>

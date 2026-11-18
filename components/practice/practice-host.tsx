@@ -65,6 +65,58 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
     setSelected(selected === id ? null : id);
   }
 
+  const selectedActions = person ? (<div className="mt-4 flex items-center gap-2">
+
+          {ticket && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={t("code")}
+              onClick={() => setTicketPerson(person.id)}
+            >
+              <QrCode aria-hidden />
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("previewGuest")}
+            onClick={() => setPreview(person.id)}
+          >
+            <Eye aria-hidden />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={busy}
+            aria-label={t("confirmPresent", { name: person.name })}
+            onClick={() =>
+              void act({
+                action: "presence",
+                participantId: person.id,
+                status: "present",
+              })
+            }
+          >
+            <Check aria-hidden />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            disabled={busy}
+            aria-label={t("markAbsent", { name: person.name })}
+            onClick={() =>
+              void act({
+                action: "presence",
+                participantId: person.id,
+                status: "absent",
+              })
+            }
+          >
+            <UserX aria-hidden />
+          </Button>
+        </div>) : null;
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-2">
@@ -148,9 +200,12 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
           </Button>
         </div>
       </div>
+      {view.count === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("noCheckedIn")}</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {view.groups.map((group, index) => {
           const table = view.assignments?.find((a) => a.groupIndex === index);
+          const visibleGroup = table ? group : group.filter(member => member.presence === "present");
+          if (!visibleGroup.length) return null;
           return (
             <section
               key={`${table?.tableNumber}-${index}`}
@@ -181,8 +236,8 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                 </span>
               </h3>
               <div className="space-y-2">
-                {group.map((member) => (
-                  <button
+                {visibleGroup.map((member) => (
+                  <div key={member.id}><button
                     key={member.id}
                     type="button"
                     draggable
@@ -206,7 +261,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                     className="practice-person-button min-h-12 w-full rounded-lg p-1 text-left"
                   >
                     <PracticePerson person={member} showSpeaks={selected === member.id} />
-                  </button>
+                  </button>{selected === member.id && selectedActions}</div>
                 ))}
                 {group.length < 4 && table && (
                   <Button
@@ -231,59 +286,6 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
           );
         })}
       </div>
-      {person && (
-        <div className="mt-4 flex items-center gap-2">
-          <span className="mr-auto text-sm">{person.name}</span>
-          {ticket && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t("code")}
-              onClick={() => setTicketPerson(person.id)}
-            >
-              <QrCode aria-hidden />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("previewGuest")}
-            onClick={() => setPreview(person.id)}
-          >
-            <Eye aria-hidden />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={busy}
-            aria-label={t("confirmPresent", { name: person.name })}
-            onClick={() =>
-              void act({
-                action: "presence",
-                participantId: person.id,
-                status: "present",
-              })
-            }
-          >
-            <Check aria-hidden />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={busy}
-            aria-label={t("markAbsent", { name: person.name })}
-            onClick={() =>
-              void act({
-                action: "presence",
-                participantId: person.id,
-                status: "absent",
-              })
-            }
-          >
-            <UserX aria-hidden />
-          </Button>
-        </div>
-      )}
       {ticket && ticketPerson && (
         <PracticeTicket
           person={people.find((p) => p.id === ticketPerson)!}

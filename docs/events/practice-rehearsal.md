@@ -51,3 +51,9 @@ Real-event turn position is stored only on the shared device, keyed by event, ta
 Language-exchange event pages and the rehearsal skip automatic cross-app account probing. Signed-out staff use the normal DaLat sign-in; opening a guest ticket never initiates an EZViet redirect. Explicit account linking elsewhere is unchanged.
 
 Guests receive a physical table only after a checked-in Vietnamese-English pair can be formed. Unmatched guests and RSVP-only guests stay in the host waiting pool, with no guessed table and no other waiting guests exposed in their guest view. Compatible check-ins form tables automatically; late arrivals can fill mixed tables without moving seated guests. If no physical table remains, the group stays waiting instead of sharing a table number with an unrelated group.
+
+## Opening-night desk
+
+The rehearsal now starts with 50 expected guests and zero checked in. `Check-in`, `Tables`, and `Guest view` share one tab bar. Check-in has a visible sample QR, name search, explicit per-person Check in actions, and an X to mark someone absent. The sample QR opens a separate, isolated guest rehearsal; it does not synchronize attendance between devices or touch the real event. Use Guest view in the same rehearsal to observe its current assignment. The optional Check in all sample guests action is inside rehearsal details.
+
+The real staff desk uses the same Check-in / Tables navigation before its existing orders, sponsor, and team tools. Check-in opens by default, and its real door QR is visible immediately. Existing @username/email search and walk-in forms remain the real check-in path. The existing invitation dialog is available here too; it does not mark an invitee present. Selecting a person on a table shows controls beside that person, including guest preview, receipt QR, and attendance correction.

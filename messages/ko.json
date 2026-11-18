@@ -4355,6 +4355,15 @@
     "saveAccountLater": "선택 사항이에요. 어느 쪽이든 체크인은 그대로 유지돼요."
   },
   "eventPractice": {
+    "sampleQr": "예시 QR",
+    "checkInTab": "체크인",
+    "tablesTab": "테이블",
+    "checkIn": "체크인",
+    "checkedIn": "체크인 완료",
+    "findGuest": "참가자 찾기",
+    "noCheckedIn": "테이블을 구성하려면 참가자를 체크인해 주세요",
+    "rehearsalCheckInAll": "모든 예시 참가자 체크인",
+
     "findingTable": "테이블을 찾고 있어요…",
     "waitingList": "대기 중",
 

@@ -32,6 +32,7 @@ interface InviteModalProps {
    * Computed on the server so the label can't disagree with the rest of the page.
    */
   isPast?: boolean;
+  showLabel?: boolean;
 }
 
 interface InviteResult {
@@ -60,7 +61,7 @@ type Invitee =
   | { type: "user"; user: UserSearchResult }
   | { type: "audience"; key: string; count: number };
 
-export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, isAdmin = false, isPast = false }: InviteModalProps) {
+export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt, isAdmin = false, isPast = false, showLabel = false }: InviteModalProps) {
   const t = useTranslations("invite");
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -439,9 +440,9 @@ export function InviteModal({ eventSlug, eventTitle, eventDescription, startsAt,
   <>
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button variant="outline" size="sm" className={`gap-2 ${showLabel ? "min-h-12" : ""}`} aria-label={isPast ? t("addWhoWasThere") : t("inviteGuests")}>
           {isPast ? <UserCheck className="w-4 h-4" /> : <UserPlus className="w-4 h-4" />}
-          <span className="hidden sm:inline">
+          <span className={showLabel ? "" : "hidden sm:inline"}>
             {isPast ? t("addWhoWasThere") : t("inviteGuests")}
           </span>
         </Button>

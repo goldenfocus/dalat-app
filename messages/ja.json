@@ -4355,6 +4355,15 @@
     "saveAccountLater": "任意です。どちらでもチェックインはそのまま残ります。"
   },
   "eventPractice": {
+    "sampleQr": "サンプルQR",
+    "checkInTab": "受付",
+    "tablesTab": "テーブル",
+    "checkIn": "受付する",
+    "checkedIn": "受付済み",
+    "findGuest": "ゲストを探す",
+    "noCheckedIn": "テーブル分けをするには、ゲストの受付を済ませてください",
+    "rehearsalCheckInAll": "サンプルのゲスト全員を受付",
+
     "findingTable": "テーブルを探しています…",
     "waitingList": "待機中",
 

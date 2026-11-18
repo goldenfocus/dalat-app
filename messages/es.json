@@ -4355,6 +4355,15 @@
     "saveAccountLater": "Totalmente opcional. Tu check-in se queda igual."
   },
   "eventPractice": {
+    "sampleQr": "QR de prueba",
+    "checkInTab": "Llegadas",
+    "tablesTab": "Mesas",
+    "checkIn": "Registrar",
+    "checkedIn": "Registrado",
+    "findGuest": "Buscar invitado",
+    "noCheckedIn": "Registra invitados para formar mesas",
+    "rehearsalCheckInAll": "Registrar a todos los invitados de prueba",
+
     "findingTable": "Buscando tu mesa…",
     "waitingList": "En espera",
 
