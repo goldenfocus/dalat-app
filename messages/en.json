@@ -2701,7 +2701,11 @@
     "showMyLocation": "Show my location"
   },
   "calendarView": {
-    "views": {"day": "Day", "week": "Week", "month": "Month"},
+    "views": {
+      "day": "Day",
+      "week": "Week",
+      "month": "Month"
+    },
     "view": "Calendar view",
     "selectDay": "Select a day",
     "days": {
@@ -3185,7 +3189,13 @@
       "thisOnly": "This event only",
       "future": "This and future events",
       "all": "All events in series"
-    }
+    },
+    "saveFile": "Save to Photos",
+    "openFile": "Open file",
+    "copyDownloadLink": "Copy download link",
+    "downloadHelp": "Once ready, tap Save to Photos, then choose Save Video or Save Image in the iPhone share sheet. If unavailable, open the link in Safari.",
+    "downloadLinkCopied": "Download link copied. Paste it into your browser to save.",
+    "downloadCopyFailed": "Copy the link below and open it in your browser."
   },
   "comments": {
     "title": "Comments",

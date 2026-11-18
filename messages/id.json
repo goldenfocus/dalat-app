@@ -2348,7 +2348,13 @@
       "thisOnly": "Hanya acara ini",
       "future": "Acara ini dan mendatang",
       "all": "Semua acara dalam seri"
-    }
+    },
+    "saveFile": "Simpan ke Foto",
+    "openFile": "Buka file",
+    "copyDownloadLink": "Salin tautan unduhan",
+    "downloadHelp": "Setelah siap, ketuk Simpan ke Foto, lalu pilih Simpan Video atau Simpan Gambar di menu berbagi iPhone. Jika tidak tersedia, buka tautan di Safari.",
+    "downloadLinkCopied": "Tautan disalin. Tempel di browser untuk menyimpan.",
+    "downloadCopyFailed": "Salin tautan di bawah dan buka di browser Anda."
   },
   "comments": {
     "title": "Komentar",
@@ -2717,7 +2723,11 @@
     "showMyLocation": "Tampilkan lokasi saya"
   },
   "calendarView": {
-    "views": {"day": "Hari", "week": "Minggu", "month": "Bulan"},
+    "views": {
+      "day": "Hari",
+      "week": "Minggu",
+      "month": "Bulan"
+    },
     "view": "Tampilan kalender",
     "selectDay": "Pilih hari",
     "days": {

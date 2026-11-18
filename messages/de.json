@@ -2658,7 +2658,11 @@
     "showMyLocation": "Meinen Standort anzeigen"
   },
   "calendarView": {
-    "views": {"day": "Tag", "week": "Woche", "month": "Monat"},
+    "views": {
+      "day": "Tag",
+      "week": "Woche",
+      "month": "Monat"
+    },
     "view": "Kalenderansicht",
     "selectDay": "Tag auswählen",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "Nur dieses Event",
       "future": "Dieses und zukünftige Events",
       "all": "Alle Events der Serie"
-    }
+    },
+    "saveFile": "In Fotos sichern",
+    "openFile": "Datei öffnen",
+    "copyDownloadLink": "Download-Link kopieren",
+    "downloadHelp": "Sobald die Datei bereit ist, tippe auf In Fotos sichern und dann auf Video oder Bild sichern im Teilen-Menü des iPhones. Falls nicht verfügbar, öffne den Link in Safari.",
+    "downloadLinkCopied": "Download-Link kopiert. Zum Speichern im Browser einfügen.",
+    "downloadCopyFailed": "Kopiere den Link unten und öffne ihn im Browser."
   },
   "comments": {
     "title": "Kommentare",

@@ -2348,7 +2348,13 @@
       "thisOnly": "Solo este evento",
       "future": "Este evento y futuros",
       "all": "Todos los eventos de la serie"
-    }
+    },
+    "saveFile": "Guardar en Fotos",
+    "openFile": "Abrir archivo",
+    "copyDownloadLink": "Copiar enlace de descarga",
+    "downloadHelp": "Cuando esté listo, toca Guardar en Fotos y elige Guardar vídeo o Guardar imagen en el menú de compartir del iPhone. Si no aparece, abre el enlace en Safari.",
+    "downloadLinkCopied": "Enlace copiado. Pégalo en tu navegador para guardar.",
+    "downloadCopyFailed": "Copia el enlace de abajo y ábrelo en tu navegador."
   },
   "comments": {
     "title": "Comentarios",
@@ -2717,7 +2723,11 @@
     "showMyLocation": "Mostrar mi ubicación"
   },
   "calendarView": {
-    "views": {"day": "Día", "week": "Semana", "month": "Mes"},
+    "views": {
+      "day": "Día",
+      "week": "Semana",
+      "month": "Mes"
+    },
     "view": "Vista del calendario",
     "selectDay": "Selecciona un día",
     "days": {

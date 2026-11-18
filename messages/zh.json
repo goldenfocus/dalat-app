@@ -2658,7 +2658,11 @@
     "showMyLocation": "显示我的位置"
   },
   "calendarView": {
-    "views": {"day": "日", "week": "周", "month": "月"},
+    "views": {
+      "day": "日",
+      "week": "周",
+      "month": "月"
+    },
     "view": "日历视图",
     "selectDay": "选择日期",
     "days": {
@@ -3154,7 +3158,13 @@
       "thisOnly": "仅此活动",
       "future": "此活动和未来活动",
       "all": "系列中所有活动"
-    }
+    },
+    "saveFile": "存储到照片",
+    "openFile": "打开文件",
+    "copyDownloadLink": "复制下载链接",
+    "downloadHelp": "文件准备好后，点击存储到照片，然后在 iPhone 分享菜单中选择存储视频或存储图像。如果没有此选项，请在 Safari 中打开链接。",
+    "downloadLinkCopied": "下载链接已复制。粘贴到浏览器中即可保存。",
+    "downloadCopyFailed": "复制下方链接并在浏览器中打开。"
   },
   "comments": {
     "title": "评论",
