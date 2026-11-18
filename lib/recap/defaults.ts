@@ -1,10 +1,11 @@
-import { seededIndex } from "../cinema/resolve-soundtrack";
+import { selectKenBurnsPresetId } from "../cinema/ken-burns-effects";
+import { selectTransition } from "../cinema/transitions";
 
 /**
- * Tiny local stand-ins for the motion and transition catalogue that lives in
- * lib/cinema. The builder accepts injected pickers with these exact shapes, so
- * the real catalogue can replace these later without touching the builder.
- * Ids mirror the existing Ken Burns / transition names; they are plain strings.
+ * Default motion and transition pickers for the recap builder. They delegate to
+ * the cinema catalogue (lib/cinema), so the in-browser player and a rendered
+ * recap choose from the same persisted preset ids. The builder still accepts
+ * injected pickers with these shapes.
  */
 
 export type RecapOrientation = "portrait" | "landscape" | "square" | "unknown";
@@ -18,19 +19,15 @@ export interface PickedTransition {
 
 export type PickTransition = (seed: string, momentId: string, index: number) => PickedTransition;
 
-const ANY_MOTION = ["zoom-in-center", "zoom-out-center", "zoom-pan-left", "zoom-pan-right", "zoom-pan-up", "zoom-pan-down", "drift-top-left", "drift-bottom-right"];
-// Horizontal pans on a portrait frame crop away most of the picture.
-const PORTRAIT_MOTION = ["zoom-in-center", "zoom-out-center", "zoom-pan-up", "zoom-pan-down"];
-const TRANSITIONS = ["crossfade", "fade-black", "zoom-blur", "slide-push"];
+/** Longest a transition may run inside a recap shot (shots are only 2-3 s). */
+const MAX_RECAP_TRANSITION_MS = 400;
 
-export const defaultPickMotion: PickMotion = (seed, momentId, index, orientation) => {
-  const pool = orientation === "portrait" ? PORTRAIT_MOTION : ANY_MOTION;
-  // Offsetting by index keeps neighbouring shots from repeating the same preset.
-  return pool[(seededIndex(`${seed}:${momentId}:motion`, pool.length) + index) % pool.length];
-};
+export const defaultPickMotion: PickMotion = (seed, momentId, index, orientation) =>
+  selectKenBurnsPresetId(seed, momentId, index, orientation === "portrait");
 
 export const defaultPickTransition: PickTransition = (seed, momentId, index) => {
-  if (index === 0) return { id: "crossfade", durationMs: 400 };
-  const pool = TRANSITIONS;
-  return { id: pool[(seededIndex(`${seed}:${momentId}:transition`, pool.length) + index) % pool.length], durationMs: 400 };
+  // Content types are not known here; photo-to-photo rules give a crossfade
+  // with an occasional slide. The first shot always fades in.
+  const preset = index === 0 ? selectTransition("video", "video", seed, momentId, index) : selectTransition(null, null, seed, momentId, index);
+  return { id: preset.id, durationMs: Math.min(preset.durationMs, MAX_RECAP_TRANSITION_MS) };
 };
