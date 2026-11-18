@@ -33,6 +33,9 @@ export async function runWorker(deps: LoopDeps): Promise<void> {
         log(`claimed ${job.kind} job ${job.id} (attempt ${job.attempts}/${job.max_attempts})`);
         const outcome = await runJob(job, { ...deps });
         log(`job ${job.id} ${outcome}`);
+        // A released job (dry run, shutdown) is queued again at once; without a
+        // pause the loop would re-claim it immediately, forever.
+        if (outcome === "released") idle = true;
       } else idle = true;
     } catch (err) {
       if (deps.mode === "once") throw err;

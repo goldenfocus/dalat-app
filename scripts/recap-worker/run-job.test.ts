@@ -126,6 +126,21 @@ describe("runWorker", () => {
   });
 });
 
+describe("runWorker dry run", () => {
+  it("--loop --dry-run: pauses after releasing a job instead of re-claiming it at once", async () => {
+    const stop = new AbortController();
+    const claim = vi.fn().mockResolvedValue(job);
+    const sleep = vi.fn(async () => { stop.abort(); });
+    await runWorker({
+      queue: fakeQueue({ claim }), renderer: dryRunRenderer, workerId: "w1", kinds: ["recap_short"],
+      mode: "loop", dryRun: true, pollIntervalMs: 5, heartbeatIntervalMs: 60_000, staleAfterSeconds: 600,
+      shutdown: stop.signal, log: () => {}, sleep,
+    });
+    expect(claim).toHaveBeenCalledTimes(1);
+    expect(sleep).toHaveBeenCalledTimes(1);
+  });
+});
+
 describe("createQueue", () => {
   it("validates rows and passes only named RPC parameters", async () => {
     const rpc = vi.fn().mockResolvedValue({ data: [job], error: null });

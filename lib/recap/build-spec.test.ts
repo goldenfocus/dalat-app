@@ -147,6 +147,17 @@ describe("snapToBeat", () => {
   });
 });
 
+describe("captions", () => {
+  it("accepts an emoji caption at the length limit instead of rejecting the recap", () => {
+    const emoji = "🎉".repeat(120); // 240 UTF-16 units, truncated to 90 code points
+    const built = buildRecapSpec(make(many(12).map((m) => ({ ...m, caption: emoji }))));
+    expect(built.reason).toBeNull();
+    const captions = built.spec!.shots.map((shot) => shot.caption?.text).filter(Boolean) as string[];
+    expect(captions.length).toBeGreaterThan(0);
+    for (const text of captions) expect(Array.from(text).length).toBeLessThanOrEqual(90);
+  });
+});
+
 describe("sourceHash", () => {
   it("is stable and sensitive to relevant input", () => {
     const input = many(12);
@@ -156,6 +167,12 @@ describe("sourceHash", () => {
     expect(buildRecapSpec(make(changed)).spec!.sourceHash).not.toBe(a);
     expect(buildRecapSpec(make(input), { seed: "other" }).spec!.sourceHash).not.toBe(a);
     expect(buildRecapSpec(make(input), { catalogueVersion: "2" }).spec!.sourceHash).not.toBe(a);
+  });
+
+  it("changes when a caption's source locale changes", () => {
+    const input = many(12).map((m, i) => (i === 3 ? { ...m, caption: "Chợ đêm", sourceLocale: "vi" } : m));
+    const relabelled = input.map((m, i) => (i === 3 ? { ...m, sourceLocale: "en" } : m));
+    expect(buildRecapSpec(make(relabelled)).spec!.sourceHash).not.toBe(buildRecapSpec(make(input)).spec!.sourceHash);
   });
 
   it("ignores unpublished moments but changes when one is unpublished", () => {

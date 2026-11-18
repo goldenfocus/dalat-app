@@ -44,7 +44,8 @@ const transitionSchema = z.object({
 });
 
 const captionSchema = z.object({
-  text: z.string().min(1).max(RECAP_CAPTION_MAX_CHARS),
+  // Counted in code points, as the builder truncates: emoji are two UTF-16 units each.
+  text: z.string().min(1).refine((s) => Array.from(s).length <= RECAP_CAPTION_MAX_CHARS, "caption too long"),
   /** Locale the text was written in; renderers localize or show the original. */
   sourceLocale: z.string().min(2).max(35).nullable(),
 });

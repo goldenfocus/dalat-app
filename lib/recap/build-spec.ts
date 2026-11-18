@@ -373,6 +373,7 @@ function hashInputs(input: RecapBuildInput, eligible: readonly Candidate[], soun
       w: positiveInt(c.moment.width),
       h: positiveInt(c.moment.height),
       caption: cleanCaption(c.moment.caption),
+      locale: c.moment.sourceLocale ?? null,
       credit: cleanCredit(c.moment.creditName),
       time: c.time,
       score: c.score,
