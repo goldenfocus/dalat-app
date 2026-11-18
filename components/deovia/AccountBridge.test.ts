@@ -19,7 +19,7 @@ beforeEach(()=>{
   state.getUser.mockResolvedValue({data:{user:null}});
   vi.stubGlobal('fetch',vi.fn(()=>new Promise(resolve=>{finish=resolve;})));
 });
-afterEach(()=>{state.cleanup?.();vi.unstubAllGlobals();vi.clearAllMocks();});
+afterEach(()=>{state.cleanup?.();state.cleanup=undefined;vi.unstubAllGlobals();vi.clearAllMocks();});
 it('discovers an existing peer session while an untouched page remains current',async()=>{
   AccountBridge();await flush();finish({ok:true,json:async()=>({enabled:true})});await flush();
   expect(loc.replace).toHaveBeenCalledWith('/auth/deovia/start?next=%2Fmeet');
@@ -36,4 +36,18 @@ it('rechecks the current path after the asynchronous status body',async()=>{
   AccountBridge();await flush();let parsed:(v:unknown)=>void=()=>{};
   finish({ok:true,json:()=>new Promise(resolve=>{parsed=resolve;})});await flush();
   loc.pathname='/login';parsed({enabled:true});await flush();expect(loc.replace).not.toHaveBeenCalled();
+});
+
+it.each([
+  '/practice/rehearsal', '/vi/practice/rehearsal',
+  '/events/language-exchange-social-house-z8oc-20261118/host',
+  '/fr/events/language-exchange-social-house-z8oc-20261118/play',
+  '/events/language-exchange-social-house-z8oc-20261118/arrive',
+  '/events/language-exchange-social-house-z8oc-20261118',
+])('keeps fresh event visits on DaLat: %s', async path => {
+  loc.pathname=path;
+  AccountBridge();await flush();
+  expect(state.getUser).not.toHaveBeenCalled();
+  expect(fetch).not.toHaveBeenCalled();
+  expect(loc.replace).not.toHaveBeenCalled();
 });

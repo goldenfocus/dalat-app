@@ -61,8 +61,8 @@ beforeEach(() => {
   rows = {
     event_arrival_participants: [
       { id: "owner-arrival", event_id: "event", user_id: "owner", nickname: "Working owner", checked_in_at: "2026-11-04T11:00Z", practice_language: "english" },
-      { id: "player-a", event_id: "event", user_id: "a", nickname: "Player A", checked_in_at: "2026-11-04T11:01Z", practice_language: "english" },
-      { id: "player-b", event_id: "event", user_id: null, nickname: "Player B", checked_in_at: "2026-11-04T11:02Z", practice_language: "vietnamese" },
+      { id: "player-a", event_id: "event", user_id: "a", nickname: "Player A", vietnamese_level: "native", checked_in_at: "2026-11-04T11:01Z", practice_language: "english" },
+      { id: "player-b", event_id: "event", user_id: null, nickname: "Player B", english_level: "native", checked_in_at: "2026-11-04T11:02Z", practice_language: "vietnamese" },
     ],
     rsvps: [{ id: "no-show", event_id: "event", user_id: "absent", status: "going", checked_in_at: null, profiles: { display_name: "Not arrived" } }],
     event_practice_rooms: [{ event_id: "event", revision: 0, state: { rounds: [], presence: { "owner-arrival": "present", "player-a": "present", "player-b": "present" } } }], event_staff: [],
@@ -136,7 +136,7 @@ describe("practice mutations", () => {
     const started = await mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: revision() });
     expect(started.groups.flat()).toHaveLength(3);
     expect(state()?.rounds[0].groups).toEqual(draft.draft?.groups);
-    expect(state()?.rounds[0].assignments).toEqual(draft.draft?.assignments);
+    expect(state()?.rounds[0].assignments?.map(({ mixedReady: _ready, ...seat }) => seat)).toEqual(draft.draft?.assignments);
     await expect(mutatePractice(slug, { action: "start", draftId: draft.draft!.id, expectedRevision: draft.revision! })).rejects.toThrow("status_conflict");
     expect(state()?.rounds).toHaveLength(1);
   });
@@ -148,7 +148,7 @@ describe("practice mutations", () => {
     const seated = await readPractice(slug);
     expect(seated.me?.id).toBe("late");
     expect(seated.presence).toBe("present");
-    expect(seated.myGroup?.map(p => p.id).sort()).toEqual(["late", "player-a", "player-b", "rsvp:no-show"]);
+    expect(seated.myGroup?.map(p => p.id).sort()).toEqual(["late", "player-a", "player-b"]);
     expect(seated.myTable?.tableNumber).toBe(table);
     expect(seated.participants).toBeUndefined();
   });
@@ -313,7 +313,7 @@ describe("door and staff arrival confirmation", () => {
     mocked.ownReceipt.mockResolvedValue({ participant: { id: "late" } });
     const view = await readPractice(slug);
     expect(view.myTable?.tableNumber).toBeTruthy();
-    expect(view.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b", "rsvp:no-show"]);
+    expect(view.myGroup?.map(person => person.id).sort()).toEqual(["late", "player-a", "player-b"]);
   });
   it("is idempotent and never seats working staff", async () => {
     await startRound();
@@ -405,7 +405,7 @@ it("honors a ticket issued before an RSVP becomes an arrival", async () => {
   expect((await claimPracticeTicket(slug, issued.token)).view.me?.id).toBe("new-arrival");
 });
 
-it("checks in only the RSVP named by a valid guest receipt and keeps the reserved table", async () => {
+it("checks in only the RSVP named by a valid guest receipt and then assigns a mixed table", async () => {
   process.env.SUPABASE_SERVICE_ROLE_KEY = "local-unit-test-secret";
   const planned = await readPractice(slug);
   const table = planned.assignments?.find(a => planned.groups[a.groupIndex].some(p => p.id === "rsvp:no-show"))?.tableNumber;
@@ -422,5 +422,26 @@ it("checks in only the RSVP named by a valid guest receipt and keeps the reserve
   const arrived = await mutatePractice(slug, { action: "arrive", expectedRevision: revision() });
   expect(arrived.me?.id).toBe("claimed-arrival");
   expect(arrived.presence).toBe("present");
-  expect(arrived.myTable?.tableNumber).toBe(table);
+  expect(table).toBeUndefined();
+  expect(arrived.myTable?.tableNumber).toBeTruthy();
+});
+
+it("automatically seats a mixed group when a Vietnamese guest joins four waiting English speakers", async () => {
+  rows.event_arrival_participants = Array.from({length:4}, (_, i) => ({
+    id:`english-${i}`, event_id:"event", user_id:null, nickname:`English ${i}`,
+    checked_in_at:"now", practice_language:"vietnamese", english_level:"native",
+  }));
+  rows.rsvps = [];
+  rows.event_practice_rooms[0].state = {rounds:[]};
+  const waiting = await readPractice(slug);
+  expect(waiting.assignments).toHaveLength(0);
+  expect(waiting.count).toBe(4);
+  rows.event_arrival_participants.push({id:"vietnamese",event_id:"event",user_id:null,nickname:"Vietnamese partner",checked_in_at:"now",practice_language:"english",vietnamese_level:"native"});
+  expect(await confirmArrival(slug,"vietnamese")).toBe(true);
+  const ready = await readPractice(slug);
+  expect(ready.round).toBeNull();
+  expect(ready.assignments).toHaveLength(1);
+  const group = ready.groups[ready.assignments![0].groupIndex];
+  expect(group.some(p=>p.speaks.includes("vi"))).toBe(true);
+  expect(group.some(p=>p.speaks.includes("en"))).toBe(true);
 });

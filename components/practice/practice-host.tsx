@@ -62,29 +62,9 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
     presence: previewPerson?.presence,
   };
   function choose(id: string) {
-    if (
-      !selected ||
-      !people.some((p) => p.id === selected) ||
-      selected === id
-    ) {
-      setSelected(selected === id ? null : id);
-      return;
-    }
-    const first = view.groups.findIndex((g) =>
-        g.some((p) => p.id === selected),
-      ),
-      second = view.groups.findIndex((g) => g.some((p) => p.id === id));
-    if (first === second) {
-      setSelected(id);
-      return;
-    }
-    void act({
-      action: "move",
-      participantId: selected,
-      withParticipantId: id,
-    });
-    setSelected(null);
+    setSelected(selected === id ? null : id);
   }
+
   return (
     <div>
       <div className="mb-6 flex items-center justify-between gap-2">
@@ -151,7 +131,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
             <Button
               size="icon"
               className="practice-primary h-12 w-12"
-              disabled={busy || view.count < 2}
+              disabled={busy || view.count < 2 || !view.assignments?.length}
               aria-label={t("startGame")}
               onClick={() => void act({ action: "startGame", minutes: 20 })}
             >
@@ -194,10 +174,10 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
             >
               <h3 className="mb-4 flex items-baseline gap-3">
                 <strong className="text-xl font-medium">
-                  {table?.tableNumber || index + 1}
+                  {table ? table.tableNumber : t("waitingPartner")}
                 </strong>
                 <span className="text-xs text-muted-foreground">
-                  {table?.floor === "upstairs" ? "↑2" : "↓1"}
+                  {table ? table.floor === "upstairs" ? "↑2" : "↓1" : ""}
                 </span>
               </h3>
               <div className="space-y-2">

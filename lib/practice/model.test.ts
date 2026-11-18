@@ -52,6 +52,7 @@ describe("practice from event attendance", () => {
   it("keeps other groups private and queues a late arrival without reshuffling", () => {
     const people = eight;
     const round = pairRound(people, [], 10);
+    round.assignments = round.groups.map((_, groupIndex) => ({groupIndex, tableNumber: groupIndex + 1, floor: "upstairs"}));
     const state = { rounds: [round] };
     const guest = practiceView(state, people, "a", false);
     expect(guest.groups).toHaveLength(1);

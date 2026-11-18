@@ -12,8 +12,8 @@ import { createRehearsal, mutateRehearsal, rehearsalView } from "./rehearsal-mod
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 const now = "2026-11-04T12:00:00.000Z";
 const anonymous: PracticeView = { canStart: false, count: 2, me: null, revision: 1, serverNow: now, tables: [{ number: 4, floor: "downstairs", capacity: 2, available: true }], floorPolicy: "balanced", draft: null, participation: null, myTable: null, round: { number: 1, startedAt: now, endsAt: "2026-11-04T12:12:00.000Z", minutes: 12, groups: [] }, groups: [], myGroup: [], myGroupNumber: null };
-const me = { id: "me", name: "Mai", number: 1, learns: "en", speaks: ["vi"] };
-const partner = { id: "partner", name: "Alex", number: 2, learns: "vi", speaks: ["en"] };
+const me = { id: "me", name: "Mai", number: 1, presence: "present" as const, learns: "en", speaks: ["vi"] };
+const partner = { id: "partner", name: "Alex", number: 2, presence: "present" as const, learns: "vi", speaks: ["en"] };
 const found: PracticeView = { ...anonymous, me, participation: "playing", groups: [[me, partner]], myGroup: [me, partner], myGroupNumber: 7, myTable: { groupIndex: 6, tableNumber: 4, floor: "downstairs" } };
 function fetchView(view: PracticeView) { vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => view })); }
 describe("event table flow", () => {
@@ -79,7 +79,7 @@ describe("event table flow", () => {
     expect(vi.mocked(fetch).mock.calls.every(([, init]) => init?.method !== "POST")).toBe(true);
   });
   it.each(["before check-in", "hosting"])("starts the planned seats while %s", async status => {
-    fetchView({ ...anonymous, canStart: true, round: null, ...(status === "hosting" ? { me, participation: "hosting" as const } : {}) });
+    fetchView({ ...anonymous, canStart: true, round: null, assignments: [{ groupIndex: 0, tableNumber: 4, floor: "downstairs" }], ...(status === "hosting" ? { me, participation: "hosting" as const } : {}) });
     render(<EventPractice slug="test"/>);
     fireEvent.click(await screen.findByRole("button", { name: en.eventPractice.startGame }));
     await waitFor(() => expect(vi.mocked(fetch).mock.calls.some(([, init]) => init?.body === JSON.stringify({ action: "startGame", minutes: 20, expectedRevision: 1 }))).toBe(true));
@@ -128,4 +128,13 @@ describe("authoritative round countdown", () => {
     expect(remainingSeconds({ ...anonymous.round!, pausedAt: now, remainingSeconds: 355 }, Date.parse(now) + 900_000)).toBe(355);
     expect(remainingSeconds({ ...anonymous.round!, endedAt: now }, Date.parse(now))).toBe(0);
   });
+});
+
+it("waits for a checked-in language partner before enabling the game", async () => {
+  const englishOnly = { ...partner, id: "other", name: "Robin" };
+  const view = { ...found, me: partner, myGroup: [partner, englishOnly], groups: [[partner, englishOnly]] };
+  fetchView(view);
+  render(<EventPractice slug="test" />);
+  expect(await screen.findByRole("button", { name: "Play" })).toBeDisabled();
+  expect(screen.getByText(en.eventPractice.waitingPartner)).toBeVisible();
 });

@@ -5,7 +5,7 @@ export type Participation = "playing" | "visiting" | "break" | "left" | "hosting
 export type Presence = "pending" | "present" | "absent";
 export type FloorPolicy = "balanced" | "downstairs" | "upstairs";
 export type Table = { number: number; floor: "downstairs" | "upstairs"; capacity: number; available: boolean; bar?: boolean };
-export type TableAssignment = { groupIndex: number; tableNumber: number; floor: Table["floor"] };
+export type TableAssignment = { groupIndex: number; tableNumber: number; floor: Table["floor"]; mixedReady?: boolean };
 export type Person = { id: string; name: string; speaks: string[]; learns: string | null; learningLanguages?: string[]; arrived?: boolean; presence?: Presence; receiptCode?: string; number?: number; avatarUrl?: string; learningLevel?: string | null; speakingLevels?: Record<string, string> };
 export type Seating = { groups: Person[][]; assignments: TableAssignment[]; locked?: boolean };
 export type Round = { number: number; startedAt: string; minutes: number; groups: Person[][]; endsAt?: string; pausedAt?: string; remainingSeconds?: number; endedAt?: string; changeoverEndsAt?: string; assignments?: TableAssignment[] };
@@ -79,6 +79,11 @@ function metPairs(rounds: Round[]): Set<string> {
     for (const a of group) for (const b of group) if (a.id !== b.id) met.add(pairKey(a.id, b.id));
   return met;
 }
+/** A table needs two different people covering Vietnamese and English. */
+export function hasMixedLanguagePair(people: Person[]): boolean {
+  return people.some(a => a.speaks.includes("vi") && people.some(b => b.id !== a.id && b.speaks.includes("en")));
+}
+
 const speaksVietnamese = (person: Person) => person.speaks.includes("vi");
 
 /**
@@ -290,16 +295,17 @@ export function practiceView(state: PracticeState, people: Person[], ownId: stri
   const groups = (state.seating?.groups || current?.groups || []).map(group => group.map(person => livePeople.get(person.id) || person));
   const assignments = state.seating?.assignments || current?.assignments;
   const myGroupIndex = groups.findIndex(g => g.some(p => p.id === ownId));
+  const myTable = assignments?.find(a => a.groupIndex === myGroupIndex) || null;
   return {
     canStart, revision, serverNow: now.toISOString(),
     count: eligiblePeople(state, people, staffIds).length, me: numbered.find(p => p.id === ownId) ? publicPerson(numbered.find(p => p.id === ownId)!) : null,
     participation: ownId && people.some(p => p.id === ownId) ? participantStatus(state, ownId, staffIds) : null,
     presence: ownId && people.some(p => p.id === ownId) ? presenceStatus(state, ownId, people.find(p => p.id === ownId)) : null,
     round: current ? { ...current, groups: [], assignments: canStart ? current.assignments : current.assignments?.filter(a => a.groupIndex === myGroupIndex) } : null,
-    groups: canStart ? groups : groups.filter(g => g.some(p => p.id === ownId)),
-    myGroup: myGroupIndex < 0 ? [] : groups[myGroupIndex],
-    myGroupNumber: myGroupIndex < 0 ? null : myGroupIndex + 1,
-    myTable: assignments?.find(a => a.groupIndex === myGroupIndex) || null,
+    groups: canStart ? groups : myTable ? groups.filter(g => g.some(p => p.id === ownId)) : [],
+    myGroup: myGroupIndex < 0 || (!canStart && !myTable) ? [] : groups[myGroupIndex],
+    myGroupNumber: !myTable ? null : myGroupIndex + 1,
+    myTable,
     planned: !current,
     ...(canStart ? { assignments } : {}),
     tables: state.tables || DEFAULT_TABLES, floorPolicy: state.floorPolicy || "balanced",

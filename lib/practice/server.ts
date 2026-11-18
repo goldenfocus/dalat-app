@@ -4,7 +4,7 @@ import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { arrivalContext, guestToken, ownReceipt, participantColumns, tokenHash } from "@/lib/arrival/server";
 import type { ArrivalParticipant } from "@/lib/arrival/types";
-import { arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
+import { hasMixedLanguagePair, arrivalPerson, assignTables, DEFAULT_ROUND_MINUTES, DEFAULT_TABLES, eligiblePeople, numberPeople, pairRound, practiceView, remainingSeconds, rosterFingerprint, swapDraftParticipants, updateClock, type FloorPolicy, type Participation, type Person, type PracticeState, type Table } from "./model";
 import { languagePreferencesSchema, learningTargets } from "@/lib/arrival/languages";
 import { legacyLanguageChoices } from "@/lib/arrival/language-compat";
 import { moveSeat, planSeating, remapSeatingIdentity } from "./seating";
@@ -265,6 +265,7 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
     if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current) > 0)) throw new Error("status_conflict");
     if (eligiblePeople(state, c.people, c.staffIds).length < 2) throw new Error("invalid_roster");
     const seating = planSeating(state, c.people, c.staffIds);
+    if (!seating.assignments.length) throw new Error("invalid_roster");
     const minutes = mutation.minutes ?? DEFAULT_ROUND_MINUTES;
     const now = new Date();
     const round = { number: state.rounds.length + 1, startedAt: now.toISOString(), endsAt: new Date(now.getTime() + minutes * 60000).toISOString(), minutes, groups: seating.groups, assignments: seating.assignments };
@@ -298,7 +299,7 @@ export async function mutatePractice(slug: string, mutation: PracticeMutation) {
       const current = state.rounds.at(-1);
       if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current) > 0)) throw new Error("status_conflict");
       const now = new Date();
-      state = { ...state, seating: { groups: draft.groups, assignments: draft.assignments, locked: true }, rounds: [...state.rounds, {
+      state = { ...state, seating: { groups: draft.groups, assignments: draft.assignments.filter(a => hasMixedLanguagePair(draft.groups[a.groupIndex])).map(a => ({...a, mixedReady: true})), locked: true }, rounds: [...state.rounds, {
         number: draft.round, minutes: draft.minutes, groups: draft.groups, assignments: draft.assignments,
         startedAt: now.toISOString(), endsAt: new Date(now.getTime() + draft.minutes * 60_000).toISOString(),
       }], draft: null };

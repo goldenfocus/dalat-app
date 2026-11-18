@@ -7,6 +7,8 @@ export function AccountBridge() {
   const pathname = usePathname();
   useEffect(() => {
     if (/^\/(?:[a-z]{2}\/)?(?:auth|login|onboarding)(?:[/?]|$)/.test(location.pathname)) return;
+    // Event entry must stay in DaLat, including fresh guest and staff sessions.
+    if (/^\/(?:[a-z]{2}\/)?(?:practice\/rehearsal(?:\/|$)|events\/language-exchange-social-house-z8oc-\d{8}(?:\/|$))/.test(location.pathname)) return;
     let stopped = false;
     let interrupted = false;
     const initialPath = location.pathname + location.search;

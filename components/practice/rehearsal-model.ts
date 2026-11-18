@@ -44,6 +44,7 @@ export function mutateRehearsal(session: Rehearsal, payload: Record<string, unkn
     if (current && !current.endedAt && (current.pausedAt || remainingSeconds(current, now) > 0)) throw new Error("status_conflict");
     if (eligiblePeople(state, session.people, new Set(["sample-host"])).length < 2) throw new Error("invalid_roster");
     const seating = planSeating(state, session.people, new Set(["sample-host"]));
+    if (!seating.assignments.length) throw new Error("invalid_roster");
     const minutes = payload.minutes === undefined ? DEFAULT_ROUND_MINUTES : Number(payload.minutes);
     const round = { number: state.rounds.length + 1, startedAt: now.toISOString(), endsAt: new Date(now.getTime() + minutes * 60000).toISOString(), minutes, groups: seating.groups, assignments: seating.assignments };
     state = { ...state, rounds: [...state.rounds, round], draft: null };

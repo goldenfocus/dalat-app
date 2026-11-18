@@ -2,7 +2,9 @@ import {
   assignTables,
   DEFAULT_TABLES,
   pairRound,
+  hasMixedLanguagePair,
   participantStatus,
+  presenceStatus,
   type Person,
   type PracticeState,
   type Seating,
@@ -52,7 +54,8 @@ function newAssignment(
   const free = tables.filter(
     (table) => table.available && !used.has(table.number),
   );
-  const available = free.length ? free : tables;
+  if (!free.length) return undefined;
+  const available = free;
   const upstairs = seating.assignments.reduce(
     (sum, a) =>
       sum + (a.floor === "upstairs" ? seating.groups[a.groupIndex].length : 0),
@@ -68,96 +71,66 @@ function newAssignment(
   return {
     ...assignTables([seating.groups[index]], available, policy)[0],
     groupIndex: index,
+    mixedReady: true,
   };
 }
 
-/** RSVP plans can rebalance until arrival. Thereafter only explicit host moves change seats. */
+/** Assign only checked-in mixed groups; keep unmatched guests in a waiting pool. */
 export function planSeating(
   state: PracticeState,
   people: Person[],
   staffIds: ReadonlySet<string> = new Set(),
 ): Seating {
-  const players = people.filter(
-    (p) => participantStatus(state, p.id, staffIds) === "playing",
-  );
+  const players = people.filter(p => participantStatus(state, p.id, staffIds) === "playing");
+  const present = players.filter(p => presenceStatus(state, p.id, p) === "present");
   const tables = state.tables || DEFAULT_TABLES;
-  const previous =
-    state.seating ||
-    (state.rounds.at(-1)?.assignments
-      ? {
-          groups: state.rounds.at(-1)!.groups,
-          assignments: state.rounds.at(-1)!.assignments!,
-          locked: true,
-        }
-      : null);
-  const locked =
-    previous?.locked ||
-    players.some((p) => p.arrived || state.presence?.[p.id] === "present");
-  if (!players.length) return { groups: [], assignments: [], locked: !!locked };
-  if (!previous || !locked) {
-    const groups =
-      players.length === 1
-        ? [players]
-        : pairRound(players, state.rounds).groups;
-    return {
-      groups,
-      assignments: assignTables(
-        groups,
-        tables,
-        state.floorPolicy || "balanced",
-      ),
-      locked: !!locked,
-    };
-  }
-  const current = new Map(players.map((p) => [p.id, p]));
+  const previous = state.seating || (state.rounds.at(-1)?.assignments ? {
+    groups: state.rounds.at(-1)!.groups, assignments: state.rounds.at(-1)!.assignments!, locked: true,
+  } : undefined);
+  const current = new Map(players.map(p => [p.id, p]));
   const seated = new Set<string>();
   const seating: Seating = { groups: [], assignments: [], locked: true };
-  for (const [index, group] of previous.groups.entries()) {
-    const remaining = group
-      .filter((p) => current.has(p.id) && !seated.has(p.id))
-      .map((p) => current.get(p.id)!);
-    if (!remaining.length) continue;
-    remaining.forEach((p) => seated.add(p.id));
-    const assignment = previous.assignments.find((a) => a.groupIndex === index);
-    seating.groups.push(remaining);
-    seating.assignments.push(
-      assignment
-        ? { ...assignment, groupIndex: seating.groups.length - 1 }
-        : newAssignment(seating, tables, state, seating.groups.length - 1),
-    );
+  // Preserve existing physical seats, including a temporarily absent partner.
+  for (const assignment of previous?.assignments || []) {
+    const group = (previous!.groups[assignment.groupIndex] || [])
+      .filter(p => current.has(p.id) && !seated.has(p.id)).map(p => current.get(p.id)!);
+    const readyNow = hasMixedLanguagePair(group.filter(p => presenceStatus(state, p.id, p) === "present"));
+    if (!group.length || (!assignment.mixedReady && !readyNow)) continue;
+    group.forEach(p => seated.add(p.id));
+    seating.assignments.push({ ...assignment, groupIndex: seating.groups.length, mixedReady: true });
+    seating.groups.push(group);
   }
-  for (const person of players.filter((p) => !seated.has(p.id))) {
-    const options = seating.groups
-      .map((group, index) => ({ group, index }))
-      .filter(({ group }) => group.length < 4);
-    const cost = (group: Person[]) => {
-      const languages = new Set(group.flatMap((p) => p.speaks));
-      const coverage = ["vi", "en"].filter(
-        (language) =>
-          !languages.has(language) && person.speaks.includes(language),
-      ).length;
-      const shared = group.filter(
-        (p) =>
-          (p.learningLanguages || [p.learns]).some(
-            (language) => language && person.speaks.includes(language),
-          ) ||
-          (person.learningLanguages || [person.learns]).some(
-            (language) => language && p.speaks.includes(language),
-          ),
-      ).length;
-      return group.length * 10 - coverage * 100 - shared;
-    };
-    const target = options.sort(
-      (a, b) => cost(a.group) - cost(b.group) || a.index - b.index,
-    )[0];
-    if (target) target.group.push(person);
-    else {
-      seating.groups.push([person]);
-      seating.assignments.push(
-        newAssignment(seating, tables, state, seating.groups.length - 1),
-      );
+  // Form new mixed groups before using spare seats, so waiting language partners meet.
+  const waiting = present.filter(p => !seated.has(p.id));
+  const candidates = waiting.length >= 2 ? pairRound(waiting, state.rounds).groups.filter(hasMixedLanguagePair) : [];
+  const free = tables.filter(t => t.available && !seating.assignments.some(a => a.tableNumber === t.number));
+  const ready = candidates.slice(0, free.length);
+  if (!seating.groups.length) {
+    seating.groups = ready;
+    seating.assignments = assignTables(ready, free, state.floorPolicy || "balanced").map(a => ({...a, mixedReady: true}));
+    ready.flat().forEach(p => seated.add(p.id));
+  } else {
+    for (const group of ready) {
+      seating.groups.push(group);
+      const assignment = newAssignment(seating, tables, state, seating.groups.length - 1);
+      if (assignment) { seating.assignments.push(assignment); group.forEach(p => seated.add(p.id)); }
+      else seating.groups.pop();
     }
   }
+  // Late arrivals can join a mixed table without moving anyone already seated.
+  for (const person of present.filter(p => !seated.has(p.id))) {
+    const options = seating.groups.map((group, index) => ({ group, index }))
+      .filter(({ group, index }) => group.length < 4 && seating.assignments.some(a => a.groupIndex === index));
+    const cost = (group: Person[]) => group.length * 10 - group.filter(p =>
+      (p.learningLanguages || [p.learns]).some(language => language && person.speaks.includes(language)) ||
+      (person.learningLanguages || [person.learns]).some(language => language && p.speaks.includes(language)),
+    ).length;
+    const target = options.sort((a, b) => cost(a.group) - cost(b.group) || a.index - b.index)[0];
+    if (target) { target.group.push(person); seated.add(person.id); }
+  }
+  // Unassigned groups are host-only waiting lists, never physical table reservations.
+  const remaining = players.filter(p => !seated.has(p.id));
+  for (let i = 0; i < remaining.length; i += 4) seating.groups.push(remaining.slice(i, i + 4));
   return seating;
 }
 

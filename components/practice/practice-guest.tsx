@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { ArrowDown, ArrowUp, ChevronDown, Languages, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { PracticeView } from "@/lib/practice/model";
+import { hasMixedLanguagePair, type PracticeView } from "@/lib/practice/model";
 import { PracticePerson } from "./practice-person";
 import { PracticeCards } from "./practice-cards";
 import { PracticeParticipation } from "./practice-participation";
@@ -31,9 +31,11 @@ export function PracticeGuest({
   if (!view.me) return null;
   const table = view.myTable,
     group = view.myGroup || [];
+  const present = group.filter(person => person.presence === "present" || (person.presence !== "absent" && person.arrived));
+  const ready = !!table && hasMixedLanguagePair(present);
   const seed = (table?.tableNumber || 0) * 31 + (view.round?.number || 0);
   return (
-    <div className={`practice-guest ${playing ? "practice-playing" : ""}`}>
+    <div className={`practice-guest ${playing && ready ? "practice-playing" : ""}`}>
       <div className="flex items-center justify-between gap-2">
         <div className="w-11">
           {onProfile && !readOnly && (
@@ -61,7 +63,7 @@ export function PracticeGuest({
             aria-expanded={details}
             onClick={() => setDetails(!details)}
           >
-            {!playing && table && (
+            {!(playing && ready) && table && (
               <>
                 <strong>{table.tableNumber}</strong>
                 <span className="flex items-center text-xs text-muted-foreground">
@@ -108,7 +110,7 @@ export function PracticeGuest({
               : `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
         </p>
       )}
-      {playing ? (
+      {playing && ready ? (
         <div className="relative isolate pt-7">
           {table && (
             <span aria-hidden className="practice-watermark">
@@ -118,7 +120,7 @@ export function PracticeGuest({
           <PracticeCards
             key={seed}
             seed={seed}
-            people={group.filter(person => person.presence === "present").length > 0 ? group.filter(person => person.presence === "present") : [view.me]}
+            people={present}
             storageKey={gameKey ? `${gameKey}:${seed}` : undefined}
           />
         </div>
@@ -136,7 +138,8 @@ export function PracticeGuest({
           <div className="flex justify-center py-9">
             <button
               type="button"
-              className="practice-play"
+              className="practice-play disabled:opacity-40"
+              disabled={!ready}
               aria-label={t("playCards")}
               onClick={() => setPlaying(true)}
             >
@@ -144,16 +147,12 @@ export function PracticeGuest({
               <span>{t("playCards")}</span>
             </button>
           </div>
+          {!ready && <p role="status" className="pb-4 text-center text-sm text-muted-foreground">{t("waitingPartner")}</p>}
           <div className="grid grid-cols-2 gap-4">
             {group.map((person) => (
               <PracticePerson key={person.id} person={person} />
             ))}
           </div>
-          {!table && (
-            <p role="status" className="pt-4 text-sm text-muted-foreground">
-              {t("waitingShort")}
-            </p>
-          )}
         </>
       )}
     </div>
