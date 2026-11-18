@@ -225,7 +225,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                     onClick={() => choose(member.id)}
                     className="practice-person-button min-h-12 w-full rounded-lg p-1 text-left"
                   >
-                    <PracticePerson person={member} />
+                    <PracticePerson person={member} showSpeaks={selected === member.id} />
                   </button>
                 ))}
                 {group.length < 4 && table && (
@@ -253,7 +253,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
       </div>
       {person && (
         <div className="mt-4 flex items-center gap-2">
-          <span className="mr-auto min-w-0 flex-1"><PracticePerson person={person} showSpeaks /></span>
+          <span className="mr-auto text-sm">{person.name}</span>
           {ticket && (
             <Button
               variant="ghost"

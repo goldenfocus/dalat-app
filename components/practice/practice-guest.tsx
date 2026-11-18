@@ -90,7 +90,7 @@ export function PracticeGuest({
           </p>
           <div className="mt-3 grid gap-3">
             {group.map((person) => (
-              <PracticePerson key={person.id} person={person} />
+              <PracticePerson key={person.id} person={person} showSpeaks />
             ))}
           </div>
         </div>
