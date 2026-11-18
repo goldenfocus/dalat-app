@@ -1974,7 +1974,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Preorder from the venue's menu (only renders when the venue enables it) */}
-              {event.venues && <Suspense fallback={null}><EventVenueLinks venueId={event.venues.id} /></Suspense>}
+              {!event.has_private_details && (event.venues || event.organizers) && <Suspense fallback={null}><EventVenueLinks venueId={event.venues?.id} organizerId={event.organizers?.id} /></Suspense>}
               {event.venues && participation.preorder && (
                 <Suspense fallback={null}>
                   <EventPreorderCard
