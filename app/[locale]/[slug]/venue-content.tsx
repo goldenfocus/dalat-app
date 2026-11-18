@@ -8,7 +8,6 @@ import {
   MapPin,
   BadgeCheck,
   Clock,
-  Globe,
   Mail,
   Wifi,
   Car,
@@ -37,11 +36,13 @@ import {
   VenueGallery,
   type VenueGalleryPhoto,
 } from "@/components/venues/venue-gallery";
-import { VenueCommunityPhotos } from "@/components/venues/venue-community-photos";
+import { EventHighlights } from "@/components/venues/event-highlights";
+import { getVenueHighlightPhotos } from "@/lib/venues/highlights-server";
+import { OfficialVenueLinks } from "@/components/venues/official-links";
+import { venueEditor } from "@/lib/venues/access";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
-import { hasRoleLevel, type UserRole } from "@/lib/types";
 import { JsonLd, generateVenuePageSchema } from "@/lib/structured-data";
 import { getVenuePastEventsPath } from "@/lib/venues/routes";
 import { localeUrl } from "@/lib/i18n/locale-url";
@@ -76,6 +77,9 @@ interface VenueData {
     starts_at: string;
     ends_at: string | null;
     capacity: number | null;
+    series_id: string | null;
+    series_slug: string | null;
+    rrule: string | null;
   }>;
   happening_now: Array<{
     id: string;
@@ -128,15 +132,8 @@ async function getVenueDataById(venueId: string): Promise<VenueData | null> {
     organizer = orgData;
   }
 
-  // Get upcoming events
-  const { data: upcomingEvents } = await supabase
-    .from("events")
-    .select("id, slug, title, image_url, starts_at, ends_at, capacity")
-    .eq("venue_id", venueId)
-    .eq("status", "published")
-    .gte("starts_at", new Date().toISOString())
-    .order("starts_at", { ascending: true })
-    .limit(6);
+  // Deduplicate before limiting so other activities are not hidden by one series.
+  const { data: upcomingEvents } = await supabase.rpc("get_venue_upcoming_events", { p_venue_id: venueId });
 
   // Get happening now events
   // Events with ends_at in the future, OR events with no ends_at that started within the last 4 hours
@@ -192,38 +189,6 @@ async function getPastEvents(venueId: string): Promise<PastEvent[]> {
   return data || [];
 }
 
-async function isUserLoggedIn(): Promise<boolean> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  return !!user;
-}
-
-async function canUserManageVenue(
-  venueOwnerId: string | null,
-): Promise<boolean> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return false;
-  if (venueOwnerId === user.id) return true;
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role) {
-    return hasRoleLevel(profile.role as UserRole, "moderator");
-  }
-
-  return false;
-}
-
 export async function VenueContent({ venueId, locale }: VenueContentProps) {
   const t = await getTranslations("venues");
 
@@ -241,11 +206,13 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
     past_events_count,
     recent_activity: _recent_activity,
   } = venueData;
-  const [_isLoggedIn, pastEvents, canManageVenue] = await Promise.all([
-    isUserLoggedIn(),
+  const [pastEvents, editor, highlightPhotos] = await Promise.all([
     getPastEvents(venue.id),
-    canUserManageVenue(venue.owner_id),
+    venueEditor(venue.id),
+    getVenueHighlightPhotos(venue.id).catch(error => { console.error("Venue highlights", error); return []; }),
   ]);
+  const canManageVenue = !!editor;
+  const tHighlights = await getTranslations("venueHighlights");
 
   // Fetch translations for venue description only. The official name is canonical.
   const venueTranslations = await getTranslationsWithFallback(
@@ -640,17 +607,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             </a>
           )}
 
-          {venue.website_url && (
-            <a
-              href={venue.website_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center w-11 h-11 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
-              aria-label="Website"
-            >
-              <Globe className="w-4 h-4" />
-            </a>
-          )}
+          <OfficialVenueLinks website={venue.website_url} menu={venue.menu_url} name={venue.name} />
 
           {venue.facebook_url && (
             <a
@@ -722,6 +679,115 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           </section>
         )}
 
+        {/* Happening now */}
+        {happening_now.length > 0 && (
+          <section className="mb-8">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+              {t("happeningNow")}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {happening_now.map((event) => (
+                <Card
+                  key={event.id}
+                  className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden"
+                >
+                  <Link href={`/events/${event.slug}`} className="block">
+                    <CardContent className="p-0">
+                      {event.image_url && (
+                        <img
+                          src={event.image_url}
+                          alt=""
+                          className="w-full aspect-[2/1] object-cover"
+                        />
+                      )}
+                      <div className="p-4">
+                        <h3 className="font-semibold mb-1">
+                          {eventTitles.get(event.id)?.title || event.title}
+                        </h3>
+                        <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                          {t("liveNow")}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Link>
+                  {eventTitles.get(event.id)?.title &&
+                    eventTitles.get(event.id)?.title !== event.title && (
+                      <div className="px-4 pb-3">
+                        <OriginalText text={event.title} />
+                      </div>
+                    )}
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Upcoming events */}
+        {upcoming_events.length > 0 && (
+          <section id="upcoming-events" className="mb-8 scroll-mt-24">
+            <h2 className="text-xl font-semibold mb-4">
+              {t("upcomingEvents")}
+            </h2>
+            <div className="grid gap-4 sm:grid-cols-2">
+              {upcoming_events.map((event) => (
+                <Card
+                  key={event.id}
+                  className="hover:border-primary/50 transition-colors overflow-hidden"
+                >
+                  <Link href={`/events/${event.slug}`} className="block">
+                    <CardContent className="p-0">
+                      {event.image_url && (
+                        <img
+                          src={event.image_url}
+                          alt=""
+                          className="w-full aspect-[2/1] object-cover"
+                        />
+                      )}
+                      <div className="p-4">
+                        <h3 className="font-semibold mb-2">
+                          {eventTitles.get(event.id)?.title || event.title}
+                        </h3>
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Calendar className="w-4 h-4" />
+                          {formatEventDate(event.starts_at)}
+                        </span>
+                        {event.rrule && <p className="mt-2 text-sm font-medium text-primary">{
+                          /(?:^|;)FREQ=WEEKLY(?:;|$)/.test(event.rrule) && !/(?:^|;)INTERVAL=(?:[2-9]|\d{2,})(?:;|$)/.test(event.rrule)
+                            && !/(?:^|;)BYDAY=[^;]*,/.test(event.rrule)
+                            ? tHighlights("weekly", { day: new Intl.DateTimeFormat(locale, { weekday: "long", timeZone: "Asia/Ho_Chi_Minh" }).format(new Date(event.starts_at)) })
+                            : tHighlights("recurring")
+                        }</p>}
+                      </div>
+                    </CardContent>
+                  </Link>
+                  {eventTitles.get(event.id)?.title &&
+                    eventTitles.get(event.id)?.title !== event.title && (
+                      <div className="px-4 pb-3">
+                        <OriginalText text={event.title} />
+                      </div>
+                    )}
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <EventHighlights venueId={venue.id} photos={highlightPhotos}
+          selectedIds={venue.highlight_moment_ids || []} canManage={canManageVenue} />
+
+        {/* Past Events */}
+        <PastEventsSection
+          events={pastEvents}
+          locale={locale as Locale}
+          label={t("pastEvents")}
+          totalCount={past_events_count}
+          allEventsHref={getVenuePastEventsPath(venue.slug)}
+        />
+
         {/* Menu — full text on the page so crawlers + AI answer engines can quote dishes and prices */}
         {menu.length > 0 && (
           <section id="menu" className="mb-8 scroll-mt-20">
@@ -736,20 +802,13 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                     {tMenu("manageMenu")}
                   </Link>
                 )}
-                <Link
-                  href={`/venues/${venue.slug}/menu`}
-                  className="inline-flex min-h-11 items-center text-sm underline underline-offset-2"
-                >
-                  {tMenu("viewFullMenu")}
-                </Link>
+
               </div>
             </div>
-            {venue.preorder_enabled && (
-              <p className="mb-4 rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
-                {tMenu("preorderBanner")}
-              </p>
-            )}
-            <MenuSections sections={menu} locale={locale} showNav={false} />
+            <details className="group rounded-xl border">
+              <summary className="cursor-pointer px-4 py-3 text-sm font-medium">{tMenu("viewFullMenu")}</summary>
+              <div className="p-4"><MenuSections sections={menu} locale={locale} showNav={false} /></div>
+            </details>
           </section>
         )}
 
@@ -883,104 +942,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
           <OriginalText text={(venue.tags || []).join(", ")} />
         )}
 
-        {/* Happening now */}
-        {happening_now.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
-              </span>
-              {t("happeningNow")}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {happening_now.map((event) => (
-                <Card
-                  key={event.id}
-                  className="hover:border-emerald-500/40 border-emerald-500/20 transition-colors overflow-hidden"
-                >
-                  <Link href={`/events/${event.slug}`} className="block">
-                    <CardContent className="p-0">
-                      {event.image_url && (
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-full aspect-[2/1] object-cover"
-                        />
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold mb-1">
-                          {eventTitles.get(event.id)?.title || event.title}
-                        </h3>
-                        <p className="text-sm text-emerald-600 dark:text-emerald-400">
-                          {t("liveNow")}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Link>
-                  {eventTitles.get(event.id)?.title &&
-                    eventTitles.get(event.id)?.title !== event.title && (
-                      <div className="px-4 pb-3">
-                        <OriginalText text={event.title} />
-                      </div>
-                    )}
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Upcoming events */}
-        {upcoming_events.length > 0 && (
-          <section className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">
-              {t("upcomingEvents")}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {upcoming_events.map((event) => (
-                <Card
-                  key={event.id}
-                  className="hover:border-primary/50 transition-colors overflow-hidden"
-                >
-                  <Link href={`/events/${event.slug}`} className="block">
-                    <CardContent className="p-0">
-                      {event.image_url && (
-                        <img
-                          src={event.image_url}
-                          alt=""
-                          className="w-full aspect-[2/1] object-cover"
-                        />
-                      )}
-                      <div className="p-4">
-                        <h3 className="font-semibold mb-2">
-                          {eventTitles.get(event.id)?.title || event.title}
-                        </h3>
-                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                          <Calendar className="w-4 h-4" />
-                          {formatEventDate(event.starts_at)}
-                        </span>
-                      </div>
-                    </CardContent>
-                  </Link>
-                  {eventTitles.get(event.id)?.title &&
-                    eventTitles.get(event.id)?.title !== event.title && (
-                      <div className="px-4 pb-3">
-                        <OriginalText text={event.title} />
-                      </div>
-                    )}
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Past Events */}
-        <PastEventsSection
-          events={pastEvents}
-          locale={locale as Locale}
-          label={t("pastEvents")}
-        />
-
         {/* Gallery Section */}
         {canManageVenue ? (
           <section className="mb-8 pt-2">
@@ -1002,7 +963,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
         {/* Community Photos Section */}
         <ExperienceList venueId={venue.id} />
-        <VenueCommunityPhotos venueId={venue.id} locale={locale} />
 
         {/* Hours Section */}
         {venue.operating_hours && (

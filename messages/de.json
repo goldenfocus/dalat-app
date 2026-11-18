@@ -4609,5 +4609,26 @@
     "noLikes": "Noch keine neuen Likes",
     "noMatches": "Kontakte entstehen, wenn ihr euch gegenseitig ein Like gebt",
     "privacyNote": "Dating ist freiwillig. Du kannst es jederzeit in den Einstellungen pausieren."
+  },
+  "venueHighlights": {
+    "title": "Impressionen vergangener Events",
+    "choose": "Fotos auswählen",
+    "chooseHint": "Bis zu sechs Fotos in Anzeigereihenfolge wählen. Freie Plätze werden automatisch gefüllt.",
+    "open": "Foto {number} öffnen",
+    "photo": "Foto eines vergangenen Events",
+    "all": "Alle {count} Fotos",
+    "less": "Weniger anzeigen",
+    "previous": "Vorheriges Foto",
+    "next": "Nächstes Foto",
+    "viewEvent": "Event ansehen",
+    "select": "Foto auswählen",
+    "automatic": "Automatisch",
+    "save": "Speichern",
+    "error": "Speichern fehlgeschlagen. Erneut versuchen.",
+    "websiteFor": "Website von {venue}",
+    "officialMenu": "Offizielle Speisekarte",
+    "weekly": "Jeden {day}",
+    "recurring": "Regelmäßiges Event",
+    "allEvents": "Alle vergangenen Events"
   }
 }

@@ -4609,5 +4609,26 @@
     "noLikes": "暂时没有新的人喜欢你",
     "noMatches": "彼此喜欢，即可配对",
     "privacyNote": "交友功能可自由选择启用，你可以随时在设置中暂停。"
+  },
+  "venueHighlights": {
+    "title": "往期活动精彩瞬间",
+    "choose": "选择照片",
+    "chooseHint": "按展示顺序选择最多六张照片。空位将自动填充。",
+    "open": "打开第{number}张照片",
+    "photo": "往期活动照片",
+    "all": "全部{count}张照片",
+    "less": "收起",
+    "previous": "上一张",
+    "next": "下一张",
+    "viewEvent": "查看活动",
+    "select": "选择照片",
+    "automatic": "自动选择",
+    "save": "保存",
+    "error": "保存失败，请重试。",
+    "websiteFor": "{venue}网站",
+    "officialMenu": "官方菜单",
+    "weekly": "每{day}",
+    "recurring": "定期活动",
+    "allEvents": "所有往期活动"
   }
 }

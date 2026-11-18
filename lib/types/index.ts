@@ -305,6 +305,8 @@ export interface Venue {
 
   // Contact
   website_url: string | null;
+  menu_url?: string | null;
+  highlight_moment_ids?: string[];
   facebook_url: string | null;
   instagram_url: string | null;
   zalo_url: string | null;

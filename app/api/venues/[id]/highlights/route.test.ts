@@ -1,0 +1,15 @@
+import { beforeEach, expect, it, vi } from "vitest";
+const mock = vi.hoisted(() => ({ editor: vi.fn(), photos: vi.fn(), update: vi.fn(), eq: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("@/lib/venues/access", () => ({ venueEditor: mock.editor }));
+vi.mock("@/lib/venues/highlights-server", () => ({ getVenueHighlightPhotos: mock.photos }));
+vi.mock("@/lib/experiences/server", () => ({ experienceAdmin: () => ({ from: () => ({ update: mock.update }) }) }));
+import { PUT } from "./route";
+const id = "436f8b46-d5fe-41ef-8245-e8ffb9ee7980";
+const moment = "43ba5f9d-65c7-4b22-aefb-9fff5286e045";
+const send = (momentIds: string[]) => PUT(new Request("http://localhost", { method: "PUT", body: JSON.stringify({ momentIds }) }), { params: Promise.resolve({ id }) });
+beforeEach(() => { vi.clearAllMocks(); mock.editor.mockResolvedValue({ user: {} }); mock.photos.mockResolvedValue([{ id: moment }]); mock.update.mockReturnValue({ eq: mock.eq }); mock.eq.mockResolvedValue({ error: null }); });
+it("rejects unauthorised changes", async () => { mock.editor.mockResolvedValue(null); expect((await send([moment])).status).toBe(403); expect(mock.update).not.toHaveBeenCalled(); });
+it("rejects a private, removed or different venue photo", async () => { expect((await send([id])).status).toBe(400); expect(mock.update).not.toHaveBeenCalled(); });
+it("rejects duplicates and more than six choices", async () => { expect((await send([moment, moment])).status).toBe(400); expect((await send(Array(7).fill(moment))).status).toBe(400); });
+it("saves public selections and supports automatic reset", async () => { expect((await send([moment])).status).toBe(200); expect(mock.update).toHaveBeenCalledWith({ highlight_moment_ids: [moment] }); expect((await send([])).status).toBe(200); });

@@ -74,6 +74,7 @@ import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { MoreFromOrganizer } from "@/components/events/more-from-organizer";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { MoreAtVenue } from "@/components/events/more-at-venue";
+import { EventVenueLinks } from "@/components/events/event-venue-links";
 import { EventPreorderCard } from "@/components/menu/event-preorder-card";
 import { EventArrivalCard } from "@/components/arrival/event-arrival-card";
 import { getDrinkSelection } from "@/lib/arrival/drink-selection";
@@ -1973,6 +1974,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               )}
 
               {/* Preorder from the venue's menu (only renders when the venue enables it) */}
+              {event.venues && <Suspense fallback={null}><EventVenueLinks venueId={event.venues.id} /></Suspense>}
               {event.venues && participation.preorder && (
                 <Suspense fallback={null}>
                   <EventPreorderCard

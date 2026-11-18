@@ -4609,5 +4609,26 @@
     "noLikes": "新しいいいねはまだありません",
     "noMatches": "お互いにいいねをするとマッチングします",
     "privacyNote": "出会い機能の利用は任意です。設定からいつでも一時停止できます。"
+  },
+  "venueHighlights": {
+    "title": "過去のイベントのハイライト",
+    "choose": "写真を選ぶ",
+    "chooseHint": "表示順に6枚まで選べます。空き枠は自動で選ばれます。",
+    "open": "写真{number}を開く",
+    "photo": "過去のイベントの写真",
+    "all": "全{count}枚の写真",
+    "less": "折りたたむ",
+    "previous": "前の写真",
+    "next": "次の写真",
+    "viewEvent": "イベントを見る",
+    "select": "写真を選ぶ",
+    "automatic": "自動選択",
+    "save": "保存",
+    "error": "保存できませんでした。もう一度お試しください。",
+    "websiteFor": "{venue}のウェブサイト",
+    "officialMenu": "公式メニュー",
+    "weekly": "毎週{day}",
+    "recurring": "定期イベント",
+    "allEvents": "過去のイベントをすべて見る"
   }
 }

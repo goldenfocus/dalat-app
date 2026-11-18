@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { ChevronDown, Calendar } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,9 +22,12 @@ interface PastEventsSectionProps {
   events: PastEvent[];
   locale: Locale;
   label: string;
+  totalCount?: number;
+  allEventsHref?: string;
 }
 
-export function PastEventsSection({ events, locale, label }: PastEventsSectionProps) {
+export function PastEventsSection({ events, locale, label, totalCount, allEventsHref }: PastEventsSectionProps) {
+  const t = useTranslations("venueHighlights");
   const [isOpen, setIsOpen] = useState(false);
 
   if (events.length === 0) return null;
@@ -32,10 +36,11 @@ export function PastEventsSection({ events, locale, label }: PastEventsSectionPr
     <div id="past-events" className="mb-8 scroll-mt-20">
       <button
         onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
         className="w-full flex items-center justify-between px-4 py-3 rounded-lg bg-muted/50 hover:bg-muted active:scale-[0.99] transition-all"
       >
         <span className="font-medium">
-          {label} ({events.length})
+          {label} ({totalCount ?? events.length})
         </span>
         <ChevronDown
           className={cn(
@@ -45,7 +50,7 @@ export function PastEventsSection({ events, locale, label }: PastEventsSectionPr
         />
       </button>
 
-      {isOpen && (
+      {isOpen && <>
         <div className="grid gap-4 sm:grid-cols-2 mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
           {events.map((event) => (
             <Link key={event.id} href={`/events/${event.slug}`}>
@@ -70,7 +75,8 @@ export function PastEventsSection({ events, locale, label }: PastEventsSectionPr
             </Link>
           ))}
         </div>
-      )}
+        {allEventsHref && (totalCount || 0) > events.length && <Link href={allEventsHref} className="mt-3 flex min-h-11 items-center justify-center rounded-lg border text-sm">{t("allEvents")}</Link>}
+      </>}
     </div>
   );
 }

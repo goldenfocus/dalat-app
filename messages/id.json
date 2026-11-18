@@ -4609,5 +4609,26 @@
     "noLikes": "Belum ada yang baru menyukaimu",
     "noMatches": "Koneksi dimulai saat kalian saling suka",
     "privacyNote": "Fitur kencan bersifat opsional. Kamu bisa menjedanya kapan saja di Pengaturan."
+  },
+  "venueHighlights": {
+    "title": "Sorotan acara sebelumnya",
+    "choose": "Pilih foto",
+    "chooseHint": "Pilih hingga enam foto sesuai urutan tampilan. Tempat kosong diisi otomatis.",
+    "open": "Buka foto {number}",
+    "photo": "Foto acara sebelumnya",
+    "all": "Semua {count} foto",
+    "less": "Tampilkan lebih sedikit",
+    "previous": "Foto sebelumnya",
+    "next": "Foto berikutnya",
+    "viewEvent": "Lihat acara",
+    "select": "Pilih foto",
+    "automatic": "Otomatis",
+    "save": "Simpan",
+    "error": "Gagal menyimpan. Coba lagi.",
+    "websiteFor": "Situs web {venue}",
+    "officialMenu": "Menu resmi",
+    "weekly": "Setiap {day}",
+    "recurring": "Acara rutin",
+    "allEvents": "Semua acara sebelumnya"
   }
 }

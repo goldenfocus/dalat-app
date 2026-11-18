@@ -4609,5 +4609,26 @@
     "noLikes": "Chưa có lượt thích mới",
     "noMatches": "Kết nối bắt đầu khi cả hai cùng thích nhau",
     "privacyNote": "Bạn có thể chọn sử dụng tính năng hẹn hò và tạm dừng bất cứ lúc nào trong Cài đặt."
+  },
+  "venueHighlights": {
+    "title": "Khoảnh khắc sự kiện trước",
+    "choose": "Chọn ảnh",
+    "chooseHint": "Chọn tối đa sáu ảnh theo thứ tự hiển thị. Chỗ trống được chọn tự động.",
+    "open": "Mở ảnh {number}",
+    "photo": "Ảnh từ sự kiện trước",
+    "all": "Tất cả {count} ảnh",
+    "less": "Thu gọn",
+    "previous": "Ảnh trước",
+    "next": "Ảnh tiếp theo",
+    "viewEvent": "Xem sự kiện",
+    "select": "Chọn ảnh",
+    "automatic": "Tự động",
+    "save": "Lưu",
+    "error": "Không lưu được. Hãy thử lại.",
+    "websiteFor": "Trang web {venue}",
+    "officialMenu": "Thực đơn chính thức",
+    "weekly": "Mỗi {day}",
+    "recurring": "Sự kiện định kỳ",
+    "allEvents": "Tất cả sự kiện trước"
   }
 }

@@ -13,6 +13,7 @@ const body = z.object({
   phone: z.string().trim().max(40).nullable(),
   email: z.string().trim().email().max(200).nullable(),
   website_url: url,
+  menu_url: url,
   facebook_url: url,
   instagram_url: url,
   logo_url: url,

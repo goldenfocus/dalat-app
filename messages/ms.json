@@ -4609,5 +4609,26 @@
     "noLikes": "Belum ada tanda suka baharu",
     "noMatches": "Hubungan bermula apabila anda saling menyukai",
     "privacyNote": "Temu jodoh ialah ciri pilihan. Anda boleh menjedanya pada bila-bila masa dalam Tetapan."
+  },
+  "venueHighlights": {
+    "title": "Sorotan acara lalu",
+    "choose": "Pilih foto",
+    "chooseHint": "Pilih hingga enam foto mengikut urutan paparan. Ruang kosong diisi secara automatik.",
+    "open": "Buka foto {number}",
+    "photo": "Foto acara lalu",
+    "all": "Semua {count} foto",
+    "less": "Lihat kurang",
+    "previous": "Foto sebelumnya",
+    "next": "Foto seterusnya",
+    "viewEvent": "Lihat acara",
+    "select": "Pilih foto",
+    "automatic": "Automatik",
+    "save": "Simpan",
+    "error": "Gagal menyimpan. Cuba lagi.",
+    "websiteFor": "Laman web {venue}",
+    "officialMenu": "Menu rasmi",
+    "weekly": "Setiap {day}",
+    "recurring": "Acara berulang",
+    "allEvents": "Semua acara lalu"
   }
 }
