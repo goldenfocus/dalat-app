@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { planResume } from './resume';
+import { planResume, resumeNoticeDue } from './resume';
 import type { UploadJob, UploadPhase } from './types';
 
 const job = (id: string, phase: UploadPhase, extra: Partial<UploadJob> = {}): UploadJob => ({
@@ -21,4 +21,17 @@ describe('planResume', () => {
       job('4', 'queued', { error: 'missing-file' }), job('5', 'queued', { durable: false })], 'me', 500)).toBeNull();
   });
   it('does nothing when signed out', () => { expect(planResume([job('1', 'queued')], null, 500)).toBeNull(); });
+});
+
+describe('resumeNoticeDue', () => {
+  const plan = { count: 2, events: 1 };
+  it('waits for the saved queue to load after sign-in instead of using up the one shot', () => {
+    expect(resumeNoticeDue(null, 'me', null)).toBe(false); // queue still empty right after sign-in
+    expect(resumeNoticeDue(null, 'me', plan)).toBe(true); // saved uploads arrived
+  });
+  it('announces once per signed-in user', () => {
+    expect(resumeNoticeDue('me', 'me', plan)).toBe(false);
+    expect(resumeNoticeDue('me', 'someone-else', plan)).toBe(true);
+    expect(resumeNoticeDue(null, null, plan)).toBe(false);
+  });
 });

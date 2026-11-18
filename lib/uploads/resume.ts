@@ -22,3 +22,12 @@ export function planResume(jobs: UploadJob[], userId: string | null, openedAt: n
   return { count: left.length, events: slugs.size,
     ...(slugs.size === 1 ? { eventSlug: left[0].eventSlug, eventTitle: left[0].eventTitle } : {}) };
 }
+
+/**
+ * The resume notice is shown once per signed-in user, and only when there is
+ * something to announce. Right after sign-in the queue is still empty, so an
+ * empty plan must not use up the one shot before the saved uploads load.
+ */
+export function resumeNoticeDue(announcedFor: string | null, userId: string | null, plan: ResumePlan | null): plan is ResumePlan {
+  return !!userId && !!plan && announcedFor !== userId;
+}

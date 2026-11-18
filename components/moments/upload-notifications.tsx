@@ -6,7 +6,7 @@ import { Toaster, toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/routing';
 import { isWorking } from '@/lib/uploads/types';
 import { UploadNoticeTracker } from '@/lib/uploads/notices';
-import { planResume } from '@/lib/uploads/resume';
+import { planResume, resumeNoticeDue } from '@/lib/uploads/resume';
 import { useEventUploads } from './event-uploader';
 
 const openedAt = Date.now();
@@ -50,9 +50,9 @@ export function UploadNotifications() {
     // Opening the app with unfinished uploads: they restart on their own (files
     // are saved on-device), so say so once. The tracker then reports completion.
     if (resumed.current !== state.userId) {
-      resumed.current = state.userId;
       const plan = planResume(state.jobs, state.userId, openedAt);
-      if (plan) {
+      if (resumeNoticeDue(resumed.current, state.userId, plan)) {
+        resumed.current = state.userId;
         const id = `upload:${state.userId}:resume`;
         noticeIds.current.add(id);
         toast.info(t('resumeNotice', { count: plan.count }), { id, toasterId: 'uploads', className: 'upload-status-toast',
