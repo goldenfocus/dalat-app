@@ -23,11 +23,17 @@ func isGreeting(line string) bool {
 // eventNouns mark a line (or phrase) that names the event itself.
 var eventNouns = `workshop|class|classes|night|festival|concert|party|session|show|meetup|meet-up|market|fair|tour|retreat|jam|exhibition|screening|talk|seminar|course|lesson|performance|gig|open mic|quiz|tournament|yoga|ceremony|celebration|đêm nhạc|lễ hội|hội chợ|triển lãm|lớp học|buổi`
 
+// eventPhraseNouns add walk/hike/outing/trek, which name events in a
+// capitalised phrase ("Nature walks in Cau Dat, Da Lat") but also appear in
+// body copy ("The hike will start…"), so they are not in eventNouns.
+var eventPhraseNouns = eventNouns + `|walks|walk|hikes|hike|outing|trek|trekking`
+
 var eventNounRe = regexp.MustCompile(`(?i)(^|[^\p{L}])(` + eventNouns + `)([^\p{L}]|$)`)
 
 // eventPhraseRe pulls a capitalised name ending in an event noun out of a
 // sentence: "Matt and I are hosting a Kids’ Dance Workshop tonight" → "Kids’ Dance Workshop".
-var eventPhraseRe = regexp.MustCompile(`((?:\p{Lu}[\p{L}’'&.-]*\s+){1,5}(?i:` + eventNouns + `))\b`)
+// An optional " in Place, Place" suffix keeps "Nature walks in Cau Dat, Da Lat".
+var eventPhraseRe = regexp.MustCompile(`((?:\p{Lu}[\p{L}’'&.-]*\s+){1,5}(?i:` + eventPhraseNouns + `)(?:\s+in\s+\p{Lu}[\p{L}’'&.-]*(?:[,\s]+\p{Lu}[\p{L}’'&.-]*)*)?)\b`)
 
 func hasEventNoun(line string) bool { return eventNounRe.MatchString(line) }
 
@@ -137,6 +143,9 @@ var sectionHeaderNames = map[string]bool{
 	"menu": true, "info": true, "information": true, "chi tiết": true,
 	"thông tin": true, "thời gian": true, "địa điểm": true, "địa chỉ": true,
 	"lịch trình": true, "giá vé": true, "vé": true, "đăng ký": true,
+	"full description": true, "map link": true, "more info": true,
+	"more information": true, "sign up": true, "sign-up": true, "link": true,
+	"full description and map link": true, "details and map link": true,
 }
 
 var headerPunctRe = regexp.MustCompile(`^[\s*•\-–—:：.]+|[\s*•\-–—:：.]+$`)
@@ -151,14 +160,49 @@ func headerKey(line string) string {
 
 // isSectionHeader reports a known heading used as a section label, with or
 // without emoji or a trailing colon. "Food & Drinks" and "📍 EVENT DETAILS"
-// are headers; "Food & Drinks Festival" is not.
+// are headers; "Food & Drinks Festival" is not. A line made only of header
+// phrases joined by "and" ("Full description and map link") also counts.
 func isSectionHeader(line string) bool {
-	return sectionHeaderNames[headerKey(line)]
+	key := headerKey(line)
+	return sectionHeaderNames[key] || isHeaderPhraseLine(key)
+}
+
+// isHeaderPhraseLine is true when every "and"-separated part of the line is
+// a known header phrase, e.g. "Full description and map link".
+func isHeaderPhraseLine(key string) bool {
+	if key == "" {
+		return false
+	}
+	parts := headerAndSplitter.Split(key, -1)
+	ok := false
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+		if !sectionHeaderNames[part] {
+			return false
+		}
+		ok = true
+	}
+	return ok
+}
+
+var headerAndSplitter = regexp.MustCompile(`\s+(?:and|&)\s+`)
+
+// endsWithColon reports a line that is itself a label because it ends in a
+// colon, e.g. "Full description and map link:".
+func endsWithColon(line string) bool {
+	core := strings.TrimSpace(trimLeadingSymbols(stripEmoji(cleanLine(line))))
+	if core == "" {
+		return false
+	}
+	return strings.HasSuffix(core, ":") || strings.HasSuffix(core, "：")
 }
 
 func isLabelLine(line string) bool {
 	core := trimLeadingSymbols(stripEmoji(cleanLine(line)))
-	if isSectionHeader(core) {
+	if isSectionHeader(core) || endsWithColon(core) {
 		return true
 	}
 	return labelRe.MatchString(core)
@@ -193,7 +237,7 @@ func isCTATitle(line string) bool {
 }
 
 func isRejectedTitle(line string) bool {
-	return isSectionHeader(line) || isCTATitle(line) || containsURL(line)
+	return isSectionHeader(line) || endsWithColon(line) || isCTATitle(line) || containsURL(line)
 }
 
 func isNameLabel(label string) bool {

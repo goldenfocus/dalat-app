@@ -279,3 +279,100 @@ func TestSkipNonEventChatAndNeverInferMissingStart(t *testing.T) {
 		t.Fatalf("invented a firm 20:00 start %s", start)
 	}
 }
+
+// fixtureNatureWalk is source_metadata.source_text_evidence for
+// wa-ac1c8327411eb15687e094ae6b0ec4c8 (Nature Outing group, 2026-11-19T06:20Z).
+const fixtureNatureWalk = `Full description and map link
+Hi friends
+
+Our next 14 km free Nature walks in Cau Dat, Da Lat will take place on this Sunday, November 22, at 9:00 AM in the most beatiful and remote mountain paths of Cau Dat.
+
+This hike is a great way to
+🌳 Connect with nature
+🫱🏻‍🫲🏻 Meet new people
+🌏 Make international friends
+🌄 Breathe the freshest mountain air
+💚 Appreciate the beauty of nature
+🥇 Challenge yourself on steep climbs
+🧘🏻‍♂️ Meditate
+🏊🏻‍♂️ Swim in the La Bá River
+
+The hike will start and end at this Mia Mai Art location
+https://maps.app.goo.gl/dYZmtqhqtEErhB5n8
+Located 25 km east of Da Lat.
+
+IMPORTANT‼️
+When driving to Mia Mai Art, make sure you select WALKING MODE on Google Maps❗
+Both motorbike and car modes will direct you down the wrong road❗
+
+🍵 Arrive around 8:30 AM for free tea and coffee.
+
+Please bring
+1. 🧢 A hat 👒
+2. 💧 A water bottle 🍶
+3. 🍎 Some snacks 🍌
+4. 🧻 Tissue paper 💩
+5. 👟 Comfortable shoes 👞
+6. 🏊🏻 Swimming clothes if you would like to swim
+7. 🌧️ A raincoat just in case ☔
+
+We take it slow, pausing for breaks at the most scenic spots and viewpoints, and expect to complete the 14 km loop in about 6 hours, arriving back to the starting point around 3 PM.
+
+Please bring enough water for yourself, along with some snacks. Along the trail, you can also refill your bottles with fresh mountain water.
+
+For our route, the trail begins at an altitude of 1,350 meters, descends to 1,150 meters at the river, climbs to 1,550 meters over the mountains, and then returns to 1,350 meters.
+
+This is neither the shortest nor the easiest trek, so please make sure you have a good fitness level before joining!
+
+The walk is led by Meigo Märk from Estonia, who has lived in Vietnam for the past nine years. Meigo is best known for his 20,000-kilometer walk across 22 countries—a 100% walking journey that took him over four years to complete.
+
+Let's create and enjoy a beautiful Sunday in the most beautiful nature of Cau Dat.`
+
+func TestNatureWalkHeaderIsNotTheTitle(t *testing.T) {
+	for _, line := range []string{
+		"Full description and map link",
+		"Full description and map link:",
+		"Map link:",
+		"More info:",
+		"Register",
+		"Sign up",
+		"Details:",
+	} {
+		if !isLabelLine(line) && !isSectionHeader(line) && !endsWithColon(line) {
+			t.Errorf("want header/label: %q", line)
+		}
+		if !isRejectedTitle(line) {
+			t.Errorf("want rejected title: %q", line)
+		}
+	}
+	if isSectionHeader("Nature walks in Cau Dat, Da Lat") || isRejectedTitle("Nature walks in Cau Dat, Da Lat") {
+		t.Fatal("the real title must not be treated as a header")
+	}
+
+	// The stored evidence has no trailing colon on the first line; the
+	// drafted title did. Both forms must be skipped.
+	if got := chooseTitle(fixtureNatureWalk, "", "", false); got == "Full description and map link" || got == "Full description and map link:" || isRejectedTitle(got) || isLabelLine(got) {
+		t.Fatalf("header used as title: %q", got)
+	} else if got != "Nature walks in Cau Dat, Da Lat" {
+		t.Fatalf("want Nature walks in Cau Dat, Da Lat, got %q", got)
+	}
+
+	sent := time.Date(2026, 11, 19, 13, 20, 10, 0, testLoc) // 06:20Z
+	d, err := decideCase(t, "AC1C8327411EB15687E094AE6B0EC4C8", fixtureNatureWalk, sent, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Title != "Nature walks in Cau Dat, Da Lat" {
+		t.Fatalf("title=%q", d.Title)
+	}
+	if isRejectedTitle(d.Title) || strings.HasSuffix(strings.TrimSpace(d.Title), ":") {
+		t.Fatalf("title still looks like a label: %q", d.Title)
+	}
+	start := d.StartsAt.In(testLoc)
+	if start.Year() != 2026 || start.Month() != time.November || start.Day() != 22 || start.Hour() != 9 {
+		t.Fatalf("want 22 Nov 09:00 ICT, got %s", start)
+	}
+	if !strings.Contains(strings.ToLower(d.Location), "mia mai") {
+		t.Fatalf("location=%q", d.Location)
+	}
+}
