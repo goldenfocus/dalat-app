@@ -453,6 +453,16 @@ const SECTION_HEADERS = new Set([
   "địa điểm",
   "địa chỉ",
   "lịch trình",
+  "full description",
+  "map link",
+  "more info",
+  "more information",
+  "register",
+  "sign up",
+  "sign-up",
+  "link",
+  "full description and map link",
+  "details and map link",
 ]);
 
 function headerKey(line: string): string {
@@ -470,7 +480,28 @@ function headerKey(line: string): string {
 /** A known flyer/chat section heading, never a title or venue. */
 export function isSectionHeaderLine(line: string): boolean {
   const key = headerKey(line);
-  return Boolean(key) && SECTION_HEADERS.has(key);
+  if (!key) return false;
+  if (SECTION_HEADERS.has(key) || isHeaderPhraseLine(key)) return true;
+  return endsWithColon(line);
+}
+
+/** True when every "and"-separated part is a known header phrase. */
+export function isHeaderPhraseLine(key: string): boolean {
+  const parts = key
+    .split(/\s+(?:and|&)\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length > 0 && parts.every((part) => SECTION_HEADERS.has(part));
+}
+
+/** A line that ends in a colon is a label, never a title or venue. */
+export function endsWithColon(line: string): boolean {
+  const core = line
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .replace(/^[^\p{L}\p{N}]+/u, "")
+    .trim();
+  return /[:：]$/.test(core);
 }
 
 const TITLE_URL_RE =

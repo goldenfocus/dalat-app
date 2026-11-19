@@ -281,6 +281,10 @@ describe("evaluateDraftQuality", () => {
     expect(isSectionHeaderLine("Food & Drinks")).toBe(true);
     expect(isSectionHeaderLine("📍 EVENT DETAILS")).toBe(true);
     expect(isSectionHeaderLine("Food & Drinks Festival")).toBe(false);
+    expect(isSectionHeaderLine("Full description and map link")).toBe(true);
+    expect(isSectionHeaderLine("Full description and map link:")).toBe(true);
+    expect(isSectionHeaderLine("More info:")).toBe(true);
+    expect(isSectionHeaderLine("Nature walks in Cau Dat, Da Lat")).toBe(false);
     expect(
       isUrlOrCtaTitle(
         "Details here: https://www.facebook.com/share/1HncP1adB8/",
@@ -301,6 +305,23 @@ describe("evaluateDraftQuality", () => {
       qualityOptions(),
     );
     expect(headerTitle.map((reason) => reason.code)).toContain(
+      "title_section_header",
+    );
+    const colonHeader = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Full description and map link:",
+        location_name: "Mia Mai Art",
+        source_metadata: {
+          message_id: "AC1C8327411EB15687E094AE6B0EC4C8",
+          time_inferred: false,
+          source_text_evidence:
+            "Full description and map link\nHi friends\n\nOur next 14 km free Nature walks in Cau Dat, Da Lat will take place on this Sunday, November 22, at 9:00 AM",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(colonHeader.map((reason) => reason.code)).toContain(
       "title_section_header",
     );
     const headerVenue = evaluateDraftQuality(

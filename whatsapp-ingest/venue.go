@@ -146,7 +146,7 @@ func plausibleVenueName(name string) bool {
 	if sentenceWordRe.MatchString(name) || timeRe.MatchString(name) || dateRe.MatchString(name) {
 		return false
 	}
-	if isSectionHeader(name) || containsURL(name) {
+	if isSectionHeader(name) || endsWithColon(name) || containsURL(name) {
 		return false
 	}
 	return strings.IndexFunc(name, unicode.IsLetter) >= 0
