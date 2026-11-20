@@ -73,6 +73,11 @@ export function RentalDetailsEditor({ details }: { details: RentalDetails }) {
   </label>;
   const entries = (group: Group) => <CustomEntries group={group} items={details.custom.filter(item => item.group === group)} />;
   return <>
+    <label className="grid gap-1 text-sm">
+      {t("propertySize")} (m²)
+      <input name="propertySize" className={control} defaultValue={details.propertySize}
+        inputMode="decimal" pattern="[0-9]{1,9}([.,][0-9]{1,2})?" maxLength={12} />
+    </label>
     <fieldset className={fieldset}>
       <legend className="px-2 font-semibold">{t("rooms")}</legend>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

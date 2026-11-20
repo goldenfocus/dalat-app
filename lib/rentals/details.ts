@@ -30,6 +30,7 @@ export const detailsSchema = z.object({
   utilities: z.partialRecord(z.enum(utilityKeys), inclusion).default({}),
   rules: z.partialRecord(z.enum(ruleKeys), permission).default({}),
   minimumChildAge: z.number().int().min(1).max(18).optional(),
+  propertySize: z.number().positive().lt(1_000_000_000).optional(),
   rooms: z.partialRecord(z.enum(roomKeys), roomCount).default({}),
   custom: z.array(customDetail).max(150).default([]),
 });
@@ -75,7 +76,12 @@ export function readRentalDetails(form: FormData) {
         Number(amounts[index]) : pricing[index] || undefined }];
     });
   });
+  const size = form.get("propertySize");
+  const propertySize = typeof size === "string" && /^[0-9]{1,9}(?:[.,][0-9]{1,2})?$/.test(size)
+    ? Number(size.replace(",", "."))
+    : size === null || size === "" ? undefined : NaN;
   return detailsSchema.safeParse({
+    propertySize,
     amenities: form.getAll("amenities"), area: form.getAll("area"),
     utilities: groupValues("utility", utilityKeys), rules: groupValues("rule", ruleKeys),
     minimumChildAge: form.get("minimumChildAge") ? Number(form.get("minimumChildAge")) : undefined,

@@ -4741,6 +4741,18 @@
     "endCard": "30 millions ₫/mois • Bail de 12 mois"
   },
   "rentalsDetails": {
+    "propertySize": "Superficie",
+    "offerType": "Disponibilité",
+    "rent": "À louer",
+    "sale": "À vendre",
+    "both": "À louer ou à vendre",
+    "salePrice": "Prix demandé",
+    "priceOnRequest": "Prix sur demande",
+    "videos": "Vidéos du logement",
+    "viewVideo": "Lire la vidéo {number}",
+    "uploadVideos": "Importer des vidéos (500 Mo maximum par fichier)",
+    "videoUploadError": "Certaines vidéos n’ont pas pu être importées. Sélectionnez à nouveau ces fichiers.",
+    "videoProcessing": "La vidéo est en cours de traitement. Réessayez dans un instant.",
     "availabilitySaved": "Créneaux de visite enregistrés.",
     "availabilityFuture": "Choisissez une date et une heure à venir.",
     "savedViewingTimes": "Créneaux de visite enregistrés",

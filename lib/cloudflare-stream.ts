@@ -319,6 +319,8 @@ export function getCloudflareWebhookEventType(
  * Options for creating a direct upload URL
  */
 export interface DirectUploadOptions {
+  /** Identifier attached to resumable uploads */
+  creator?: string;
   /** Maximum video duration in seconds (default: 3600 = 1 hour) */
   maxDurationSeconds?: number;
   /** Allowed origins for CORS (defaults to all) */
@@ -427,8 +429,8 @@ export async function createTusDirectUpload(
   const maxDuration = options.maxDurationSeconds ?? 3600;
   metaParts.push(`maxDurationSeconds ${Buffer.from(String(maxDuration)).toString('base64')}`);
 
-  if (options.requireSignedURLs !== undefined) {
-    metaParts.push(`requiresignedurls ${Buffer.from(String(options.requireSignedURLs)).toString('base64')}`);
+  if (options.requireSignedURLs) {
+    metaParts.push('requiresignedurls');
   }
 
   if (options.thumbnailTimestampPct !== undefined) {
@@ -454,6 +456,7 @@ export async function createTusDirectUpload(
       'Authorization': `Bearer ${apiToken}`,
       'Tus-Resumable': '1.0.0',
       'Upload-Length': String(fileSizeBytes),
+      ...(options.creator ? { 'Upload-Creator': options.creator } : {}),
       'Upload-Metadata': metaParts.join(','),
     },
   });
@@ -575,4 +578,14 @@ export function getVideoThumbnailUrl(
 export function isCloudflareStreamUrl(url: string | null): boolean {
   if (!url) return false;
   return url.includes('cloudflarestream.com');
+}
+
+/** Mint a short-lived Stream token after the app has authorized the viewer. */
+export async function getVideoAccessToken(videoUid: string, expiresInSeconds: number): Promise<string> {
+  const result = await cloudflareRequest<{ token: string }>(`/stream/${videoUid}/token`, {
+    method: 'POST',
+    body: JSON.stringify({ exp: Math.floor(Date.now() / 1000) + expiresInSeconds }),
+    cache: 'no-store',
+  });
+  return result.token;
 }

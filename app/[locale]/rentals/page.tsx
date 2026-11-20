@@ -10,6 +10,7 @@ import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, pilotMedia, rentalColumns, safeRentalPhoto, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
 import { AvailabilityEditor } from "@/components/rentals/availability-editor";
 import { RentalListingFacts } from "@/components/rentals/listing-facts";
+import { rentalDetails } from "@/lib/rentals/details";
 import { dayKey } from "@/lib/rentals/calendar";
 import { changeViewing } from "./actions";
 
@@ -46,8 +47,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function RentalsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const [t, common, db, feedback] = await Promise.all([
-    getTranslations("rentalsPilot"), getTranslations("common"), createClient(), searchParams,
+  const [t, details, common, db, feedback] = await Promise.all([
+    getTranslations("rentalsPilot"), getTranslations("rentalsDetails"), getTranslations("common"), createClient(), searchParams,
   ]);
   const { data: { user } } = await db.auth.getUser();
   const [listingResult, visitsResult] = await Promise.all([
@@ -63,6 +64,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       .eq("host_id", user.id).eq("is_open", true).gt("starts_at", new Date(now).toISOString())
       .order("starts_at").range(from, to))
     : [];
+  const area = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
   const currency = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
   const time = new Intl.DateTimeFormat(locale, { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" });
   const button = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground";
@@ -71,7 +73,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const labels = {
     close: common("close"), previous: common("previousPhoto"), next: common("nextPhoto"),
     reset: t("resetZoom"), play: t("play"), pause: t("pause"), mute: t("mute"), unmute: t("unmute"),
-    unavailable: t("videoUnavailable"),
+    unavailable: t("videoUnavailable"), processing: details("videoProcessing"),
   };
   const loginPath = "/auth/login?next=" + encodeURIComponent((locale === "en" ? "" : "/" + locale) + "/rentals");
   const publishedListings = (listings || []).filter(l => l.status === "published");
@@ -90,6 +92,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
         const isOwner = listing.host_id === user?.id;
         const strings = translated.get(listing.id);
         const title = strings?.get("title") || listing.title;
+        const { propertySize } = rentalDetails(listing.details);
         const description = strings?.get("description") || listing.description;
         const active = visits.some(v => v.listing_id === listing.id && v.renter_id === user?.id &&
           ["pending", "proposed", "confirmed"].includes(v.status) && (!v.starts_at || Date.parse(v.starts_at) > Date.now()));
@@ -101,27 +104,44 @@ export default async function RentalsPage({ params, searchParams }: Props) {
         }));
         if (pilot) photos.push({ kind: "video", src: pilotMedia + "/reel.mp4", poster: pilotMedia + "/photo-5.webp",
           label: t("reel", { name: listing.title }), captions: { src: "/api/rentals/reel-captions/" + locale, locale, label: t("captions") } });
+        for (const [index, uid] of listing.videos.entries()) {
+          const src = "/api/rentals/videos/" + uid;
+          photos.push({ kind: "video", src, poster: src + "?poster", stream: true,
+            label: details("viewVideo", { number: index + 1 }) });
+        }
         const prices = [["monthly", listing.monthly_rent], ["sixMonths", listing.six_month_rent], ["yearly", listing.yearly_rent]] as const;
         return (
           <article id={"listing-" + listing.id} key={listing.id} className="min-w-0 space-y-4 rounded-[18px] border bg-card p-3 sm:space-y-6 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0"><p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" aria-hidden="true" /> Đà Lạt</p>
                 <h2 data-rentals-title className="mt-1 text-3xl leading-tight sm:text-4xl">{title}</h2>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                  <p className="font-semibold text-primary">{details(listing.offer_type)}</p>
+                  {propertySize !== undefined && <p className="text-muted-foreground">
+                    {details("propertySize")} <span className="whitespace-nowrap">{area.format(propertySize)} m²</span>
+                  </p>}
+                </div>
               </div>
               {isOwner && <Link href={`/rentals/new?id=${listing.id}`} className={secondary}>{common("edit")}</Link>}
             </div>
             {listing.status === "draft" && <p className="text-sm text-muted-foreground">{t("draft")}</p>}
             <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-              <RentalGallery items={photos} labels={labels} title={t("photos")} />
+              <RentalGallery items={photos} labels={labels} title={t("photos")} videoTitle={details("videos")} />
               <div className="min-w-0 space-y-5">
-                <section className="rounded-[14px] bg-muted p-4 sm:p-5">
+                {listing.offer_type !== "sale" && <section className="rounded-[14px] bg-muted p-4 sm:p-5">
                   <h3 className="font-semibold">{t("rent")}</h3>
                   <dl className="divide-y">
                     {prices.map(([term, amount]) => amount && <div key={term} className="flex flex-wrap justify-between gap-x-3 py-2">
                       <dt>{t(term)}</dt><dd data-rental-rate className="font-bold text-primary">{currency.format(amount)}</dd>
                     </div>)}
                   </dl>
-                </section>
+                </section>}
+                {listing.offer_type !== "rent" && <section className="rounded-[14px] bg-muted p-4 sm:p-5">
+                  <h3 className="font-semibold">{details("salePrice")}</h3>
+                  <p className="mt-1 font-bold text-primary">
+                    {listing.sale_price === null ? details("priceOnRequest") : currency.format(listing.sale_price)}
+                  </p>
+                </section>}
                 <p className="break-words whitespace-pre-wrap">{description}</p>
                 {(description !== listing.description || title !== listing.title) &&
                   <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}

@@ -4741,6 +4741,18 @@
     "endCard": "30 juta ₫/bulan • Kontrak 12 bulan"
   },
   "rentalsDetails": {
+    "propertySize": "Keluasan hartanah",
+    "offerType": "Jenis tawaran",
+    "rent": "Untuk disewa",
+    "sale": "Untuk dijual",
+    "both": "Untuk disewa atau dijual",
+    "salePrice": "Harga jualan",
+    "priceOnRequest": "Harga atas permintaan",
+    "videos": "Video hartanah",
+    "viewVideo": "Mainkan video {number}",
+    "uploadVideos": "Muat naik video (sehingga 500 MB setiap fail)",
+    "videoUploadError": "Beberapa video gagal dimuat naik. Pilih semula fail tersebut.",
+    "videoProcessing": "Video masih diproses. Cuba lagi sebentar nanti.",
     "availabilitySaved": "Waktu lawatan disimpan.",
     "availabilityFuture": "Pilih tarikh dan masa yang belum berlalu.",
     "savedViewingTimes": "Waktu lawatan yang disimpan",

@@ -4741,6 +4741,18 @@
     "endCard": "30 Mio. ₫/Monat • Mietvertrag über 12 Monate"
   },
   "rentalsDetails": {
+    "propertySize": "Fläche",
+    "offerType": "Angebotsart",
+    "rent": "Zu vermieten",
+    "sale": "Zu verkaufen",
+    "both": "Zu vermieten oder zu verkaufen",
+    "salePrice": "Kaufpreis",
+    "priceOnRequest": "Preis auf Anfrage",
+    "videos": "Videos zur Immobilie",
+    "viewVideo": "Video {number} abspielen",
+    "uploadVideos": "Videos hochladen (bis zu 500 MB pro Datei)",
+    "videoUploadError": "Einige Videos konnten nicht hochgeladen werden. Wähle diese Dateien erneut aus.",
+    "videoProcessing": "Dieses Video wird noch verarbeitet. Versuche es gleich noch einmal.",
     "availabilitySaved": "Besichtigungstermine gespeichert.",
     "availabilityFuture": "Wähle ein Datum und eine Uhrzeit in der Zukunft.",
     "savedViewingTimes": "Gespeicherte Besichtigungstermine",

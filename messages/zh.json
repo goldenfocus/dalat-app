@@ -4741,6 +4741,18 @@
     "endCard": "每月 3,000 万越南盾 • 12 个月租约"
   },
   "rentalsDetails": {
+    "propertySize": "面积",
+    "offerType": "交易类型",
+    "rent": "出租",
+    "sale": "出售",
+    "both": "可租可售",
+    "salePrice": "售价",
+    "priceOnRequest": "价格面议",
+    "videos": "房源视频",
+    "viewVideo": "播放视频 {number}",
+    "uploadVideos": "上传视频（每个文件最多 500 MB）",
+    "videoUploadError": "部分视频上传失败。请重新选择这些文件。",
+    "videoProcessing": "视频正在处理中，请稍后重试。",
     "availabilitySaved": "看房时段已保存。",
     "availabilityFuture": "请选择尚未过去的日期和时间。",
     "savedViewingTimes": "已保存的看房时段",

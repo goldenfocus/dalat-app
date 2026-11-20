@@ -4741,6 +4741,18 @@
     "endCard": "30 millones de ₫ al mes • Contrato de 12 meses"
   },
   "rentalsDetails": {
+    "propertySize": "Superficie",
+    "offerType": "Disponible para",
+    "rent": "En alquiler",
+    "sale": "En venta",
+    "both": "En alquiler o en venta",
+    "salePrice": "Precio de venta",
+    "priceOnRequest": "Precio a consultar",
+    "videos": "Vídeos de la propiedad",
+    "viewVideo": "Reproducir vídeo {number}",
+    "uploadVideos": "Subir vídeos (hasta 500 MB por archivo)",
+    "videoUploadError": "No se pudieron subir algunos vídeos. Vuelve a seleccionar esos archivos.",
+    "videoProcessing": "El vídeo se está procesando. Inténtalo de nuevo en un momento.",
     "availabilitySaved": "Horarios de visita guardados.",
     "availabilityFuture": "Elige una fecha y hora futuras.",
     "savedViewingTimes": "Horarios de visita guardados",

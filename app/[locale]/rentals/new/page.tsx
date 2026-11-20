@@ -5,6 +5,8 @@ import { Link, redirect, type Locale } from "@/lib/i18n/routing";
 import { buildAlternates } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { rentalColumns, rentalId, type RentalListing } from "@/lib/rentals/data";
+import { RentalOfferEditor } from "@/components/rentals/offer-editor";
+import { RentalVideoEditor } from "@/components/rentals/video-editor";
 import { RentalPhotoEditor } from "@/components/rentals/photo-editor";
 import { RentalDetailsEditor } from "@/components/rentals/details-editor";
 import { rentalDetails } from "@/lib/rentals/details";
@@ -46,18 +48,9 @@ export default async function NewRental({ params, searchParams }: Props) {
         <input type="hidden" name="source_locale" value={listing?.source_locale || locale} />
         <label className="block">{common("title")}<input name="title" required maxLength={120} className={input} defaultValue={listing?.title} /></label>
         <label className="block">{common("description")}<textarea name="description" rows={4} maxLength={8000} className={input} defaultValue={listing?.description} /></label>
-        <fieldset className="grid gap-3 sm:grid-cols-3">
-          <legend className="mb-2 font-semibold">{t("rent")}</legend>
-          {([
-            ["monthly_rent", "monthly"], ["six_month_rent", "sixMonths"], ["yearly_rent", "yearly"],
-          ] as const).map(([key, label]) => (
-            <label key={key}>{t(label)} (VND)
-              <input name={key} inputMode="numeric" pattern="[0-9]+" required={key === "monthly_rent"}
-                className={input} defaultValue={listing?.[key] ?? undefined} />
-            </label>
-          ))}
-        </fieldset>
+        <RentalOfferEditor initial={listing} />
         <RentalDetailsEditor details={rentalDetails(listing?.details)} />
+        <RentalVideoEditor initial={listing?.videos ?? []} />
         <RentalPhotoEditor initial={listing?.photos || []} labels={{
           photos: t("photos"), upload: common("upload"), remove: common("remove"),
           previous: common("previousPhoto"), next: common("nextPhoto"), loading: common("loading"),

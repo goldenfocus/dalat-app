@@ -5,22 +5,26 @@ import { hasLocale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { locales, redirect } from "@/lib/i18n/routing";
-import { dalatViewingTime, rentalId, safeRentalPhoto } from "@/lib/rentals/data";
+import { dalatViewingTime, rentalId, rentalOfferTypes, safeRentalPhoto } from "@/lib/rentals/data";
 import { availabilityTimes } from "@/lib/rentals/calendar";
 import { readRentalDetails } from "@/lib/rentals/details";
+import { rentalVideoId } from "@/lib/rentals/video";
 import { createClient } from "@/lib/supabase/server";
 
 const price = z.coerce.number().int().min(1).max(1_000_000_000);
 const listingForm = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(8000),
-  monthly_rent: price,
+  offer_type: z.enum(rentalOfferTypes),
+  sale_price: z.coerce.number().int().min(1).max(999_999_999_999_999).nullable(),
+  monthly_rent: price.nullable(),
   six_month_rent: price.nullable(),
   yearly_rent: price.nullable(),
+  videos: z.array(rentalVideoId).optional(),
   photos: z.array(z.string().max(2048).refine(safeRentalPhoto)),
   source_locale: z.enum(locales),
   status: z.enum(["draft", "published"]),
-});
+}).refine(fields => fields.offer_type === "sale" || fields.monthly_rent !== null);
 
 async function signedIn(returnTo: string) {
   const requested = await getLocale();
@@ -38,10 +42,15 @@ export async function saveRental(form: FormData) {
   const id = rentalId.safeParse(form.get("id"));
   const path = id.success ? `/rentals/new?id=${id.data}` : "/rentals/new";
   const { db, user, locale } = await signedIn(path);
+  const offer = form.get("offer_type") ?? "rent";
   const fields = listingForm.safeParse({
     title: form.get("title"), description: form.get("description"),
-    monthly_rent: form.get("monthly_rent"), six_month_rent: form.get("six_month_rent") || null,
-    yearly_rent: form.get("yearly_rent") || null,
+    offer_type: offer,
+    sale_price: offer === "rent" ? null : form.get("sale_price") || null,
+    monthly_rent: offer === "sale" ? null : form.get("monthly_rent") || null,
+    six_month_rent: offer === "sale" ? null : form.get("six_month_rent") || null,
+    yearly_rent: offer === "sale" ? null : form.get("yearly_rent") || null,
+    videos: form.has("videoEditor") ? [...new Set(form.getAll("videos"))] : undefined,
     photos: String(form.get("photos") || "").split(/\r?\n/).map((url) => url.trim()).filter(Boolean),
     source_locale: form.get("source_locale"),
     status: form.get("status") === "published" ? "published" : "draft",

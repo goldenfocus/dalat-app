@@ -4741,6 +4741,18 @@
     "endCard": "30 triệu đồng/tháng • Hợp đồng 12 tháng"
   },
   "rentalsDetails": {
+    "propertySize": "Diện tích",
+    "offerType": "Hình thức giao dịch",
+    "rent": "Cho thuê",
+    "sale": "Bán",
+    "both": "Cho thuê hoặc bán",
+    "salePrice": "Giá bán",
+    "priceOnRequest": "Liên hệ để biết giá",
+    "videos": "Video về nhà",
+    "viewVideo": "Phát video {number}",
+    "uploadVideos": "Tải video lên (tối đa 500 MB mỗi tệp)",
+    "videoUploadError": "Không thể tải lên một số video. Hãy chọn lại các tệp đó.",
+    "videoProcessing": "Video đang được xử lý. Vui lòng thử lại sau.",
     "availabilitySaved": "Đã lưu lịch xem nhà.",
     "availabilityFuture": "Chọn ngày và giờ xem nhà trong tương lai.",
     "savedViewingTimes": "Lịch xem nhà đã lưu",

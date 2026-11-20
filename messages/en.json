@@ -4741,6 +4741,18 @@
     "endCard": "₫30 million/month • 12-month lease"
   },
   "rentalsDetails": {
+    "propertySize": "Property size",
+    "offerType": "Available for",
+    "rent": "For rent",
+    "sale": "For sale",
+    "both": "For rent or sale",
+    "salePrice": "Asking price",
+    "priceOnRequest": "Price on request",
+    "videos": "Property videos",
+    "viewVideo": "Play video {number}",
+    "uploadVideos": "Upload videos (up to 500 MB each)",
+    "videoUploadError": "One or more videos failed to upload. Select those files again.",
+    "videoProcessing": "This video is still processing. Try again shortly.",
     "availabilitySaved": "Viewing times saved.",
     "availabilityFuture": "Choose a date and time that are still in the future.",
     "savedViewingTimes": "Saved viewing times",

@@ -4741,6 +4741,18 @@
     "endCard": "月額3,000万ドン • 12か月契約"
   },
   "rentalsDetails": {
+    "propertySize": "面積",
+    "offerType": "取引形態",
+    "rent": "賃貸",
+    "sale": "売却",
+    "both": "賃貸または売却",
+    "salePrice": "希望売却価格",
+    "priceOnRequest": "価格はお問い合わせください",
+    "videos": "物件動画",
+    "viewVideo": "動画 {number} を再生",
+    "uploadVideos": "動画をアップロード（1ファイル最大500 MB）",
+    "videoUploadError": "一部の動画をアップロードできませんでした。該当ファイルを再選択してください。",
+    "videoProcessing": "動画を処理中です。しばらくしてからもう一度お試しください。",
     "availabilitySaved": "内見時間を保存しました。",
     "availabilityFuture": "今後の日付と時間を選択してください。",
     "savedViewingTimes": "保存した内見時間",

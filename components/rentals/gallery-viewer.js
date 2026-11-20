@@ -71,6 +71,8 @@ export function openListingMedia(items, start, opener, labels) {
   let press;
   let suppressClick = false;
   let disposed = false;
+  let streamRequest;
+  let hls;
 
   function renderZoom() {
     const width = dialog.clientWidth;
@@ -98,6 +100,9 @@ export function openListingMedia(items, start, opener, labels) {
   photo.onload = video.onloadedmetadata = renderZoom;
 
   function clearVideo() {
+    streamRequest?.abort();
+    hls?.destroy();
+    hls = undefined;
     video.pause();
     video.querySelectorAll("track").forEach(track => track.remove());
     if (video.hasAttribute('src')) {
@@ -105,6 +110,43 @@ export function openListingMedia(items, start, opener, labels) {
       video.load();
     }
   }
+  async function playStream(url) {
+    const request = new AbortController();
+    streamRequest = request;
+    const failed = () => {
+      if (request.signal.aborted) return;
+      feedback.textContent = labels.unavailable;
+      feedback.hidden = false;
+    };
+    try {
+      const response = await fetch(url, { signal: request.signal });
+      if (request.signal.aborted) return;
+      if (response.status === 202) {
+        feedback.textContent = labels.processing;
+        feedback.hidden = false;
+        return;
+      }
+      if (!response.ok) { failed(); return; }
+      const { src } = await response.json();
+      if (request.signal.aborted) return;
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = src;
+        play();
+        return;
+      }
+      const { default: Hls } = await import("hls.js");
+      if (request.signal.aborted) return;
+      if (!Hls.isSupported()) { failed(); return; }
+      hls = new Hls();
+      hls.on(Hls.Events.MANIFEST_PARSED, play);
+      hls.on(Hls.Events.ERROR, (_event, error) => { if (error.fatal) failed(); });
+      hls.loadSource(src);
+      hls.attachMedia(video);
+    } catch {
+      failed();
+    }
+  }
+
   function show() {
     const item = items[index];
     dialog.setAttribute('aria-label', item.label);
@@ -113,6 +155,7 @@ export function openListingMedia(items, start, opener, labels) {
       control.tabIndex = disabled ? -1 : 0;
     }
     feedback.hidden = true;
+    feedback.textContent = labels.unavailable;
     clearVideo();
     photo.hidden = item.kind === "video";
     video.hidden = sound.hidden = surface.hidden = item.kind !== "video";
@@ -135,9 +178,13 @@ export function openListingMedia(items, start, opener, labels) {
       track.default = true;
       video.append(track);
     }
-    video.src = item.src;
     labelPlayback();
-    play();
+    if (item.stream) {
+      void playStream(item.src);
+    } else {
+      video.src = item.src;
+      play();
+    }
   }
   function move(direction) {
     const target = index + direction;

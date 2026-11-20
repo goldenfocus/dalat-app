@@ -24,6 +24,13 @@ export function SwUpdateHandler() {
     // This distinguishes first-time install from actual updates
     hadInitialController.current = !!navigator.serviceWorker.controller;
 
+    // Apply updates after navigation when an editor has unsaved changes.
+    const canReload = () => {
+      const path = window.location.pathname;
+      return !isExperienceEditorPath(path) && !isArrivalWorkspacePath(path)
+        && !/^\/(?:[a-z]{2}\/)?rentals\/new\/?$/.test(path) && !isMomentUploadActive();
+    };
+
     // Listen for messages from the service worker
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === "SW_UPDATED") {
@@ -33,9 +40,7 @@ export function SwUpdateHandler() {
           console.log(
             `[App] New version available: ${event.data.version}, reloading...`,
           );
-          // Apply the update on the next navigation; never interrupt a private recording.
-          if (!isExperienceEditorPath(window.location.pathname) && !isArrivalWorkspacePath(window.location.pathname) && !isMomentUploadActive())
-            window.location.reload();
+          if (canReload()) window.location.reload();
         } else {
           console.log(
             `[App] First-time SW install: ${event.data.version}, skipping reload`,
@@ -50,9 +55,7 @@ export function SwUpdateHandler() {
     const handleControllerChange = () => {
       if (hadInitialController.current) {
         console.log("[App] Service worker controller changed, reloading...");
-        // Apply the update on the next navigation; never interrupt a private recording.
-        if (!isExperienceEditorPath(window.location.pathname) && !isArrivalWorkspacePath(window.location.pathname) && !isMomentUploadActive())
-          window.location.reload();
+        if (canReload()) window.location.reload();
       } else {
         console.log("[App] First-time SW activation, skipping reload");
         // Now we have a controller, mark for future updates
