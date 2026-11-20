@@ -105,8 +105,23 @@ func TestGreetingLinesAreFluff(t *testing.T) {
 			t.Errorf("want greeting fluff: %q", s)
 		}
 	}
-	for _, s := range []string{"Hello Kitty Party", "Hi-Fi Listening Night", "Chào Xuân 2027 Festival"} {
-		if isFluffTitle(s) {
+	for _, s := range []string{
+		"Hey artists and art enthusiasts!",
+		"Calling all photographers!",
+		"Calling all dancers",
+		"Attention Dalat artists,",
+		"Dear friends,",
+		"Hi cả nhà!",
+		"Hi cả nhà",
+		"Chào các bạn!",
+		"Good morning artists and art lovers!",
+	} {
+		if !isGreeting(s) {
+			t.Errorf("want greeting opener: %q", s)
+		}
+	}
+	for _, s := range []string{"Hello Kitty Party", "Hi-Fi Listening Night", "Chào Xuân 2027 Festival", "Weekend Sketch Club", "Weekend Sketch Club – Sunday Sketching"} {
+		if isFluffTitle(s) || isGreeting(s) {
 			t.Errorf("want title: %q", s)
 		}
 	}

@@ -118,3 +118,55 @@ func TestSeriesTitleFromSameSender(t *testing.T) {
 		t.Fatalf("overwrote venue: %q", d7.VenueID)
 	}
 }
+
+// fixtureSketchGreeting is source_metadata.source_text_evidence for
+// wa-ac68fa8d3dc610f6015fe64e5f3243c5 (published as "Hey artists and art enthusiasts!").
+const fixtureSketchGreeting = `Hey artists and art enthusiasts!
+
+Another Sunday, another time to rustle some paper, pose and draw!
+
+🗓 When: Sundays, at 10:30 AM
+📍 Where: Vui Va cafe
+
+💸 Entry: Donation-based + at least 1 drink at the cafe
+
+Bring your sketchbooks, pencils, colors or iPads — or just come as you are. No pressure nor drawing skills required. We'll take turns posing and sketch the hour away! ✨`
+
+func TestGreetingOpenerIsNeverTheTitle(t *testing.T) {
+	if got := chooseTitle(fixtureSketchGreeting, "", "", false); got == "Hey artists and art enthusiasts!" || isGreeting(got) {
+		t.Fatalf("greeting used as title: %q", got)
+	}
+
+	// The flyer names the event; caption is only a greeting plus chat copy.
+	const flyer = "Weekend Sketch Club\nSunday Sketching\nVui Vá Cafe & Creative Space"
+	if got := chooseTitle(fixtureSketchGreeting, "", flyer, true); got != "Weekend Sketch Club" {
+		t.Fatalf("flyer title: got %q", got)
+	}
+	if got := chooseTitle(fixtureSketchGreeting, "", "Weekend Sketch Club – Sunday Sketching", true); got != "Weekend Sketch Club – Sunday Sketching" {
+		t.Fatalf("flyer combined title: got %q", got)
+	}
+
+	sent := time.Date(2026, 11, 19, 23, 17, 4, 0, testLoc) // 16:17Z
+	d, err := decideCase(t, "AC68FA8D3DC610F6015FE64E5F3243C5", fixtureSketchGreeting, sent, true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if d.Title == "Hey artists and art enthusiasts!" || isGreeting(d.Title) {
+		t.Fatalf("decide kept the greeting: %q", d.Title)
+	}
+	if d.Title != "Event at Vui Va cafe" || d.Meta["title_needs_review"] != true {
+		t.Fatalf("want placeholder + title_needs_review, got %q meta %v", d.Title, d.Meta)
+	}
+
+	last := seriesEvent{
+		Slug: "wa-ac0822f0ca833e39a31395c3cf4b36a3", Title: "Weekend Sketch Club",
+		StartsAt: time.Date(2026, 11, 8, 3, 30, 0, 0, time.UTC), LocationName: "Vui Va Cafe",
+		Evidence: "Weekend Sketch Club is back this Sunday at Vui Va cafe, 10:30 AM",
+	}
+	if slug := applySeriesTitle(d, []seriesEvent{last}); slug != last.Slug || d.Title != "Weekend Sketch Club" {
+		t.Fatalf("series reuse: slug=%q title=%q", slug, d.Title)
+	}
+	if d.Meta["title_needs_review"] != nil || d.Meta["series_of"] != last.Slug {
+		t.Fatalf("series meta %v", d.Meta)
+	}
+}

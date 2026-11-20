@@ -611,6 +611,9 @@ func placeholderTitle(caption, location string) string {
 }
 
 func weakTitle(title string) bool {
+	if isGreeting(title) || isChatSentenceTitle(title) {
+		return true
+	}
 	low := strings.ToLower(strings.TrimSpace(title))
 	return low == "" || strings.Contains(low, "poster") || strings.Contains(low, "flyer") || strings.Contains(low, "upcoming")
 }
