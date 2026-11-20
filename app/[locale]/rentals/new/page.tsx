@@ -50,7 +50,7 @@ export default async function NewRental({ params, searchParams }: Props) {
             ["monthly_rent", "monthly"], ["six_month_rent", "sixMonths"], ["yearly_rent", "yearly"],
           ] as const).map(([key, label]) => (
             <label key={key}>{t(label)} (VND)
-              <input name={key} type="number" min={1} max={1_000_000_000} required={key === "monthly_rent"}
+              <input name={key} inputMode="numeric" pattern="[0-9]+" required={key === "monthly_rent"}
                 className={input} defaultValue={listing?.[key] ?? undefined} />
             </label>
           ))}
