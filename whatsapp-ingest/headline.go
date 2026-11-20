@@ -8,16 +8,53 @@ import (
 
 // greetingRe matches salutation lines ("Hey everyone!", "Hi all", "Xin chào",
 // "Chào mọi người 👋") that open a post but are never the event name.
-var greetingRe = regexp.MustCompile(`(?i)^(hey|hi|hello|hiya|howdy|greetings|good (morning|afternoon|evening)|dear|xin chào|xin chao|chào|chao|kính chào|alo|yo)\b[\s,!.]*((?:\p{L}+\s+){0,2}(every(one|body)|all|y'?all|guys|folks|friends|fam|family|lovely people|people|community|team|mọi người|moi nguoi|cả nhà|ca nha|các bạn|cac ban|bạn|ban|nhé|nhe)\b)?[\s,!.]*(of [\p{L} ]{0,30})?[\s!.,]*$`)
+var greetingRe = regexp.MustCompile(`(?i)^(hey|hi|hello|hiya|howdy|greetings|good (morning|afternoon|evening|day)|dear|xin chào|xin chao|chào|chao|kính chào|alo|yo)\b[\s,!.]*((?:\p{L}+\s+){0,2}(every(one|body)|all|y'?all|guys|folks|friends|fam|family|lovely people|people|community|team|mọi người|moi nguoi|cả nhà|ca nha|các bạn|cac ban|bạn|ban|nhé|nhe))?[\s,!.]*(of [\p{L} ]{0,30})?[\s!.,]*$`)
 
-// isGreeting reports a salutation-only line, emoji ignored.
+// greetingOpenerRe is the lead-in of a salutation that addresses an audience
+// ("Hey artists and art enthusiasts!", "Calling all photographers,",
+// "Attention Dalat", "Good morning…", "Hi cả nhà").
+var greetingOpenerRe = regexp.MustCompile(`(?i)^(hey|hi|hello|hiya|howdy|greetings|dear|yo|alo|calling all|attention(?:\s*:)?|good (morning|afternoon|evening|day)|xin chào|xin chao|chào|chao|kính chào)\b`)
+
+// isGreeting reports a salutation line, emoji ignored. Short "Hey everyone!"
+// forms and longer audience openers that end in ! or a comma are never titles.
 func isGreeting(line string) bool {
 	core := strings.TrimSpace(stripEmoji(line))
-	core = strings.TrimFunc(core, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsPunct(r) && r != '\'' })
 	if core == "" {
 		return false
 	}
-	return greetingRe.MatchString(core)
+	if isGreetingOpener(core) {
+		return true
+	}
+	stripped := strings.TrimFunc(core, func(r rune) bool { return unicode.IsSpace(r) || unicode.IsPunct(r) && r != '\'' })
+	return stripped != "" && greetingRe.MatchString(stripped)
+}
+
+// isGreetingOpener reports "Hey …!" / "Calling all …" / "Dear friends," style
+// openers. Event names that merely start with Hello/Hi/Chào and have no
+// trailing salutation mark ("Hello Kitty Party", "Hi-Fi Listening Night",
+// "Chào Xuân 2027 Festival") are left alone.
+func isGreetingOpener(line string) bool {
+	core := strings.TrimSpace(stripEmoji(cleanLine(line)))
+	if core == "" || !greetingOpenerRe.MatchString(core) {
+		return false
+	}
+	ends := strings.HasSuffix(core, "!") || strings.HasSuffix(core, "！") || strings.HasSuffix(core, ",")
+	low := strings.ToLower(core)
+	calling := strings.HasPrefix(low, "calling all") || strings.HasPrefix(low, "attention")
+	if !ends && !calling {
+		return false
+	}
+	// A headline-style event name that happens to start with a greeting word
+	// ("Hello Festival Night!") keeps its title when it names the event.
+	rest := strings.TrimSpace(greetingOpenerRe.ReplaceAllString(core, ""))
+	rest = strings.Trim(rest, "!,，！ ")
+	if rest == "" {
+		return true
+	}
+	if hasEventNoun(rest) && isHeadlineCase(rest) && !calling {
+		return false
+	}
+	return true
 }
 
 // eventNouns mark a line (or phrase) that names the event itself.
@@ -237,7 +274,7 @@ func isCTATitle(line string) bool {
 }
 
 func isRejectedTitle(line string) bool {
-	return isSectionHeader(line) || endsWithColon(line) || isCTATitle(line) || containsURL(line)
+	return isSectionHeader(line) || endsWithColon(line) || isGreeting(line) || isCTATitle(line) || containsURL(line)
 }
 
 func isNameLabel(label string) bool {

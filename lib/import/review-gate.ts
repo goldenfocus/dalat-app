@@ -266,6 +266,13 @@ export function evaluateWhatsAppDraftEvidence(
         "Title is a chat sentence or a placeholder, not the event's name; use the flyer/series name",
     });
   }
+  if (isGreetingTitle(event.title ?? "")) {
+    reasons.push({
+      code: "title_greeting",
+      message:
+        "Title is a greeting or salutation opener (Hey artists…, Hi cả nhà), not the event's name",
+    });
+  }
   if (isScheduleLine(event.title ?? "")) {
     reasons.push({
       code: "title_schedule_line",
@@ -534,6 +541,47 @@ export function isScheduleLine(title: string): boolean {
  * Mirrors whatsapp-ingest isChatSentenceTitle: "Sunday is coming soon, which
  * means it's time to rustle some", "Looking forward to seeing everyone tomorrow!".
  */
+/** A greeting or salutation opener, never an event name. */
+const GREETING_OPENER_RE =
+  /^(hey|hi|hello|hiya|howdy|greetings|dear|yo|alo|calling all|attention(?:\s*:)?|good (morning|afternoon|evening|day)|xin chào|xin chao|chào|chao|kính chào)\b/i;
+const GREETING_SHORT_RE =
+  /^(hey|hi|hello|hiya|howdy|greetings|good (morning|afternoon|evening|day)|dear|xin chào|xin chao|chào|chao|kính chào|alo|yo)\b[\s,!.]*((?:\p{L}+\s+){0,2}(every(one|body)|all|y'?all|guys|folks|friends|fam|family|lovely people|people|community|team|mọi người|moi nguoi|cả nhà|ca nha|các bạn|cac ban|bạn|ban|nhé|nhe))?[\s,!.]*(of [\p{L} ]{0,30})?[\s!.,]*$/iu;
+
+export function isGreetingTitle(title: string): boolean {
+  const core = title
+    .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
+    .replace(/\p{Extended_Pictographic}|\ufe0f/gu, "")
+    .trim();
+  if (!core) return false;
+  if (isGreetingOpener(core)) return true;
+  const stripped = core.replace(/^[\s,!.]+|[\s,!.]+$/g, "");
+  return Boolean(stripped) && GREETING_SHORT_RE.test(stripped);
+}
+
+function isGreetingOpener(core: string): boolean {
+  if (!GREETING_OPENER_RE.test(core)) return false;
+  const ends = /[!！,]$/.test(core);
+  const low = core.toLowerCase();
+  const calling = low.startsWith("calling all") || low.startsWith("attention");
+  if (!ends && !calling) return false;
+  const rest = core
+    .replace(GREETING_OPENER_RE, "")
+    .replace(/^[!,，！\s]+|[!,，！\s]+$/g, "")
+    .trim();
+  if (!rest) return true;
+  // Headline event names that start with Hello/Hi/Chào stay titles.
+  if (
+    !calling &&
+    /(?:workshop|class|classes|night|festival|concert|party|session|show|meetup|meet-up|market|fair|tour|retreat|jam|exhibition|screening|talk)\b/i.test(
+      rest,
+    ) &&
+    /^[\p{Lu}\p{N}]/u.test(rest)
+  ) {
+    return false;
+  }
+  return true;
+}
+
 export function isChatSentenceTitle(title: string): boolean {
   const core = title
     .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")

@@ -68,7 +68,7 @@ func (s *supabaseClient) senderSeries(ctx context.Context, sender string, before
 func applySeriesTitle(d *eventDraft, priors []seriesEvent) string {
 	text := sourceCaption(d.Description) + "\n" + d.ReadableText
 	normText := normalizeSeriesText(text)
-	needsReview := d.Meta["title_needs_review"] == true || isChatSentenceTitle(d.Title)
+	needsReview := d.Meta["title_needs_review"] == true || isChatSentenceTitle(d.Title) || isGreeting(d.Title)
 	loc := mustLoc()
 	for _, p := range priors {
 		title := strings.TrimSpace(p.Title)

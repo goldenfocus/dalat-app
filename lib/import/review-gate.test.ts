@@ -17,6 +17,7 @@ import {
   qaReviewEvent,
   rejectReviewEvent,
   isChatSentenceTitle,
+  isGreetingTitle,
   isScheduleLine,
   isSectionHeaderLine,
   isUrlOrCtaTitle,
@@ -285,6 +286,13 @@ describe("evaluateDraftQuality", () => {
     expect(isSectionHeaderLine("Full description and map link:")).toBe(true);
     expect(isSectionHeaderLine("More info:")).toBe(true);
     expect(isSectionHeaderLine("Nature walks in Cau Dat, Da Lat")).toBe(false);
+    expect(isGreetingTitle("Hey artists and art enthusiasts!")).toBe(true);
+    expect(isGreetingTitle("Calling all photographers!")).toBe(true);
+    expect(isGreetingTitle("Hi cả nhà")).toBe(true);
+    expect(isGreetingTitle("Weekend Sketch Club – Sunday Sketching")).toBe(
+      false,
+    );
+    expect(isGreetingTitle("Hello Kitty Party")).toBe(false);
     expect(
       isUrlOrCtaTitle(
         "Details here: https://www.facebook.com/share/1HncP1adB8/",
@@ -323,6 +331,23 @@ describe("evaluateDraftQuality", () => {
     );
     expect(colonHeader.map((reason) => reason.code)).toContain(
       "title_section_header",
+    );
+    const greetingTitle = evaluateDraftQuality(
+      event({
+        source_platform: "whatsapp",
+        title: "Hey artists and art enthusiasts!",
+        location_name: "Vui Va cafe",
+        source_metadata: {
+          message_id: "AC68FA8D3DC610F6015FE64E5F3243C5",
+          time_inferred: false,
+          source_text_evidence:
+            "Hey artists and art enthusiasts!\n\nAnother Sunday, another time to rustle some paper, pose and draw!\n\n🗓 When: Sundays, at 10:30 AM\n📍 Where: Vui Va cafe",
+        },
+      }),
+      qualityOptions(),
+    );
+    expect(greetingTitle.map((reason) => reason.code)).toContain(
+      "title_greeting",
     );
     const headerVenue = evaluateDraftQuality(
       event({
