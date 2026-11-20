@@ -4741,6 +4741,17 @@
     "endCard": "₫30 million/month • 12-month lease"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Viewing times saved.",
+    "availabilityFuture": "Choose a date and time that are still in the future.",
+    "savedViewingTimes": "Saved viewing times",
+    "rooms": "Rooms",
+    "bedrooms": "Bedrooms",
+    "bathrooms": "Bathrooms",
+    "livingRooms": "Living rooms",
+    "studies": "Studies",
+    "roomsEntry": "Room type",
+    "roomCount": "Count",
+    "roomsAdd": "Add room type",
     "pool": "Pool",
     "central": "Near the center",
     "cleaning": "Cleaning",

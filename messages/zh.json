@@ -4741,6 +4741,17 @@
     "endCard": "每月 3,000 万越南盾 • 12 个月租约"
   },
   "rentalsDetails": {
+    "availabilitySaved": "看房时段已保存。",
+    "availabilityFuture": "请选择尚未过去的日期和时间。",
+    "savedViewingTimes": "已保存的看房时段",
+    "rooms": "房间布局",
+    "bedrooms": "卧室",
+    "bathrooms": "浴室",
+    "livingRooms": "客厅",
+    "studies": "书房",
+    "roomsEntry": "房间类型",
+    "roomCount": "数量",
+    "roomsAdd": "添加房间类型",
     "pool": "泳池",
     "central": "靠近市中心",
     "cleaning": "清洁",

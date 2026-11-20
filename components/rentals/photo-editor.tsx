@@ -18,8 +18,9 @@ export function RentalPhotoEditor({ initial, labels }: {
     });
   }
   async function upload(event: ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(event.target.files || []).slice(0, 6 - photos.length);
+    const files = Array.from(event.target.files || []);
     event.target.value = "";
+    if (!files.length) return;
     setBusy(true);
     setError(false);
     try {
@@ -51,7 +52,7 @@ export function RentalPhotoEditor({ initial, labels }: {
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
         {photos.map((src, index) => (
           <div key={src} className="overflow-hidden rounded-lg border">
-            <img src={src} alt={labels.viewPhoto.replace("{number}", String(index + 1))} className="aspect-[4/3] w-full object-cover" />
+            <img src={src} loading="lazy" alt={labels.viewPhoto.replace("{number}", String(index + 1))} className="aspect-[4/3] w-full object-cover" />
             <div className="flex justify-between p-1">
               <button type="button" disabled={index === 0} aria-label={labels.previous} onClick={() => move(index, -1)} className="grid size-10 place-items-center disabled:opacity-30"><ChevronLeft className="size-4" /></button>
               <button type="button" disabled={index === photos.length - 1} aria-label={labels.next} onClick={() => move(index, 1)} className="grid size-10 place-items-center disabled:opacity-30"><ChevronRight className="size-4" /></button>
@@ -60,9 +61,9 @@ export function RentalPhotoEditor({ initial, labels }: {
           </div>
         ))}
       </div>
-      {photos.length < 6 && <label className="block"><span>{labels.upload}</span>
+      <label className="block"><span>{labels.upload}</span>
         <input type="file" multiple accept="image/*" onChange={upload} disabled={busy} className="block max-w-full" />
-      </label>}
+      </label>
       {busy && <p role="status">{labels.loading}</p>}
       {busy && <input name="uploading" type="hidden" value="1" />}
       {error && <p role="alert">{labels.failed}</p>}

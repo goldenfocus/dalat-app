@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useActionState, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { addRentalAvailability } from "@/app/[locale]/rentals/actions";
-import { dalatDate, dalatZone, halfHour, weekDays } from "@/lib/rentals/calendar";
+import { dalatDate, dalatZone, dayKey, halfHour, weekDays } from "@/lib/rentals/calendar";
 
-export function AvailabilityEditor({ today, locale }: { today: string; locale: string }) {
+export function AvailabilityEditor({ today, locale, savedTimes }: {
+  today: string;
+  locale: string;
+  savedTimes: string[] | null;
+}) {
+  const [feedback, submit, pending] = useActionState(addRentalAvailability, null);
   const [week, setWeek] = useState(0);
   const [selected, setSelected] = useState<string[]>([]);
   const [start, setStart] = useState(18);
@@ -22,7 +27,16 @@ export function AvailabilityEditor({ today, locale }: { today: string; locale: s
   const displayTime = (index: number) => clock.format(dalatDate(today).getTime() + index * halfHour);
   const arrows = "grid size-11 place-items-center rounded-full border bg-background disabled:opacity-40";
   const control = "min-h-11 w-full rounded-xl border bg-background px-3 text-sm";
-  return <form action={addRentalAvailability} className="grid gap-4 rounded-2xl border bg-card p-4 sm:p-5">
+  const savedDays = new Map<string, string[]>();
+  for (const value of savedTimes ?? []) {
+    const timestamp = Date.parse(value);
+    const date = dayKey(timestamp);
+    const times = savedDays.get(date) ?? [];
+    times.push(clock.format(timestamp));
+    savedDays.set(date, times);
+  }
+
+  return <form action={submit} className="grid gap-4 rounded-2xl border bg-card p-4 sm:p-5">
     <h3 className="font-semibold">{pilot("viewingTime")}</h3>
     <div className="flex items-center justify-between">
       <button type="button" className={arrows} disabled={!week} aria-label={common("previous")} onClick={() => setWeek(week - 1)}><ChevronLeft className="size-4" /></button>
@@ -56,6 +70,21 @@ export function AvailabilityEditor({ today, locale }: { today: string; locale: s
         </select>
       </label>
     </div>
-    <button disabled={selected.length === 0} className="min-h-11 rounded-xl bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-45">{pilot("addTime")}</button>
+    <button type="submit" disabled={pending || selected.length === 0}
+      className="min-h-11 rounded-xl bg-primary px-4 font-semibold text-primary-foreground disabled:opacity-45">
+      {pending ? common("loading") : pilot("addTime")}
+    </button>
+    {feedback === "saved" && <p role="status" className="text-sm font-medium text-primary">{t("availabilitySaved")}</p>}
+    {feedback === "future" && <p role="alert" className="text-sm text-destructive">{t("availabilityFuture")}</p>}
+    {(feedback === "failed" || savedTimes === null) && <p role="alert" className="text-sm text-destructive">{pilot("failed")}</p>}
+    {savedDays.size > 0 && <details className="space-y-3 rounded-xl border p-3" open={feedback === "saved" || undefined}>
+      <summary className="cursor-pointer font-medium">{t("savedViewingTimes")}</summary>
+      <dl className="space-y-2 text-sm">
+        {[...savedDays].map(([date, times]) => <div key={date}>
+          <dt className="font-medium">{longer.format(dalatDate(date))}</dt>
+          <dd className="text-muted-foreground">{times.join(" · ")}</dd>
+        </div>)}
+      </dl>
+    </details>}
   </form>;
 }

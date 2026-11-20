@@ -4741,6 +4741,17 @@
     "endCard": "30 millions ₫/mois • Bail de 12 mois"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Créneaux de visite enregistrés.",
+    "availabilityFuture": "Choisissez une date et une heure à venir.",
+    "savedViewingTimes": "Créneaux de visite enregistrés",
+    "rooms": "Pièces",
+    "bedrooms": "Chambres",
+    "bathrooms": "Salles de bains",
+    "livingRooms": "Salons",
+    "studies": "Bureaux",
+    "roomsEntry": "Type de pièce",
+    "roomCount": "Nombre",
+    "roomsAdd": "Ajouter un type de pièce",
     "pool": "Piscine",
     "central": "Près du centre",
     "cleaning": "Ménage",

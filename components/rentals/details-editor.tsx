@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Plus, X } from "lucide-react";
-import { amenityKeys, areaKeys, detailGroups, ruleKeys, utilityKeys, type RentalDetails } from "@/lib/rentals/details";
+import { amenityKeys, areaKeys, detailGroups, roomKeys, roomLabelLength, ruleKeys, utilityKeys, type RentalDetails } from "@/lib/rentals/details";
 
 const control = "min-h-11 w-full rounded-xl border bg-background px-3 text-sm";
 const fieldset = "min-w-0 space-y-4 rounded-2xl border bg-card px-4 pb-4 sm:px-5";
@@ -14,31 +14,41 @@ function CustomEntries({ group, items }: { group: Group; items: RentalDetails["c
   const common = useTranslations("common");
   const [rows, setRows] = useState(items.map((item, id) => ({ ...item, id })));
   const [nextId, setNextId] = useState(items.length);
+  const hasCounts = group === "rooms";
   return <div className="grid gap-2">
-    {rows.map(({ id, label, pricing }) => (
-      <div key={id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
-        <div className="grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+    {rows.map(row => (
+      <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2">
+        <div className={hasCounts ? "grid grid-cols-[minmax(0,1fr)_5rem] gap-2" :
+          "grid gap-2 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)]"}>
           <input aria-label={t(group + "Entry")} placeholder={t(group + "Entry")} name={group + ".label"}
-            className={control + (group !== "amenities" ? " sm:col-span-3" : "")} defaultValue={label} maxLength={1000} />
-          {group === "amenities" && <>
+            className={control + (group === "area" || group === "nearby" || group === "rules" ? " sm:col-span-3" : "")}
+            defaultValue={row.label} maxLength={hasCounts ? roomLabelLength : 1000} />
+          {row.group === "rooms" && <input aria-label={t("roomCount")} placeholder={t("roomCount")}
+            name="rooms.count" className={control} inputMode="numeric" pattern="[0-9]{1,3}" maxLength={3}
+            defaultValue={row.count} />}
+          {row.group === "amenities" && <>
             <select aria-label={t("pricing")} name={group + ".pricing"} className={control}
-              defaultValue={typeof pricing === "number" ? "paid" : pricing}>
+              defaultValue={typeof row.pricing === "number" ? "paid" : row.pricing}>
               <option value="">{t("unspecified")}</option>
               <option value="included">{t("included")}</option>
               <option value="notIncluded">{t("notIncluded")}</option>
               <option value="paid">{t("paid")}</option>
             </select>
             <input aria-label={t("amount")} placeholder={t("amount")} name={group + ".amount"}
-              className={control} inputMode="numeric" pattern="[0-9]+" defaultValue={typeof pricing === "number" ? pricing : undefined} />
+              className={control} inputMode="numeric" pattern="[0-9]+" defaultValue={typeof row.pricing === "number" ? row.pricing : undefined} />
           </>}
         </div>
         <button type="button" aria-label={common("remove")} className="grid size-11 place-items-center rounded-xl border hover:bg-muted"
-          onClick={() => setRows(rows.filter(row => row.id !== id))}><X className="size-4" /></button>
+          onClick={() => setRows(rows.filter(item => item.id !== row.id))}><X className="size-4" /></button>
       </div>
     ))}
     <button type="button" className="inline-flex min-h-11 items-center gap-2 justify-self-start rounded-xl border px-3 text-sm font-medium hover:bg-muted"
       disabled={rows.length >= 30}
-      onClick={() => { setRows([...rows, { group, label: "", id: nextId, pricing: undefined }]); setNextId(nextId + 1); }}>
+      onClick={() => {
+        const entry = { label: "", id: nextId };
+        setRows([...rows, group === "rooms" ? { ...entry, group, count: 1 } : { ...entry, group }]);
+        setNextId(nextId + 1);
+      }}>
       <Plus className="size-4" aria-hidden="true" />{t(group + "Add")}
     </button>
   </div>;
@@ -63,6 +73,17 @@ export function RentalDetailsEditor({ details }: { details: RentalDetails }) {
   </label>;
   const entries = (group: Group) => <CustomEntries group={group} items={details.custom.filter(item => item.group === group)} />;
   return <>
+    <fieldset className={fieldset}>
+      <legend className="px-2 font-semibold">{t("rooms")}</legend>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {roomKeys.map(key => <label key={key} className="grid min-w-0 gap-1 text-sm">
+          {t(key)}
+          <input className={control} name={"rooms." + key} defaultValue={details.rooms[key]}
+            inputMode="numeric" pattern="[0-9]{1,3}" maxLength={3} />
+        </label>)}
+      </div>
+      {entries("rooms")}
+    </fieldset>
     <fieldset className={fieldset}>
       <legend className="px-2 font-semibold">{pilot("amenities")}</legend>
       {presets("amenities", amenityKeys)}

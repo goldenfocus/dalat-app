@@ -4741,6 +4741,17 @@
     "endCard": "30 triệu đồng/tháng • Hợp đồng 12 tháng"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Đã lưu lịch xem nhà.",
+    "availabilityFuture": "Chọn ngày và giờ xem nhà trong tương lai.",
+    "savedViewingTimes": "Lịch xem nhà đã lưu",
+    "rooms": "Các phòng",
+    "bedrooms": "Phòng ngủ",
+    "bathrooms": "Phòng tắm",
+    "livingRooms": "Phòng khách",
+    "studies": "Phòng làm việc",
+    "roomsEntry": "Loại phòng",
+    "roomCount": "Số lượng",
+    "roomsAdd": "Thêm loại phòng",
     "pool": "Hồ bơi",
     "central": "Gần trung tâm",
     "cleaning": "Dọn dẹp",

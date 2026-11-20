@@ -4741,6 +4741,17 @@
     "endCard": "월 3,000만 동 • 12개월 계약"
   },
   "rentalsDetails": {
+    "availabilitySaved": "집 보기 시간이 저장되었습니다.",
+    "availabilityFuture": "아직 지나지 않은 날짜와 시간을 선택하세요.",
+    "savedViewingTimes": "저장된 집 보기 시간",
+    "rooms": "방 구성",
+    "bedrooms": "침실",
+    "bathrooms": "욕실",
+    "livingRooms": "거실",
+    "studies": "서재",
+    "roomsEntry": "방 유형",
+    "roomCount": "개수",
+    "roomsAdd": "방 유형 추가",
     "pool": "수영장",
     "central": "시내 중심가 근처",
     "cleaning": "청소",

@@ -4,14 +4,25 @@ export const amenityKeys = ["wifi", "pool"] as const;
 export const areaKeys = ["central", "quiet"] as const;
 export const utilityKeys = ["cleaning", "electricity", "water"] as const;
 export const ruleKeys = ["dogs", "parties"] as const;
-export const detailGroups = ["amenities", "area", "nearby", "rules"] as const;
+export const roomKeys = ["bedrooms", "bathrooms", "livingRooms", "studies"] as const;
+const textDetailGroups = ["amenities", "area", "nearby", "rules"] as const;
+export const detailGroups = [...textDetailGroups, "rooms"] as const;
+export const roomLabelLength = 100;
+const roomCount = z.number().int().min(0).max(999);
 const inclusion = z.enum(["included", "notIncluded"]);
 const permission = z.enum(["allowed", "notAllowed"]);
-const customDetail = z.object({
-  group: z.enum(detailGroups),
-  label: z.string().trim().min(1).max(1000),
-  pricing: z.union([inclusion, z.number().int().positive().max(10_000_000_000)]).optional(),
-});
+const customDetail = z.discriminatedUnion("group", [
+  z.object({
+    group: z.enum(textDetailGroups),
+    label: z.string().trim().min(1).max(1000),
+    pricing: z.union([inclusion, z.number().int().positive().max(10_000_000_000)]).optional(),
+  }),
+  z.object({
+    group: z.literal("rooms"),
+    label: z.string().trim().min(1).max(roomLabelLength),
+    count: roomCount.min(1),
+  }),
+]);
 
 export const detailsSchema = z.object({
   amenities: z.array(z.enum(amenityKeys)).max(2).default([]),
@@ -19,7 +30,8 @@ export const detailsSchema = z.object({
   utilities: z.partialRecord(z.enum(utilityKeys), inclusion).default({}),
   rules: z.partialRecord(z.enum(ruleKeys), permission).default({}),
   minimumChildAge: z.number().int().min(1).max(18).optional(),
-  custom: z.array(customDetail).max(120).default([]),
+  rooms: z.partialRecord(z.enum(roomKeys), roomCount).default({}),
+  custom: z.array(customDetail).max(150).default([]),
 });
 export type RentalDetails = z.infer<typeof detailsSchema>;
 
@@ -38,17 +50,27 @@ export function rentalDetailTranslations(value: string | undefined, count: numbe
   }
 }
 
+function readRoomCount(value: FormDataEntryValue | null | undefined) {
+  return typeof value === "string" && /^[0-9]{1,3}$/.test(value) ? Number(value) : NaN;
+}
+
 export function readRentalDetails(form: FormData) {
   const groupValues = (key: string, keys: readonly string[]) =>
     Object.fromEntries(keys.flatMap(name => {
       const value = form.get(key + "." + name);
       return value ? [[name, value]] : [];
     }));
+  const rooms = Object.fromEntries(roomKeys.flatMap(key => {
+    const value = form.get("rooms." + key);
+    return value === null || value === "" ? [] : [[key, readRoomCount(value)]];
+  }));
+  const customRooms = form.getAll("rooms.count");
   const custom = detailGroups.flatMap(group => {
     const pricing = form.getAll(group + ".pricing");
     const amounts = form.getAll(group + ".amount");
-    return form.getAll(group + ".label").flatMap((label, index) => {
+    return form.getAll(group + ".label").flatMap<unknown>((label, index) => {
       if (typeof label !== "string" || !label.trim()) return [];
+      if (group === "rooms") return [{ group, label, count: readRoomCount(customRooms[index]) }];
       return [{ group, label, pricing: pricing[index] === "paid" ?
         Number(amounts[index]) : pricing[index] || undefined }];
     });
@@ -57,6 +79,7 @@ export function readRentalDetails(form: FormData) {
     amenities: form.getAll("amenities"), area: form.getAll("area"),
     utilities: groupValues("utility", utilityKeys), rules: groupValues("rule", ruleKeys),
     minimumChildAge: form.get("minimumChildAge") ? Number(form.get("minimumChildAge")) : undefined,
+    rooms,
     custom,
   });
 }

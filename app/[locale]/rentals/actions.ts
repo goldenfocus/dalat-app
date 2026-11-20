@@ -17,7 +17,7 @@ const listingForm = z.object({
   monthly_rent: price,
   six_month_rent: price.nullable(),
   yearly_rent: price.nullable(),
-  photos: z.array(z.string().max(2048).refine(safeRentalPhoto)).max(6),
+  photos: z.array(z.string().max(2048).refine(safeRentalPhoto)),
   source_locale: z.enum(locales),
   status: z.enum(["draft", "published"]),
 });
@@ -67,13 +67,19 @@ export async function requestViewing(form: FormData) {
   redirect({ href: result?.data ? "/rentals?viewing=requested#viewings" : "/rentals?error=1#viewings", locale });
 }
 
-export async function addRentalAvailability(form: FormData) {
-  const { db, locale } = await signedIn("/rentals");
+type AvailabilityFeedback = "saved" | "future" | "failed" | null;
+
+export async function addRentalAvailability(_feedback: AvailabilityFeedback, form: FormData): Promise<AvailabilityFeedback> {
+  const { db } = await signedIn("/rentals");
   const days = form.getAll("day").filter((day): day is string => typeof day === "string");
   const times = availabilityTimes(days, Number(form.get("start")), Number(form.get("end")));
-  const result = times.length ? await db.rpc("rental_publish_slots", { times }) : null;
+  if (!times.length) return "future";
+
+  const { data, error } = await db.rpc("rental_publish_slots", { times });
+  if (error || data !== true) return "failed";
+
   revalidatePath("/[locale]/rentals", "page");
-  redirect({ href: result?.data ? "/rentals#viewings" : "/rentals?error=1#viewings", locale });
+  return "saved";
 }
 
 export async function changeViewing(form: FormData) {

@@ -4741,6 +4741,17 @@
     "endCard": "30 juta ₫/bulan • Kontrak 12 bulan"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Waktu kunjungan disimpan.",
+    "availabilityFuture": "Pilih tanggal dan waktu yang belum berlalu.",
+    "savedViewingTimes": "Waktu kunjungan tersimpan",
+    "rooms": "Ruangan",
+    "bedrooms": "Kamar tidur",
+    "bathrooms": "Kamar mandi",
+    "livingRooms": "Ruang keluarga",
+    "studies": "Ruang kerja",
+    "roomsEntry": "Jenis ruangan",
+    "roomCount": "Jumlah",
+    "roomsAdd": "Tambah jenis ruangan",
     "pool": "Kolam renang",
     "central": "Dekat pusat kota",
     "cleaning": "Kebersihan",

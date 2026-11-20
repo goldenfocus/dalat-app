@@ -16,6 +16,21 @@ import { changeViewing } from "./actions";
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ viewing?: string; error?: string }> };
 
 
+type RentalSlot = { id: string; starts_at: string };
+
+async function readRentalSlots(
+  query: (from: number, to: number) => PromiseLike<{ data: RentalSlot[] | null; error: unknown }>,
+) {
+  const pageSize = 500;
+  const slots: RentalSlot[] = [];
+  for (let offset = 0; ; offset += pageSize) {
+    const { data, error } = await query(offset, offset + pageSize - 1);
+    if (error || !data) return null;
+    slots.push(...data);
+    if (data.length < pageSize) return slots;
+  }
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "rentalsPilot" });
@@ -42,6 +57,12 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const listings = listingResult.data as RentalListing[] | null;
   const visits = (visitsResult?.data || []) as RentalVisit[];
   const ownsListing = listings?.some(l => l.host_id === user?.id);
+  const now = Date.now();
+  const savedSlots = user && ownsListing
+    ? await readRentalSlots((from, to) => db.from("rental_slots").select("id,starts_at")
+      .eq("host_id", user.id).eq("is_open", true).gt("starts_at", new Date(now).toISOString())
+      .order("starts_at").range(from, to))
+    : [];
   const currency = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
   const time = new Intl.DateTimeFormat(locale, { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" });
   const button = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground";
@@ -73,7 +94,8 @@ export default async function RentalsPage({ params, searchParams }: Props) {
         const active = visits.some(v => v.listing_id === listing.id && v.renter_id === user?.id &&
           ["pending", "proposed", "confirmed"].includes(v.status) && (!v.starts_at || Date.parse(v.starts_at) > Date.now()));
         const slots = isOwner || active || listing.status !== "published" ? [] :
-          (await db.rpc("rental_open_times", { listing: listing.id })).data as { id: string; starts_at: string }[] | null;
+          await readRentalSlots((from, to) => db.rpc("rental_open_times", { listing: listing.id })
+            .order("starts_at").range(from, to));
         const photos: RentalGalleryItem[] = listing.photos.filter(safeRentalPhoto).map((src, index) => ({
           kind: "photo", src, label: t("viewPhoto", { number: index + 1 }),
         }));
@@ -108,8 +130,9 @@ export default async function RentalsPage({ params, searchParams }: Props) {
                 {!isOwner && listing.status === "published" && (
                   active ? <a className={secondary} href="#viewings">{t("viewings")}</a> :
                   user ? (
-                    <ViewingPicker listing={listing.id} slots={slots || []} locale={locale}
-                      title={t("viewingTime")} action={t("request")} />
+                    slots === null ? <p role="alert">{t("failed")}</p> :
+                      <ViewingPicker listing={listing.id} slots={slots} locale={locale}
+                        title={t("viewingTime")} action={t("request")} />
                   ) : <Link href={loginPath} className={button}>{t("request")}</Link>
                 )}
               </div>
@@ -119,7 +142,8 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       }))}
       {user && (ownsListing || visits.length > 0) && <section id="viewings" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-semibold">{t("viewings")}</h2>
-        {ownsListing && <AvailabilityEditor today={dayKey(Date.now())} locale={locale} />}
+        {ownsListing && <AvailabilityEditor today={dayKey(now)} locale={locale}
+          savedTimes={savedSlots?.map(slot => slot.starts_at) ?? null} />}
         {visits.map(visit => {
           const listing = listings?.find(l => l.id === visit.listing_id);
           const isHost = listing?.host_id === user.id;

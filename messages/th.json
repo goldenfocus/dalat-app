@@ -4741,6 +4741,17 @@
     "endCard": "30 ล้านด่งต่อเดือน • สัญญา 12 เดือน"
   },
   "rentalsDetails": {
+    "availabilitySaved": "บันทึกเวลานัดชมที่พักแล้ว",
+    "availabilityFuture": "เลือกวันที่และเวลาที่ยังมาไม่ถึง",
+    "savedViewingTimes": "เวลานัดชมที่พักที่บันทึกไว้",
+    "rooms": "ห้องต่าง ๆ",
+    "bedrooms": "ห้องนอน",
+    "bathrooms": "ห้องน้ำ",
+    "livingRooms": "ห้องนั่งเล่น",
+    "studies": "ห้องทำงาน",
+    "roomsEntry": "ประเภทห้อง",
+    "roomCount": "จำนวน",
+    "roomsAdd": "เพิ่มประเภทห้อง",
     "pool": "สระว่ายน้ำ",
     "central": "ใกล้ใจกลางเมือง",
     "cleaning": "การทำความสะอาด",

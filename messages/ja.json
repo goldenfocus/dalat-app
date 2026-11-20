@@ -4741,6 +4741,17 @@
     "endCard": "月額3,000万ドン • 12か月契約"
   },
   "rentalsDetails": {
+    "availabilitySaved": "内見時間を保存しました。",
+    "availabilityFuture": "今後の日付と時間を選択してください。",
+    "savedViewingTimes": "保存した内見時間",
+    "rooms": "部屋の構成",
+    "bedrooms": "寝室",
+    "bathrooms": "浴室",
+    "livingRooms": "リビング",
+    "studies": "書斎",
+    "roomsEntry": "部屋の種類",
+    "roomCount": "部屋数",
+    "roomsAdd": "部屋の種類を追加",
     "pool": "プール",
     "central": "中心街に近い",
     "cleaning": "清掃",

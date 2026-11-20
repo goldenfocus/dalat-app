@@ -4741,6 +4741,17 @@
     "endCard": "30 Mio. ₫/Monat • Mietvertrag über 12 Monate"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Besichtigungstermine gespeichert.",
+    "availabilityFuture": "Wähle ein Datum und eine Uhrzeit in der Zukunft.",
+    "savedViewingTimes": "Gespeicherte Besichtigungstermine",
+    "rooms": "Räume",
+    "bedrooms": "Schlafzimmer",
+    "bathrooms": "Badezimmer",
+    "livingRooms": "Wohnzimmer",
+    "studies": "Arbeitszimmer",
+    "roomsEntry": "Raumtyp",
+    "roomCount": "Anzahl",
+    "roomsAdd": "Raumtyp hinzufügen",
     "pool": "Pool",
     "central": "Zentrumsnah",
     "cleaning": "Reinigung",

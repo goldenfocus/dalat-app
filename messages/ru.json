@@ -4741,6 +4741,17 @@
     "endCard": "30 млн ₫ в месяц • Договор на 12 месяцев"
   },
   "rentalsDetails": {
+    "availabilitySaved": "Время просмотра сохранено.",
+    "availabilityFuture": "Выберите дату и время в будущем.",
+    "savedViewingTimes": "Сохранённое время просмотра",
+    "rooms": "Комнаты",
+    "bedrooms": "Спальни",
+    "bathrooms": "Ванные комнаты",
+    "livingRooms": "Гостиные",
+    "studies": "Кабинеты",
+    "roomsEntry": "Тип помещения",
+    "roomCount": "Количество",
+    "roomsAdd": "Добавить тип помещения",
     "pool": "Бассейн",
     "central": "Рядом с центром",
     "cleaning": "Уборка",
