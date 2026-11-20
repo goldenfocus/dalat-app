@@ -18,6 +18,7 @@ describe("public translation source contract", () => {
         "blog",
         "track",
         "people",
+        "rental",
       ]),
     );
     expect(TRANSLATION_SOURCES.some((x) => x.table === "moment_metadata")).toBe(

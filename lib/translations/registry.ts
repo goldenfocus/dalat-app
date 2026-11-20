@@ -23,6 +23,13 @@ import { metadataLabels } from "./metadata-labels";
 // stored delivery payloads or email addresses through the public content worker.
 export const TRANSLATION_SOURCES = [
   {
+    type: "rental",
+    table: "rental_listings",
+    fields: ["title", "description"],
+    locale: "source_locale",
+    filters: [["status", "published"]],
+  },
+  {
     type: "venue",
     table: "venues",
     fields: ["description", "photos", "tags"],

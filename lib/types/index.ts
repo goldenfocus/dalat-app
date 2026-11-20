@@ -94,7 +94,8 @@ export type TranslationContentType =
   | "venue"
   | "comment"
   | "organizer"
-  | "track";
+  | "track"
+  | "rental";
 export type TranslationFieldName =
   | "name"
   | "note"
