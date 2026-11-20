@@ -32,6 +32,7 @@ export type ReviewReasonCode =
   | "title_schedule_line"
   | "title_section_header"
   | "title_url_or_cta"
+  | "title_greeting"
   | "venue_section_header"
   | "ambiguous_time"
   | "personal_photo_hero"
