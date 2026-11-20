@@ -1,7 +1,8 @@
+import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildAlternates } from "@/lib/metadata";
-import { Link, type Locale } from "@/lib/i18n/routing";
+import { type Locale } from "@/lib/i18n/routing";
 import { rentalDirectionsColumns, type RentalDirections } from "@/lib/rentals/directions";
 import { saveRentalDirections } from "./actions";
 import { ownerRentalDirections } from "./owner";
@@ -17,13 +18,13 @@ export default async function RentalDirectionsEditor({ params, searchParams }: P
   const { id, locale } = await params;
   setRequestLocale(locale);
   const [{ db, listing }, feedback, t, common] = await Promise.all([
-    ownerRentalDirections(id), searchParams, getTranslations("rentalsPilot"), getTranslations("common"),
+    ownerRentalDirections(id), searchParams, getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "common" }),
   ]);
   const saved = await db.from("rental_directions").select(rentalDirectionsColumns).eq("listing_id", id).maybeSingle();
   const values = saved.data as RentalDirections | null;
   const input = "mt-1 min-h-11 w-full rounded-lg border bg-background px-3 py-2";
   return <main className="mx-auto w-full max-w-xl space-y-4 px-4 py-6">
-    <Link href={`/rentals/listing/${id}`} className="inline-flex min-h-11 items-center text-sm underline">{common("back")}</Link>
+    <RentalLocaleLink locale={locale} href={`/rentals/listing/${id}`} className="inline-flex min-h-11 items-center text-sm underline">{common("back")}</RentalLocaleLink>
     <h1 data-rentals-title className="text-4xl">{t("directions")}</h1>
     <p className="break-words text-muted-foreground">{listing.title}</p>
     {(saved.error || feedback.error) && <p role="alert" className="rounded-lg border p-3">

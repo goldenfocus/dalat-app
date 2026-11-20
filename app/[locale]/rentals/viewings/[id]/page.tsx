@@ -1,8 +1,9 @@
+import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { z } from "zod";
-import { Link, redirect, type Locale } from "@/lib/i18n/routing";
+import { redirect, type Locale } from "@/lib/i18n/routing";
 import { buildAlternates } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
@@ -47,7 +48,7 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   setRequestLocale(locale);
   if (!rentalId.safeParse(id).success) notFound();
   const [db, feedback, t, common] = await Promise.all([
-    createClient(), searchParams, getTranslations("rentalsPilot"), getTranslations("common"),
+    createClient(), searchParams, getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "common" }),
   ]);
   const { data: { user } } = await db.auth.getUser();
   if (!user) {
@@ -104,9 +105,9 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   const proposalAction = proposeViewingTime.bind(null, id);
   const updateError = eventsResult.error || proposed?.error || slots === null;
   return <article className="mx-auto w-full max-w-2xl space-y-5 px-4 py-5 sm:px-8 sm:py-8">
-    <Link href="/rentals#viewings" className={secondary}>{t("viewings")}</Link>
+    <RentalLocaleLink locale={locale} href="/rentals#viewings" className={secondary}>{t("viewings")}</RentalLocaleLink>
     <header className="space-y-1">
-      <h1 data-rentals-title className="break-words text-3xl sm:text-4xl">{listing ? <Link href={publicListing}>{title}</Link> : title}</h1>
+      <h1 data-rentals-title className="break-words text-3xl sm:text-4xl">{listing ? <RentalLocaleLink locale={locale} href={publicListing}>{title}</RentalLocaleLink> : title}</h1>
       <p className="font-semibold">{t(visit.status)}{visit.starts_at && " · " + format(visit.starts_at)}</p>
     </header>
     {feedback.requested && <p role="status" className="rounded-lg border border-primary p-3">{t("requested")}</p>}
@@ -123,13 +124,13 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
           </>}
       </form>
     </section>}
-    {directions?.data && <RentalDirectionsPanel directions={directions.data as RentalDirections} />}
+    {directions?.data && <RentalDirectionsPanel locale={locale} directions={directions.data as RentalDirections} />}
     {canConfirm && <form action={statusAction}>
       <button name="next" value="confirmed" className={primary}>{t("confirm")}</button>
     </form>}
     {(canPropose || (canMove && (isHost || choices.length > 0)) || canCancel || canRebook || canOfferReplacement) &&
       <div className="flex flex-col gap-2">
-        {canRebook && <Link href={publicListing} className={primary}>{t("rebook")}</Link>}
+        {canRebook && <RentalLocaleLink locale={locale} href={publicListing} className={primary}>{t("rebook")}</RentalLocaleLink>}
         {(canPropose || (canMove && (isHost || choices.length > 0))) && <details className="rounded-lg border p-3">
           <summary className="min-h-9 cursor-pointer font-medium">{canPropose ? t("proposeNewTime") : t("reschedule")}</summary>
           {isHost ? <form action={canPropose ? statusAction : proposalAction} className="space-y-3">
@@ -166,8 +167,8 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
     <section className="space-y-3 border-t pt-4">
       <h2 className="text-xl font-semibold">{t("viewingHistory")}</h2>
       <div className="flex flex-wrap gap-2">
-        {all.length > pageSize && <Link href={thread + "?history=" + (page + 1)} className={secondary}>{t("olderHistory")}</Link>}
-        {page > 0 && <Link href={thread + (page === 1 ? "" : "?history=" + (page - 1))} className={secondary}>{t("newerHistory")}</Link>}
+        {all.length > pageSize && <RentalLocaleLink locale={locale} href={thread + "?history=" + (page + 1)} className={secondary}>{t("olderHistory")}</RentalLocaleLink>}
+        {page > 0 && <RentalLocaleLink locale={locale} href={thread + (page === 1 ? "" : "?history=" + (page - 1))} className={secondary}>{t("newerHistory")}</RentalLocaleLink>}
       </div>
       <ol className="space-y-2">
         {events.map(event => <li key={event.id}

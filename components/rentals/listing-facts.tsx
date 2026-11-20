@@ -7,13 +7,13 @@ const pilotLabels = new Map([
   ["Waterfalls and hiking", "trails"], ["Cafe", "cafeNearby"], ["No drugs", "noDrugs"],
 ]);
 
-export async function RentalListingFacts({ data, translation, locale, pilot }: {
-  data: unknown; translation?: string; locale: string; pilot: boolean;
+export async function RentalListingFacts({ data, translation, locale, sourceLocale, pilot }: {
+  data: unknown; translation?: string; locale: string; sourceLocale: string; pilot: boolean;
 }) {
   const [t, p, format] = await Promise.all([
-    getTranslations("rentalsDetails"),
-    getTranslations("rentalsPilot"),
-    getFormatter(),
+    getTranslations({ locale, namespace: "rentalsDetails" }),
+    getTranslations({ locale, namespace: "rentalsPilot" }),
+    getFormatter({ locale }),
   ]);
   const details = rentalDetails(data);
   const translated = rentalDetailTranslations(translation, details.custom.length);
@@ -69,6 +69,6 @@ export async function RentalListingFacts({ data, translation, locale, pilot }: {
       </ul>
     </section>)}
     {translated.some((label, index) => label !== details.custom[index].label) &&
-      <OriginalText text={details.custom.map(item => item.label).join("\n")} sourceLocale={locale} />}
+      <OriginalText text={details.custom.map(item => item.label).join("\n")} sourceLocale={sourceLocale} />}
   </>;
 }

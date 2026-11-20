@@ -1,3 +1,4 @@
+import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -5,7 +6,7 @@ import { cache } from "react";
 import { ArrowLeft } from "lucide-react";
 import { OriginalText } from "@/components/ui/original-text";
 import { SharePageButton } from "@/components/shared/share-page-button";
-import { Link, type Locale } from "@/lib/i18n/routing";
+import { type Locale } from "@/lib/i18n/routing";
 import { buildAlternates, generateLocalizedMetadata, localeUrl } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
@@ -59,7 +60,7 @@ export default async function RentalListingPage({ params, searchParams }: Props)
   const { id, locale } = await params;
   setRequestLocale(locale);
   const [record, feedback, t, common] = await Promise.all([
-    readListing(id, locale), searchParams, getTranslations("rentalsPilot"), getTranslations("common"),
+    readListing(id, locale), searchParams, getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "common" }),
   ]);
   const { db, user, listing, owner, title, description, tags } = record;
   const published = listing.status === "published";
@@ -77,10 +78,10 @@ export default async function RentalListingPage({ params, searchParams }: Props)
   ]);
   return <article className="mx-auto w-full min-w-0 max-w-5xl space-y-5 px-3 py-5 sm:px-8 sm:py-8">
     <div className="flex flex-wrap items-center justify-between gap-2">
-      <Link href="/rentals" className={secondary}><ArrowLeft className="me-2 size-4 rtl:rotate-180" aria-hidden="true" />{t("listings")}</Link>
+      <RentalLocaleLink locale={locale} href="/rentals" className={secondary}><ArrowLeft className="me-2 size-4 rtl:rotate-180" aria-hidden="true" />{t("listings")}</RentalLocaleLink>
       <div className="flex flex-wrap items-center gap-2">
-        {owner && <Link href={path + "/directions"} className={secondary}>{t("directions")}</Link>}
-        {owner && <Link href={`/rentals/new?id=${id}`} className={secondary}>{common("edit")}</Link>}
+        {owner && <RentalLocaleLink locale={locale} href={path + "/directions"} className={secondary}>{t("directions")}</RentalLocaleLink>}
+        {owner && <RentalLocaleLink locale={locale} href={`/rentals/new?id=${id}`} className={secondary}>{common("edit")}</RentalLocaleLink>}
         {published && <SharePageButton url={localeUrl(locale, path)} title={title} showLabel className="me-0 min-h-11" />}
       </div>
     </div>
@@ -92,21 +93,21 @@ export default async function RentalListingPage({ params, searchParams }: Props)
     <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
       <RentalGallery items={media.items} labels={media.labels} title={t("photos")} videoTitle={media.videoTitle} />
       <div className="min-w-0 space-y-5">
-        <RentalListingPrices listing={listing} />
+        <RentalListingPrices locale={locale} listing={listing} />
         {description && <p className="break-words whitespace-pre-wrap">{description}</p>}
         {(description !== listing.description || title !== listing.title) &&
           <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}
-        <RentalListingFacts data={listing.details} translation={tags} locale={listing.source_locale} pilot={id === pilotListingId} />
-        {directions.data && <RentalDirectionsPanel directions={directions.data as RentalDirections} />}
+        <RentalListingFacts data={listing.details} translation={tags} locale={locale} sourceLocale={listing.source_locale} pilot={id === pilotListingId} />
+        {directions.data && <RentalDirectionsPanel locale={locale} directions={directions.data as RentalDirections} />}
         {owner && <form action={publishSavedRental}>
           <input type="hidden" name="listing" value={id} />
           <input type="hidden" name="status" value={published ? "draft" : "published"} />
           <button className={published ? secondary : primary}>{t(published ? "unpublish" : "publish")}</button>
         </form>}
         {!owner && published && (
-          !user ? <Link href={"/auth/login?next=" + encodeURIComponent(next)} className={primary}>{t("request")}</Link>
+          !user ? <RentalLocaleLink locale={locale} href={"/auth/login?next=" + encodeURIComponent(next)} className={primary}>{t("request")}</RentalLocaleLink>
           : active?.error || slots === null ? <p role="alert">{t("failed")}</p>
-          : active?.data ? <Link href={"/rentals/viewings/" + active.data.id} className={secondary}>{t("openViewing")}</Link>
+          : active?.data ? <RentalLocaleLink locale={locale} href={"/rentals/viewings/" + active.data.id} className={secondary}>{t("openViewing")}</RentalLocaleLink>
           : <ViewingPicker listing={id} slots={slots} locale={locale} title={t("viewingTime")} action={t("request")} />
         )}
       </div>

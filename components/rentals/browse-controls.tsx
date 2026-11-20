@@ -1,19 +1,20 @@
 import { getTranslations } from "next-intl/server";
 import { Search, SlidersHorizontal } from "lucide-react";
-import { Link } from "@/lib/i18n/routing";
+import type { Locale } from "@/lib/i18n/routing";
+import { RentalLocaleLink } from "./locale-link";
 import { filterGroups, rentalBrowseHref, type rentalDiscovery } from "@/lib/rentals/discovery";
 
 type Filter = ReturnType<typeof rentalDiscovery>["filters"][number];
 
-export async function RentalBrowseControls({ query, selected, tours, filters }: {
-  query: string; selected: string[]; tours: boolean; filters: Filter[];
+export async function RentalBrowseControls({ locale, query, selected, tours, filters }: {
+  locale: Locale; query: string; selected: string[]; tours: boolean; filters: Filter[];
 }) {
-  const t = await getTranslations("rentalsPilot");
+  const t = await getTranslations({ locale, namespace: "rentalsPilot" });
   const tab = "inline-flex min-h-11 items-center rounded-lg px-3 text-sm font-medium aria-[current=page]:bg-muted aria-[current=page]:text-foreground";
   return <div className="space-y-3">
     <nav aria-label={t("title")} className="flex gap-1 text-muted-foreground">
-      <Link className={tab} href={rentalBrowseHref(query, selected, false)} aria-current={!tours ? "page" : undefined}>{t("listings")}</Link>
-      <Link className={tab} href={rentalBrowseHref(query, selected, true)} aria-current={tours ? "page" : undefined}>{t("tours")}</Link>
+      <RentalLocaleLink locale={locale} className={tab} href={rentalBrowseHref(query, selected, false)} aria-current={!tours ? "page" : undefined}>{t("listings")}</RentalLocaleLink>
+      <RentalLocaleLink locale={locale} className={tab} href={rentalBrowseHref(query, selected, true)} aria-current={tours ? "page" : undefined}>{t("tours")}</RentalLocaleLink>
     </nav>
     <form method="get" className="space-y-2">
       {tours && <input type="hidden" name="browse" value="tours" />}
@@ -47,7 +48,7 @@ export async function RentalBrowseControls({ query, selected, tours, filters }: 
           })}
           <div className="flex flex-wrap gap-2 sm:col-span-2">
             <button type="submit" className="min-h-11 rounded-lg bg-primary px-3 font-medium text-primary-foreground">{t("applyFilters")}</button>
-            <Link href={rentalBrowseHref("", [], tours)} className="inline-flex min-h-11 items-center rounded-lg border px-3">{t("clearFilters")}</Link>
+            <RentalLocaleLink locale={locale} href={rentalBrowseHref("", [], tours)} className="inline-flex min-h-11 items-center rounded-lg border px-3">{t("clearFilters")}</RentalLocaleLink>
           </div>
         </div>
       </details>}

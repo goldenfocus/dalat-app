@@ -1,6 +1,7 @@
+import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link, locales, type Locale } from "@/lib/i18n/routing";
+import { locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, safeRentalPhoto, rentalColumns, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
@@ -35,7 +36,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const [t, common, db, feedback] = await Promise.all([
-    getTranslations("rentalsPilot"), getTranslations("common"), createClient(), searchParams,
+    getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "common" }), createClient(), searchParams,
   ]);
   const { data: { user } } = await db.auth.getUser();
   const [listingResult, visitsResult] = await Promise.all([
@@ -55,7 +56,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const publishedListings = (listings || []).filter(l => l.status === "published");
   const [translated, facts] = await Promise.all([
     translatedRecords("rental", publishedListings.map(l => l.id), locale).catch(() => new Map()),
-    getTranslations("rentalsDetails"),
+    getTranslations({ locale, namespace: "rentalsDetails" }),
   ]);
   const translateFact = (key: string, values?: { age: number }) =>
     key === "wifi" || key === "quiet" ? t(key) : facts(key, values);
@@ -74,15 +75,15 @@ export default async function RentalsPage({ params, searchParams }: Props) {
     <div className="mx-auto w-full min-w-0 max-w-5xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-8 sm:py-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 data-rentals-title className="text-4xl sm:text-5xl">{t("title")}</h1>
-        {user && <Link href="/rentals/new" className={secondary}>{common("addRental")}</Link>}
+        {user && <RentalLocaleLink locale={locale} href="/rentals/new" className={secondary}>{common("addRental")}</RentalLocaleLink>}
       </header>
       {(listingResult.error || feedback.error) && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
       {feedback.viewing && <p role="status" className="rounded-lg border border-primary p-3">{t("requested")}</p>}
-      {publishedListings.length > 0 && <RentalBrowseControls query={query} selected={selected} tours={tours} filters={filters} />}
+      {publishedListings.length > 0 && <RentalBrowseControls locale={locale} query={query} selected={selected} tours={tours} filters={filters} />}
       {listings && visible.length === 0 && (
         <div className="space-y-2">
           <p>{query || selected.length ? t("noMatches") : t(tours ? "noTours" : "empty")}</p>
-          {(query || selected.length > 0) && <Link href={rentalBrowseHref("", [], tours)} className={secondary}>{t("clearFilters")}</Link>}
+          {(query || selected.length > 0) && <RentalLocaleLink locale={locale} href={rentalBrowseHref("", [], tours)} className={secondary}>{t("clearFilters")}</RentalLocaleLink>}
         </div>
       )}
       <div className={tours ? "space-y-5" : "grid gap-4 sm:grid-cols-2"}>
@@ -99,7 +100,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
               {listing && <h3 className="font-semibold">{translated.get(listing.id)?.get("title") || listing.title}</h3>}
               <p>{t(visit.status)}{visit.starts_at && " · " + time.format(new Date(visit.starts_at))}</p>
             </div>
-            <Link href={"/rentals/viewings/" + visit.id} className={secondary}>{t("openViewing")}</Link>
+            <RentalLocaleLink locale={locale} href={"/rentals/viewings/" + visit.id} className={secondary}>{t("openViewing")}</RentalLocaleLink>
           </article>;
         })}
       </section>}

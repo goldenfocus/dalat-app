@@ -4,7 +4,7 @@ import { pilotListingId, pilotMedia, safeRentalPhoto, type RentalListing } from 
 
 export async function rentalListingMedia(listing: RentalListing, locale: string) {
   const [t, common, details] = await Promise.all([
-    getTranslations("rentalsPilot"), getTranslations("common"), getTranslations("rentalsDetails"),
+    getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "common" }), getTranslations({ locale, namespace: "rentalsDetails" }),
   ]);
   const items: RentalGalleryItem[] = listing.photos.filter(safeRentalPhoto).map((src, index) => ({
     kind: "photo", src, label: t("viewPhoto", { number: index + 1 }),

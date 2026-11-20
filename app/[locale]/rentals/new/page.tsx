@@ -1,7 +1,8 @@
+import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link, redirect, type Locale } from "@/lib/i18n/routing";
+import { redirect, type Locale } from "@/lib/i18n/routing";
 import { buildAlternates } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { rentalColumns, rentalId, type RentalListing } from "@/lib/rentals/data";
@@ -35,12 +36,12 @@ export default async function NewRental({ params, searchParams }: Props) {
     if (!found.data) notFound();
     listing = found.data as RentalListing;
   }
-  const t = await getTranslations("rentalsPilot");
-  const common = await getTranslations("common");
+  const t = await getTranslations({ locale, namespace: "rentalsPilot" });
+  const common = await getTranslations({ locale, namespace: "common" });
   const input = "mt-1 w-full rounded-lg border bg-background px-3 py-2";
   return (
     <div className="mx-auto w-full min-w-0 max-w-2xl space-y-5 px-4 py-6">
-      <Link href="/rentals" className="text-sm underline">{common("back")}</Link>
+      <RentalLocaleLink locale={locale} href="/rentals" className="text-sm underline">{common("back")}</RentalLocaleLink>
       <h1 data-rentals-title className="text-4xl">{listing ? common("edit") : common("addRental")}</h1>
       {error && <p role="alert" className="rounded-lg border border-destructive p-3">{t("failed")}</p>}
       <form action={saveRental} className="space-y-4">

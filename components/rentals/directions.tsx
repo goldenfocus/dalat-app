@@ -3,8 +3,8 @@ import { MapPin } from "lucide-react";
 import { rentalDirectionLinks, type RentalDirections } from "@/lib/rentals/directions";
 import { CopyRentalAddress } from "./copy-address";
 
-export async function RentalDirectionsPanel({ directions }: { directions: RentalDirections }) {
-  const t = await getTranslations("rentalsPilot");
+export async function RentalDirectionsPanel({ locale, directions }: { locale: string; directions: RentalDirections }) {
+  const t = await getTranslations({ locale, namespace: "rentalsPilot" });
   const { address, map, grab } = rentalDirectionLinks(directions);
   if (!address && !map && !grab) return null;
   const button = "inline-flex min-h-11 items-center gap-2 rounded-lg border px-3 text-sm";

@@ -2,9 +2,9 @@ import { getFormatter, getTranslations } from "next-intl/server";
 import type { RentalListing } from "@/lib/rentals/data";
 import { rentalDetails } from "@/lib/rentals/details";
 
-export async function RentalListingPrices({ listing }: { listing: RentalListing }) {
+export async function RentalListingPrices({ listing, locale }: { listing: RentalListing; locale: string }) {
   const [t, details, formatter] = await Promise.all([
-    getTranslations("rentalsPilot"), getTranslations("rentalsDetails"), getFormatter(),
+    getTranslations({ locale, namespace: "rentalsPilot" }), getTranslations({ locale, namespace: "rentalsDetails" }), getFormatter({ locale }),
   ]);
   const { propertySize } = rentalDetails(listing.details);
   const currency = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
