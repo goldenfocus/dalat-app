@@ -66,9 +66,9 @@ export async function requestViewing(form: FormData) {
 export async function addViewingSlot(form: FormData) {
   const { db, locale } = await signedIn("/rentals");
   const starts_at = dalatViewingTime(form.get("starts_at"));
-  const result = starts_at ? await db.from("rental_slots").insert({ starts_at }) : null;
+  const result = starts_at ? await db.rpc("rental_publish_slots", { times: [starts_at] }) : null;
   revalidatePath("/[locale]/rentals", "page");
-  redirect({ href: result && !result.error ? "/rentals#viewings" : "/rentals?error=1#viewings", locale });
+  redirect({ href: result?.data ? "/rentals#viewings" : "/rentals?error=1#viewings", locale });
 }
 
 export async function changeViewing(form: FormData) {
