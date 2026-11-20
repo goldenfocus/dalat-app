@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Search, SlidersHorizontal } from "lucide-react";
-import type { Locale } from "@/lib/i18n/routing";
+import { getPathname, type Locale } from "@/lib/i18n/routing";
 import { RentalLocaleLink } from "./locale-link";
 import { filterGroups, rentalBrowseHref, type rentalDiscovery } from "@/lib/rentals/discovery";
 
@@ -16,7 +16,7 @@ export async function RentalBrowseControls({ locale, query, selected, tours, fil
       <RentalLocaleLink locale={locale} className={tab} href={rentalBrowseHref(query, selected, false)} aria-current={!tours ? "page" : undefined}>{t("listings")}</RentalLocaleLink>
       <RentalLocaleLink locale={locale} className={tab} href={rentalBrowseHref(query, selected, true)} aria-current={tours ? "page" : undefined}>{t("tours")}</RentalLocaleLink>
     </nav>
-    <form method="get" className="space-y-2">
+    <form key={rentalBrowseHref(query, selected, tours)} method="get" className="space-y-2">
       {tours && <input type="hidden" name="browse" value="tours" />}
       <div className="flex gap-2">
         <input type="search" name="q" defaultValue={query} maxLength={120} aria-label={t("searchRentals")}
@@ -48,7 +48,7 @@ export async function RentalBrowseControls({ locale, query, selected, tours, fil
           })}
           <div className="flex flex-wrap gap-2 sm:col-span-2">
             <button type="submit" className="min-h-11 rounded-lg bg-primary px-3 font-medium text-primary-foreground">{t("applyFilters")}</button>
-            <RentalLocaleLink locale={locale} href={rentalBrowseHref("", [], tours)} className="inline-flex min-h-11 items-center rounded-lg border px-3">{t("clearFilters")}</RentalLocaleLink>
+            <a href={getPathname({ locale, href: rentalBrowseHref("", [], tours) })} className="inline-flex min-h-11 items-center rounded-lg border px-3">{t("clearFilters")}</a>
           </div>
         </div>
       </details>}

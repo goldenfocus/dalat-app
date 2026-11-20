@@ -1,7 +1,7 @@
 import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { locales, type Locale } from "@/lib/i18n/routing";
+import { getPathname, locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, safeRentalPhoto, rentalColumns, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
@@ -83,7 +83,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       {listings && visible.length === 0 && (
         <div className="space-y-2">
           <p>{query || selected.length ? t("noMatches") : t(tours ? "noTours" : "empty")}</p>
-          {(query || selected.length > 0) && <RentalLocaleLink locale={locale} href={rentalBrowseHref("", [], tours)} className={secondary}>{t("clearFilters")}</RentalLocaleLink>}
+          {(query || selected.length > 0) && <a href={getPathname({ locale, href: rentalBrowseHref("", [], tours) })} className={secondary}>{t("clearFilters")}</a>}
         </div>
       )}
       <div className={tours ? "space-y-5" : "grid gap-4 sm:grid-cols-2"}>
