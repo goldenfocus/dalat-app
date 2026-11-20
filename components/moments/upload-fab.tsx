@@ -122,7 +122,7 @@ export function UploadFAB({ preselectedEventSlug, className }: UploadFABProps) {
   const shouldHide =
     isExperiencePath(pathname ?? "") ||
     isArrivalWorkspacePath(pathname ?? "") ||
-    /^\/(?:[a-z]{2}\/)?dating(?:\/|$)/.test(pathname ?? "") ||
+    /^\/(?:[a-z]{2}\/)?(?:dating|rentals)(?:\/|$)/.test(pathname ?? "") ||
     hiddenPaths.some((path) => (pathname ?? "").includes(path));
 
   if (
