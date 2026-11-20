@@ -4679,5 +4679,26 @@
     "footer": "In Đà Lạt verwurzelt. Offen für die Welt.",
     "qrAlt": "QR-Code zum Beitritt zu Friends of Friends auf {platform}",
     "avatarAlt": "Grünes Herz mit Kiefern aus Đà Lạt und vietnamesischer Flagge"
+  },
+  "rentalsPilot": {
+    "title": "Mietobjekte",
+    "intro": "Eine Mietanzeige und ihr kurzes Immobilienvideo in der Vorschau.",
+    "reel": "Immobilienvideo zu {name}",
+    "captions": "Besonderheiten der Immobilie",
+    "rent": "Monatsmiete",
+    "monthly": "Monatsweise Miete",
+    "sixMonths": "Mietvertrag über 6 Monate",
+    "yearly": "Mietvertrag über 12 Monate",
+    "highlights": "Highlights",
+    "quiet": "Ruhige Lage auf dem Hügel",
+    "wifi": "WLAN verfügbar",
+    "water": "Wasser inklusive",
+    "trails": "Wanderwege und Wasserfälle in der Nähe",
+    "photos": "Fotos der Immobilie",
+    "viewPhoto": "Foto {number} ansehen",
+    "opening": "Auf den Hügeln über Đà Lạt aufwachen",
+    "bedroom": "Ein Schlafzimmer mit Aussicht",
+    "coffee": "Kaffee mit dieser Aussicht?",
+    "endCard": "30 Mio. ₫/Monat • Mietvertrag über 12 Monate"
   }
 }

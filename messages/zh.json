@@ -4679,5 +4679,26 @@
     "footer": "扎根Đà Lạt，向世界敞开。",
     "qrAlt": "在{platform}加入Friends of Friends的二维码",
     "avatarAlt": "印有Đà Lạt松树和越南国旗的绿色爱心"
+  },
+  "rentalsPilot": {
+    "title": "房屋出租",
+    "intro": "预览出租房源信息和房屋介绍短片。",
+    "reel": "{name} 房屋介绍短片",
+    "captions": "房源亮点",
+    "rent": "每月租金",
+    "monthly": "按月租赁",
+    "sixMonths": "6 个月租约",
+    "yearly": "12 个月租约",
+    "highlights": "房源亮点",
+    "quiet": "安静的山顶地段",
+    "wifi": "提供 Wi‑Fi",
+    "water": "包含水费",
+    "trails": "附近有徒步路线和瀑布",
+    "photos": "房源照片",
+    "viewPhoto": "查看第 {number} 张照片",
+    "opening": "在大叻山间醒来",
+    "bedroom": "能欣赏风景的卧室",
+    "coffee": "来杯咖啡，欣赏这片风景？",
+    "endCard": "每月 3,000 万越南盾 • 12 个月租约"
   }
 }

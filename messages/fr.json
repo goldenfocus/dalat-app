@@ -4679,5 +4679,26 @@
     "footer": "Ancré à Đà Lạt. Ouvert au monde.",
     "qrAlt": "Code QR pour rejoindre Friends of Friends sur {platform}",
     "avatarAlt": "Cœur vert avec les pins de Đà Lạt et le drapeau vietnamien"
+  },
+  "rentalsPilot": {
+    "title": "Locations",
+    "intro": "Découvrez une annonce de location et sa courte vidéo de présentation.",
+    "reel": "Vidéo de présentation de {name}",
+    "captions": "Atouts du logement",
+    "rent": "Loyer mensuel",
+    "monthly": "Location au mois",
+    "sixMonths": "Bail de 6 mois",
+    "yearly": "Bail de 12 mois",
+    "highlights": "Points forts",
+    "quiet": "Quartier calme sur les hauteurs",
+    "wifi": "Wi‑Fi disponible",
+    "water": "Eau comprise",
+    "trails": "Randonnées et cascades à proximité",
+    "photos": "Photos du logement",
+    "viewPhoto": "Voir la photo {number}",
+    "opening": "Réveillez-vous sur les hauteurs de Đà Lạt",
+    "bedroom": "Une chambre avec vue",
+    "coffee": "Un café avec cette vue ?",
+    "endCard": "30 millions ₫/mois • Bail de 12 mois"
   }
 }

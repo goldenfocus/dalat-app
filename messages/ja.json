@@ -4679,5 +4679,26 @@
     "footer": "Đà Lạtに根ざし、世界へ開かれています。",
     "qrAlt": "{platform}のFriends of Friendsに参加するQRコード",
     "avatarAlt": "Đà Lạtの松とベトナム国旗を描いた緑のハート"
+  },
+  "rentalsPilot": {
+    "title": "賃貸物件",
+    "intro": "賃貸物件の情報と短い紹介動画をご覧ください。",
+    "reel": "{name}の物件紹介動画",
+    "captions": "物件の見どころ",
+    "rent": "月額賃料",
+    "monthly": "月単位の契約",
+    "sixMonths": "6か月契約",
+    "yearly": "12か月契約",
+    "highlights": "見どころ",
+    "quiet": "静かな丘の上",
+    "wifi": "Wi‑Fi利用可",
+    "water": "水道代込み",
+    "trails": "近くにハイキングコースと滝",
+    "photos": "物件写真",
+    "viewPhoto": "写真{number}を見る",
+    "opening": "ダラットの丘で迎える朝",
+    "bedroom": "眺めの良い寝室",
+    "coffee": "この景色を眺めながらコーヒーを？",
+    "endCard": "月額3,000万ドン • 12か月契約"
   }
 }

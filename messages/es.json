@@ -4679,5 +4679,26 @@
     "footer": "Con raíces en Đà Lạt. Abiertos al mundo.",
     "qrAlt": "Código QR para unirse a Friends of Friends en {platform}",
     "avatarAlt": "Corazón verde con pinos de Đà Lạt y la bandera vietnamita"
+  },
+  "rentalsPilot": {
+    "title": "Alquileres",
+    "intro": "Explora un anuncio de alquiler y su breve vídeo de presentación.",
+    "reel": "Vídeo de presentación de {name}",
+    "captions": "Lo más destacado de la propiedad",
+    "rent": "Alquiler mensual",
+    "monthly": "Alquiler mes a mes",
+    "sixMonths": "Contrato de 6 meses",
+    "yearly": "Contrato de 12 meses",
+    "highlights": "Puntos destacados",
+    "quiet": "Zona tranquila en lo alto de una colina",
+    "wifi": "Wi‑Fi disponible",
+    "water": "Agua incluida",
+    "trails": "Senderos y cascadas cerca",
+    "photos": "Fotos de la propiedad",
+    "viewPhoto": "Ver foto {number}",
+    "opening": "Despierta en las colinas de Đà Lạt",
+    "bedroom": "Un dormitorio con vistas",
+    "coffee": "¿Un café con estas vistas?",
+    "endCard": "30 millones de ₫ al mes • Contrato de 12 meses"
   }
 }

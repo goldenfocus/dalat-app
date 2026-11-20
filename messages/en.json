@@ -4679,5 +4679,26 @@
     "footer": "Rooted in Đà Lạt. Open to the world.",
     "qrAlt": "QR code to join Friends of Friends on {platform}",
     "avatarAlt": "Green heart with Đà Lạt pine trees and the Vietnamese flag"
+  },
+  "rentalsPilot": {
+    "title": "Rentals",
+    "intro": "Preview a rental listing and its short property reel.",
+    "reel": "{name} property reel",
+    "captions": "Property highlights",
+    "rent": "Monthly rent",
+    "monthly": "Month to month",
+    "sixMonths": "6-month lease",
+    "yearly": "12-month lease",
+    "highlights": "Highlights",
+    "quiet": "Quiet hilltop area",
+    "wifi": "Wi‑Fi available",
+    "water": "Water included",
+    "trails": "Hiking and waterfalls nearby",
+    "photos": "Property photos",
+    "viewPhoto": "View photo {number}",
+    "opening": "Wake up above Đà Lạt",
+    "bedroom": "A bedroom with a view",
+    "coffee": "Coffee with this view?",
+    "endCard": "₫30 million/month • 12-month lease"
   }
 }

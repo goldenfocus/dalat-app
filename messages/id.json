@@ -4679,5 +4679,26 @@
     "footer": "Berakar di Đà Lạt. Terbuka untuk dunia.",
     "qrAlt": "Kode QR untuk bergabung dengan Friends of Friends di {platform}",
     "avatarAlt": "Hati hijau dengan pohon pinus Đà Lạt dan bendera Vietnam"
+  },
+  "rentalsPilot": {
+    "title": "Sewa properti",
+    "intro": "Lihat pratinjau iklan sewa dan video singkat propertinya.",
+    "reel": "Video properti {name}",
+    "captions": "Keunggulan properti",
+    "rent": "Sewa bulanan",
+    "monthly": "Sewa per bulan",
+    "sixMonths": "Kontrak 6 bulan",
+    "yearly": "Kontrak 12 bulan",
+    "highlights": "Keunggulan",
+    "quiet": "Area tenang di puncak bukit",
+    "wifi": "Tersedia Wi‑Fi",
+    "water": "Biaya air sudah termasuk",
+    "trails": "Jalur pendakian dan air terjun di sekitar",
+    "photos": "Foto properti",
+    "viewPhoto": "Lihat foto {number}",
+    "opening": "Bangun di perbukitan Đà Lạt",
+    "bedroom": "Kamar tidur dengan pemandangan",
+    "coffee": "Ngopi dengan pemandangan ini?",
+    "endCard": "30 juta ₫/bulan • Kontrak 12 bulan"
   }
 }

@@ -25,6 +25,10 @@ export interface MomentVideoPlayerProps {
   hideMuteButton?: boolean;
   /** Hide native browser video controls (for cinema mode) */
   hideControls?: boolean;
+  /** Control when video data is loaded for click-to-play surfaces */
+  preload?: "none" | "metadata" | "auto";
+  label?: string;
+  captions?: { src: string; locale: string; label: string };
   /** Ref to access the underlying video element */
   ref?: React.Ref<HTMLVideoElement>;
 }
@@ -48,6 +52,9 @@ export function MomentVideoPlayer({
   onEnded,
   hideMuteButton = false,
   hideControls = false,
+  preload,
+  label,
+  captions,
   ref,
 }: MomentVideoPlayerProps) {
   const internalRef = useRef<HTMLVideoElement>(null);
@@ -216,8 +223,14 @@ export function MomentVideoPlayer({
         playsInline
         loop={loop}
         autoPlay={shouldAutoPlay}
+        preload={preload}
+        aria-label={label}
         onEnded={onEnded}
-      />
+      >
+        {captions && (
+          <track default kind="captions" src={captions.src} srcLang={captions.locale} label={captions.label} />
+        )}
+      </video>
       {/* Prominent mute/unmute toggle — persistent so sound can be turned back off */}
       {!hideMuteButton && (
         <button

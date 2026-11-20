@@ -4679,5 +4679,26 @@
     "footer": "Đà Lạt에서 시작해 세계와 연결됩니다.",
     "qrAlt": "{platform}의 Friends of Friends 참여 QR 코드",
     "avatarAlt": "Đà Lạt 소나무와 베트남 국기가 있는 초록 하트"
+  },
+  "rentalsPilot": {
+    "title": "임대 매물",
+    "intro": "임대 매물과 짧은 소개 영상을 미리 보세요.",
+    "reel": "{name} 매물 소개 영상",
+    "captions": "매물의 주요 특징",
+    "rent": "월 임대료",
+    "monthly": "월 단위 임대",
+    "sixMonths": "6개월 계약",
+    "yearly": "12개월 계약",
+    "highlights": "주요 특징",
+    "quiet": "조용한 언덕 위에 위치",
+    "wifi": "Wi‑Fi 이용 가능",
+    "water": "수도 요금 포함",
+    "trails": "인근에 하이킹 코스와 폭포",
+    "photos": "매물 사진",
+    "viewPhoto": "사진 {number} 보기",
+    "opening": "달랏 언덕에서 맞는 아침",
+    "bedroom": "전망이 좋은 침실",
+    "coffee": "이 풍경을 보며 커피 한 잔?",
+    "endCard": "월 3,000만 동 • 12개월 계약"
   }
 }
