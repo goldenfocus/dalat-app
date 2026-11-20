@@ -7,9 +7,9 @@ import { requestViewing } from "@/app/[locale]/rentals/actions";
 import { dalatDate, dalatZone, dayKey, viewingCalendar } from "@/lib/rentals/calendar";
 
 type Choice = { id: string; starts_at: string };
-type Props = { listing: string; slots: Choice[]; locale: string; title: string; action: string };
+type Props = { listing: string; slots: Choice[]; locale: string; title: string; action: string; formAction?: (form: FormData) => Promise<void> };
 
-export function ViewingPicker({ listing, slots, locale, title, action }: Props) {
+export function ViewingPicker({ listing, slots, locale, title, action, formAction = requestViewing }: Props) {
   const common = useTranslations("common");
   const t = useTranslations("rentalsDetails");
   const dayFormat = new Intl.DateTimeFormat(locale, { timeZone: dalatZone, weekday: "long", month: "long", day: "numeric" });
@@ -35,7 +35,7 @@ export function ViewingPicker({ listing, slots, locale, title, action }: Props) 
   const arrow = "grid size-11 place-items-center rounded-full border bg-background disabled:opacity-35";
   const move = (by: number) => { setMonth(month + by); setDay(""); setSlot(""); };
   return (
-    <form action={requestViewing} className="grid gap-4 rounded-2xl border bg-card p-3 sm:p-5">
+    <form action={formAction} className="grid gap-4 rounded-2xl border bg-card p-3 sm:p-5">
       <input type="hidden" name="listing" value={listing} />
       <input type="hidden" name="slot" value={slot} />
       <h3 className="flex items-center gap-2 font-semibold"><CalendarDays className="size-5 text-primary" aria-hidden="true" />{title}</h3>

@@ -5,7 +5,7 @@ import { hasLocale } from "next-intl";
 import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { locales, redirect } from "@/lib/i18n/routing";
-import { dalatViewingTime, rentalId, rentalOfferTypes, safeRentalPhoto } from "@/lib/rentals/data";
+import { rentalId, rentalOfferTypes, safeRentalPhoto } from "@/lib/rentals/data";
 import { availabilityTimes } from "@/lib/rentals/calendar";
 import { readRentalDetails } from "@/lib/rentals/details";
 import { rentalVideoId } from "@/lib/rentals/video";
@@ -63,17 +63,21 @@ export async function saveRental(form: FormData) {
     : await db.from("rental_listings").insert(values).select("id").single();
   if (!result.data || result.error) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
   revalidatePath("/[locale]/rentals", "page");
-  redirect({ href: `/rentals#listing-${result.data.id}`, locale });
+  revalidatePath("/[locale]/rentals/listing/[id]", "page");
+  redirect({ href: `/rentals/listing/${result.data.id}`, locale });
 }
 
 export async function requestViewing(form: FormData) {
-  const { db, locale } = await signedIn("/rentals");
   const listing = rentalId.safeParse(form.get("listing"));
+  const path = listing.success ? `/rentals/listing/${listing.data}` : "/rentals";
+  const { db, locale } = await signedIn(path);
   const slot = rentalId.nullable().safeParse(form.get("slot") || null);
   const result = listing.success && slot.success
     ? await db.rpc("rental_request_viewing", { listing: listing.data, chosen_slot: slot.data }) : null;
   revalidatePath("/[locale]/rentals", "page");
-  redirect({ href: result?.data ? "/rentals?viewing=requested#viewings" : "/rentals?error=1#viewings", locale });
+  revalidatePath("/[locale]/rentals/listing/[id]", "page");
+  const visit = rentalId.safeParse(result?.data);
+  redirect({ href: visit.success ? `/rentals/viewings/${visit.data}?requested=1` : path + "?error=1", locale });
 }
 
 export type AvailabilityFeedback = "saved" | "removed" | "future" | "failed" | null;
@@ -104,17 +108,4 @@ export async function removeRentalAvailability(form: FormData): Promise<Availabi
 
   revalidatePath("/[locale]/rentals", "page");
   return data === true ? "removed" : "failed";
-}
-
-export async function changeViewing(form: FormData) {
-  const { db, locale } = await signedIn("/rentals");
-  const visit = rentalId.safeParse(form.get("visit"));
-  const next = z.enum(["confirmed", "proposed", "declined", "cancelled"]).safeParse(form.get("next"));
-  const result = visit.success && next.success ? await db.rpc("rental_update_viewing", {
-    visit: visit.data,
-    next_status: next.data,
-    proposed_time: next.data === "proposed" ? dalatViewingTime(form.get("proposed_time")) : null,
-  }) : null;
-  revalidatePath("/[locale]/rentals", "page");
-  redirect({ href: result?.data ? "/rentals#viewings" : "/rentals?error=1#viewings", locale });
 }
