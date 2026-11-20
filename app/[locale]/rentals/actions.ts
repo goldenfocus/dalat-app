@@ -76,12 +76,14 @@ export async function requestViewing(form: FormData) {
   redirect({ href: result?.data ? "/rentals?viewing=requested#viewings" : "/rentals?error=1#viewings", locale });
 }
 
-type AvailabilityFeedback = "saved" | "future" | "failed" | null;
+export type AvailabilityFeedback = "saved" | "removed" | "future" | "failed" | null;
 
 export async function addRentalAvailability(_feedback: AvailabilityFeedback, form: FormData): Promise<AvailabilityFeedback> {
   const { db } = await signedIn("/rentals");
   const days = form.getAll("day").filter((day): day is string => typeof day === "string");
-  const times = availabilityTimes(days, Number(form.get("start")), Number(form.get("end")));
+  const excluded = new Set(form.getAll("exclude"));
+  const times = availabilityTimes(days, Number(form.get("start")), Number(form.get("end")))
+    .filter(time => !excluded.has(time));
   if (!times.length) return "future";
 
   const { data, error } = await db.rpc("rental_publish_slots", { times });
@@ -89,6 +91,19 @@ export async function addRentalAvailability(_feedback: AvailabilityFeedback, for
 
   revalidatePath("/[locale]/rentals", "page");
   return "saved";
+}
+
+export async function removeRentalAvailability(form: FormData): Promise<AvailabilityFeedback> {
+  const { db } = await signedIn("/rentals");
+  const slot = rentalId.nullable().safeParse(form.get("removeSlot"));
+  const day = z.iso.date().nullable().safeParse(form.get("removeDay"));
+  if (!slot.success || !day.success || (slot.data === null) === (day.data === null)) return "failed";
+
+  const { data, error } = await db.rpc("rental_close_slots", { chosen_slot: slot.data, chosen_day: day.data });
+  if (error) return "failed";
+
+  revalidatePath("/[locale]/rentals", "page");
+  return data === true ? "removed" : "failed";
 }
 
 export async function changeViewing(form: FormData) {

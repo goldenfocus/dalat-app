@@ -8,10 +8,9 @@ import { Link, locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, pilotMedia, rentalColumns, safeRentalPhoto, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
-import { AvailabilityEditor } from "@/components/rentals/availability-editor";
+import { AvailabilityEditor, type SavedViewingTime } from "@/components/rentals/availability-editor";
 import { RentalListingFacts } from "@/components/rentals/listing-facts";
 import { rentalDetails } from "@/lib/rentals/details";
-import { dayKey } from "@/lib/rentals/calendar";
 import { changeViewing } from "./actions";
 
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ viewing?: string; error?: string }> };
@@ -19,11 +18,11 @@ type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ view
 
 type RentalSlot = { id: string; starts_at: string };
 
-async function readRentalSlots(
-  query: (from: number, to: number) => PromiseLike<{ data: RentalSlot[] | null; error: unknown }>,
+async function readRentalSlots<Slot extends RentalSlot = RentalSlot>(
+  query: (from: number, to: number) => PromiseLike<{ data: Slot[] | null; error: unknown }>,
 ) {
   const pageSize = 500;
-  const slots: RentalSlot[] = [];
+  const slots: Slot[] = [];
   for (let offset = 0; ; offset += pageSize) {
     const { data, error } = await query(offset, offset + pageSize - 1);
     if (error || !data) return null;
@@ -60,8 +59,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const ownsListing = listings?.some(l => l.host_id === user?.id);
   const now = Date.now();
   const savedSlots = user && ownsListing
-    ? await readRentalSlots((from, to) => db.from("rental_slots").select("id,starts_at")
-      .eq("host_id", user.id).eq("is_open", true).gt("starts_at", new Date(now).toISOString())
+    ? await readRentalSlots<SavedViewingTime>((from, to) => db.rpc("rental_host_slots")
       .order("starts_at").range(from, to))
     : [];
   const area = new Intl.NumberFormat(locale, { maximumFractionDigits: 2 });
@@ -162,8 +160,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       }))}
       {user && (ownsListing || visits.length > 0) && <section id="viewings" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-semibold">{t("viewings")}</h2>
-        {ownsListing && <AvailabilityEditor today={dayKey(now)} locale={locale}
-          savedTimes={savedSlots?.map(slot => slot.starts_at) ?? null} />}
+        {ownsListing && <AvailabilityEditor now={now} locale={locale} savedTimes={savedSlots} />}
         {visits.map(visit => {
           const listing = listings?.find(l => l.id === visit.listing_id);
           const isHost = listing?.host_id === user.id;
