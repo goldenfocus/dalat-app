@@ -50,6 +50,9 @@ Migrations `20261115_001_translation_coverage.sql` and `20261116_001_translation
 
 Do not disable the legacy Mac mini worker until a replacement has actually written a reviewed batch. Its old logs are not evidence of current coverage. Preserve the old job configuration so it can be restored. A new machine needs its own CLI sign-in; never copy subscription credentials between machines.
 
+
+Rentals translate published titles, descriptions, and the ordered custom labels generated from listing details. The worker reads these labels as the `tags` array. Lease prices, amenity charges, utility settings, and booking details stay in their original fields. Hosts’ drafts are excluded.
+
 ## UI and new features
 
 Use the `Languages` icon everywhere:

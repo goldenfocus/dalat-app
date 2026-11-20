@@ -82,6 +82,8 @@ export const CLIENT_NAMESPACES = [
   "recap",
   "reconfirmation",
   "recurrence",
+  "rentalsDetails",
+  "rentalsPilot",
   "responseDashboard",
   "rsvp",
   "rsvpCelebration",

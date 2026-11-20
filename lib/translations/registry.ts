@@ -25,7 +25,7 @@ export const TRANSLATION_SOURCES = [
   {
     type: "rental",
     table: "rental_listings",
-    fields: ["title", "description"],
+    fields: ["title", "description", "tags"],
     locale: "source_locale",
     filters: [["status", "published"]],
   },

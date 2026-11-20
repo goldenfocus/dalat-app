@@ -6,6 +6,8 @@ import { buildAlternates } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { rentalColumns, rentalId, type RentalListing } from "@/lib/rentals/data";
 import { RentalPhotoEditor } from "@/components/rentals/photo-editor";
+import { RentalDetailsEditor } from "@/components/rentals/details-editor";
+import { rentalDetails } from "@/lib/rentals/details";
 import { saveRental } from "../actions";
 
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ id?: string; error?: string }> };
@@ -35,7 +37,7 @@ export default async function NewRental({ params, searchParams }: Props) {
   const common = await getTranslations("common");
   const input = "mt-1 w-full rounded-lg border bg-background px-3 py-2";
   return (
-    <div className="mx-auto max-w-2xl space-y-5 px-4 py-8">
+    <div className="mx-auto w-full min-w-0 max-w-2xl space-y-5 px-4 py-6">
       <Link href="/rentals" className="text-sm underline">{common("back")}</Link>
       <h1 data-rentals-title className="text-4xl">{listing ? common("edit") : common("addRental")}</h1>
       {error && <p role="alert" className="rounded-lg border border-destructive p-3">{t("failed")}</p>}
@@ -55,6 +57,7 @@ export default async function NewRental({ params, searchParams }: Props) {
             </label>
           ))}
         </fieldset>
+        <RentalDetailsEditor details={rentalDetails(listing?.details)} />
         <RentalPhotoEditor initial={listing?.photos || []} labels={{
           photos: t("photos"), upload: common("upload"), remove: common("remove"),
           previous: common("previousPhoto"), next: common("nextPhoto"), loading: common("loading"),

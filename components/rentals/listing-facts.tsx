@@ -1,0 +1,50 @@
+import { getTranslations } from "next-intl/server";
+import { OriginalText } from "@/components/ui/original-text";
+import { rentalDetails, rentalDetailTranslations, ruleKeys, utilityKeys } from "@/lib/rentals/details";
+
+const pilotLabels = new Map([
+  ["Yoga mat", "yogaMat"], ["Sandals", "sandals"], ["Water filter", "waterFilter"],
+  ["Waterfalls and hiking", "trails"], ["Cafe", "cafeNearby"], ["No drugs", "noDrugs"],
+]);
+
+export async function RentalListingFacts({ data, translation, locale, pilot }: {
+  data: unknown; translation?: string; locale: string; pilot: boolean;
+}) {
+  const [t, p] = await Promise.all([getTranslations("rentalsDetails"), getTranslations("rentalsPilot")]);
+  const details = rentalDetails(data);
+  const translated = rentalDetailTranslations(translation, details.custom.length);
+  type Fact = { label: string; note?: string };
+  const custom = (groups: string[]): Fact[] => details.custom.flatMap(({ group, label, pricing }, index) => {
+    if (!groups.includes(group)) return [];
+    const existing = pilot ? pilotLabels.get(label) : undefined;
+    const note = typeof pricing === "number" ? new Intl.NumberFormat("vi-VN").format(pricing) + " " + t("amount") : pricing ? t(pricing) : undefined;
+    return [{ label: translated[index] ?? (existing ? p(existing) : label), note }];
+  });
+  const amenities: Fact[] = [
+    ...details.amenities.map(key => ({ label: key === "wifi" ? p(key) : t(key) })),
+    ...utilityKeys.flatMap(key => details.utilities[key] ? [{ label: t(key), note: t(details.utilities[key]) }] : []),
+    ...custom(["amenities"]),
+  ];
+  const area: Fact[] = [
+    ...details.area.map(key => ({ label: key === "quiet" ? p(key) : t(key) })),
+    ...custom(["area", "nearby"]),
+  ];
+  const rules: Fact[] = [
+    ...ruleKeys.flatMap(key => details.rules[key] ? [{ label: t(key), note: t(details.rules[key]) }] : []),
+    ...(details.minimumChildAge ? [{ label: details.minimumChildAge === 18 ? t("adultsOnly") : t("ageRule", { age: details.minimumChildAge }) }] : []),
+    ...custom(["rules"]),
+  ];
+  const groups = [["amenities", amenities], ["area", area], ["rules", rules]] as const;
+  return <>
+    {groups.map(([key, facts]) => facts.length > 0 && <section key={key} className="min-w-0 space-y-2 border-t pt-4">
+      <h3 className="text-base font-semibold">{p(key)}</h3>
+      <ul className="list-disc space-y-1.5 ps-5">
+        {facts.map(({ label, note }, index) => <li className="break-words" key={index}>
+          {label}{note && <span className="text-muted-foreground"> · {note}</span>}
+        </li>)}
+      </ul>
+    </section>)}
+    {translated.some((label, index) => label !== details.custom[index].label) &&
+      <OriginalText text={details.custom.map(item => item.label).join("\n")} sourceLocale={locale} />}
+  </>;
+}

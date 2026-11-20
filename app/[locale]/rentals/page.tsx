@@ -8,11 +8,13 @@ import { Link, locales, type Locale } from "@/lib/i18n/routing";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, pilotMedia, rentalColumns, safeRentalPhoto, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
-import { addViewingSlot, changeViewing } from "./actions";
+import { AvailabilityEditor } from "@/components/rentals/availability-editor";
+import { RentalListingFacts } from "@/components/rentals/listing-facts";
+import { dayKey } from "@/lib/rentals/calendar";
+import { changeViewing } from "./actions";
 
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ viewing?: string; error?: string }> };
-const facts = [["amenities", ["wifi", "water", "cleaningExtra", "electricityExtra", "yogaMat", "sandals", "waterFilter"]],
-  ["area", ["quiet", "trails", "cafeNearby"]], ["rules", ["noDogs", "noParties", "childrenAge", "noDrugs"]]] as const;
+
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
@@ -40,7 +42,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const listings = listingResult.data as RentalListing[] | null;
   const visits = (visitsResult?.data || []) as RentalVisit[];
   const ownsListing = listings?.some(l => l.host_id === user?.id);
-  const currency = new Intl.NumberFormat(locale, { style: "currency", currency: "VND" });
+  const currency = new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" });
   const time = new Intl.DateTimeFormat(locale, { timeZone: "Asia/Ho_Chi_Minh", dateStyle: "medium", timeStyle: "short" });
   const button = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground";
   const secondary = "inline-flex min-h-11 items-center justify-center rounded-lg border px-3 py-2";
@@ -101,8 +103,8 @@ export default async function RentalsPage({ params, searchParams }: Props) {
                 <p className="break-words whitespace-pre-wrap">{description}</p>
                 {(description !== listing.description || title !== listing.title) &&
                   <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}
-                {pilot && facts.map(([heading, items]) => <section key={heading} className="space-y-2 border-t pt-4"><h3 className="font-semibold">{t(heading)}</h3>
-                  <ul className="list-disc space-y-1 ps-5">{items.map(item => <li key={item}>{t(item)}</li>)}</ul></section>)}
+                <RentalListingFacts data={listing.details} translation={strings?.get("tags")}
+                  locale={listing.source_locale} pilot={pilot} />
                 {!isOwner && listing.status === "published" && (
                   active ? <a className={secondary} href="#viewings">{t("viewings")}</a> :
                   user ? (
@@ -117,10 +119,7 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       }))}
       {user && (ownsListing || visits.length > 0) && <section id="viewings" className="space-y-4 scroll-mt-24">
         <h2 className="text-2xl font-semibold">{t("viewings")}</h2>
-        {ownsListing && <form action={addViewingSlot} className="flex flex-wrap items-end gap-2 rounded-xl border p-4">
-          <label className="grid gap-1">{t("viewingTime")}<input className={formControl} required type="datetime-local" name="starts_at" /></label>
-          <button className={button}>{t("addTime")}</button>
-        </form>}
+        {ownsListing && <AvailabilityEditor today={dayKey(Date.now())} locale={locale} />}
         {visits.map(visit => {
           const listing = listings?.find(l => l.id === visit.listing_id);
           const isHost = listing?.host_id === user.id;

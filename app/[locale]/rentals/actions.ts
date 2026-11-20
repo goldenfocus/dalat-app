@@ -6,6 +6,8 @@ import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { locales, redirect } from "@/lib/i18n/routing";
 import { dalatViewingTime, rentalId, safeRentalPhoto } from "@/lib/rentals/data";
+import { availabilityTimes } from "@/lib/rentals/calendar";
+import { readRentalDetails } from "@/lib/rentals/details";
 import { createClient } from "@/lib/supabase/server";
 
 const price = z.coerce.number().int().min(1).max(1_000_000_000);
@@ -44,10 +46,12 @@ export async function saveRental(form: FormData) {
     source_locale: form.get("source_locale"),
     status: form.get("status") === "published" ? "published" : "draft",
   });
-  if (!fields.success || form.has("uploading") || fields.data.photos.some(photo => !photo.startsWith("/api/rentals/photos/" + user.id + "/") && id.data !== "c7725f24-49f5-469f-b95f-417b7e5ec3d3")) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
+  const details = readRentalDetails(form);
+  if (!fields.success || !details.success || form.has("uploading") || fields.data.photos.some(photo => !photo.startsWith("/api/rentals/photos/" + user.id + "/") && id.data !== "c7725f24-49f5-469f-b95f-417b7e5ec3d3")) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
+  const values = { ...fields.data, details: details.data };
   const result = id.success
-    ? await db.from("rental_listings").update(fields.data).eq("id", id.data).eq("host_id", user.id).select("id").single()
-    : await db.from("rental_listings").insert(fields.data).select("id").single();
+    ? await db.from("rental_listings").update(values).eq("id", id.data).eq("host_id", user.id).select("id").single()
+    : await db.from("rental_listings").insert(values).select("id").single();
   if (!result.data || result.error) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
   revalidatePath("/[locale]/rentals", "page");
   redirect({ href: `/rentals#listing-${result.data.id}`, locale });
@@ -63,10 +67,11 @@ export async function requestViewing(form: FormData) {
   redirect({ href: result?.data ? "/rentals?viewing=requested#viewings" : "/rentals?error=1#viewings", locale });
 }
 
-export async function addViewingSlot(form: FormData) {
+export async function addRentalAvailability(form: FormData) {
   const { db, locale } = await signedIn("/rentals");
-  const starts_at = dalatViewingTime(form.get("starts_at"));
-  const result = starts_at ? await db.rpc("rental_publish_slots", { times: [starts_at] }) : null;
+  const days = form.getAll("day").filter((day): day is string => typeof day === "string");
+  const times = availabilityTimes(days, Number(form.get("start")), Number(form.get("end")));
+  const result = times.length ? await db.rpc("rental_publish_slots", { times }) : null;
   revalidatePath("/[locale]/rentals", "page");
   redirect({ href: result?.data ? "/rentals#viewings" : "/rentals?error=1#viewings", locale });
 }

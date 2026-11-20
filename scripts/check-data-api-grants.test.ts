@@ -61,6 +61,15 @@ describe("Data API grant ratchet", () => {
     expect(problems.some((problem) => problem.includes("same migration"))).toBe(true);
   });
 
+  it("keeps the original creation-time grant when a later migration grants a new column", () => {
+    const { problems } = analyzeMigrations([
+      { name: "001.sql", sql: backfill },
+      { name: "002.sql", sql: "create table public.listings (id int); grant select on public.listings to anon;" },
+      { name: "003.sql", sql: "alter table public.listings add column details jsonb; grant update (details) on public.listings to authenticated;" },
+    ]);
+    expect(problems).toEqual([]);
+  });
+
   it("rejects a backfill grant that production does not already have", () => {
     const { problems } = analyzeMigrations([
       {

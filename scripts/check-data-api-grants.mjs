@@ -283,7 +283,8 @@ export function analyzeMigrations(files) {
       }
       if (isGrant && event.roles.some((role) => targetsFor(role).length > 0)) {
         table.granted = true;
-        table.grantedIn = file.name;
+        // Keep the creation migration's access decision when a later migration adds a column grant.
+        table.grantedIn ??= file.name;
       }
     }
     for (const marker of file.sql.matchAll(
