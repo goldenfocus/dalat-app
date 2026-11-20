@@ -54,9 +54,9 @@ export default async function RentalsPage({ params, searchParams }: Props) {
   const publishedListings = (listings || []).filter(l => l.status === "published");
   const translated = await translatedRecords("rental", publishedListings.map(l => l.id), locale).catch(() => new Map());
   return (
-    <div className="mx-auto max-w-5xl space-y-7 px-4 py-8 sm:px-8">
-      <header className="flex items-center justify-between gap-3">
-        <h1 className="text-3xl font-bold sm:text-4xl">{t("title")}</h1>
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-8 sm:py-8">
+      <header className="flex flex-wrap items-center justify-between gap-3">
+        <h1 data-rentals-title className="text-4xl sm:text-5xl">{t("title")}</h1>
         {user && <Link href="/rentals/new" className={secondary}>{common("addRental")}</Link>}
       </header>
       {(listingResult.error || feedback.error) && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
@@ -79,10 +79,10 @@ export default async function RentalsPage({ params, searchParams }: Props) {
           label: t("reel", { name: listing.title }), captions: { src: "/api/rentals/reel-captions/" + locale, locale, label: t("captions") } });
         const prices = [["monthly", listing.monthly_rent], ["sixMonths", listing.six_month_rent], ["yearly", listing.yearly_rent]] as const;
         return (
-          <article id={"listing-" + listing.id} key={listing.id} className="min-w-0 space-y-5 rounded-3xl border bg-card p-4 shadow-sm sm:p-6">
+          <article id={"listing-" + listing.id} key={listing.id} className="min-w-0 space-y-4 rounded-[18px] border bg-card p-3 sm:space-y-6 sm:p-6">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <div><p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" aria-hidden="true" /> Đà Lạt</p>
-                <h2 className="break-words text-3xl font-semibold">{title}</h2>
+              <div className="min-w-0"><p className="flex items-center gap-1 text-sm text-muted-foreground"><MapPin className="size-4" aria-hidden="true" /> Đà Lạt</p>
+                <h2 data-rentals-title className="mt-1 text-3xl leading-tight sm:text-4xl">{title}</h2>
               </div>
               {isOwner && <Link href={`/rentals/new?id=${listing.id}`} className={secondary}>{common("edit")}</Link>}
             </div>
@@ -90,18 +90,18 @@ export default async function RentalsPage({ params, searchParams }: Props) {
             <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
               <RentalGallery items={photos} labels={labels} title={t("photos")} />
               <div className="min-w-0 space-y-5">
-                <section className="rounded-xl bg-muted p-4">
+                <section className="rounded-[14px] bg-muted p-4 sm:p-5">
                   <h3 className="font-semibold">{t("rent")}</h3>
                   <dl className="divide-y">
                     {prices.map(([term, amount]) => amount && <div key={term} className="flex flex-wrap justify-between gap-x-3 py-2">
-                      <dt>{t(term)}</dt><dd className="font-semibold">{currency.format(amount)}</dd>
+                      <dt>{t(term)}</dt><dd data-rental-rate className="font-bold text-primary">{currency.format(amount)}</dd>
                     </div>)}
                   </dl>
                 </section>
                 <p className="break-words whitespace-pre-wrap">{description}</p>
                 {(description !== listing.description || title !== listing.title) &&
                   <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}
-                {pilot && facts.map(([heading, items]) => <section key={heading} className="space-y-1"><h3 className="font-semibold">{t(heading)}</h3>
+                {pilot && facts.map(([heading, items]) => <section key={heading} className="space-y-2 border-t pt-4"><h3 className="font-semibold">{t(heading)}</h3>
                   <ul className="list-disc space-y-1 ps-5">{items.map(item => <li key={item}>{t(item)}</li>)}</ul></section>)}
                 {!isOwner && listing.status === "published" && (
                   active ? <a className={secondary} href="#viewings">{t("viewings")}</a> :

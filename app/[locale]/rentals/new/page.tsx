@@ -37,7 +37,7 @@ export default async function NewRental({ params, searchParams }: Props) {
   return (
     <div className="mx-auto max-w-2xl space-y-5 px-4 py-8">
       <Link href="/rentals" className="text-sm underline">{common("back")}</Link>
-      <h1 className="text-3xl font-bold">{listing ? common("edit") : common("addRental")}</h1>
+      <h1 data-rentals-title className="text-4xl">{listing ? common("edit") : common("addRental")}</h1>
       {error && <p role="alert" className="rounded-lg border border-destructive p-3">{t("failed")}</p>}
       <form action={saveRental} className="space-y-4">
         {listing && <input type="hidden" name="id" value={listing.id} />}

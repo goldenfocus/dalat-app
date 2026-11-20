@@ -1,0 +1,51 @@
+/* The route layout marks every Rentals screen on the server, including the editor. */
+body:has([data-rentals-page]) :is([data-floating-chrome], [data-app-footer]) {
+  display: none;
+}
+
+body:has([data-rentals-page]) [data-app-content] {
+  min-width: 0;
+  padding-bottom: 0;
+}
+
+[data-rentals-page] {
+  color-scheme: light;
+  --background: 90 22% 96%;
+  --foreground: 155 16% 15%;
+  --card: 136 31% 94%;
+  --card-foreground: var(--foreground);
+  --popover: 0 0% 100%;
+  --popover-foreground: var(--foreground);
+  --muted: 100 20% 97%;
+  --muted-foreground: 150 10% 33%;
+  --primary: 158 42% 22%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 134 24% 92%;
+  --secondary-foreground: var(--primary);
+  --accent: var(--secondary);
+  --accent-foreground: var(--primary);
+  --border: 126 13% 81%;
+  --input: 138 10% 67%;
+  --ring: 151 32% 42%;
+  --radius: 0.875rem;
+  min-height: 100svh;
+  min-width: 0;
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+[data-rentals-page] [data-rentals-title] {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  overflow-wrap: anywhere;
+}
+
+[data-rentals-page] [data-rental-gallery] {
+  border-radius: 12px;
+}
+
+[data-rentals-page] [data-rental-rate] {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
