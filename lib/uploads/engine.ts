@@ -6,6 +6,7 @@ import { extractCaptureTime, primeBatchCaptureTimes } from '@/lib/exif-capture-t
 import { isFinished, isWorking, mediaError, mediaMime, type UploadJob, type UploadReceipt } from './types';
 import * as store from './store';
 import { setMomentUploadActive } from './activity';
+import { convertHeicOnDevice, isHeicFile, prepareHeicForUpload } from './heic';
 
 export interface UploadSnapshot {
   jobs: UploadJob[];
@@ -224,19 +225,27 @@ async function processJob(original: UploadJob) {
     if (job.isVideo ? !source : !blob) throw new Error('missing-file');
     if (!job.prepared) {
       const originalBlob = blob;
-      const file = new File(blob ? [blob] : [], job.name, { type: job.mime, lastModified: job.lastModified || 0 });
+      let file = new File(blob ? [blob] : [], job.name, { type: job.mime, lastModified: job.lastModified || 0 });
       const { hashUpload, hashByteRanges } = await import('./hash');
       const hash = job.hash || (source ? await hashByteRanges(source.size,
         async (start, end) => (await source.slice(start, end)).arrayBuffer(), signal) : await hashUpload(file, signal));
       const capturedAt = job.capturedAt ?? await (captureTimes.get(job.id) || extractCaptureTime(file));
       signal.throwIfAborted();
-      if (!job.isVideo && !['image/heic', 'image/heif'].includes(job.mime)) {
+      // iPhone photos: convert to JPEG here so the request path never decodes HEIC.
+      // On any failure the original goes up and the server converts it as before.
+      let name = job.name;
+      if (!job.isVideo && isHeicFile(job.name, job.mime)) {
+        const prepared = await prepareHeicForUpload(file, convertHeicOnDevice);
+        if (prepared.converted) { file = prepared.file; blob = file; name = file.name; }
+      }
+      signal.throwIfAborted();
+      if (!job.isVideo && !isHeicFile(name, file.type)) {
         const { compressImage } = await import('@/lib/image-compression');
         const compressed = await compressImage(file);
         if (compressed.wasCompressed) blob = compressed.file;
       }
       signal.throwIfAborted();
-      job = { ...job, hash, capturedAt, prepared: true, size: blob?.size ?? source!.size, mime: blob?.type || job.mime };
+      job = { ...job, name, hash, capturedAt, prepared: true, size: blob?.size ?? source!.size, mime: blob?.type || job.mime };
       await store.saveJob(job, blob !== originalBlob ? blob : undefined);
       updateMemory(job.id, job);
     }

@@ -68,7 +68,16 @@ export interface HeicConversionResult {
  * - Call /api/convert-heic-r2 with the R2 path
  * - Server reads from R2, converts with sharp, saves JPEG back
  */
-export async function convertHeicToJpeg(file: File): Promise<HeicConversionResult> {
+export async function convertHeicToJpeg(
+  file: File,
+  options: { preferNative?: boolean } = {},
+): Promise<HeicConversionResult> {
+  // Safari/iOS decode HEIC natively; trying that first avoids downloading the
+  // ~1.3 MB WASM decoder on the devices that produce most HEIC photos.
+  if (options.preferNative) {
+    const native = await convertHeicViaCanvas(file);
+    if (native) return { file: native, needsServerConversion: false };
+  }
   // Method 1: Try heic2any (WASM-based, works on most browsers)
   // Suppress console output from the WASM module — "Could not parse HEIF file"
   // and "ERR_LIBHEIF format not supported" are expected when falling through

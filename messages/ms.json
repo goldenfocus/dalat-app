@@ -2069,7 +2069,9 @@
       "savedDrafts": "{count} fail daripada sesi terdahulu telah disimpan. Tambah ke album tanpa memuat naik semula.",
       "recoverDrafts": "Tambah fail yang disimpan",
       "readyNotice": "Foto dan video anda sudah sedia",
-      "attentionNotice": "Sesetengah muat naik memerlukan perhatian"
+      "attentionNotice": "Sesetengah muat naik memerlukan perhatian",
+      "resumeNotice": "{count, plural, other {Menyambung semula dari tempat kita berhenti — baki # muat naik}}",
+      "resumeMany": "{events} album"
     },
     "albumTitle": "{event} — {count, plural, other {# momen}}",
     "albumDescription": "Foto dan video yang dikongsi oleh komuniti di {event}.",

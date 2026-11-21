@@ -2083,7 +2083,9 @@
       "savedDrafts": "{count} fichiers d’une session précédente sont déjà enregistrés. Ajoutez-les à l’album sans les renvoyer.",
       "recoverDrafts": "Ajouter les fichiers enregistrés",
       "readyNotice": "Vos photos et vidéos sont prêtes",
-      "attentionNotice": "Certains envois nécessitent votre attention"
+      "attentionNotice": "Certains envois nécessitent votre attention",
+      "resumeNotice": "{count, plural, one {On reprend là où on s’était arrêtés — 1 envoi restant} other {On reprend là où on s’était arrêtés — # envois restants}}",
+      "resumeMany": "{events} albums"
     },
     "albumTitle": "{event} — {count, plural, one {# moment} many {# moments} other {# moments}}",
     "albumDescription": "Photos et vidéos partagées par la communauté lors de {event}.",
