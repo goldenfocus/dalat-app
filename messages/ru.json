@@ -2090,6 +2090,8 @@
     "viewImmersive": "Погружение",
     "viewCinema": "Кино",
     "cinemaControls": {
+      "unmute": "Включить звук",
+      "closingThankYou": "Спасибо за волшебный вечер",
       "dialogLabel": "Слайдшоу",
       "play": "Запустить слайдшоу",
       "pause": "Приостановить слайдшоу",

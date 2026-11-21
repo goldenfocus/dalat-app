@@ -2090,6 +2090,8 @@
     "viewImmersive": "โหมดดื่มด่ำ",
     "viewCinema": "โหมดภาพยนตร์",
     "cinemaControls": {
+      "unmute": "เปิดเสียง",
+      "closingThankYou": "ขอบคุณสำหรับค่ำคืนอันแสนวิเศษ",
       "dialogLabel": "สไลด์โชว์",
       "play": "เล่นสไลด์โชว์",
       "pause": "หยุดสไลด์โชว์ชั่วคราว",

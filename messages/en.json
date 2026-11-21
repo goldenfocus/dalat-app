@@ -2201,6 +2201,8 @@
     "viewImmersive": "Immersive",
     "viewCinema": "Cinema",
     "cinemaControls": {
+      "unmute": "Unmute",
+      "closingThankYou": "Thank you for a magical evening",
       "dialogLabel": "Slideshow",
       "play": "Play slideshow",
       "pause": "Pause slideshow",

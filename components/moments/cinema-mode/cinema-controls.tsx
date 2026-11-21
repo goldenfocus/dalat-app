@@ -4,8 +4,6 @@ import { useCallback, useEffect, useRef } from "react";
 import {
   Share2,
   Check,
-  Volume2,
-  VolumeX,
   Play,
   Pause,
   ChevronLeft,
@@ -18,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
-import { CinemaMusicChip } from "./cinema-music-chip";
+import { CinemaSoundButton } from "./cinema-music-chip";
 import { CinemaProgress, SEGMENTED_PROGRESS_MAX } from "./cinema-progress";
 import {
   useCinemaModeStore,
@@ -27,12 +25,13 @@ import {
   useCinemaPlaybackState,
   useCinemaShowControls,
   useCurrentCinemaMoment,
-  useCinemaSoundOn,
 } from "@/lib/stores/cinema-mode-store";
 
 interface CinemaControlsProps {
   eventSlug: string;
   eventTitle?: string;
+  showSoundControl: boolean;
+  onToggleSound: () => void;
   onExit: () => void;
   /** Leave the slideshow for the grid, scrolled to the current moment. */
   onShowGallery: (momentId?: string) => void;
@@ -52,6 +51,8 @@ const roundButton =
 export function CinemaControls({
   eventSlug,
   eventTitle,
+  showSoundControl,
+  onToggleSound,
   onExit,
   onShowGallery,
   focusFallbackRef,
@@ -62,10 +63,6 @@ export function CinemaControls({
   const playbackState = useCinemaPlaybackState();
   const visible = useCinemaShowControls();
   const currentMoment = useCurrentCinemaMoment();
-  const soundOn = useCinemaSoundOn();
-  const hasVideo = useCinemaModeStore((state) =>
-    state.moments.some((m) => m.content_type === "video")
-  );
   const { share: nativeShare, copied: shared } = useShare();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -142,23 +139,9 @@ export function CinemaControls({
         className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col gap-2 px-4"
         style={{ paddingBottom: "max(var(--docked-player-clearance, 0px), env(safe-area-inset-bottom))" }}
       >
-        <div className="flex items-center justify-between gap-2">
-          <div className="pointer-events-auto min-w-0 flex-1">
-            <CinemaMusicChip className="max-w-[60vw]" />
-          </div>
+        <div className="flex items-center justify-end gap-2">
           <div className="pointer-events-auto flex shrink-0 items-center gap-2">
-            {hasVideo && (
-              <button
-                type="button"
-                data-cinema-audio-control
-                onClick={press(() => store.toggleSound())}
-                className={roundButton}
-                aria-pressed={soundOn}
-                aria-label={soundOn ? t("soundMute") : t("soundUnmute")}
-              >
-                {soundOn ? <Volume2 className="h-5 w-5" /> : <VolumeX className="h-5 w-5" />}
-              </button>
-            )}
+            {showSoundControl && <CinemaSoundButton onToggle={onToggleSound} />}
             {currentMoment && (
               <MomentDownloadButton
                 moment={currentMoment}

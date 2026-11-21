@@ -2090,6 +2090,8 @@
     "viewImmersive": "イマーシブ",
     "viewCinema": "シネマ",
     "cinemaControls": {
+      "unmute": "ミュートを解除",
+      "closingThankYou": "魔法のような夜をありがとう",
       "dialogLabel": "スライドショー",
       "play": "スライドショーを再生",
       "pause": "スライドショーを一時停止",

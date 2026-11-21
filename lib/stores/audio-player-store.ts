@@ -233,6 +233,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     const attempt = ++playAttempt;
     try {
       set({ isLoading: true });
+      if (attempt !== playAttempt) return;
 
       // Ensure correct source is set, or reload if previous load errored
       const filename = track.file_url.split('/').pop() || '';

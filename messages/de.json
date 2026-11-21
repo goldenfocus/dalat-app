@@ -2090,6 +2090,8 @@
     "viewImmersive": "Immersiv",
     "viewCinema": "Kino",
     "cinemaControls": {
+      "unmute": "Ton einschalten",
+      "closingThankYou": "Danke für diesen magischen Abend",
       "dialogLabel": "Diashow",
       "play": "Diashow abspielen",
       "pause": "Diashow pausieren",

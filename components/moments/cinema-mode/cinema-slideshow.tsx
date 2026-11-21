@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useRef, useMemo } from "react";
+import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Play, Pause } from "lucide-react";
 import { CinemaPhotoSlide } from "./cinema-photo-slide";
@@ -22,11 +22,15 @@ import {
   useCinemaMoments,
   useCinemaTimerDuration,
   useCinemaShowControls,
+  useCinemaSoundOn,
 } from "@/lib/stores/cinema-mode-store";
 import type { MomentWithProfile } from "@/lib/types";
 import type { CinemaEventMeta } from "../moments-view-container";
 import { CinemaEndCard } from "./cinema-end-card";
-import { CinemaTrackAnnouncer } from "./cinema-music-chip";
+import { CinemaSoundButton, CinemaTrackAnnouncer } from "./cinema-music-chip";
+import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
+import { requestVideoPlayback } from "@/lib/cinema/video-playback";
+import { getCinemaClosingCredits } from "@/lib/cinema/closing-credits";
 import { CinemaFirstVisitHint, useFirstVisitHint } from "./cinema-first-visit-hint";
 import { useCinemaInput } from "./use-cinema-input";
 
@@ -56,6 +60,7 @@ export function CinemaSlideshow({
 }: CinemaSlideshowProps) {
   const router = useRouter();
   const t = useTranslations("moments.cinemaControls");
+  const tMoments = useTranslations("moments");
   const rootRef = useRef<HTMLDivElement>(null);
   const effectSchedulerRef = useRef<EffectSchedulerState>(createEffectScheduler());
 
@@ -85,6 +90,46 @@ export function CinemaSlideshow({
 
   const isPaused = playbackState === "paused";
   const isEnded = playbackState === "ended";
+  const closingCredits = getCinemaClosingCredits(eventSlug);
+  const hasSoundtrack = useAudioPlayerStore(
+    (state) => state.playlist?.eventSlug === eventSlug && state.tracks.length > 0,
+  );
+  const soundOn = useCinemaSoundOn();
+  const hasActiveVideo = !isEnded && currentMoment?.content_type === "video";
+
+  useLayoutEffect(() => {
+    if (!hasSoundtrack || playbackState === "idle") return;
+    if (hasActiveVideo || isPaused || !soundOn) {
+      const pauseSoundtrack = (audio: ReturnType<typeof useAudioPlayerStore.getState>) => {
+        if (audio.playlist?.eventSlug === eventSlug &&
+            (audio.isPlaying || audio.isLoading || audio.autoplayBlocked)) audio.pause();
+      };
+      pauseSoundtrack(useAudioPlayerStore.getState());
+      return useAudioPlayerStore.subscribe(pauseSoundtrack);
+    }
+
+    const audio = useAudioPlayerStore.getState();
+    if (!audio.isPlaying && !audio.isLoading && !audio.autoplayBlocked) void audio.play();
+  }, [eventSlug, hasSoundtrack, hasActiveVideo, isPaused, playbackState, soundOn]);
+
+  const handleToggleSound = useCallback(() => {
+    const cinema = useCinemaModeStore.getState();
+    const audio = useAudioPlayerStore.getState();
+    const video = rootRef.current?.querySelector("video");
+    if (!video && cinema.soundOn && audio.autoplayBlocked) {
+      void audio.play();
+      return;
+    }
+    cinema.toggleSound();
+    if (video) {
+      video.muted = cinema.soundOn;
+      if (!cinema.soundOn && cinema.playbackState === "playing") {
+        void requestVideoPlayback(video, true);
+      }
+    } else if (!cinema.soundOn && hasSoundtrack && cinema.playbackState !== "paused") {
+      void audio.play();
+    }
+  }, [hasSoundtrack]);
 
   // Extract unique contributors for end card
   const contributors = useMemo(() => {
@@ -141,11 +186,10 @@ export function CinemaSlideshow({
     if (initialMoments.length > prevMomentsLengthRef.current) {
       const newMoments = initialMoments.slice(prevMomentsLengthRef.current);
       const appendMoments = useCinemaModeStore.getState().appendMoments;
-      const setHasMore = useCinemaModeStore.getState().setHasMore;
       appendMoments(newMoments);
-      setHasMore(hasMore);
       prevMomentsLengthRef.current = initialMoments.length;
     }
+    useCinemaModeStore.getState().setHasMore(hasMore);
   }, [initialMoments, hasMore]);
 
   // Warm up HLS.js module cache on cinema mount so it's ready when the first video hits
@@ -301,8 +345,7 @@ export function CinemaSlideshow({
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
     >
-      {/* Current moment slide — always visible so last frame stays on screen */}
-      {currentMoment && (
+      {currentMoment && (!isEnded || !closingCredits) && (
         <>
           {currentMoment.content_type === "photo" && (
             <CinemaPhotoSlide
@@ -344,7 +387,37 @@ export function CinemaSlideshow({
       )}
 
       {/* Branded end card */}
-      {isEnded && (
+      {isEnded && closingCredits ? (
+        <>
+          <div className="absolute inset-0 z-30 grid place-items-center overflow-y-auto bg-[#14100d] bg-[radial-gradient(ellipse_at_50%_28%,#3b271b_0%,#14100d_54%,#0a0807_100%)] px-6 py-20 text-center">
+            <div className="max-w-xl text-[#fbf1df] motion-safe:animate-in motion-safe:fade-in motion-safe:duration-700">
+              <h2 className="font-serif text-4xl leading-[1.12] text-balance sm:text-6xl">
+                {t("closingThankYou")}
+              </h2>
+              <p className="mt-7 text-base text-[#ead7bc] sm:text-lg">
+                {closingCredits.artists.join(" · ")}
+              </p>
+              <p className="mt-2 text-base text-[#ead7bc] sm:text-lg">{closingCredits.venue}</p>
+              <button
+                type="button"
+                data-cinema-audio-control
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleLoop();
+                }}
+                className="mt-9 rounded-full border border-white/25 px-5 py-2.5 text-sm hover:bg-white/10"
+              >
+                {tMoments("replay")}
+              </button>
+            </div>
+          </div>
+          {hasSoundtrack && (
+            <div className="absolute left-4 top-4 z-40">
+              <CinemaSoundButton onToggle={handleToggleSound} />
+            </div>
+          )}
+        </>
+      ) : isEnded && (
         <CinemaEndCard
           eventMeta={eventMeta}
           eventSlug={eventSlug}
@@ -360,6 +433,8 @@ export function CinemaSlideshow({
         <CinemaControls
           eventSlug={eventSlug}
           eventTitle={eventMeta?.title}
+          showSoundControl={hasSoundtrack || hasActiveVideo}
+          onToggleSound={handleToggleSound}
           onExit={handleExit}
           onShowGallery={handleShowGallery}
           focusFallbackRef={rootRef}

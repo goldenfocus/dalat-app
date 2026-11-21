@@ -2090,6 +2090,8 @@
     "viewImmersive": "Inmersivo",
     "viewCinema": "Cine",
     "cinemaControls": {
+      "unmute": "Activar sonido",
+      "closingThankYou": "Gracias por una noche mágica",
       "dialogLabel": "Presentación",
       "play": "Reproducir la presentación",
       "pause": "Pausar la presentación",

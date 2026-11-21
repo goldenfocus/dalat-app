@@ -13,6 +13,8 @@ export interface MomentVideoPlayerProps {
   poster?: string | null;
   /** Whether video should auto-play (overrides default behavior) */
   autoPlay?: boolean;
+  /** Cinema manages video playback and the soundtrack together. */
+  controlledPlayback?: boolean;
   /** Whether video should be muted */
   muted?: boolean;
   /** Whether video should loop */
@@ -46,6 +48,7 @@ export function MomentVideoPlayer({
   hlsSrc,
   poster,
   autoPlay: autoPlayProp,
+  controlledPlayback = false,
   muted: mutedProp = true,
   loop = false,
   className,
@@ -88,6 +91,7 @@ export function MomentVideoPlayer({
     if (!video) return;
 
     const syncMusic = () => {
+      if (controlledPlayback) return;
       const audio = useAudioPlayerStore.getState();
       if (!video.muted && !video.paused) {
         if (audio.isPlaying) {
@@ -117,7 +121,7 @@ export function MomentVideoPlayer({
         musicPausedByUsRef.current = false;
       }
     };
-  }, []);
+  }, [controlledPlayback, videoRef]);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -158,6 +162,7 @@ export function MomentVideoPlayer({
         // HLS.js needs manifest parsed before video can play
         hls.on(Hls.Events.MANIFEST_PARSED, () => {
           setIsReady(true);
+          if (controlledPlayback) return;
           // Autoplay — respect the requested mute state; if the browser
           // blocks unmuted autoplay, fall back to muted playback
           video.play().catch(() => {
@@ -205,12 +210,10 @@ export function MomentVideoPlayer({
         hlsRef.current = null;
       }
     };
-  }, [hlsSrc, isHlsUrl, src]);
+  }, [hlsSrc, isHlsUrl, src, controlledPlayback]);
 
   // Determine autoPlay value - use prop if provided, otherwise default behavior
-  const shouldAutoPlay = autoPlayProp !== undefined
-    ? autoPlayProp
-    : (!isHlsUrl || useNativeHls);
+  const shouldAutoPlay = !controlledPlayback && (autoPlayProp ?? (!isHlsUrl || useNativeHls));
 
   return (
     <div className={className || "relative w-full h-full flex items-center justify-center bg-black"}>

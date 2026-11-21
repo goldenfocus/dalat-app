@@ -2090,6 +2090,8 @@
     "viewImmersive": "몰입형",
     "viewCinema": "시네마",
     "cinemaControls": {
+      "unmute": "소리 켜기",
+      "closingThankYou": "마법 같았던 저녁을 선물해 주셔서 감사합니다",
       "dialogLabel": "슬라이드쇼",
       "play": "슬라이드쇼 재생",
       "pause": "슬라이드쇼 일시정지",

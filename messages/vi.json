@@ -2090,6 +2090,8 @@
     "viewImmersive": "Đắm chìm",
     "viewCinema": "Điện ảnh",
     "cinemaControls": {
+      "unmute": "Bật tiếng",
+      "closingThankYou": "Cảm ơn vì một buổi tối diệu kỳ",
       "dialogLabel": "Trình chiếu",
       "play": "Phát trình chiếu",
       "pause": "Tạm dừng trình chiếu",

@@ -2090,6 +2090,8 @@
     "viewImmersive": "沉浸式",
     "viewCinema": "影院",
     "cinemaControls": {
+      "unmute": "开启声音",
+      "closingThankYou": "感谢这如梦似幻的一晚",
       "dialogLabel": "幻灯片",
       "play": "播放幻灯片",
       "pause": "暂停幻灯片",

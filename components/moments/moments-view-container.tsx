@@ -90,7 +90,6 @@ export function MomentsViewContainer({
 
   // Audio player store for auto-play
   const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
-  const currentPlaylist = useAudioPlayerStore((state) => state.playlist);
 
   // --- Selection mode state ---
   const [selectMode, setSelectMode] = useState(false);
@@ -163,13 +162,14 @@ export function MomentsViewContainer({
     return allMoments.filter((m) => m.content_type === mediaTypeFilter);
   }, [allMoments, mediaTypeFilter]);
 
-  // Load more moments (called from immersive view when reaching the end)
+  const handleMomentsUpdate = useCallback((moments: MomentWithProfile[], hasMore: boolean) => {
+    setAllMoments(moments);
+    setHasMoreMoments(hasMore);
+  }, []);
+
+  // Load more moments when cinema or immersive playback nears the end.
   const handleLoadMore = useCallback(async () => {
-    if (gridRef.current?.hasMore) {
-      await gridRef.current.loadMore();
-      // Update hasMore state after loading
-      setHasMoreMoments(gridRef.current.hasMore);
-    }
+    await gridRef.current?.loadMore();
   }, []);
 
   // Auto-open cinema mode by default (or immersive if specified via URL)
@@ -199,11 +199,18 @@ export function MomentsViewContainer({
   // Auto-play event playlist when landing on moments page.
   // Uses server-side pre-fetched data when available (instant), falls back to client RPC.
   useEffect(() => {
-    if (hasAutoPlayedRef.current || currentPlaylist?.eventSlug === eventSlug) {
+    if (hasAutoPlayedRef.current) return;
+    hasAutoPlayedRef.current = true;
+    const audio = useAudioPlayerStore.getState();
+    musicBeforeLandingRef.current = audio.isPlaying;
+
+    if (audio.playlist?.eventSlug === eventSlug) {
+      if (!audio.isPlaying) {
+        audio.show();
+        void audio.play();
+      }
       return;
     }
-    hasAutoPlayedRef.current = true;
-    musicBeforeLandingRef.current = useAudioPlayerStore.getState().isPlaying;
 
     // Use pre-fetched playlist (no client RPC delay)
     if (initialPlaylist) {
@@ -254,7 +261,7 @@ export function MomentsViewContainer({
     }
 
     fetchAndPlayPlaylist();
-  }, [eventSlug, setPlaylist, currentPlaylist?.eventSlug, initialPlaylist, locale]);
+  }, [eventSlug, setPlaylist, initialPlaylist, locale]);
 
   // Open immersive view starting from a specific moment
   const openImmersive = (index: number = 0) => {
@@ -675,13 +682,7 @@ export function MomentsViewContainer({
           initialHasMore={initialHasMore}
           enableLightbox={false}
           onMomentClick={viewMode === "immersive" && !selectMode ? openImmersive : undefined}
-          onMomentsUpdate={(moments) => {
-            setAllMoments(moments);
-            // Keep hasMore in sync with grid
-            if (gridRef.current) {
-              setHasMoreMoments(gridRef.current.hasMore);
-            }
-          }}
+          onMomentsUpdate={handleMomentsUpdate}
           mediaTypeFilter={mediaTypeFilter}
           selectMode={selectMode}
           selectedIds={selectedIds}

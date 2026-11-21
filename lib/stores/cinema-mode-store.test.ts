@@ -68,7 +68,7 @@ describe("transport sync", () => {
     const audio = installFakeAudio(true);
     cinema().start(moments, "evt");
 
-    cinema().toggleMusic(); // viewer mutes the soundtrack, slides keep going
+    cinema().toggleSound();
     expect(cinema().playbackState).toBe("playing");
     expect(useAudioPlayerStore.getState().isPlaying).toBe(false);
 
@@ -77,20 +77,27 @@ describe("transport sync", () => {
     expect(audio.play).not.toHaveBeenCalled();
   });
 
-  it("music chip toggles without touching the slides", () => {
-    const audio = installFakeAudio(false);
+  it("uses one sound setting and starts each new slideshow with sound enabled", () => {
+    const audio = installFakeAudio(true);
     cinema().start(moments, "evt");
 
-    cinema().toggleMusic();
-    expect(audio.play).toHaveBeenCalledTimes(1);
+    expect(cinema().soundOn).toBe(true);
+    cinema().toggleSound();
+    expect(cinema().soundOn).toBe(false);
+    expect(audio.pause).toHaveBeenCalledOnce();
     expect(cinema().playbackState).toBe("playing");
+
+    cinema().exit();
+    cinema().start(moments, "evt");
+    expect(cinema().soundOn).toBe(true);
   });
 
-  it("toggleMusic is a no-op without a track", () => {
-    const audio = installFakeAudio(false);
-    useAudioPlayerStore.setState({ tracks: [] });
-    cinema().start(moments, "evt");
-    cinema().toggleMusic();
+  it("does not resume background music when continuing a video", () => {
+    const audio = installFakeAudio(true);
+    const clip = { ...photo("video"), content_type: "video" as const };
+    cinema().start([clip], "evt");
+    cinema().pause();
+    cinema().play();
     expect(audio.play).not.toHaveBeenCalled();
   });
 });
@@ -186,5 +193,20 @@ describe("chrome reveal and auto-hide", () => {
     expect(cinema().showControls).toBe(true);
     vi.advanceTimersByTime(CHROME_AUTO_HIDE_MS);
     expect(cinema().showControls).toBe(false);
+  });
+});
+
+
+describe("A Quiet Divide ending", () => {
+  it("finishes in under three seconds on the book photo, including its entrance", () => {
+    installFakeAudio(false);
+    const book = photo("6f13ce78-add2-4db1-b170-291e3c145091");
+    cinema().start([photo("first"), book], "a-quiet-divide-tu-scotland-den-da-lat-2026", 0, 2, false);
+    vi.advanceTimersByTime(100);
+    cinema().next();
+    vi.advanceTimersByTime(2849);
+    expect(cinema().playbackState).toBe("playing");
+    vi.advanceTimersByTime(1);
+    expect(cinema().playbackState).toBe("ended");
   });
 });

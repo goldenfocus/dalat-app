@@ -14,17 +14,15 @@ describe("requestVideoPlayback", () => {
     expect(video.play).toHaveBeenCalledTimes(1);
   });
 
-  it("retries muted when the first play request is rejected", async () => {
+  it("keeps video sound requested when a browser blocks autoplay", async () => {
     const video = {
       muted: false,
-      play: vi.fn()
-        .mockRejectedValueOnce(new DOMException("Blocked", "NotAllowedError"))
-        .mockResolvedValueOnce(undefined),
+      play: vi.fn().mockRejectedValue(new DOMException("Blocked", "NotAllowedError")),
     } as unknown as HTMLVideoElement;
 
-    await expect(requestVideoPlayback(video, true)).resolves.toBe(true);
-    expect(video.muted).toBe(true);
-    expect(video.play).toHaveBeenCalledTimes(2);
+    await expect(requestVideoPlayback(video, true)).resolves.toBe(false);
+    expect(video.muted).toBe(false);
+    expect(video.play).toHaveBeenCalledOnce();
   });
 
   it("keeps the retry control visible when playback still fails", async () => {
@@ -34,6 +32,6 @@ describe("requestVideoPlayback", () => {
     } as unknown as HTMLVideoElement;
 
     await expect(requestVideoPlayback(video, false)).resolves.toBe(false);
-    expect(video.play).toHaveBeenCalledTimes(2);
+    expect(video.play).toHaveBeenCalledOnce();
   });
 });

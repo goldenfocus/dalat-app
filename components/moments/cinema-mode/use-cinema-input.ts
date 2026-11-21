@@ -97,8 +97,7 @@ export function useCinemaInput(onExit: () => void, eventSlug: string) {
       (!audio.autoplayBlocked && !audio.isLoading)
     ) return;
 
-    const video = e.currentTarget.querySelector("video");
-    if (video && !video.muted && !video.paused && video.volume > 0) return;
+    if (e.currentTarget.querySelector("video")) return;
 
     // Call play inside the trusted click, even when a slide control stops bubbling.
     void audio.play();

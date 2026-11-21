@@ -1,33 +1,19 @@
 "use client";
 
-import { Music2 } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
-import { useCinemaModeStore } from "@/lib/stores/cinema-mode-store";
+import { useCinemaSoundOn } from "@/lib/stores/cinema-mode-store";
 
-/** Current soundtrack title, or null when there is no track to show. */
-function useCurrentTrackTitle(): { hasTrack: boolean; title: string | null } {
-  const hasTrack = useAudioPlayerStore((s) => s.tracks.length > 0);
-  const title = useAudioPlayerStore((s) => s.tracks[s.currentIndex]?.title ?? null);
-  return { hasTrack, title };
-}
-
-/**
- * Music chip: a musical note plus the track title. Turns the soundtrack on
- * or off without touching the slides — deliberately a different shape and
- * icon from the speaker, which only mutes a video clip's own audio.
- * Renders nothing when there is no track.
- */
-export function CinemaMusicChip({ className }: { className?: string }) {
-  const t = useTranslations("moments.cinemaControls");
-  const { hasTrack, title } = useCurrentTrackTitle();
-  const isPlaying = useAudioPlayerStore((s) => s.isPlaying);
-
-  if (!hasTrack) return null;
-
-  const label = title ?? t("musicUntitled");
+/** One speaker control for the slideshow, whichever source is audible. */
+export function CinemaSoundButton({ onToggle }: { onToggle: () => void }) {
+  const t = useTranslations("moments");
+  const soundOn = useCinemaSoundOn();
+  const autoplayBlocked = useAudioPlayerStore((state) => state.autoplayBlocked);
+  const enabled = soundOn && !autoplayBlocked;
+  const label = enabled ? t("mute") : t("cinemaControls.unmute");
+  const Icon = enabled ? Volume2 : VolumeX;
 
   return (
     <button
@@ -36,36 +22,23 @@ export function CinemaMusicChip({ className }: { className?: string }) {
       onClick={(e) => {
         e.stopPropagation();
         triggerHaptic("selection");
-        useCinemaModeStore.getState().toggleMusic();
+        onToggle();
       }}
-      aria-pressed={isPlaying}
-      aria-label={`${isPlaying ? t("musicTurnOff") : t("musicTurnOn")}: ${label}`}
-      className={cn(
-        "flex min-h-11 max-w-full items-center gap-2 rounded-full bg-black/40 pl-3 pr-4 backdrop-blur-sm",
-        "text-sm font-medium text-white/90 transition-all hover:bg-black/60 active:scale-95 motion-reduce:transition-none",
-        !isPlaying && "text-white/60",
-        className,
-      )}
+      aria-pressed={enabled}
+      aria-label={label}
+      title={label}
+      className="flex min-h-11 min-w-11 items-center justify-center rounded-full bg-black/40 text-white/90 backdrop-blur-sm transition-all hover:bg-black/60 hover:text-white active:scale-95 motion-reduce:transition-none"
     >
-      <span className="relative flex h-5 w-5 shrink-0 items-center justify-center" aria-hidden="true">
-        <Music2 className="h-5 w-5" />
-        {!isPlaying && (
-          <span className="absolute left-0 top-1/2 h-0.5 w-5 -rotate-45 rounded-full bg-white/80" />
-        )}
-      </span>
-      <span className={cn("truncate", !isPlaying && "line-through decoration-white/40")}>{label}</span>
+      <Icon className="h-5 w-5" aria-hidden="true" />
     </button>
   );
 }
 
-/**
- * Screen-reader announcement for track changes. Lives outside the chrome so it
- * keeps working while the visual controls are hidden.
- */
+/** Screen-reader announcement for the current soundtrack. */
 export function CinemaTrackAnnouncer() {
   const t = useTranslations("moments.cinemaControls");
-  const { title } = useCurrentTrackTitle();
-  const isPlaying = useAudioPlayerStore((s) => s.isPlaying);
+  const title = useAudioPlayerStore((state) => state.tracks[state.currentIndex]?.title ?? null);
+  const isPlaying = useAudioPlayerStore((state) => state.isPlaying);
   const message = title && isPlaying ? t("nowPlaying", { title }) : "";
 
   return (

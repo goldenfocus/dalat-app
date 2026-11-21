@@ -31,7 +31,7 @@ interface InfiniteMomentGridProps {
   /** Callback when a moment card is clicked (for immersive mode) */
   onMomentClick?: (index: number) => void;
   /** Callback when moments array is updated (for parent to track all loaded moments) */
-  onMomentsUpdate?: (moments: MomentWithProfile[]) => void;
+  onMomentsUpdate?: (moments: MomentWithProfile[], hasMore: boolean) => void;
   /** Filter by media type (all, photo, video) */
   mediaTypeFilter?: MediaTypeFilter;
   /** Selection mode props */
@@ -241,15 +241,11 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
       return;
     }
 
-    setMoments((prev) => {
-      const updated = [...prev, ...newMoments];
-      onMomentsUpdate?.(updated);
-      return updated;
-    });
+    setMoments((prev) => [...prev, ...newMoments]);
     setOffset((prev) => prev + newMoments.length);
     setHasMore(totalCount > nextOffset + newMoments.length);
     setIsLoading(false);
-  }, [eventId, offset, isLoading, hasMore, onMomentsUpdate]);
+  }, [eventId, offset, isLoading, hasMore]);
 
   // Expose loadMore and hasMore to parent via ref
   const removeMoments = useCallback((ids: string[]) => {
@@ -270,10 +266,10 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
     removeMoments,
   }), [loadMore, hasMore, removeMoments]);
 
-  // Notify parent of initial moments
+  // Publish the page and pagination state together, after the grid commits them.
   useEffect(() => {
-    onMomentsUpdate?.(moments);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    onMomentsUpdate?.(moments, hasMore);
+  }, [moments, hasMore, onMomentsUpdate]);
 
   // Intersection Observer for infinite scroll
   useEffect(() => {

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { getCinemaClosingCredits } from "@/lib/cinema/closing-credits";
 import type { MomentWithProfile } from "@/lib/types";
 import { useAudioPlayerStore } from "@/lib/stores/audio-player-store";
 
@@ -36,7 +37,7 @@ interface CinemaModeState {
   showControls: boolean;
   controlsTimeoutId: ReturnType<typeof setTimeout> | null;
 
-  // Sound preference for video slides (sticky across cinema sessions)
+  // One sound preference applies to the soundtrack and the clips.
   soundOn: boolean;
 
   // Music transport sync. `musicBaseline` is whether the soundtrack was
@@ -63,7 +64,7 @@ interface CinemaModeState {
   goTo: (index: number) => void;
   onVideoEnded: () => void;
   onVideoTimeUpdate: (currentTime: number, duration: number) => void;
-  scheduleAdvance: () => void;
+  scheduleAdvance: (transitionMs?: number) => void;
   clearTimer: () => void;
   appendMoments: (newMoments: MomentWithProfile[]) => void;
   setHasMore: (hasMore: boolean) => void;
@@ -71,12 +72,15 @@ interface CinemaModeState {
   revealChrome: () => void;
   hideControls: () => void;
   toggleSound: () => void;
-  toggleMusic: () => void;
   captureMusicBaseline: () => void;
 }
 
 /** Chrome auto-hides this long after the last interaction while playing. */
 export const CHROME_AUTO_HIDE_MS = 3000;
+const CINEMA_TRANSITION_MS = 800;
+const INITIAL_SLIDE_DELAY_MS = 100;
+// Leave a little room for rendering while keeping the book photo under three seconds.
+const SHORT_PHOTO_MS = 2850;
 
 // Timer refs stored outside Zustand to avoid serialization issues
 let timerRefs = {
@@ -88,10 +92,13 @@ type StoreGet = () => CinemaModeState;
 type StoreSet = (partial: Partial<CinemaModeState>) => void;
 
 function resumeMusicIfTransportPaused(get: StoreGet, set: StoreSet) {
-  if (!get().musicPausedByTransport) return;
+  const { musicPausedByTransport, soundOn, moments, currentIndex } = get();
+  if (!musicPausedByTransport) return;
   set({ musicPausedByTransport: false });
   const audio = useAudioPlayerStore.getState();
-  if (!audio.isPlaying) void audio.play();
+  if (soundOn && moments[currentIndex]?.content_type !== "video" && !audio.isPlaying) {
+    void audio.play();
+  }
 }
 
 // Generate random duration between 3-9 seconds with bell curve (favors 5-7s)
@@ -119,7 +126,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
   eventSlug: null,
   showControls: true,
   controlsTimeoutId: null,
-  soundOn: false,
+  soundOn: true,
   musicBaseline: null,
   musicPausedByTransport: false,
 
@@ -140,14 +147,15 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       timerProgress: 0,
       isTransitioning: false,
       showControls: true,
+      soundOn: true,
       musicPausedByTransport: false,
     });
     get().revealChrome();
 
     // Start the slideshow
     setTimeout(() => {
-      get().scheduleAdvance();
-    }, 100);
+      get().scheduleAdvance(INITIAL_SLIDE_DELAY_MS);
+    }, INITIAL_SLIDE_DELAY_MS);
   },
 
   // Exit cinema mode
@@ -293,9 +301,9 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
         set({ isTransitioning: false });
         const { playbackState } = get();
         if (playbackState === "playing") {
-          get().scheduleAdvance();
+          get().scheduleAdvance(CINEMA_TRANSITION_MS);
         }
-      }, 800); // Match transition duration
+      }, CINEMA_TRANSITION_MS);
     } else if (hasMore) {
       // Pause while waiting for more moments to load
       set({ playbackState: "paused" });
@@ -331,9 +339,9 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
         set({ isTransitioning: false });
         const { playbackState } = get();
         if (playbackState === "playing") {
-          get().scheduleAdvance();
+          get().scheduleAdvance(CINEMA_TRANSITION_MS);
         }
-      }, 800);
+      }, CINEMA_TRANSITION_MS);
     }
   },
 
@@ -344,7 +352,6 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     if (index < 0 || index >= moments.length) return;
 
     clearTimer();
-    resumeMusicIfTransportPaused(get, set);
 
     set({
       currentIndex: index,
@@ -355,11 +362,12 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
       videoDuration: null,
       videoCurrentTime: 0,
     });
+    resumeMusicIfTransportPaused(get, set);
 
     setTimeout(() => {
       set({ isTransitioning: false });
-      get().scheduleAdvance();
-    }, 800);
+      get().scheduleAdvance(CINEMA_TRANSITION_MS);
+    }, CINEMA_TRANSITION_MS);
     get().revealChrome();
   },
 
@@ -383,8 +391,8 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
   },
 
   // Schedule auto-advance for photos
-  scheduleAdvance: () => {
-    const { moments, currentIndex, isActive, playbackState, clearTimer } = get();
+  scheduleAdvance: (transitionMs = 0) => {
+    const { moments, currentIndex, isActive, playbackState, eventSlug, clearTimer } = get();
 
     if (!isActive || playbackState !== "playing") return;
 
@@ -399,7 +407,10 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     // Clear any existing timer
     clearTimer();
 
-    const duration = getRandomDuration();
+    const credits = getCinemaClosingCredits(eventSlug);
+    const duration = credits && currentMoment?.id === credits.shortPhotoId
+      ? SHORT_PHOTO_MS - transitionMs
+      : getRandomDuration();
     const startTime = Date.now();
 
     set({
@@ -484,22 +495,12 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     get().revealChrome();
   },
 
-  // Toggle video sound (intentionally NOT reset by exit() — the preference
-  // sticks for the rest of the browsing session)
   toggleSound: () => {
-    set({ soundOn: !get().soundOn });
-  },
-
-  // Music chip: soundtrack on/off, independent of the slides.
-  toggleMusic: () => {
+    const soundOn = !get().soundOn;
+    set({ soundOn });
     const audio = useAudioPlayerStore.getState();
-    if (audio.tracks.length === 0) return;
-    set({ musicPausedByTransport: false });
-    if (audio.isPlaying) {
+    if (!soundOn && (audio.isPlaying || audio.isLoading || audio.autoplayBlocked)) {
       audio.pause();
-    } else {
-      audio.show();
-      void audio.play();
     }
   },
 

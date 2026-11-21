@@ -164,7 +164,7 @@ export function CinemaVideoSlide({
         src={videoSrc}
         hlsSrc={hlsSrc}
         poster={moment.thumbnail_url || undefined}
-        autoPlay={isActive && !isPaused}
+        controlledPlayback
         muted={!soundOn}
         loop={false}
         className="w-full h-full"

@@ -8,14 +8,7 @@ export async function requestVideoPlayback(
     await video.play();
     return true;
   } catch {
-    // Browsers commonly reject delayed or unmuted playback. Retry muted so
-    // cinema can continue even when audio autoplay is not allowed.
-    video.muted = true;
-    try {
-      await video.play();
-      return true;
-    } catch {
-      return false;
-    }
+    // Leave the play control visible so a gesture can start the requested sound.
+    return false;
   }
 }

@@ -2090,6 +2090,8 @@
     "viewImmersive": "Imersif",
     "viewCinema": "Sinema",
     "cinemaControls": {
+      "unmute": "Nyalakan suara",
+      "closingThankYou": "Terima kasih untuk malam yang begitu berkesan",
       "dialogLabel": "Tayangan slide",
       "play": "Putar tayangan slide",
       "pause": "Jeda tayangan slide",

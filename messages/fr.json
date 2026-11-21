@@ -2104,6 +2104,8 @@
     "viewImmersive": "Immersif",
     "viewCinema": "Cinéma",
     "cinemaControls": {
+      "unmute": "Rétablir le son",
+      "closingThankYou": "Merci pour cette soirée magique",
       "dialogLabel": "Diaporama",
       "play": "Lancer le diaporama",
       "pause": "Mettre le diaporama en pause",
