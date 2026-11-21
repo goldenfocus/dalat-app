@@ -8,6 +8,7 @@ import { RentalOwnerStatCounts } from "@/components/rentals/owner-stat-counts";
 import type { Locale } from "@/lib/i18n/routing";
 import { buildAlternates } from "@/lib/metadata";
 import { rentalColumns, rentalId, type RentalListing } from "@/lib/rentals/data";
+import { rentalListingPath } from "@/lib/rentals/urls";
 import { readRentalOwnerStats } from "@/lib/rentals/stats-server";
 import { createClient } from "@/lib/supabase/server";
 
@@ -55,7 +56,7 @@ export default async function RentalListingStats({ params }: Props) {
   return <main className="mx-auto max-w-2xl space-y-5 px-4 py-6">
     <nav aria-label={t("stats")} className="flex flex-wrap gap-4">
       <RentalLocaleLink locale={locale} href="/rentals/stats" className="inline-flex min-h-11 items-center text-sm underline">{t("stats")}</RentalLocaleLink>
-      <RentalLocaleLink locale={locale} href={`/rentals/listing/${id}`} className="inline-flex min-h-11 items-center text-sm underline">{t("viewListing")}</RentalLocaleLink>
+      <RentalLocaleLink locale={locale} href={rentalListingPath(listing as RentalListing)} className="inline-flex min-h-11 items-center text-sm underline">{t("viewListing")}</RentalLocaleLink>
     </nav>
     <h1 data-rentals-title className="break-words text-4xl">{listing.title}</h1>
     {stats ? <>

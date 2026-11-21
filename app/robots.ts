@@ -23,6 +23,12 @@ export default function robots(): MetadataRoute.Robots {
     "/organizer/",
     "/protected/",
     "/settings/",
+    "/rentals/new",
+    "/rentals/stats",
+    "/rentals/viewings/",
+    "/rentals/listing/*/stats",
+    "/rentals/listing/*/tour",
+    "/rentals/listing/*/directions",
     "/invite/", // Private invite links
   ];
 

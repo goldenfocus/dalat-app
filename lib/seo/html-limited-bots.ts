@@ -4,6 +4,6 @@ import { HTML_LIMITED_BOT_UA_RE } from "next/dist/shared/lib/router/utils/html-b
 // These visitors receive complete metadata in <head>; normal browsers retain streaming.
 // This is rendering compatibility only, never an authorization or WAF allow rule.
 export const searchHtmlLimitedBots = new RegExp(
-  `${HTML_LIMITED_BOT_UA_RE.source}|Googlebot|OAI-SearchBot|ChatGPT-User|Claude-SearchBot|Claude-User|PerplexityBot|Perplexity-User`,
+  `${HTML_LIMITED_BOT_UA_RE.source}|Googlebot|OAI-SearchBot|ChatGPT-User|Claude-SearchBot|Claude-User|PerplexityBot|Perplexity-User|GPTBot|ClaudeBot|Bravebot|Amazonbot|FacebookBot|meta-externalagent|Bytespider|cohere-ai`,
   "i",
 );

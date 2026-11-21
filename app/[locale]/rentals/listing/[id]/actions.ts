@@ -1,10 +1,13 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import { redirect, type Locale } from "@/lib/i18n/routing";
 import { rentalId } from "@/lib/rentals/data";
+import { rentalListingPath } from "@/lib/rentals/urls";
+import { notifyRentalSearch } from "@/lib/seo/indexnow-rentals";
 import { createClient } from "@/lib/supabase/server";
 
 export async function publishSavedRental(form: FormData) {
@@ -17,10 +20,15 @@ export async function publishSavedRental(form: FormData) {
   const { data: { user } } = await db.auth.getUser();
   if (!user) notFound();
   const { data, error } = await db.from("rental_listings").update({ status })
-    .eq("id", id.data).eq("host_id", user.id).select("id").maybeSingle();
+    .eq("id", id.data).eq("host_id", user.id).select("id,slug,status").maybeSingle();
   revalidatePath("/[locale]/rentals", "page");
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
-  redirect({ href: data && !error ? path : path + "?error=1", locale });
+  if (data?.slug && !error) {
+    revalidatePath("/sitemap.xml");
+    const { id: savedId, status, slug } = data;
+    after(() => notifyRentalSearch(db, savedId, status === "draft" ? slug : undefined));
+  }
+  redirect({ href: data && !error ? rentalListingPath(data) : path + "?error=1", locale });
 }
 
 export async function deleteSavedRental(id: string): Promise<"active" | "failed"> {

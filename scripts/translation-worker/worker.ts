@@ -14,6 +14,7 @@ import {
   TRANSLATE_SYSTEM,
   translationTokensMismatch,
 } from "../../lib/google-translate";
+import { notifyRentalSearch } from "../../lib/seo/indexnow-rentals";
 import { notifyEventTranslationCompletion } from "../../lib/seo/indexnow-events";
 import { cliJson } from "./cli";
 import { RetrySchedule } from "./retry-schedule";
@@ -475,6 +476,8 @@ async function processRow(
   );
   if (def.type === "event")
     await notifyEventTranslationCompletion(admin, [row.id]);
+  if (def.type === "rental")
+    await notifyRentalSearch(admin, row.id);
   console.log(
     `[translation] ${tag}: reviewed and saved ${missing.length} locales`,
   );

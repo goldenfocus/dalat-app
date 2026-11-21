@@ -23,6 +23,12 @@ import {
   venueSearchModifiedAt,
 } from "@/lib/venues/search-indexing";
 
+import { safeRentalPhoto } from "@/lib/rentals/data";
+import { rentalListingPath } from "@/lib/rentals/urls";
+import {
+  fetchRentalSearchSources, fetchRentalSearchTranslations, rentalSearchLocales, rentalSearchModifiedAt,
+} from "@/lib/rentals/search-indexing";
+
 const MAX_SITEMAP_URLS = 50_000;
 const MAX_SITEMAP_BYTES = 50 * 1024 * 1024;
 
@@ -259,6 +265,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/news", priority: 0.8, changeFrequency: "hourly" as const },
     { path: "/map", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/calendar", priority: 0.8, changeFrequency: "daily" as const },
+    { path: "/rentals", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/venues", priority: 0.8, changeFrequency: "daily" as const },
     { path: "/festivals", priority: 0.8, changeFrequency: "weekly" as const },
     { path: "/dating", priority: 0.8, changeFrequency: "weekly" as const },
@@ -567,6 +574,34 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }),
       ),
     );
+  }
+
+  // Use the same visibility and language readiness as the listing's canonical metadata.
+  try {
+    const rentals = await fetchRentalSearchSources(supabase);
+    const translations = await fetchRentalSearchTranslations(supabase, rentals.map(listing => listing.id))
+      .catch(error => {
+        console.error("[sitemap] Rental translations unavailable:", error);
+        return [];
+      });
+    const byListing = new Map<string, typeof translations>();
+    for (const translation of translations) {
+      const rows = byListing.get(translation.content_id) ?? [];
+      rows.push(translation);
+      byListing.set(translation.content_id, rows);
+    }
+    for (const listing of rentals) {
+      const rows = byListing.get(listing.id) ?? [];
+      const images = [...new Set(listing.photos.filter(safeRentalPhoto))]
+        .map(photo => new URL(photo, "https://dalat.app").href);
+      sitemapEntries.push(...rentalSearchLocales(listing, rows).map(locale =>
+        localeEntry(locale, rentalListingPath(listing), {
+          lastModified: rentalSearchModifiedAt(listing, locale, rows), images,
+        }),
+      ));
+    }
+  } catch (error) {
+    console.error("[sitemap] Rentals unavailable:", error);
   }
 
   // Add tribes (discoverable only; secret/unlisted tribes are noindex'd)

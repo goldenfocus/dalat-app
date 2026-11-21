@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Script from "next/script";
 import { ThemeProvider } from "next-themes";
-import { getMessages, setRequestLocale } from "next-intl/server";
+import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { GlobalFooter } from "@/components/global-footer";
 import { ScrollRestorationProvider } from "@/lib/contexts/scroll-restoration-context";
 import { routing, buildLocales, type Locale } from "@/lib/i18n/routing";
@@ -97,7 +97,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Ship only shell/homepage namespaces in the first RSC payload.
   // ProgressiveIntlProvider merges route-level islands on demand (never idle full-dict on home).
   // Full CLIENT_NAMESPACES list still enforced by scripts/check-client-namespaces.mjs.
-  const messages = await getMessages();
+  const [messages, rentals] = await Promise.all([getMessages(), getTranslations("rentalsPilot")]);
   const coreMessages = Object.fromEntries(
     CORE_CLIENT_NAMESPACES.filter((ns) => {
       if (ns in messages) return true;
@@ -155,7 +155,7 @@ export default async function LocaleLayout({ children, params }: Props) {
               <MobileBottomNav />
               <DeferredUploadFAB />
               <DeferredUploadNotifications />
-              <GlobalFooter />
+              <GlobalFooter rentalsLabel={rentals("title")} />
               <DeferredGodModeIndicator />
             </div>
           </ScrollRestorationProvider>

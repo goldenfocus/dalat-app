@@ -7,7 +7,7 @@ export async function ownerRentalDirections(id: string) {
   const db = await createClient();
   const { data: { user } } = await db.auth.getUser();
   if (!user) notFound();
-  const { data: listing } = await db.from("rental_listings").select("id,title").eq("id", id).eq("host_id", user.id).maybeSingle();
+  const { data: listing } = await db.from("rental_listings").select("id,title,slug,status").eq("id", id).eq("host_id", user.id).maybeSingle();
   if (!listing) notFound();
   return { db, listing };
 }

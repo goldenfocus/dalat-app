@@ -3,11 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { getLocale } from "next-intl/server";
 import { redirect, type Locale } from "@/lib/i18n/routing";
+import { rentalListingPath } from "@/lib/rentals/urls";
 import { rentalDirectionsSchema } from "@/lib/rentals/directions";
 import { ownerRentalDirections } from "./owner";
 
 export async function saveRentalDirections(id: string, form: FormData) {
-  const { db } = await ownerRentalDirections(id);
+  const { db, listing } = await ownerRentalDirections(id);
   const locale = await getLocale() as Locale;
   const path = "/rentals/listing/" + id;
   const fields = rentalDirectionsSchema.safeParse({
@@ -17,5 +18,5 @@ export async function saveRentalDirections(id: string, form: FormData) {
   if (!fields.success) return redirect({ href: path + "/directions?error=links", locale });
   const { data, error } = await db.from("rental_directions").upsert({ listing_id: id, ...fields.data }).select("listing_id").maybeSingle();
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
-  redirect({ href: data && !error ? path : path + "/directions?error=1", locale });
+  redirect({ href: data && !error ? rentalListingPath(listing) : path + "/directions?error=1", locale });
 }
