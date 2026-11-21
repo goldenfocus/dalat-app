@@ -123,7 +123,7 @@ export function DalatSearch({
           <input autoFocus type="search" value={query} maxLength={120}
             aria-label={t("search.globalPlaceholder")} placeholder={t("search.globalPlaceholder")}
             aria-controls={id + "-results"} autoComplete="off"
-            className="min-w-0 flex-1 bg-transparent py-3 text-base outline-none"
+            className="min-w-0 flex-1 bg-transparent py-3 text-base outline-none [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden"
             onChange={event => { setQuery(event.target.value); setHighlight(-1); }}
             onKeyDown={event => {
               if (event.nativeEvent.isComposing) return;
