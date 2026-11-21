@@ -83,6 +83,8 @@ interface LocalizedMetadataOptions {
   description: string;
   /** OG image URL (optional, defaults to site OG image) */
   image?: string;
+  /** Ordered preview images. The first is also used for the X card. */
+  socialImages?: { url: string; alt: string; type?: string }[];
   /** OG type (default: "website") */
   type?: "website" | "article" | "profile";
   /** Disable title suffix (e.g., for homepage) */
@@ -108,6 +110,7 @@ export function generateLocalizedMetadata({
   title,
   description,
   image,
+  socialImages,
   type = "website",
   noTitleSuffix = false,
   keywords = [],
@@ -126,6 +129,7 @@ export function generateLocalizedMetadata({
 
   // OG image with fallback
   const ogImage = image || DEFAULT_OG_IMAGE;
+  const featuredImage = socialImages?.[0];
 
   const metadata: Metadata = {
     title: formattedTitle,
@@ -147,7 +151,7 @@ export function generateLocalizedMetadata({
       url: canonicalUrl,
       siteName: SITE_NAME,
       locale: locale,
-      images: [
+      images: featuredImage ? socialImages : [
         {
           url: ogImage,
           width: 1200,
@@ -164,10 +168,10 @@ export function generateLocalizedMetadata({
 
     // Twitter
     twitter: {
-      card: image ? "summary_large_image" : "summary",
+      card: featuredImage || image ? "summary_large_image" : "summary",
       title,
       description,
-      images: [ogImage],
+      images: featuredImage ? [{ url: featuredImage.url, alt: featuredImage.alt }] : [ogImage],
     },
 
     // Robots

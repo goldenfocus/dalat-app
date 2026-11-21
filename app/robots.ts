@@ -27,8 +27,8 @@ export default function robots(): MetadataRoute.Robots {
   ];
 
   // Root-only technical routes (never locale-prefixed)
-  // Google needs JS/CSS to render pages. Keep private APIs excluded, with the
-  // public attributed Places image proxy explicitly crawlable for image search.
+  // Google needs JS/CSS to render pages. Keep private APIs excluded, with public
+  // media endpoints explicitly crawlable for link previews and image search.
   const technicalRoutes = ["/api/"];
 
   const disallow = [
@@ -43,7 +43,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: ["/", "/api/places/photo"],
+        allow: ["/", "/api/places/photo", "/api/rentals/photos/"],
         disallow,
       },
     ],

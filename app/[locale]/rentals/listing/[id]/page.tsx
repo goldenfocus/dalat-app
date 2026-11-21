@@ -44,15 +44,34 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id, locale } = await params;
   const { listing, title, description } = await readListing(id, locale);
   const path = "/rentals/listing/" + id;
-  const t = await getTranslations({ locale, namespace: "rentalsPilot" });
   if (listing.status !== "published") {
+    const t = await getTranslations({ locale, namespace: "rentalsPilot" });
     return { title: t("unlisted"), alternates: buildAlternates(locale, path), robots: { index: false, follow: false },
       openGraph: null, twitter: null };
   }
-  const cover = listing.photos.find(safeRentalPhoto);
+
+  const [t, details] = await Promise.all([
+    getTranslations({ locale, namespace: "rentalsPilot" }),
+    getTranslations({ locale, namespace: "rentalsDetails" }),
+  ]);
+  const currency = new Intl.NumberFormat(locale, { style: "currency", currency: "VND" });
+  const offer = [details(listing.offer_type)];
+  if (listing.offer_type !== "sale" && listing.monthly_rent !== null) {
+    offer.push(`${t("monthly")} ${currency.format(listing.monthly_rent)}`);
+  }
+  if (listing.offer_type !== "rent") {
+    offer.push(listing.sale_price === null ? details("priceOnRequest") : `${details("salePrice")} ${currency.format(listing.sale_price)}`);
+  }
+  const listingCopy = description.replace(/\s+/g, " ").trim();
+  const previewCopy = Array.from([...offer, listingCopy].filter(Boolean).join(" · "));
+  const socialImages = [...new Set(listing.photos.filter(safeRentalPhoto))].slice(0, 4).map((photo, index) => ({
+    url: new URL(photo, "https://dalat.app").href,
+    alt: index === 0 ? title : `${title} · ${t("photos")} ${index + 1}`,
+    type: "image/webp",
+  }));
   return generateLocalizedMetadata({
-    locale, path, title, description: description || t("intro"), index: false,
-    image: cover ? new URL(cover, "https://dalat.app").href : undefined,
+    locale, path, title, index: false, socialImages,
+    description: previewCopy.length > 220 ? previewCopy.slice(0, 219).join("").trimEnd() + "…" : previewCopy.join(""),
   });
 }
 

@@ -5,6 +5,7 @@ vi.mock("@/lib/i18n/routing", () => ({
 }));
 
 import {
+  generateLocalizedMetadata,
   generateMomentMetadata,
   buildAlternates,
   localeUrl,
@@ -48,6 +49,21 @@ describe("localized metadata URLs", () => {
   });
 });
 
+
+it("preserves the Open Graph image order and uses the lead image for the large X card", () => {
+  const cover = { url: "https://dalat.app/front.webp", alt: "Garden house", type: "image/webp" };
+  const inside = { url: "https://dalat.app/kitchen.webp", alt: "Kitchen", type: "image/webp" };
+  const metadata = generateLocalizedMetadata({
+    locale: "vi", path: "/rentals/listing/house", title: "Garden house", description: "Cho thuê",
+    socialImages: [cover, inside],
+  });
+
+  expect(metadata.openGraph?.images).toEqual([cover, inside]);
+  expect(metadata.twitter).toMatchObject({
+    card: "summary_large_image",
+    images: [{ url: cover.url, alt: cover.alt }],
+  });
+});
 
 describe("localized moment previews", () => {
   it("uses localized title and empty-caption fallback throughout social metadata", () => {
