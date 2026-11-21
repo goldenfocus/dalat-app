@@ -8,7 +8,7 @@ import { pilotListingId, safeRentalPhoto, rentalColumns, type RentalListing, typ
 import { AvailabilityEditor, type SavedViewingTime } from "@/components/rentals/availability-editor";
 import { RentalBrowseControls } from "@/components/rentals/browse-controls";
 import { RentalBrowseListing } from "@/components/rentals/browse-listing";
-import { matchesRental, rentalBrowseHref, rentalDiscovery } from "@/lib/rentals/discovery";
+import { matchesRental, readRentalRoomMinimums, rentalBrowseHref, rentalDiscovery } from "@/lib/rentals/discovery";
 import { readRentalSlots } from "@/lib/rentals/read-slots";
 
 function requestTime() {
@@ -17,7 +17,10 @@ function requestTime() {
 
 type Props = {
   params: Promise<{ locale: Locale }>;
-  searchParams: Promise<{ viewing?: string; error?: string; q?: string | string[]; filter?: string | string[]; browse?: string }>;
+  searchParams: Promise<{
+    viewing?: string; error?: string; q?: string | string[]; filter?: string | string[]; browse?: string;
+    bedrooms?: string | string[]; bathrooms?: string | string[];
+  }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -66,10 +69,13 @@ export default async function RentalsPage({ params, searchParams }: Props) {
     .sort((a, b) => a.label.localeCompare(b.label, locale));
   const query = typeof feedback.q === "string" ? feedback.q.trim().slice(0, 120) : "";
   const availableFilterKeys = new Set(filters.map(fact => fact.key));
-  const selected = [...new Set([feedback.filter ?? []].flat())]
+  const requestedFilters = [feedback.filter ?? []].flat();
+  const minimums = readRentalRoomMinimums(feedback, requestedFilters);
+  const selected = [...new Set(requestedFilters)]
     .filter(key => availableFilterKeys.has(key)).slice(0, 50);
   const tours = feedback.browse === "tours";
-  const matching = catalog.filter(({ discovery }) => matchesRental(discovery, query, selected)).map(({ listing }) => listing);
+  const hasFilters = Boolean(query || selected.length || minimums.bedrooms || minimums.bathrooms);
+  const matching = catalog.filter(({ discovery }) => matchesRental(discovery, query, selected, minimums)).map(({ listing }) => listing);
   const visible = tours ? matching.filter(listing => listing.id === pilotListingId || listing.photos.some(safeRentalPhoto) || listing.videos.length > 0)
     : [...matching, ...(listings || []).filter(l => l.status === "draft" && l.host_id === user?.id)];
   return (
@@ -80,11 +86,12 @@ export default async function RentalsPage({ params, searchParams }: Props) {
       </header>
       {(listingResult.error || feedback.error) && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
       {feedback.viewing && <p role="status" className="rounded-lg border border-primary p-3">{t("requested")}</p>}
-      {publishedListings.length > 0 && <RentalBrowseControls locale={locale} query={query} selected={selected} tours={tours} filters={filters} />}
+      {publishedListings.length > 0 && <RentalBrowseControls locale={locale} query={query} selected={selected}
+        tours={tours} filters={filters} minimums={minimums} roomCounts={catalog.map(({ discovery }) => discovery.rooms)} />}
       {listings && visible.length === 0 && (
         <div className="space-y-2">
-          <p>{query || selected.length ? t("noMatches") : t(tours ? "noTours" : "empty")}</p>
-          {(query || selected.length > 0) && <a href={getPathname({ locale, href: rentalBrowseHref("", [], tours) })} className={secondary}>{t("clearFilters")}</a>}
+          <p>{hasFilters ? t("noMatches") : t(tours ? "noTours" : "empty")}</p>
+          {hasFilters && <a href={getPathname({ locale, href: rentalBrowseHref("", [], tours) })} className={secondary}>{t("clearFilters")}</a>}
         </div>
       )}
       <div className={tours ? "space-y-5" : "grid gap-4 sm:grid-cols-2"}>

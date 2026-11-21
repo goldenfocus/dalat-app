@@ -4724,6 +4724,8 @@
     "searchRentals": "Buscar alquileres",
     "filters": "Filtros",
     "filterRooms": "Estancias",
+    "roomMinimumAny": "Cualquiera",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Aplicar filtros",
     "clearFilters": "Borrar filtros",
     "noMatches": "No hay alquileres que coincidan con tu búsqueda",

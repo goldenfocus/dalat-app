@@ -4724,6 +4724,8 @@
     "searchRentals": "Search rentals",
     "filters": "Filters",
     "filterRooms": "Rooms",
+    "roomMinimumAny": "Any",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Apply filters",
     "clearFilters": "Clear filters",
     "noMatches": "No rentals match your search",

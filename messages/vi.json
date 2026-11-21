@@ -4724,6 +4724,8 @@
     "searchRentals": "Tìm nhà cho thuê",
     "filters": "Bộ lọc",
     "filterRooms": "Phòng",
+    "roomMinimumAny": "Bất kỳ",
+    "roomMinimumCount": "{count, number} trở lên",
     "applyFilters": "Áp dụng bộ lọc",
     "clearFilters": "Xóa bộ lọc",
     "noMatches": "Không tìm thấy nhà cho thuê phù hợp",

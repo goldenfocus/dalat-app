@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { RentalListing } from "./data";
-import { matchesRental, rentalDiscovery } from "./discovery";
+import { matchesRental, readRentalRoomMinimums, rentalBrowseHref, rentalDiscovery } from "./discovery";
 
 const listing: RentalListing = {
   id: "listing",
@@ -43,5 +43,33 @@ describe("rental discovery", () => {
     for (const query of ["electricity", "chauffage", "sauna", "dogs", "chaussures"]) {
       expect(matchesRental(result, query, [])).toBe(false);
     }
+  });
+
+  it("applies both room minimums and includes unreported counts when there is no minimum", () => {
+    const rooms = rentalDiscovery({ ...listing, details: {
+      rooms: { bedrooms: 3, bathrooms: 2, livingRooms: 1 },
+      custom: [{ group: "rooms", label: "Study", count: 1 }],
+    } }, new Map([["tags", '["Bureau"]']]), key => key);
+    const studio = rentalDiscovery({ ...listing, details: { rooms: { bedrooms: 0, bathrooms: 1 } } }, undefined, key => key);
+    const unreported = rentalDiscovery(listing, undefined, key => key);
+
+    expect(matchesRental(rooms, "", [], { bedrooms: 2, bathrooms: 2 })).toBe(true);
+    expect(matchesRental(rooms, "", [], { bedrooms: 3 })).toBe(true);
+    expect(matchesRental(rooms, "", [], { bedrooms: 2, bathrooms: 3 })).toBe(false);
+    expect(matchesRental(studio, "", [], { bathrooms: 1 })).toBe(true);
+    expect(matchesRental(studio, "", [], { bedrooms: 1 })).toBe(false);
+    expect(matchesRental(unreported, "", [])).toBe(true);
+    expect(matchesRental(unreported, "", [], { bathrooms: 1 })).toBe(false);
+    expect(matchesRental(rooms, "bureau", [])).toBe(true);
+    expect(rooms.filters).toEqual([]);
+  });
+
+  it("retains room minimums in browse links and supports legacy bedroom and bathroom links", () => {
+    const minimums = readRentalRoomMinimums({ bedrooms: "3" }, ["rooms:bedrooms", "rooms:bathrooms"]);
+    expect(minimums).toEqual({ bedrooms: 3, bathrooms: 1 });
+    expect(rentalBrowseHref("hilltop", ["amenities:wifi"], true, minimums))
+      .toBe("/rentals?q=hilltop&filter=amenities%3Awifi&bedrooms=3&bathrooms=1&browse=tours");
+    expect(readRentalRoomMinimums({ bedrooms: "1000", bathrooms: ["1", "2"] }, [])).toEqual({});
+    expect(readRentalRoomMinimums({ bedrooms: "", bathrooms: "0" }, [])).toEqual({});
   });
 });

@@ -4724,6 +4724,8 @@
     "searchRentals": "ค้นหาที่พักให้เช่า",
     "filters": "ตัวกรอง",
     "filterRooms": "ห้อง",
+    "roomMinimumAny": "ไม่จำกัด",
+    "roomMinimumCount": "{count, number} ขึ้นไป",
     "applyFilters": "ใช้ตัวกรอง",
     "clearFilters": "ล้างตัวกรอง",
     "noMatches": "ไม่พบที่พักให้เช่าที่ตรงกับการค้นหา",

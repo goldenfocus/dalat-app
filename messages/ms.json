@@ -4724,6 +4724,8 @@
     "searchRentals": "Cari rumah sewa",
     "filters": "Penapis",
     "filterRooms": "Bilik",
+    "roomMinimumAny": "Sebarang",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Gunakan penapis",
     "clearFilters": "Kosongkan penapis",
     "noMatches": "Tiada rumah sewa yang sepadan",

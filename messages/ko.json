@@ -4724,6 +4724,8 @@
     "searchRentals": "임대 매물 검색",
     "filters": "필터",
     "filterRooms": "방",
+    "roomMinimumAny": "상관없음",
+    "roomMinimumCount": "{count, number}개 이상",
     "applyFilters": "필터 적용",
     "clearFilters": "필터 해제",
     "noMatches": "검색 조건에 맞는 매물이 없습니다",

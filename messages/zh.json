@@ -4724,6 +4724,8 @@
     "searchRentals": "搜索出租房源",
     "filters": "筛选",
     "filterRooms": "房间",
+    "roomMinimumAny": "不限",
+    "roomMinimumCount": "{count, number}间及以上",
     "applyFilters": "应用筛选",
     "clearFilters": "清除筛选",
     "noMatches": "没有符合条件的出租房源",

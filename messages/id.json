@@ -4724,6 +4724,8 @@
     "searchRentals": "Cari properti sewa",
     "filters": "Filter",
     "filterRooms": "Ruangan",
+    "roomMinimumAny": "Bebas",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Terapkan filter",
     "clearFilters": "Hapus filter",
     "noMatches": "Tidak ada properti sewa yang sesuai",

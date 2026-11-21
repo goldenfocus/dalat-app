@@ -4724,6 +4724,8 @@
     "searchRentals": "賃貸物件を検索",
     "filters": "絞り込み",
     "filterRooms": "部屋",
+    "roomMinimumAny": "指定なし",
+    "roomMinimumCount": "{count, number}以上",
     "applyFilters": "条件を適用",
     "clearFilters": "条件をクリア",
     "noMatches": "条件に合う賃貸物件がありません",

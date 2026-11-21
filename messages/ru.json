@@ -4724,6 +4724,8 @@
     "searchRentals": "Поиск жилья в аренду",
     "filters": "Фильтры",
     "filterRooms": "Комнаты",
+    "roomMinimumAny": "Любое",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Применить фильтры",
     "clearFilters": "Сбросить фильтры",
     "noMatches": "Подходящих объявлений нет",

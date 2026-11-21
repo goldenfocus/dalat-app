@@ -4724,6 +4724,8 @@
     "searchRentals": "Mietobjekte suchen",
     "filters": "Filter",
     "filterRooms": "Räume",
+    "roomMinimumAny": "Beliebig",
+    "roomMinimumCount": "{count, number}+",
     "applyFilters": "Filter anwenden",
     "clearFilters": "Filter zurücksetzen",
     "noMatches": "Keine passenden Mietobjekte",
