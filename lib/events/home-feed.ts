@@ -1,3 +1,5 @@
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
+import { isDiscoveryDuplicate } from "@/lib/events/listing";
 import { cache } from "react";
 import { getCachedEventsByLifecycle } from "@/lib/cache/server-cache";
 import { takeSoonestEventPerVenue } from "@/lib/events/one-per-venue";
@@ -30,12 +32,21 @@ export interface HomeFeed {
 export const getHomeFeed = cache(
   async (hasHappening: boolean): Promise<HomeFeed> => {
     // Over-fetch, then keep one soonest event per venue before the slot limit.
-    const [happeningCandidates, upcomingCandidates] = await Promise.all([
+    const [rawHappening, rawUpcoming] = await Promise.all([
       hasHappening
         ? getCachedEventsByLifecycle("happening", HOME_FEED_CANDIDATE_LIMIT)
         : Promise.resolve([]),
       getCachedEventsByLifecycle("upcoming", HOME_FEED_CANDIDATE_LIMIT),
     ]);
+
+    const happeningCandidates = rawHappening.filter((event) =>
+      !isDiscoveryDuplicate(event.source_metadata) &&
+      !hasLamVienTbdSchedule(event.source_metadata));
+    const upcomingCandidates = [...new Map(
+      [...rawHappening.filter((event) => hasLamVienTbdSchedule(event.source_metadata)), ...rawUpcoming]
+        .filter((event) => !isDiscoveryDuplicate(event.source_metadata))
+        .map((event) => [event.id, event]),
+    ).values()].sort((a, b) => Date.parse(a.starts_at) - Date.parse(b.starts_at));
 
     const happeningPick = takeSoonestEventPerVenue(
       happeningCandidates,

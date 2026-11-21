@@ -67,6 +67,22 @@ describe("getHomeFeed", () => {
     );
   });
 
+  it("moves date-only notices out of the live feed and omits a tagged copy", async () => {
+    const race = {
+      ...event("official-race", 10),
+      source_metadata: { schedule_policy: "lam_vien_date_known_time_tbd" },
+    };
+    const duplicate = {
+      ...event("other-record", 11),
+      source_metadata: { discovery_duplicate_of: race.id },
+    };
+    serve([race, duplicate], [race, duplicate, event("other-event", 12)]);
+    const result = await getHomeFeed(true);
+    expect(result.featured).toMatchObject({ live: false, event: { id: race.id } });
+    expect(result.happeningEvents).toHaveLength(0);
+    expect(result.upcomingEvents.map(({ id }) => id)).toEqual(["other-event"]);
+  });
+
   it("has no featured event and no hidden rows on an empty calendar", async () => {
     serve([], []);
     const feed = await getHomeFeed(false);

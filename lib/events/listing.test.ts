@@ -28,6 +28,18 @@ describe("Events listing lifecycle", () => {
     expect(groups.slice(0, 24)[0].event.id).toBe("live");
     expect(groups).toHaveLength(31);
   });
+  it("keeps date-only official notices out of Live and hides only the tagged duplicate", () => {
+    const race = {
+      ...event("official-race", "2026-11-04T10:00:00Z", "2026-11-05T16:59:59Z"),
+      source_metadata: { schedule_policy: "lam_vien_date_known_time_tbd" },
+    };
+    const copy = {
+      ...race, id: "other-record", source_metadata: { ...race.source_metadata, discovery_duplicate_of: race.id },
+    };
+    expect(eventListingLifecycle(race, now)).toBe("upcoming");
+    expect(eventListingLifecycle(race, new Date(race.ends_at!))).toBeNull();
+    expect(groupActiveEventChoices([race, copy], now).map(({ event }) => event.id)).toEqual([race.id]);
+  });
   it("queries explicit long-running ends as well as short missing-end fallbacks", () => {
     expect(activeEventListingFilter(now)).toBe("starts_at.gt.2026-11-04T11:30:00.000Z,ends_at.gt.2026-11-04T11:30:00.000Z,and(ends_at.is.null,starts_at.gt.2026-11-04T07:30:00.000Z)");
   });
