@@ -1,15 +1,27 @@
+import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { groupRecurringChoices, type RecurringChoiceEvent } from "./recurring-choices";
 
 const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
-type ListingEvent = RecurringChoiceEvent & { ends_at?: string | null };
+type ListingEvent = RecurringChoiceEvent & {
+  ends_at?: string | null;
+  source_metadata?: Record<string, unknown> | null;
+};
+
+/** An editorial duplicate stays published at its own URL for existing attendees. */
+export function isDiscoveryDuplicate(metadata?: Record<string, unknown> | null): boolean {
+  return typeof metadata?.discovery_duplicate_of === "string" &&
+    metadata.discovery_duplicate_of.trim().length > 0;
+}
 
 /** Match the lifecycle feed: explicit end time, otherwise four hours. */
 export function eventListingLifecycle(event: ListingEvent, now: Date): "live" | "upcoming" | null {
+  if (isDiscoveryDuplicate(event.source_metadata)) return null;
   const start = Date.parse(event.starts_at);
   if (!Number.isFinite(start)) return null;
   if (start > now.getTime()) return "upcoming";
   const end = event.ends_at ? Date.parse(event.ends_at) : start + FOUR_HOURS_MS;
-  return end > now.getTime() ? "live" : null;
+  if (!(end > now.getTime())) return null;
+  return hasLamVienTbdSchedule(event.source_metadata) ? "upcoming" : "live";
 }
 
 /** Select active rows before grouping/pagination so a live date represents its series. */
