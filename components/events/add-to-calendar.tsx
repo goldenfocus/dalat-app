@@ -130,7 +130,8 @@ function downloadICS(props: AddToCalendarProps) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  // Keep the file available while the browser hands the download off.
+  setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
 interface AddToCalendarComponentProps extends AddToCalendarProps {
@@ -159,7 +160,7 @@ export function AddToCalendar({ inModal, ...props }: AddToCalendarComponentProps
             {t("googleCalendar")}
           </a>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => downloadICS(props)}>
+        <DropdownMenuItem onSelect={() => downloadICS(props)}>
           {t("appleOutlook")}
         </DropdownMenuItem>
         {props.seriesSlug && (
