@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Maximize2, Play } from "lucide-react";
+import { trackRentalMedia } from "@/lib/rentals/stats-client";
 import { openListingMedia } from "./gallery-viewer";
 import "./gallery-viewer.css";
 
@@ -9,11 +10,12 @@ type Captions = { src: string; locale: string; label: string };
 export type RentalGalleryItem = { kind: "photo" | "video"; src: string; label: string; poster?: string; captions?: Captions; stream?: boolean };
 type Labels = { close: string; previous: string; next: string; reset: string; play: string; pause: string; mute: string; unmute: string; unavailable: string; processing: string };
 
-export function RentalGallery({ items, labels, title, videoTitle }: {
+export function RentalGallery({ items, labels, title, videoTitle, statsListingId }: {
   items: RentalGalleryItem[];
   labels: Labels;
   title: string;
   videoTitle: string;
+  statsListingId?: string;
 }) {
   const [selected, setSelected] = useState<string>();
   const closeViewer = useRef<(() => void) | null>(null);
@@ -26,6 +28,7 @@ export function RentalGallery({ items, labels, title, videoTitle }: {
   const currentIndex = Math.max(0, gallery.findIndex(item => item.kind === "photo" && item.src === selected));
   const current = gallery[currentIndex];
   const open = (position: number, opener: HTMLButtonElement) => {
+    if (statsListingId) trackRentalMedia(statsListingId, gallery[position].src);
     closeViewer.current?.();
     closeViewer.current = openListingMedia(gallery, position, opener, labels);
   };
@@ -50,7 +53,11 @@ export function RentalGallery({ items, labels, title, videoTitle }: {
           const thumbnail = video ? item.poster : item.src;
           return <button key={item.src + ":" + index} type="button" aria-label={item.label}
             aria-haspopup={video ? "dialog" : undefined} aria-pressed={video ? undefined : index === currentIndex}
-            onClick={event => video ? open(index, event.currentTarget) : setSelected(item.src)}
+            onClick={event => {
+              if (video) return open(index, event.currentTarget);
+              if (statsListingId) trackRentalMedia(statsListingId, item.src);
+              setSelected(item.src);
+            }}
             className="relative h-20 w-24 shrink-0 snap-start overflow-hidden rounded-[10px] border-2 border-transparent bg-muted aria-pressed:border-primary sm:w-28">
             {thumbnail && <img src={thumbnail} alt="" draggable={false} loading="lazy"
               onError={event => { event.currentTarget.hidden = true; }}

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { X, Download, HelpCircle } from "lucide-react";
 import { useInstallPrompt } from "@/lib/hooks/use-install-prompt";
+import { usePathname } from "@/lib/i18n/routing";
 import { InstallInstructionsModal } from "./install-instructions-modal";
 import { Button } from "@/components/ui/button";
 
@@ -15,6 +16,13 @@ import { Button } from "@/components/ui/button";
  * - Doesn't show if app is already installed (standalone mode)
  */
 export function InstallAppBanner() {
+  const pathname = usePathname();
+  // Rentals already hides the banner. Skip mounting it so it cannot intercept the native prompt.
+  if (pathname === "/rentals" || pathname.startsWith("/rentals/")) return null;
+  return <MobileInstallAppBanner />;
+}
+
+function MobileInstallAppBanner() {
   const t = useTranslations("install.banner");
   const {
     installState,

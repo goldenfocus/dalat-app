@@ -106,6 +106,7 @@ export type TranslationFieldName =
   | "photos"
   | "sponsorship"
   | "tags"
+  | "tour_captions"
   | "help_offered"
   | "help_wanted"
   | "title"

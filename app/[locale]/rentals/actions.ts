@@ -8,23 +8,20 @@ import { locales, redirect } from "@/lib/i18n/routing";
 import { rentalId, rentalOfferTypes, safeRentalPhoto } from "@/lib/rentals/data";
 import { availabilityTimes } from "@/lib/rentals/calendar";
 import { readRentalDetails } from "@/lib/rentals/details";
+import { readRentalLeaseTerms } from "@/lib/rentals/lease";
 import { rentalVideoId } from "@/lib/rentals/video";
 import { createClient } from "@/lib/supabase/server";
 
-const price = z.coerce.number().int().min(1).max(1_000_000_000);
 const listingForm = z.object({
   title: z.string().trim().min(1).max(120),
   description: z.string().trim().max(8000),
   offer_type: z.enum(rentalOfferTypes),
   sale_price: z.coerce.number().int().min(1).max(999_999_999_999_999).nullable(),
-  monthly_rent: price.nullable(),
-  six_month_rent: price.nullable(),
-  yearly_rent: price.nullable(),
   videos: z.array(rentalVideoId).optional(),
   photos: z.array(z.string().max(2048).refine(safeRentalPhoto)),
   source_locale: z.enum(locales),
   status: z.enum(["draft", "published"]),
-}).refine(fields => fields.offer_type === "sale" || fields.monthly_rent !== null);
+});
 
 async function signedIn(returnTo: string) {
   const requested = await getLocale();
@@ -47,17 +44,15 @@ export async function saveRental(form: FormData) {
     title: form.get("title"), description: form.get("description"),
     offer_type: offer,
     sale_price: offer === "rent" ? null : form.get("sale_price") || null,
-    monthly_rent: offer === "sale" ? null : form.get("monthly_rent") || null,
-    six_month_rent: offer === "sale" ? null : form.get("six_month_rent") || null,
-    yearly_rent: offer === "sale" ? null : form.get("yearly_rent") || null,
     videos: form.has("videoEditor") ? [...new Set(form.getAll("videos"))] : undefined,
     photos: String(form.get("photos") || "").split(/\r?\n/).map((url) => url.trim()).filter(Boolean),
     source_locale: form.get("source_locale"),
     status: form.get("status") === "published" ? "published" : "draft",
   });
   const details = readRentalDetails(form);
-  if (!fields.success || !details.success || form.has("uploading") || fields.data.photos.some(photo => !photo.startsWith("/api/rentals/photos/" + user.id + "/") && id.data !== "c7725f24-49f5-469f-b95f-417b7e5ec3d3")) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
-  const values = { ...fields.data, details: details.data };
+  const leaseTerms = readRentalLeaseTerms(form, offer);
+  if (!fields.success || !details.success || !leaseTerms || form.has("uploading") || fields.data.photos.some(photo => !photo.startsWith("/api/rentals/photos/" + user.id + "/") && id.data !== "c7725f24-49f5-469f-b95f-417b7e5ec3d3")) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
+  const values = { ...fields.data, ...leaseTerms, details: details.data };
   const result = id.success
     ? await db.from("rental_listings").update(values).eq("id", id.data).eq("host_id", user.id).select("id").single()
     : await db.from("rental_listings").insert(values).select("id").single();

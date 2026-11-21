@@ -5,9 +5,11 @@ import type { RentalListing } from "@/lib/rentals/data";
 import { rentalListingMedia } from "./listing-media";
 import { RentalListingPrices } from "./listing-prices";
 import { RentalTourMedia } from "./tour-media";
+import { buildRentalTour } from "@/lib/rentals/tour";
+import type { TranslationFieldName } from "@/lib/types";
 
 export async function RentalBrowseListing({ listing, strings, locale, owner, tours }: {
-  listing: RentalListing; strings?: Map<string, string>; locale: Locale; owner: boolean; tours: boolean;
+  listing: RentalListing; strings?: Map<TranslationFieldName, string>; locale: Locale; owner: boolean; tours: boolean;
 }) {
   const path = "/rentals/listing/" + listing.id;
   const title = strings?.get("title") || listing.title;
@@ -18,19 +20,23 @@ export async function RentalBrowseListing({ listing, strings, locale, owner, tou
   const photos = media.items.filter(item => item.kind === "photo");
   const clips = media.items.filter(item => item.kind === "video");
   const cover = photos[0]?.src || clips[0]?.poster;
-  if (tours && (photos.length || clips.length)) {
-    return (clips.length ? clips : [undefined]).map((clip, index) =>
-      <article key={clip?.src ?? listing.id} id={index === 0 ? "listing-" + listing.id : undefined}
-        className="mx-auto w-full max-w-2xl space-y-3 rounded-2xl border bg-card p-3">
-        <RentalTourMedia clip={clip} photos={photos} labels={media.labels} />
-        <h2 data-rentals-title className="break-words text-2xl">{title}</h2>
-        <RentalListingPrices locale={locale} listing={listing} />
+  if (tours) {
+    const slides = buildRentalTour(media.items, listing.tour_frames, strings?.get("tour_captions"));
+    if (!slides.length) return null;
+    return <article id={"listing-" + listing.id} className="mx-auto w-full max-w-2xl space-y-3 rounded-2xl border bg-card p-3">
+      <RentalTourMedia slides={slides} labels={media.labels} sourceLocale={listing.source_locale} statsListingId={!owner ? listing.id : undefined} />
+      <h2 data-rentals-title className="break-words text-2xl">{title}</h2>
+      <RentalListingPrices locale={locale} listing={listing} />
+      <div className="flex flex-wrap items-center gap-2">
         <RentalLocaleLink locale={locale} href={path} className="inline-flex min-h-11 items-center rounded-lg bg-primary px-3 font-medium text-primary-foreground">
           {t("viewListing")}
         </RentalLocaleLink>
-      </article>);
+        {owner && <RentalLocaleLink locale={locale} href={path + "/tour"} className="inline-flex min-h-11 items-center rounded-lg border px-3">
+          {t("editTour")}
+        </RentalLocaleLink>}
+      </div>
+    </article>;
   }
-  if (tours) return null;
   return <article id={"listing-" + listing.id} data-rental-unlisted={listing.status === "draft" ? "" : undefined}
     className="min-w-0 overflow-hidden rounded-2xl border bg-card">
     <RentalLocaleLink locale={locale} href={path} className="group block focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary">

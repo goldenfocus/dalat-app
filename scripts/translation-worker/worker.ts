@@ -186,15 +186,15 @@ function valid(
         translationTokensMismatch(value, result)
       )
         throw new Error(`Invalid ${locale}.${key}`);
-      if (["photos", "observations", "tags"].includes(key)) {
+      if (["photos", "observations", "tags", "tour_captions"].includes(key)) {
         const src = JSON.parse(value),
           dst = JSON.parse(result);
         if (
           !Array.isArray(dst) ||
           dst.length !== src.length ||
           dst.some((x: any, i: number) =>
-            key === "tags"
-              ? typeof x !== "string"
+            key === "tags" || key === "tour_captions"
+              ? typeof x !== "string" || (key === "tour_captions" && !x.trim())
               : !x ||
                 Object.keys(x).sort().join() !==
                   Object.keys(src[i]).sort().join(),
@@ -205,7 +205,7 @@ function valid(
       if (
         locale !== source &&
         !mixedLanguageFields &&
-        !["photos", "observations", "tags"].includes(key) &&
+        !["photos", "observations", "tags", "tour_captions"].includes(key) &&
         value.length > 100 &&
         result === value
       )

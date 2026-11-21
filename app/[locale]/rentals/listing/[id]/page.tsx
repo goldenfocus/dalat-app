@@ -10,7 +10,9 @@ import { buildAlternates, generateLocalizedMetadata, localeUrl } from "@/lib/met
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, rentalColumns, rentalId, safeRentalPhoto, type RentalListing } from "@/lib/rentals/data";
+import { rentalLeaseRates } from "@/lib/rentals/lease";
 import { readRentalSlots } from "@/lib/rentals/read-slots";
+import { RentalPublicStats } from "@/components/rentals/public-stats";
 import { RentalGallery } from "@/components/rentals/gallery";
 import { RentalListingFacts } from "@/components/rentals/listing-facts";
 import { RentalListingPrices } from "@/components/rentals/listing-prices";
@@ -56,8 +58,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   ]);
   const currency = new Intl.NumberFormat(locale, { style: "currency", currency: "VND" });
   const offer = [details(listing.offer_type)];
-  if (listing.offer_type !== "sale" && listing.monthly_rent !== null) {
-    offer.push(`${t("monthly")} ${currency.format(listing.monthly_rent)}`);
+  const rate = rentalLeaseRates(listing)[0];
+  if (rate) {
+    const label = rate.label === "leasePackage" ? t(rate.label, { count: rate.months }) : t(rate.label);
+    offer.push(`${label} ${t("rentPerMonth", { amount: currency.format(rate.amount) })}`);
   }
   if (listing.offer_type !== "rent") {
     offer.push(listing.sale_price === null ? details("priceOnRequest") : `${details("salePrice")} ${currency.format(listing.sale_price)}`);
@@ -98,6 +102,8 @@ export default async function RentalListingPage({ params, searchParams }: Props)
   return <div data-rental-unlisted={!published ? "" : undefined} className="min-h-[calc(100svh-3.5rem)] bg-background">
     <article className="mx-auto w-full min-w-0 max-w-5xl space-y-5 px-3 py-5 sm:px-8 sm:py-8">
       <div className="flex flex-wrap items-center justify-end gap-2">
+        {owner && <RentalLocaleLink locale={locale} href={path + "/stats"} className={secondary}>{t("stats")}</RentalLocaleLink>}
+        {owner && <RentalLocaleLink locale={locale} href={path + "/tour"} className={secondary}>{t("editTour")}</RentalLocaleLink>}
         {owner && <RentalLocaleLink locale={locale} href={path + "/directions"} className={secondary}>{t("directions")}</RentalLocaleLink>}
         {owner && <RentalLocaleLink locale={locale} href={`/rentals/new?id=${id}`} className={secondary}>{common("edit")}</RentalLocaleLink>}
         {published && <SharePageButton url={localeUrl(locale, path)} />}
@@ -105,10 +111,12 @@ export default async function RentalListingPage({ params, searchParams }: Props)
       <header>
         {!published && <p className="text-sm text-muted-foreground">{t("unlisted")}</p>}
         <h1 data-rentals-title className="break-words text-4xl sm:text-5xl">{title}</h1>
+        {published && <RentalPublicStats listingId={id} track={!owner} />}
       </header>
       {feedback.error && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
       <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-        <RentalGallery items={media.items} labels={media.labels} title={t("photos")} videoTitle={media.videoTitle} />
+        <RentalGallery items={media.items} labels={media.labels} title={t("photos")} videoTitle={media.videoTitle}
+          statsListingId={published && !owner ? id : undefined} />
         <div className="min-w-0 space-y-5">
           <RentalListingPrices locale={locale} listing={listing} />
           {description && <p className="break-words whitespace-pre-wrap">{description}</p>}

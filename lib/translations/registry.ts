@@ -25,7 +25,7 @@ export const TRANSLATION_SOURCES = [
   {
     type: "rental",
     table: "rental_listings",
-    fields: ["title", "description", "tags"],
+    fields: ["title", "description", "tags", "tour_captions"],
     locale: "source_locale",
     filters: [["status", "published"]],
   },
@@ -184,7 +184,7 @@ export function sourceFields(
       if (typeof value === "string")
         return value.trim() ? [[field, value]] : [];
       // Only translate prose leaves; IDs, tags, attribution and evidence remain source data.
-      if (field === "tags" && Array.isArray(value))
+      if ((field === "tags" || field === "tour_captions") && Array.isArray(value))
         return value.length ? [[field, JSON.stringify(value)]] : [];
       if (field === "observations" && Array.isArray(value))
         return value.length

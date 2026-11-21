@@ -93,6 +93,9 @@ export function useInstallPrompt(): UseInstallPromptReturn {
       return;
     }
 
+    // The custom install banner is mobile-only. Let the desktop browser handle installation.
+    if (detectedPlatform === 'desktop') return;
+
     if (isDismissed()) {
       setInstallState('dismissed');
       return;

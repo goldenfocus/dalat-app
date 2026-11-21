@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import { ThemeProvider } from "next-themes";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { GlobalFooter } from "@/components/global-footer";
@@ -109,10 +110,9 @@ export default async function LocaleLayout({ children, params }: Props) {
 
   return (
     <ProgressiveIntlProvider locale={locale as Locale} coreMessages={coreMessages}>
-      <script
-        type="speculationrules"
-        dangerouslySetInnerHTML={{ __html: speculationRules }}
-      />
+      <Script id="dalat-speculation-rules" type="speculationrules">
+        {speculationRules}
+      </Script>
       <QueryProvider>
         <ThemeProvider
           attribute="class"

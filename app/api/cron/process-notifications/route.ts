@@ -1,5 +1,5 @@
 import { getLocationMapLinks } from '@/lib/events/location';
-import { NextResponse } from 'next/server';
+import { after, NextResponse } from 'next/server';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { notify } from '@/lib/notifications';
 import type { NotificationPayload, NotificationChannel } from '@/lib/notifications/types';
@@ -145,6 +145,15 @@ export async function GET(request: Request) {
     console.error('[process-notifications] Supabase client not configured');
     return NextResponse.json({ error: 'Supabase client not configured' }, { status: 503 });
   }
+
+  after(async () => {
+    try {
+      const { error } = await supabase.rpc('rental_stats_prune').abortSignal(AbortSignal.timeout(3000));
+      if (error) console.warn('[process-notifications] Rental statistics cleanup failed:', error.code);
+    } catch {
+      console.warn('[process-notifications] Rental statistics cleanup did not complete');
+    }
+  });
 
   const now = Date.now();
   const reclaimBefore = new Date(now - RECLAIM_AFTER_MS).toISOString();

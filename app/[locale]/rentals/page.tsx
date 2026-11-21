@@ -85,7 +85,10 @@ export default async function RentalsPage({ params, searchParams }: Props) {
     <div className="mx-auto w-full min-w-0 max-w-5xl space-y-6 px-3 py-5 sm:space-y-8 sm:px-8 sm:py-8">
       <header className="flex flex-wrap items-center justify-between gap-3">
         <h1 data-rentals-title className="text-4xl sm:text-5xl">{t("title")}</h1>
-        {user && <RentalLocaleLink locale={locale} href="/rentals/new" className={secondary}>{t("addListing")}</RentalLocaleLink>}
+        {user && <div className="flex flex-wrap gap-2">
+          {ownsListing && <RentalLocaleLink locale={locale} href="/rentals/stats" className={secondary}>{t("stats")}</RentalLocaleLink>}
+          <RentalLocaleLink locale={locale} href="/rentals/new" className={secondary}>{t("addListing")}</RentalLocaleLink>
+        </div>}
       </header>
       {(listingResult.error || feedback.error) && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
       {feedback.viewing && <p role="status" className="rounded-lg border border-primary p-3">{t("requested")}</p>}

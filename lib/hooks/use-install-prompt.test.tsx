@@ -13,6 +13,14 @@ beforeEach(() => {
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 describe('automatic install reminders', () => {
+  it('leaves desktop installation prompts to the browser', () => {
+    Object.defineProperty(navigator, 'userAgent', { configurable: true, value: 'Chrome on desktop' });
+    renderHook(() => useInstallPrompt());
+    const nativePrompt = new Event('beforeinstallprompt', { cancelable: true });
+    act(() => { window.dispatchEvent(nativePrompt); });
+    expect(nativePrompt.defaultPrevented).toBe(false);
+  });
+
   it('does not interrupt the first or second visit, including remounts', () => {
     for (const count of [0, 1]) {
       if (count) localStorage.setItem(INSTALL_VISITS_KEY, JSON.stringify({ count, lastSeen: Date.now() - 31 * 60 * 1000 }));
