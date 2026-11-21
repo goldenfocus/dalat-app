@@ -74,7 +74,9 @@ export function EventCardStatic({
 
   return (
     <Link href={`/events/${event.slug}`} className="block touch-manipulation">
-      <Card className="overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
+      {/* contain:layout keeps the badges' z-10 and the inline default-image
+          lightbox (position: fixed) scoped to the card */}
+      <Card className="[contain:layout] overflow-hidden rounded-xl hover:border-foreground/20 hover:shadow-lg transition-all duration-200 active:scale-[0.98] active:opacity-90">
         {/* Image area */}
         <div className="w-full aspect-[4/5] relative overflow-hidden group">
           {/* Capacity badge - shows spots when event has a cap */}
