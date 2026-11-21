@@ -84,7 +84,7 @@ interface LocalizedMetadataOptions {
   /** OG image URL (optional, defaults to site OG image) */
   image?: string;
   /** Ordered preview images. The first is also used for the X card. */
-  socialImages?: { url: string; alt: string; type?: string }[];
+  socialImages?: { url: string; alt: string; type?: string; width?: number; height?: number }[];
   /** OG type (default: "website") */
   type?: "website" | "article" | "profile";
   /** Disable title suffix (e.g., for homepage) */

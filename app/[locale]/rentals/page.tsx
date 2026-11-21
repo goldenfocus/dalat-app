@@ -1,7 +1,8 @@
 import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getPathname, locales, type Locale } from "@/lib/i18n/routing";
+import { getPathname, type Locale } from "@/lib/i18n/routing";
+import { generateLocalizedMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { pilotListingId, safeRentalPhoto, rentalColumns, type RentalListing, type RentalVisit } from "@/lib/rentals/data";
@@ -26,13 +27,15 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "rentalsPilot" });
-  const path = (language: string) => `https://dalat.app${language === "en" ? "" : "/" + language}/rentals`;
-  return {
-    title: t("title"),
-    description: t("intro"),
-    robots: { index: false, follow: true },
-    alternates: { canonical: path(locale), languages: { ...Object.fromEntries(locales.map(l => [l, path(l)])), "x-default": path("en") } },
-  };
+  const alt = `${t("photos")} · King’s Paradise`;
+  const host = "https://dalat.app/rentals";
+  return generateLocalizedMetadata({
+    locale, path: "/rentals", title: t("title"), description: t("intro"), index: false,
+    socialImages: [
+      { url: host + "/rentals-preview-wide.jpg", type: "image/jpeg", width: 1200, height: 630, alt },
+      { url: host + "/rentals-preview-square.jpg", type: "image/jpeg", width: 800, height: 800, alt },
+    ],
+  });
 }
 
 export default async function RentalsPage({ params, searchParams }: Props) {
