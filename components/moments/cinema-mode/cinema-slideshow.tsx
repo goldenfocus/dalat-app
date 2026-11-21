@@ -8,7 +8,6 @@ import { CinemaVideoSlide } from "./cinema-video-slide";
 import { CinemaControls } from "./cinema-controls";
 import { optimizedImageUrl, imagePresets } from "@/lib/image-cdn";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
-import { createEffectScheduler, type EffectSchedulerState } from "@/lib/cinema/ken-burns-effects";
 import { triggerHaptic } from "@/lib/haptics";
 import { useTranslations } from "next-intl";
 
@@ -57,11 +56,6 @@ export function CinemaSlideshow({
   const router = useRouter();
   const t = useTranslations("moments.cinemaControls");
   const rootRef = useRef<HTMLDivElement>(null);
-  const effectSchedulerRef = useRef<EffectSchedulerState>(createEffectScheduler());
-
-  const handleEffectSelected = useCallback((newState: EffectSchedulerState) => {
-    effectSchedulerRef.current = newState;
-  }, []);
 
   // Store state - use individual selectors to avoid subscribing to entire state
   // Actions are stable and accessed directly from the store (won't cause re-renders)
@@ -309,8 +303,8 @@ export function CinemaSlideshow({
               duration={timerDuration}
               isActive={!isPaused && !isEnded}
               isTransitioning={isTransitioning}
-              effectSchedulerState={effectSchedulerRef.current}
-              onEffectSelected={handleEffectSelected}
+              motionSeed={eventSlug}
+              index={currentIndex}
             />
           )}
 

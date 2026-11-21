@@ -1,196 +1,135 @@
 /**
  * Ken Burns Effects System
  *
- * Provides cinematic zoom and pan animations for photos in Cinema Mode.
- * Effects are designed to create visual interest without being repetitive.
+ * Cinematic zoom and pan for photos in Cinema Mode. Motion is pure data: each
+ * preset is a set of numbers, selection is a pure seeded function, and
+ * `sampleKenBurns` returns the transform at any progress. The live player turns
+ * a preset into CSS custom properties; a frame-by-frame renderer can sample the
+ * very same numbers. No randomness and no clock live in this module.
  */
 
-export interface KenBurnsEffect {
-  name: string;
-  startTransform: string;
-  endTransform: string;
-  transformOrigin: string;
+import { hashToUint32 } from "./seeded-hash";
+
+/**
+ * PERSISTED FORMAT: preset ids are stored in recap specs. Never rename or
+ * remove an id, only add new ones.
+ */
+export interface KenBurnsPreset {
+  id: string;
+  /** Scale at progress 0 and 1 */
+  scale0: number;
+  scale1: number;
+  /** Translate in percent of the element's own size, applied after scale */
+  x0: number;
+  x1: number;
+  y0: number;
+  y1: number;
+  /** Transform origin in percent of the element box */
+  origin: { x: number; y: number };
+  /** Photo is portrait-friendly (no horizontal pan) */
+  vertical: boolean;
 }
 
-// 8 distinct Ken Burns animation presets
-export const KEN_BURNS_EFFECTS: KenBurnsEffect[] = [
-  // ZOOM EFFECTS
-  {
-    name: "zoom-in-center",
-    startTransform: "scale(1)",
-    endTransform: "scale(1.15)",
-    transformOrigin: "center center",
-  },
-  {
-    name: "zoom-out-center",
-    startTransform: "scale(1.15)",
-    endTransform: "scale(1)",
-    transformOrigin: "center center",
-  },
+export interface KenBurnsSample {
+  scale: number;
+  x: number;
+  y: number;
+}
 
-  // PAN + ZOOM EFFECTS (the cinematic magic)
-  {
-    name: "zoom-pan-left",
-    startTransform: "scale(1.1) translateX(5%)",
-    endTransform: "scale(1.2) translateX(-5%)",
-    transformOrigin: "left center",
-  },
-  {
-    name: "zoom-pan-right",
-    startTransform: "scale(1.1) translateX(-5%)",
-    endTransform: "scale(1.2) translateX(5%)",
-    transformOrigin: "right center",
-  },
-  {
-    name: "zoom-pan-up",
-    startTransform: "scale(1.1) translateY(3%)",
-    endTransform: "scale(1.2) translateY(-3%)",
-    transformOrigin: "center top",
-  },
-  {
-    name: "zoom-pan-down",
-    startTransform: "scale(1.1) translateY(-3%)",
-    endTransform: "scale(1.2) translateY(3%)",
-    transformOrigin: "center bottom",
-  },
+const p = (
+  id: string,
+  scale0: number,
+  scale1: number,
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+  origin: { x: number; y: number },
+  vertical: boolean,
+): KenBurnsPreset => ({ id, scale0, scale1, x0, x1, y0, y1, origin, vertical });
 
-  // DIAGONAL MOVEMENTS (premium cinematic feel)
-  {
-    name: "drift-top-left",
-    startTransform: "scale(1.15) translate(3%, 3%)",
-    endTransform: "scale(1.05) translate(-2%, -2%)",
-    transformOrigin: "top left",
-  },
-  {
-    name: "drift-bottom-right",
-    startTransform: "scale(1.05) translate(-2%, -2%)",
-    endTransform: "scale(1.15) translate(3%, 3%)",
-    transformOrigin: "bottom right",
-  },
+const STATIC_PRESET = p("static", 1, 1, 0, 0, 0, 0, { x: 50, y: 50 }, true);
+
+/** Selection pools. Even slide indexes draw from A, odd from B (see selectKenBurnsPresetId). */
+const POOL_A: KenBurnsPreset[] = [
+  p("zoom-in-center", 1, 1.15, 0, 0, 0, 0, { x: 50, y: 50 }, true),
+  p("zoom-pan-up", 1.1, 1.2, 0, 0, 3, -3, { x: 50, y: 0 }, true),
+  p("zoom-pan-left", 1.1, 1.2, 5, -5, 0, 0, { x: 0, y: 50 }, false),
+  p("drift-top-left", 1.15, 1.05, 3, -2, 3, -2, { x: 0, y: 0 }, false),
+];
+const POOL_B: KenBurnsPreset[] = [
+  p("zoom-out-center", 1.15, 1, 0, 0, 0, 0, { x: 50, y: 50 }, true),
+  p("zoom-pan-down", 1.1, 1.2, 0, 0, -3, 3, { x: 50, y: 100 }, true),
+  p("zoom-pan-right", 1.1, 1.2, -5, 5, 0, 0, { x: 100, y: 50 }, false),
+  p("drift-bottom-right", 1.05, 1.15, -2, 3, -2, 3, { x: 100, y: 100 }, false),
 ];
 
-// Direction classification for alternation logic
-type EffectDirection = "zoom-in" | "zoom-out" | "pan-left" | "pan-right" | "pan-up" | "pan-down" | "drift";
-
-function getEffectDirection(effectName: string): EffectDirection {
-  if (effectName.includes("zoom-in")) return "zoom-in";
-  if (effectName.includes("zoom-out")) return "zoom-out";
-  if (effectName.includes("pan-left")) return "pan-left";
-  if (effectName.includes("pan-right")) return "pan-right";
-  if (effectName.includes("pan-up")) return "pan-up";
-  if (effectName.includes("pan-down")) return "pan-down";
-  return "drift";
-}
-
-function getOppositeDirection(direction: EffectDirection): EffectDirection | null {
-  switch (direction) {
-    case "zoom-in": return "zoom-out";
-    case "zoom-out": return "zoom-in";
-    case "pan-left": return "pan-right";
-    case "pan-right": return "pan-left";
-    case "pan-up": return "pan-down";
-    case "pan-down": return "pan-up";
-    default: return null;
-  }
-}
-
-/**
- * Effect Scheduler State
- * Tracks recent effects to avoid repetition and create rhythm
- */
-export interface EffectSchedulerState {
-  recentEffects: string[];
-  lastDirection: EffectDirection | null;
-}
-
-/**
- * Create initial scheduler state
- */
-export function createEffectScheduler(): EffectSchedulerState {
-  return {
-    recentEffects: [],
-    lastDirection: null,
-  };
-}
-
-/**
- * Select the next Ken Burns effect with smart non-repetition
- *
- * @param state - Current scheduler state
- * @param isVertical - Whether the image is portrait orientation
- * @returns The selected effect and updated scheduler state
- */
-export function selectNextEffect(
-  state: EffectSchedulerState,
-  isVertical: boolean = false
-): { effect: KenBurnsEffect; newState: EffectSchedulerState } {
-  // 1. Filter out recently used effects (last 4)
-  const available = KEN_BURNS_EFFECTS.filter(
-    (effect) => !state.recentEffects.includes(effect.name)
+/** Typed catalogue, by id, for specs to reference. Includes "static" (reduced motion). */
+export const CINEMA_MOTION_PRESETS: Readonly<Record<string, KenBurnsPreset>> =
+  Object.freeze(
+    Object.fromEntries(
+      [...POOL_A, ...POOL_B, STATIC_PRESET].map((preset) => [preset.id, preset]),
+    ),
   );
 
-  // 2. Prefer opposite direction to previous (creates visual rhythm)
-  let preferred = available;
-  if (state.lastDirection) {
-    const opposite = getOppositeDirection(state.lastDirection);
-    if (opposite) {
-      const oppositeEffects = available.filter((effect) => {
-        const dir = getEffectDirection(effect.name);
-        return dir === opposite;
-      });
-      if (oppositeEffects.length > 0) {
-        preferred = oppositeEffects;
-      }
-    }
-  }
+/** Selectable presets (everything except "static"), in catalogue order. */
+export const KEN_BURNS_PRESETS: readonly KenBurnsPreset[] = [...POOL_A, ...POOL_B];
 
-  // 3. For vertical photos, prefer vertical movements
-  if (isVertical) {
-    const verticalFriendly = preferred.filter(
-      (e) =>
-        e.name.includes("up") ||
-        e.name.includes("down") ||
-        e.name.includes("zoom-in") ||
-        e.name.includes("zoom-out")
-    );
-    if (verticalFriendly.length > 0) {
-      preferred = verticalFriendly;
-    }
-  }
-
-  // 4. Random selection from filtered pool
-  const pool = preferred.length > 0 ? preferred : available.length > 0 ? available : KEN_BURNS_EFFECTS;
-  const selectedEffect = pool[Math.floor(Math.random() * pool.length)];
-
-  // 5. Update scheduler state
-  const newRecentEffects = [...state.recentEffects, selectedEffect.name].slice(-4);
-  const newState: EffectSchedulerState = {
-    recentEffects: newRecentEffects,
-    lastDirection: getEffectDirection(selectedEffect.name),
-  };
-
-  return { effect: selectedEffect, newState };
+export function getKenBurnsPreset(id: string): KenBurnsPreset {
+  return CINEMA_MOTION_PRESETS[id] ?? STATIC_PRESET;
 }
 
 /**
- * Pre-generate effects for a list of moments
- * Useful for consistent playback
+ * Pure, seeded choice of a preset id. Same inputs always give the same id.
+ * Consecutive slides never share a preset because even and odd indexes draw
+ * from disjoint pools (which also alternates opposite directions). Portrait
+ * photos only get vertical-friendly moves (zoom, pan up/down).
  */
-export function generateEffectSequence(
-  count: number,
-  verticalIndices: Set<number> = new Set()
-): KenBurnsEffect[] {
-  let state = createEffectScheduler();
-  const effects: KenBurnsEffect[] = [];
+export function selectKenBurnsPresetId(
+  seed: string,
+  momentId: string,
+  index: number,
+  isPortrait: boolean,
+): string {
+  const pool = ((index % 2) + 2) % 2 === 0 ? POOL_A : POOL_B;
+  const friendly = isPortrait ? pool.filter((e) => e.vertical) : pool;
+  const candidates = friendly.length > 0 ? friendly : pool;
+  const h = hashToUint32(`kb|${seed}|${momentId}|${index}`);
+  return candidates[h % candidates.length].id;
+}
 
-  for (let i = 0; i < count; i++) {
-    const isVertical = verticalIndices.has(i);
-    const { effect, newState } = selectNextEffect(state, isVertical);
-    effects.push(effect);
-    state = newState;
-  }
+/** Numeric transform at progress 0..1 (clamped), linear like the CSS animation. */
+export function sampleKenBurns(presetId: string, progress: number): KenBurnsSample {
+  const e = getKenBurnsPreset(presetId);
+  const t = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0;
+  return {
+    scale: e.scale0 + (e.scale1 - e.scale0) * t,
+    x: e.x0 + (e.x1 - e.x0) * t,
+    y: e.y0 + (e.y1 - e.y0) * t,
+  };
+}
 
-  return effects;
+function transformString(scale: number, x: number, y: number): string {
+  return `scale(${scale}) translate(${x}%, ${y}%)`;
+}
+
+/** CSS transform string for a sample (same shape the player animates). */
+export function kenBurnsTransform(s: KenBurnsSample): string {
+  return transformString(s.scale, s.x, s.y);
+}
+
+/** CSS custom properties consumed by `.cinema-kb-active` plus the transform origin. */
+export function kenBurnsCssVars(presetId: string): {
+  "--kb-start": string;
+  "--kb-end": string;
+  transformOrigin: string;
+} {
+  const e = getKenBurnsPreset(presetId);
+  return {
+    "--kb-start": transformString(e.scale0, e.x0, e.y0),
+    "--kb-end": transformString(e.scale1, e.x1, e.y1),
+    transformOrigin: `${e.origin.x}% ${e.origin.y}%`,
+  };
 }
 
 /**
@@ -201,17 +140,8 @@ export function prefersReducedMotion(): boolean {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/**
- * Get a static effect for reduced motion preference
- */
-export function getStaticEffect(): KenBurnsEffect {
-  return {
-    name: "static",
-    startTransform: "scale(1)",
-    endTransform: "scale(1)",
-    transformOrigin: "center center",
-  };
-}
+/** Preset id used for reduced motion: no pan/zoom, crossfade only. */
+export const STATIC_PRESET_ID = "static";
 
 /**
  * Ken Burns run time. Deliberately independent of the slide timer: the timer
@@ -255,7 +185,7 @@ export function getPhotoFit(
   return mismatch <= COVER_MAX_MISMATCH ? "cover" : "contain";
 }
 
-/** Static effect (reduced motion) means: no pan/zoom, crossfade only. */
-export function isStaticEffect(effect: KenBurnsEffect | null): boolean {
-  return !effect || effect.name === "static";
+/** Static preset (reduced motion) means: no pan/zoom, crossfade only. */
+export function isStaticEffect(presetId: string | null): boolean {
+  return !presetId || presetId === STATIC_PRESET_ID;
 }

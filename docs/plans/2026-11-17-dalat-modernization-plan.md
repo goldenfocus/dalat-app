@@ -1,6 +1,6 @@
 # dalat.app modernization plan
 
-Status: v2, 2026-11-17. Wave 1 done and verified on `swarm/integration` (not merged, not deployed).
+Status: v3, 2026-11-18. Wave 1 is live on production (PR #132, merge `c00df3d`). Wave 2 is open as PR #133 and PR #134, not merged.
 Board: https://claude.ai/artifact/WrXjQHthyaGDzptVBat6kn
 
 ## Goal
@@ -26,32 +26,40 @@ One recap spec per event (a JSON timeline) drives two renderers: the live in-bro
 - Local tools on zang: HyperFrames, Phosphene (LTX), ACE-Step 1.5, Real-ESRGAN, insightface, rembg, Ollama.
 - A `/v3` "Fog Hour" redesign is in opt-in preview (PR 115).
 
-## Wave 1 results (branches `swarm/*`, base `cdacb5d0`)
-| Branch | What it does | State |
-|---|---|---|
-| `swarm/cinema-motion` | Photos fill the screen (cover, or whole photo over a blurred copy when cropping would be heavy). Ken Burns runs with or without music, freezes on pause, crossfade-only under reduced motion. | Code + 11 tests |
-| `swarm/cinema-controls` | One transport for slides and music, music-note chip separate from the speaker, one tap reveals all controls, story-style progress, Gallery button, first-visit hint. 19 strings in 12 locales. | Code + 14 tests |
-| `swarm/cinema-auto-score` | Deterministic house-soundtrack fallback when an event has no playlist. No-op until `house_tracks` exists and has rows. | Code + tests + migration file (not applied) |
-| `swarm/moments-perf` | Event gallery grid is in the server HTML instead of a skeleton. Responsive image ladders for feed and thumbnails, eager first image, real alt text. | Code + 5 tests |
-| `swarm/audit-uploads` | `docs/plans/2026-11-17-upload-flow-audit.md` | Doc |
-| `swarm/audit-recaps` | `docs/plans/2026-11-17-recap-video-pipeline.md` (recap.json schema, `render_jobs` DDL, worker contract, QC list) | Doc |
-| `swarm/integration` | All of the above merged, no conflicts. | tsc clean, 102 related tests pass, translation and grants checks pass, eslint 0 errors |
+## Wave 1: shipped 2026-11-18 (PR #132)
+| Area | What is live |
+|---|---|
+| Cinema motion | Photos fill the screen (cover, or whole photo over a blurred copy when cropping would be heavy). Ken Burns runs with or without music, freezes on pause, crossfade-only under reduced motion. |
+| Cinema controls | One transport for slides and music, music-note chip separate from the speaker, one tap reveals all controls, story-style progress, Gallery button, first-visit hint. 19 strings in 12 locales. |
+| House soundtrack | Deterministic fallback when an event has no playlist. Dark until `house_tracks` exists and has rows. |
+| Moments performance | Event gallery grid is in the server HTML. Responsive image ladders for feed and thumbnails, eager first image, real alt text. |
+| Docs | Upload flow audit, recap pipeline design, auto-score plan (`docs/plans/2026-11-17-*`). |
 
-Not verified: anything visual. Nobody has seen these changes in a browser. Check on a phone before merging.
+Checks before merge: 1999 tests, tsc, eslint 0 errors, prebuild checks, Vercel build. A review bot found one race (music baseline vs page autoplay); fixed in `1e12d74` with a test.
 
-Findings that change the plan:
-- The "photos don't move" bug has no single regression commit. Photos were never full screen (always `object-contain`), and the motion was fragile: its duration came from a store timer that is 0 at start, and pausing reset the photo to its first frame. The slide was rewritten rather than patched.
-- `feat/effortless-event-uploads` already landed on main as squash #108. Drop the branch (tag the tip first). Its one unique file brings back the footer removed on Nov 16.
+Checked on production at phone size (375x812), Language Exchange album: cinema opens, the photo sits whole over its blurred copy, the transform changes over time, the hint shows, a tap reveals the controls, Pause freezes the photo mid-move and flips the music chip, and the server HTML carries 20 gallery images at 240 to 640 px widths.
+
+Not checked: audio actually playing and stopping (the test browser had no user gesture), a real phone, low-end performance of the blur.
+
+Findings that shaped the plan:
+- The "photos don't move" bug had no single regression commit. Photos were never full screen, and motion duration came from a store timer that is 0 at start. The slide was rewritten.
+- `feat/effortless-event-uploads` already landed on main as squash #108. Drop the branch (tag the tip first).
 - `fix/automatic-event-recaps`: do not merge as a unit. Keep the fact-check gate idea and the two mobile layout commits.
-- `fix/automatic-event-music` (reuse the series' earlier playlist) is worth merging; house music should be the last fallback inside its `resolveEventMusic`.
-- Cinema motion and transitions use `Math.random`, wall-clock timers and CSS keyframes. They must become seeded, numeric presets before the same spec can drive an MP4 render.
-- Recap trigger today is about 15 minutes after an event ends with one eligible moment. The target is 24 hours and 8 moments.
+- `fix/automatic-event-music` is worth merging; house music should be the last fallback inside its `resolveEventMusic`.
+- "Recap" today is a text narrative fired about 15 minutes after an event ends. The target is a video, 24 hours after, with 8+ moments.
 
-## Owner actions before merge
-1. Import: from the canonical repo, `git fetch ~/dalat-app/output/_claude-swarm/dalat-swarm-wave1.bundle 'refs/heads/swarm/*:refs/heads/swarm/*'`.
-2. Run `swarm/integration` locally and check cinema mode on a phone (list in each agent's notes: fill, pause/resume, reduced motion, tap reveal, music chip, Gallery scroll position, mini-player overlap).
-3. Apply `supabase/migrations/20261204_001_house_tracks.sql` and load tracks, or the soundtrack fallback does nothing.
+## Wave 2: open PRs (not merged)
+| PR | What it adds | Before merging |
+|---|---|---|
+| #133 Recap foundations | Seeded numeric cinema motion presets, `RecapSpec` v1 + pure builder, `render_jobs` migration + RPCs, worker shell with dry-run renderer, `enqueueRecapRender`. 2065 tests pass. | Look at cinema once in a browser. The migration is unexecuted: apply it on a branch database first. |
+| #134 Uploads | HEIC converts to JPEG on the device (native on Safari, WASM elsewhere, server fallback kept). One toast when unfinished uploads resume. 2009 tests pass. | Test on a real iPhone: 20 HEICs, orientation, no GPS, force-quit and reopen. |
+
+## Owner actions
+1. Apply `supabase/migrations/20261204_001_house_tracks.sql` and load tracks, or the soundtrack fallback stays dark. Until then each no-playlist album makes one failing lookup.
+2. iPhone test for PR #134, then merge.
+3. Decide for PR #133: service role key on the Macs or an HTTP claim route; silent recaps allowed or not; chronological or engagement shot order.
 4. Decide: one house track per event or a queue of three (current); hide the playlist link on house tracks.
+5. Start the TikTok, Meta and YouTube app reviews.
 
 ## Track B: the studio (wave 2)
 1. Promote `~/chicoman/studio` to the single production repo. `AGENTS.md` is the canonical playbook; other CLIs' config points to it.
@@ -72,10 +80,10 @@ Findings that change the plan:
 Queue: Supabase `render_jobs`, claimed with SKIP LOCKED, heartbeat, retries, dead-letter. Output to Cloudflare Stream, then event page, then auto-publish.
 
 ## Sequence
-- Wave 1: done (above).
-- Wave 2: make cinema motion deterministic, `recap.json` + `render_jobs`, zang worker, `recap-short` HyperFrames template, first automatic recap. Upload: move HEIC conversion off the request path, resume-on-open with a done notification.
+- Wave 1: live.
+- Wave 2: PRs #133 and #134 open. Still to build: the HyperFrames `recap-short` template and real renderer on zang, the enqueue trigger, studio consolidation (Track B).
 - Wave 3: ACE-Step house library batch, Mac mini as second worker, QC gate, auto-publish to dalat.app's own channels.
-- Wave 4: LTX tier, weekly compilation, user-connected social accounts once TikTok, Meta and YouTube app reviews clear (apply now; they take weeks).
+- Wave 4: LTX tier, weekly compilation, user-connected social accounts once platform app reviews clear.
 
 ## Open risks
 - Auto-publishing photos of people with no approval step: keep a fast takedown path and an uploader opt-out.

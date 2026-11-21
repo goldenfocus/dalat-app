@@ -4,12 +4,11 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { cloudflareLoader } from "@/lib/image-cdn";
 import {
-  KenBurnsEffect,
   KEN_BURNS_DURATION_MS,
-  selectNextEffect,
-  createEffectScheduler,
+  STATIC_PRESET_ID,
+  selectKenBurnsPresetId,
+  kenBurnsCssVars,
   prefersReducedMotion,
-  getStaticEffect,
   getPhotoFit,
   isStaticEffect,
 } from "@/lib/cinema/ken-burns-effects";
@@ -25,10 +24,9 @@ interface CinemaPhotoSlideProps {
   /** false while paused/ended: freezes the motion in place */
   isActive: boolean;
   isTransitioning: boolean;
-  effectSchedulerState?: ReturnType<typeof createEffectScheduler>;
-  onEffectSelected?: (
-    newState: ReturnType<typeof createEffectScheduler>,
-  ) => void;
+  /** Album seed (event slug) and slide position: make the motion choice deterministic. */
+  motionSeed: string;
+  index: number;
 }
 
 /** Everything learned when a given moment's image finished loading. */
@@ -36,7 +34,7 @@ interface LoadedPhoto {
   id: string;
   width: number;
   height: number;
-  effect: KenBurnsEffect;
+  presetId: string;
 }
 
 function readViewport() {
@@ -48,8 +46,8 @@ export function CinemaPhotoSlide({
   moment,
   isActive,
   isTransitioning,
-  effectSchedulerState,
-  onEffectSelected,
+  motionSeed,
+  index,
 }: CinemaPhotoSlideProps) {
   // State is keyed by moment id, so a stale "loaded" flag from the previous
   // photo can never leak onto the next one (no reset effect, no race).
@@ -65,8 +63,8 @@ export function CinemaPhotoSlide({
   if (!moment.media_url) return null;
 
   const ready = loaded?.id === moment.id;
-  const effect = ready ? loaded.effect : null;
-  const moving = !isStaticEffect(effect);
+  const presetId = ready ? loaded.presetId : null;
+  const moving = !isStaticEffect(presetId);
   const fit = ready
     ? getPhotoFit(loaded.width, loaded.height, viewport.w, viewport.h)
     : "cover";
@@ -75,16 +73,10 @@ export function CinemaPhotoSlide({
     if (loaded?.id === moment.id) return;
     const width = img.naturalWidth;
     const height = img.naturalHeight;
-    let selected = getStaticEffect();
-    if (!prefersReducedMotion()) {
-      const result = selectNextEffect(
-        effectSchedulerState || createEffectScheduler(),
-        height > width,
-      );
-      selected = result.effect;
-      onEffectSelected?.(result.newState);
-    }
-    setLoaded({ id: moment.id, width, height, effect: selected });
+    const presetId = prefersReducedMotion()
+      ? STATIC_PRESET_ID
+      : selectKenBurnsPresetId(motionSeed, moment.id, index, height > width);
+    setLoaded({ id: moment.id, width, height, presetId });
   };
 
   return (
@@ -123,12 +115,10 @@ export function CinemaPhotoSlide({
           moving && "cinema-kb-active",
         )}
         style={
-          moving && effect
+          moving && presetId
             ? ({
-                "--kb-start": effect.startTransform,
-                "--kb-end": effect.endTransform,
+                ...kenBurnsCssVars(presetId),
                 "--kb-duration": `${KEN_BURNS_DURATION_MS}ms`,
-                transformOrigin: effect.transformOrigin,
                 animationPlayState: isActive ? "running" : "paused",
               } as React.CSSProperties)
             : undefined
