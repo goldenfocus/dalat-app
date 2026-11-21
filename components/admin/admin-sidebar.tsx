@@ -17,6 +17,7 @@ import {
   FileText,
   Sparkles,
   Home,
+  Search,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +36,7 @@ const ICON_MAP: Record<string, LucideIcon> = {
   FileText,
   Sparkles,
   Home,
+  Search,
 };
 
 interface NavItem {

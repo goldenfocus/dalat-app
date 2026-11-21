@@ -274,6 +274,16 @@
       "past": "지난"
     },
     "search": {
+      "globalPlaceholder": "달랏 검색",
+      "globalNoResults": "검색 결과가 없습니다",
+      "globalAll": "전체",
+      "globalTypes": "결과 유형",
+      "globalTexts": "게시물",
+      "globalStats": "검색 통계",
+      "globalQuery": "검색어",
+      "globalSearches": "검색 횟수",
+      "globalZeroResults": "결과 없음",
+      "globalClicks": "클릭",
       "placeholder": "이벤트 검색...",
       "noResults": "이벤트를 찾을 수 없습니다",
       "clearSearch": "검색 지우기",

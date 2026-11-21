@@ -274,6 +274,16 @@
       "past": "已结束"
     },
     "search": {
+      "globalPlaceholder": "搜索大叻",
+      "globalNoResults": "未找到结果",
+      "globalAll": "全部",
+      "globalTypes": "结果类型",
+      "globalTexts": "帖子",
+      "globalStats": "搜索统计",
+      "globalQuery": "搜索词",
+      "globalSearches": "搜索次数",
+      "globalZeroResults": "无结果",
+      "globalClicks": "点击次数",
       "placeholder": "搜索活动...",
       "noResults": "未找到活动",
       "clearSearch": "清除搜索",

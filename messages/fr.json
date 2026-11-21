@@ -274,6 +274,16 @@
       "past": "Passés"
     },
     "search": {
+      "globalPlaceholder": "Rechercher à Đà Lạt",
+      "globalNoResults": "Aucun résultat",
+      "globalAll": "Tout",
+      "globalTypes": "Type de résultat",
+      "globalTexts": "Publications",
+      "globalStats": "Statistiques de recherche",
+      "globalQuery": "Requête",
+      "globalSearches": "Recherches",
+      "globalZeroResults": "Sans résultat",
+      "globalClicks": "Clics",
       "placeholder": "Rechercher des événements...",
       "noResults": "Aucun événement trouvé",
       "clearSearch": "Effacer la recherche",

@@ -19,8 +19,8 @@ const LocalePicker = dynamic(
   }
 );
 
-export function DeferredHeaderSearch() {
-  return <HeaderSearch />;
+export function DeferredHeaderSearch({ rentalsLabel }: { rentalsLabel: string }) {
+  return <HeaderSearch rentalsLabel={rentalsLabel} />;
 }
 
 export function DeferredLocalePicker() {

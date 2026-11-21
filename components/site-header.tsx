@@ -41,7 +41,7 @@ export function SiteHeader({ actions, rentalsLabel, datingLabel }: SiteHeaderPro
         </div>
         <ContentNav rentalsLabel={rentalsLabel} datingLabel={datingLabel} />
         <div className="col-start-2 row-start-1 flex items-center pr-2 min-[360px]:gap-1 min-[360px]:pr-4 lg:col-start-3 lg:pr-0">
-          <DeferredHeaderSearch />
+          <DeferredHeaderSearch rentalsLabel={rentalsLabel} />
           <CreateEventLink />
           {actions}
           <AuthButtonClient />
