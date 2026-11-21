@@ -97,7 +97,10 @@ export default async function LocaleLayout({ children, params }: Props) {
   // Ship only shell/homepage namespaces in the first RSC payload.
   // ProgressiveIntlProvider merges route-level islands on demand (never idle full-dict on home).
   // Full CLIENT_NAMESPACES list still enforced by scripts/check-client-namespaces.mjs.
-  const [messages, rentals] = await Promise.all([getMessages(), getTranslations("rentalsPilot")]);
+  const [messages, rentals, dating] = await Promise.all([
+    getMessages(), getTranslations("rentalsPilot"), getTranslations("dating"),
+  ]);
+  const rentalsLabel = rentals("title");
   const coreMessages = Object.fromEntries(
     CORE_CLIENT_NAMESPACES.filter((ns) => {
       if (ns in messages) return true;
@@ -145,17 +148,17 @@ export default async function LocaleLayout({ children, params }: Props) {
               <DeferredLocaleMismatchBanner />
               <DeferredInstallAppBanner />
               <DeferredIosViewportAnchor />
-              <SiteHeader />
+              <SiteHeader rentalsLabel={rentalsLabel} datingLabel={dating("navLabel")} />
               <main data-app-content className="flex-1 pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0">
                 <ErrorBoundary>
                   {children}
                 </ErrorBoundary>
               </main>
               <DeferredMiniPlayer />
-              <MobileBottomNav />
+              <MobileBottomNav rentalsLabel={rentalsLabel} />
               <DeferredUploadFAB />
               <DeferredUploadNotifications />
-              <GlobalFooter rentalsLabel={rentals("title")} />
+              <GlobalFooter rentalsLabel={rentalsLabel} />
               <DeferredGodModeIndicator />
             </div>
           </ScrollRestorationProvider>

@@ -24,6 +24,7 @@ export async function publishSavedRental(form: FormData) {
   revalidatePath("/[locale]/rentals", "page");
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
   if (data?.slug && !error) {
+    revalidatePath("/[locale]", "page");
     revalidatePath("/sitemap.xml");
     const { id: savedId, status, slug } = data;
     after(() => notifyRentalSearch(db, savedId, status === "draft" ? slug : undefined));
@@ -39,6 +40,7 @@ export async function deleteSavedRental(id: string): Promise<"active" | "failed"
   if (!user) return "failed";
   const { data, error } = await db.rpc("rental_delete_listing", { listing: id });
   if (error || data !== "deleted") return data === "active" ? "active" : "failed";
+  revalidatePath("/[locale]", "page");
   revalidatePath("/[locale]/rentals", "page");
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
   revalidatePath("/[locale]/rentals/viewings/[id]", "page");

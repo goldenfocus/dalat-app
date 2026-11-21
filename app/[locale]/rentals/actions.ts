@@ -63,6 +63,7 @@ export async function saveRental(form: FormData) {
   revalidatePath("/[locale]/rentals", "page");
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
   if (result.data.slug) {
+    revalidatePath("/[locale]", "page");
     revalidatePath("/sitemap.xml");
     const { id: savedId, status, slug } = result.data;
     after(() => notifyRentalSearch(db, savedId, status === "draft" ? slug : undefined));

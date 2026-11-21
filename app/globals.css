@@ -667,7 +667,7 @@ html.fog [role="tablist"] > [role="tab"][aria-selected="true"] {
 }
 
 /* Section navigation under the header: ruled timetable tabs */
-html.fog [data-fog-sections] a {
+html.fog [data-fog-sections] :is(a, button) {
   font-size: 0.6875rem;
   font-weight: 600;
   letter-spacing: 0.1em;

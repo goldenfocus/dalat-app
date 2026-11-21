@@ -4,84 +4,34 @@ import { isExperienceEditorPath } from "@/lib/experiences/navigation";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
-import {
-  Building2,
-  Calendar,
-  Ellipsis,
-  MapPin,
-  Newspaper,
-  Film,
-  Activity,
-  Trophy,
-} from "lucide-react";
+import { Ellipsis, House } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { triggerHaptic } from "@/lib/haptics";
 import { useViewportBottom } from "@/lib/hooks/use-viewport-bottom";
+import { cityLinks, isSectionActive } from "./secondary-links";
 
-const NAV_ITEMS = [
-  {
-    key: "map",
-    href: "/map",
-    icon: MapPin,
-    labelKey: "map",
-  },
-  {
-    key: "calendar",
-    href: "/calendar",
-    icon: Calendar,
-    labelKey: "calendar",
-  },
-  {
-    key: "venues",
-    href: "/venues",
-    icon: Building2,
-    labelKey: "venues",
-  },
-  {
-    key: "news",
-    href: "/news",
-    icon: Newspaper,
-    labelKey: "news",
-  },
-  {
-    key: "loyalty",
-    href: "/loyalty",
-    icon: Trophy,
-    labelKey: "loyalty",
-  },
-  {
-    key: "activity",
-    href: "/activity",
-    icon: Activity,
-    labelKey: "activity",
-  },
-  {
-    key: "moments",
-    href: "/moments",
-    icon: Film,
-    labelKey: "moments",
-  },
-];
-
-// These three stay on the bar; the rest live under "More".
-const PRIMARY_KEYS = ["map", "calendar", "news"];
-const PRIMARY_ITEMS = NAV_ITEMS.filter((item) => PRIMARY_KEYS.includes(item.key));
-const MORE_ITEMS = NAV_ITEMS.filter((item) => !PRIMARY_KEYS.includes(item.key));
+const PRIMARY_ITEMS = [
+  ...cityLinks.filter(({ key }) => key === "map" || key === "calendar"),
+  { key: "rentals", href: "/rentals", icon: House },
+] as const;
+const MORE_ITEMS = cityLinks.filter(({ key }) => key !== "map" && key !== "calendar");
 
 const tabClass = (active: boolean) =>
-  `fog-cap flex min-h-11 flex-1 flex-col items-center justify-center gap-1 transition-colors active:scale-95 ${
+  `fog-cap flex min-h-11 min-w-0 flex-1 flex-col items-center justify-center gap-1 px-1 text-center leading-tight transition-colors active:scale-95 ${
     active ? "text-foreground" : "text-muted-foreground hover:text-foreground"
   }`;
 
 function NavRow({
   normalizedPath,
   tNav,
+  rentalsLabel,
 }: {
   normalizedPath: string;
   tNav: ReturnType<typeof useTranslations>;
+  rentalsLabel: string;
 }) {
   const [open, setOpen] = useState(false);
-  const moreActive = MORE_ITEMS.some((item) => normalizedPath.startsWith(item.href));
+  const moreActive = MORE_ITEMS.some(({ href }) => isSectionActive(normalizedPath, href));
 
   useEffect(() => {
     if (!open) return;
@@ -109,7 +59,7 @@ function NavRow({
           >
             {MORE_ITEMS.map((item) => {
               const Icon = item.icon;
-              const isActive = normalizedPath.startsWith(item.href);
+              const isActive = isSectionActive(normalizedPath, item.href);
               return (
                 <li key={item.key} className="mx-auto max-w-md">
                   <Link
@@ -125,7 +75,7 @@ function NavRow({
                     }`}
                   >
                     <Icon className="h-5 w-5" aria-hidden="true" />
-                    {tNav(item.labelKey)}
+                    {tNav(item.key)}
                   </Link>
                 </li>
               );
@@ -136,7 +86,7 @@ function NavRow({
       <div className="relative mx-auto flex h-16 max-w-md items-stretch bg-background px-2">
         {PRIMARY_ITEMS.map((item) => {
           const Icon = item.icon;
-          const isActive = normalizedPath.startsWith(item.href);
+          const isActive = isSectionActive(normalizedPath, item.href);
           return (
             <Link
               key={item.key}
@@ -150,7 +100,7 @@ function NavRow({
               className={tabClass(isActive)}
             >
               <Icon className={`h-5 w-5 ${isActive ? "stroke-[2.5]" : ""}`} aria-hidden="true" />
-              {tNav(item.labelKey)}
+              {item.key === "rentals" ? rentalsLabel : tNav(item.key)}
             </Link>
           );
         })}
@@ -176,7 +126,7 @@ function normalizePath(pathname: string) {
   return pathname.replace(/^\/[a-z]{2}(\/|$)/, "/") || "/";
 }
 
-export function MobileBottomNav() {
+export function MobileBottomNav({ rentalsLabel }: { rentalsLabel: string }) {
   const pathname = usePathname();
   const tNav = useTranslations("nav");
   const normalizedPath = normalizePath(pathname ?? "/");
@@ -200,7 +150,7 @@ export function MobileBottomNav() {
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border/60 bg-background pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tNav("primary")}
     >
-      <NavRow normalizedPath={normalizedPath} tNav={tNav} />
+      <NavRow normalizedPath={normalizedPath} tNav={tNav} rentalsLabel={rentalsLabel} />
     </nav>
   );
 }

@@ -1,5 +1,3 @@
-import { Building2, Calendar, MapPin, Film, Newspaper } from "lucide-react";
-import { useTranslations } from "next-intl";
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { CreateEventLink } from "@/components/auth/create-event-link";
@@ -10,6 +8,8 @@ import {
 } from "@/components/site-header-deferred";
 
 interface SiteHeaderProps {
+  rentalsLabel: string;
+  datingLabel: string;
   /** Optional content to render on the right side before AuthButton */
   actions?: React.ReactNode;
 }
@@ -19,12 +19,11 @@ interface SiteHeaderProps {
  * Auth-dependent elements (CreateEventLink, AuthButton) are handled client-side.
  * Search + locale picker are deferred client chunks (see site-header-deferred).
  */
-export function SiteHeader({ actions }: SiteHeaderProps) {
-  const t = useTranslations("nav");
+export function SiteHeader({ actions, rentalsLabel, datingLabel }: SiteHeaderProps) {
   return (
-    <nav data-floating-chrome="site-header" className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="container flex h-14 max-w-6xl items-center justify-between mx-auto px-2 min-[360px]:px-4">
-        <div className="flex items-center gap-0.5 min-[360px]:gap-1.5">
+    <header data-floating-chrome="site-header" className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-4 lg:px-4">
+        <div className="col-start-1 row-start-1 flex h-14 items-center gap-0.5 pl-2 min-[360px]:gap-1.5 min-[360px]:pl-4 lg:pl-0">
           <Link
             href="/"
             // On every page: prefetching the homepage replays its hero image
@@ -40,49 +39,14 @@ export function SiteHeader({ actions }: SiteHeaderProps) {
             <DeferredLocalePicker />
           </div>
         </div>
-        <div className="flex items-center gap-0 min-[360px]:gap-1">
-          <Link
-            href="/map"
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label={t("map")}
-          >
-            <MapPin className="w-5 h-5" aria-hidden="true" />
-          </Link>
-          <Link
-            href="/calendar"
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label={t("calendar")}
-          >
-            <Calendar className="w-5 h-5" aria-hidden="true" />
-          </Link>
-          <Link
-            href="/venues"
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label={t("venues")}
-          >
-            <Building2 className="w-5 h-5" aria-hidden="true" />
-          </Link>
-          <Link
-            href="/moments"
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label={t("moments")}
-          >
-            <Film className="w-5 h-5" aria-hidden="true" />
-          </Link>
-          <Link
-            href="/news"
-            className="hidden sm:flex p-2 text-muted-foreground hover:text-foreground active:scale-95 transition-all rounded-md"
-            aria-label={t("news")}
-          >
-            <Newspaper className="w-5 h-5" aria-hidden="true" />
-          </Link>
+        <ContentNav rentalsLabel={rentalsLabel} datingLabel={datingLabel} />
+        <div className="col-start-2 row-start-1 flex items-center pr-2 min-[360px]:gap-1 min-[360px]:pr-4 lg:col-start-3 lg:pr-0">
           <DeferredHeaderSearch />
           <CreateEventLink />
           {actions}
           <AuthButtonClient />
         </div>
       </div>
-      <ContentNav />
-    </nav>
+    </header>
   );
 }

@@ -5,6 +5,7 @@ import { FogFeed, FogFeedSkeleton } from "@/components/home/v3/fog-feed";
 import { FogHeadline } from "@/components/home/v3/fog-headline";
 import { FogTimeBoard } from "@/components/home/v3/fog-time-board";
 import { MomentsStripServer } from "@/components/home/moments-strip-server";
+import { RentalsStrip } from "@/components/home/rentals-strip";
 import { TribesStrip } from "@/components/home/tribes-strip";
 import { YourEventsSection } from "@/components/home/your-events-section";
 import { isVideoUrl } from "@/lib/media-utils";
@@ -79,13 +80,16 @@ export default async function Home({ params }: PageProps) {
             locale={locale}
             happeningCount={lifecycleCounts.happening}
             afterFeatured={
-              // Recent moments - real community activity keeps thin weeks alive.
-              // Full-bleed on phones: cancel the container gutter.
-              <div className="-mx-4 lg:mx-0">
+              <>
                 <Suspense fallback={null}>
-                  <MomentsStripServer />
+                  <RentalsStrip locale={locale} />
                 </Suspense>
-              </div>
+                <div className="-mx-4 lg:mx-0">
+                  <Suspense fallback={null}>
+                    <MomentsStripServer />
+                  </Suspense>
+                </div>
+              </>
             }
           />
         </Suspense>
