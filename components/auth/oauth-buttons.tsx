@@ -2,11 +2,12 @@
 
 import { PeerSignIn } from "@/components/deovia/PeerSignIn";
 import { callbackUrl } from "@/lib/auth/continuation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { EmailAuthForm } from "./email-auth-form";
+import { PhoneAuthForm } from "./phone-auth-form";
 import { InAppBrowserWarning } from "./in-app-browser-warning";
 
 export function GoogleButton() {
@@ -85,6 +86,22 @@ function Divider({ text }: { text: string }) {
 export function OAuthButtons() {
   const t = useTranslations("auth");
   const [showSuccess, setShowSuccess] = useState(false);
+  const [phoneEnabled, setPhoneEnabled] = useState(false);
+  const [method, setMethod] = useState<"phone" | "email">("phone");
+
+  // Fail closed: do not offer SMS until the backend has enabled its provider.
+  useEffect(() => {
+    const controller = new AbortController();
+    void fetch(process.env.NEXT_PUBLIC_SUPABASE_URL + "/auth/v1/settings", {
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! },
+      signal: controller.signal,
+    }).then(async (response) => {
+      if (!response.ok) return;
+      const settings = await response.json();
+      setPhoneEnabled(settings.external?.phone === true);
+    }).catch(() => {});
+    return () => controller.abort();
+  }, []);
 
   return (
     <div>
@@ -96,7 +113,13 @@ export function OAuthButtons() {
           <Divider text={t("orContinueWith")} />
         </>
       )}
-      <EmailAuthForm onSuccessChange={setShowSuccess} />
+      {phoneEnabled && method === "phone" ? <PhoneAuthForm /> : <EmailAuthForm onSuccessChange={setShowSuccess} />}
+      {phoneEnabled && !showSuccess && (
+        <Button type="button" variant="ghost" className="w-full mt-3"
+          onClick={() => setMethod(method === "phone" ? "email" : "phone")}>
+          {t(method === "phone" ? "phone.useEmail" : "phone.usePhone")}
+        </Button>
+      )}
     </div>
   );
 }

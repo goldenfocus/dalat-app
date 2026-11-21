@@ -480,7 +480,28 @@
     "deoviaSignIn": "Lanjutkan dengan DaLat.app",
     "deoviaConnect": "Hubungkan akun",
     "deoviaLater": "Nanti saja",
-    "deoviaReplace": "Menggantikan hubungan sebelumnya. Data tersimpan tetap ada di setiap akun."
+    "deoviaReplace": "Menggantikan hubungan sebelumnya. Data tersimpan tetap ada di setiap akun.",
+    "phone": {
+      "number": "Nomor telepon",
+      "send": "Kirim kode verifikasi",
+      "help": "Gunakan nomor ponsel Vietnam atau +kode negara untuk negara lain. Tanpa email atau kata sandi.",
+      "sent": "Kode dikirim ke {phone}",
+      "code": "Kode verifikasi",
+      "verify": "Verifikasi dan lanjutkan",
+      "resend": "Kirim ulang kode",
+      "resendIn": "Kirim ulang dalam {seconds} dtk",
+      "change": "Ganti nomor",
+      "invalidPhone": "Masukkan nomor ponsel yang valid.",
+      "invalidCode": "Kode salah atau kedaluwarsa. Coba lagi atau minta kode baru.",
+      "rateLimited": "Tunggu satu menit sebelum meminta kode lain.",
+      "unavailable": "Login telepon sementara tidak tersedia. Gunakan email atau Google.",
+      "sendFailed": "Kode gagal dikirim. Periksa koneksi dan coba lagi.",
+      "working": "Mohon tunggu…",
+      "existing": "Sudah punya akun? Gunakan cara login sebelumnya untuk mempertahankan profil.",
+      "continue": "Lanjutkan dengan telepon",
+      "useEmail": "Gunakan email",
+      "usePhone": "Gunakan telepon"
+    }
   },
   "errors": {
     "somethingWentWrong": "Maaf, terjadi kesalahan.",

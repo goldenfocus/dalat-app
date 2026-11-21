@@ -480,7 +480,28 @@
     "deoviaSignIn": "Continue with DaLat.app",
     "deoviaConnect": "Connect accounts",
     "deoviaLater": "Not now",
-    "deoviaReplace": "Replaces previous connections. Saved data stays in each account."
+    "deoviaReplace": "Replaces previous connections. Saved data stays in each account.",
+    "phone": {
+      "number": "Phone number",
+      "send": "Send verification code",
+      "help": "Use a Vietnamese mobile number, or +country code for another country. No email or password needed.",
+      "sent": "Code sent to {phone}",
+      "code": "Verification code",
+      "verify": "Verify and continue",
+      "resend": "Resend code",
+      "resendIn": "Resend in {seconds}s",
+      "change": "Change number",
+      "invalidPhone": "Please enter a valid mobile number.",
+      "invalidCode": "The code is invalid or expired. Try again or request a new code.",
+      "rateLimited": "Please wait a minute before requesting another code.",
+      "unavailable": "Phone sign-in is temporarily unavailable. Please use email or Google.",
+      "sendFailed": "Could not send the code. Check your connection and try again.",
+      "working": "Please wait…",
+      "existing": "Already have an account? Use your existing sign-in to keep your profile.",
+      "continue": "Continue with phone",
+      "useEmail": "Use email instead",
+      "usePhone": "Use phone instead"
+    }
   },
   "errors": {
     "somethingWentWrong": "Sorry, something went wrong.",
