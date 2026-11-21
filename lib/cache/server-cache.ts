@@ -57,14 +57,26 @@ export const getCachedEventsByLifecycle = unstable_cache(
         return [];
       }
 
-      // RPC returns series_slug, series_rrule, is_recurring directly
-      return (data as EventWithSeriesData[]) || [];
+      // The lifecycle RPC does not project editorial metadata. Read it in one
+      // batch before a caller can present a date-only placeholder as live.
+      const events = (data as EventWithSeriesData[] | null) ?? [];
+      if (events.length === 0) return events;
+      const { data: metadata, error: metadataError } = await supabase
+        .from("events")
+        .select("id, source_metadata, source_platform")
+        .in("id", events.map((event) => event.id));
+      if (metadataError) {
+        console.error("Error fetching event lifecycle metadata:", metadataError);
+        return lifecycle === "happening" ? [] : events;
+      }
+      const byId = new Map((metadata ?? []).map(({ id, ...fields }) => [id, fields]));
+      return events.map((event) => ({ ...event, ...byId.get(event.id) }));
     } catch (err) {
       console.error("Exception in getCachedEventsByLifecycle:", err);
       return [];
     }
   },
-  ["events-by-lifecycle-v8"], // v8: force refresh after manual event insertions
+  ["events-by-lifecycle-v9"], // v9: attach editorial timing metadata
   {
     revalidate: 60, // 1 minute
     tags: [CACHE_TAGS.events],
