@@ -3,7 +3,7 @@ const SILENT_WAV =
 
 type PrimeableAudio = Pick<
   HTMLAudioElement,
-  "load" | "muted" | "pause" | "play" | "removeAttribute" | "src"
+  "load" | "pause" | "play" | "removeAttribute" | "src"
 >;
 
 /**
@@ -27,33 +27,28 @@ export function isSameOriginLinkActivation(
 }
 
 /**
- * Play a tiny muted clip during a real user gesture. Browsers then recognize
- * the existing HTMLAudioElement as user-activated when a Moments playlist is
- * loaded later in the same client-side browsing session.
+ * Use a trusted gesture to prime the element with a tiny recording of silence.
+ * The element stays unmuted so it can play the real soundtrack after navigation.
  */
 export async function primeAudioForLaterPlayback(
   audio: PrimeableAudio,
 ): Promise<boolean> {
   if (audio.src) return false;
 
-  const wasMuted = audio.muted;
-  audio.muted = true;
   audio.src = SILENT_WAV;
 
   try {
     await audio.play();
 
-    // A playlist may replace the source while the silent clip is starting.
-    // Never pause or clear that real track.
-    if (audio.src !== SILENT_WAV) return false;
-
-    audio.pause();
-    audio.removeAttribute("src");
-    audio.load();
-    return true;
+    return audio.src === SILENT_WAV;
   } catch {
     return false;
   } finally {
-    audio.muted = wasMuted;
+    // A playlist may replace the source while the silent clip is starting.
+    if (audio.src === SILENT_WAV) {
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
+    }
   }
 }

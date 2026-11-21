@@ -32,6 +32,7 @@ export function CinemaMusicChip({ className }: { className?: string }) {
   return (
     <button
       type="button"
+      data-cinema-audio-control
       onClick={(e) => {
         e.stopPropagation();
         triggerHaptic("selection");

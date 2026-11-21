@@ -117,6 +117,7 @@ export function CinemaControls({
         <div className="pointer-events-auto flex items-center gap-2">
           <button
             type="button"
+            data-cinema-audio-control
             onClick={press(onExit)}
             className={roundButton}
             aria-label={t("close")}
@@ -149,6 +150,7 @@ export function CinemaControls({
             {hasVideo && (
               <button
                 type="button"
+                data-cinema-audio-control
                 onClick={press(() => store.toggleSound())}
                 className={roundButton}
                 aria-pressed={soundOn}
@@ -174,6 +176,7 @@ export function CinemaControls({
           <div className="pointer-events-auto justify-self-start">
             <button
               type="button"
+              data-cinema-audio-control
               onClick={press(() => onShowGallery(currentMoment?.id))}
               className={cn(roundButton, "gap-2 px-4 text-sm font-medium")}
               aria-label={t("galleryAria")}
@@ -194,6 +197,7 @@ export function CinemaControls({
             </button>
             <button
               type="button"
+              data-cinema-audio-control
               onClick={press(() => store.togglePlayback())}
               className={cn(roundButton, "min-h-14 min-w-14 bg-white/20")}
               aria-label={isPlaying ? t("pause") : t("play")}

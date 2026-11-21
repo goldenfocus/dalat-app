@@ -244,8 +244,8 @@ export function CinemaSlideshow({
     else onClose();
   }, [exit, onClose, onShowGrid]);
 
-  const { flashIcon, showFlash, handleClick, handleTouchStart, handleTouchEnd } =
-    useCinemaInput(handleExit);
+  const { flashIcon, showFlash, handleClickCapture, handleClick, handleTouchStart, handleTouchEnd } =
+    useCinemaInput(handleExit, eventSlug);
 
   // First-visit hint: chrome starts hidden so the hint teaches the tap.
   const chromeVisible = useCinemaShowControls();
@@ -296,6 +296,7 @@ export function CinemaSlideshow({
       aria-label={t("dialogLabel")}
       tabIndex={-1}
       className="fixed inset-0 z-50 bg-black outline-none"
+      onClickCapture={handleClickCapture}
       onClick={handleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}

@@ -91,7 +91,7 @@ export function AudioSession() {
       const player = useAudioPlayerStore.getState();
 
       // A direct visit to Moments may already have a blocked real track.
-      if (player.autoplayBlocked && player.tracks.length > 0) {
+      if (player.autoplayBlocked && player.isVisible && player.tracks.length > 0) {
         void player.play().then(() => {
           if (useAudioPlayerStore.getState().isPlaying) {
             isPrimed = true;

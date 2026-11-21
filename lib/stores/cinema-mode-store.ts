@@ -162,7 +162,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
     // Hand the soundtrack back the way we found it.
     const { musicBaseline, musicPausedByTransport } = get();
     const audio = useAudioPlayerStore.getState();
-    if (musicBaseline === false && audio.isPlaying) {
+    if (musicBaseline === false && (audio.isPlaying || audio.isLoading || audio.autoplayBlocked)) {
       audio.pause();
     } else if (musicBaseline === true && musicPausedByTransport && !audio.isPlaying) {
       void audio.play();
@@ -239,7 +239,7 @@ export const useCinemaModeStore = create<CinemaModeState>((set, get) => ({
 
     // One transport: pausing the slides pauses the soundtrack too.
     const audio = useAudioPlayerStore.getState();
-    if (audio.isPlaying) {
+    if (audio.isPlaying || audio.isLoading || audio.autoplayBlocked) {
       audio.pause();
       set({ musicPausedByTransport: true });
     }

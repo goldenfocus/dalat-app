@@ -8,12 +8,14 @@ const moments = [photo("a"), photo("b"), photo("c")];
 
 /** Replace the audio store's transport with in-memory fakes (no <audio> element in jsdom). */
 function installFakeAudio(isPlaying: boolean) {
-  const pause = vi.fn(() => useAudioPlayerStore.setState({ isPlaying: false }));
+  const pause = vi.fn(() => useAudioPlayerStore.setState({ isPlaying: false, isLoading: false, autoplayBlocked: false }));
   const play = vi.fn(async () => useAudioPlayerStore.setState({ isPlaying: true }));
   useAudioPlayerStore.setState({
     tracks: [{ id: "t1", file_url: "x.mp3", title: "Dalat Dusk" } as never],
     currentIndex: 0,
     isPlaying,
+    isLoading: false,
+    autoplayBlocked: false,
     pause,
     play,
   });
@@ -46,6 +48,20 @@ describe("transport sync", () => {
     expect(cinema().playbackState).toBe("playing");
     expect(audio.play).toHaveBeenCalledTimes(1);
     expect(useAudioPlayerStore.getState().isPlaying).toBe(true);
+  });
+
+  it("defers blocked audio when the viewer pauses and starts it when they resume", () => {
+    const audio = installFakeAudio(false);
+    useAudioPlayerStore.setState({ autoplayBlocked: true });
+    cinema().start(moments, "evt");
+
+    cinema().pause();
+    expect(audio.pause).toHaveBeenCalledOnce();
+    expect(useAudioPlayerStore.getState().autoplayBlocked).toBe(false);
+    expect(audio.play).not.toHaveBeenCalled();
+
+    cinema().play();
+    expect(audio.play).toHaveBeenCalledOnce();
   });
 
   it("does not start music on resume if the viewer had turned it off", () => {

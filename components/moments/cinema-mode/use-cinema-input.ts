@@ -31,7 +31,7 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
  *  - Horizontal swipe navigates any time; swipe down exits.
  *  - Keys: arrows, space, escape (Tab also reveals the chrome).
  */
-export function useCinemaInput(onExit: () => void) {
+export function useCinemaInput(onExit: () => void, eventSlug: string) {
   const [flashIcon, setFlashIcon] = useState<"play" | "pause" | null>(null);
   const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -61,10 +61,6 @@ export function useCinemaInput(onExit: () => void) {
   const handleTap = useCallback((clientX: number) => {
     const state = useCinemaModeStore.getState();
 
-    // First user gesture unlocks music if the browser blocked autoplay.
-    const audio = useAudioPlayerStore.getState();
-    if (audio.autoplayBlocked && !audio.isPlaying) void audio.play();
-
     if (!state.showControls) {
       triggerHaptic("selection");
       state.revealChrome();
@@ -84,6 +80,33 @@ export function useCinemaInput(onExit: () => void) {
     // Interaction keeps the chrome up (a no-op timer reset while paused).
     useCinemaModeStore.getState().revealChrome();
   }, [toggleTransport]);
+
+  const handleClickCapture = useCallback((e: React.MouseEvent) => {
+    const target = e.target;
+    if (
+      !e.nativeEvent.isTrusted ||
+      didSwipeRef.current ||
+      (target instanceof Element && target.closest("[data-cinema-audio-control], a[href]"))
+    ) return;
+
+    const audio = useAudioPlayerStore.getState();
+    if (
+      audio.playlist?.eventSlug !== eventSlug ||
+      !audio.isVisible ||
+      audio.isPlaying ||
+      (!audio.autoplayBlocked && !audio.isLoading)
+    ) return;
+
+    const video = e.currentTarget.querySelector("video");
+    if (video && !video.muted && !video.paused && video.volume > 0) return;
+
+    // Call play inside the trusted click, even when a slide control stops bubbling.
+    void audio.play();
+    if (!isInteractiveTarget(target)) {
+      useCinemaModeStore.getState().revealChrome();
+      e.stopPropagation();
+    }
+  }, [eventSlug]);
 
   const handleClick = useCallback((e: React.MouseEvent) => {
     // onClick fires after touchend; ignore it when the gesture was a swipe.
@@ -152,5 +175,5 @@ export function useCinemaInput(onExit: () => void) {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [toggleTransport]);
 
-  return { flashIcon, showFlash, handleClick, handleTouchStart, handleTouchEnd };
+  return { flashIcon, showFlash, handleClickCapture, handleClick, handleTouchStart, handleTouchEnd };
 }

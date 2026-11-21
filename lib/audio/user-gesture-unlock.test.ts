@@ -29,11 +29,13 @@ describe("site audio gesture unlock", () => {
     ).toBe(false);
   });
 
-  it("silently primes an unused audio element and restores its mute state", async () => {
+  it("primes an unused audio element without muting it", async () => {
     const audio = {
       src: "",
       muted: false,
-      play: vi.fn().mockResolvedValue(undefined),
+      play: vi.fn(async function (this: { muted: boolean }) {
+        expect(this.muted).toBe(false);
+      }),
       pause: vi.fn(),
       removeAttribute: vi.fn(function (this: { src: string }, name: string) {
         if (name === "src") this.src = "";
@@ -48,6 +50,16 @@ describe("site audio gesture unlock", () => {
     expect(audio.load).toHaveBeenCalledOnce();
     expect(audio.muted).toBe(false);
     expect(audio.src).toBe("");
+  });
+
+  it("clears a rejected primer so a later gesture can retry", async () => {
+    const audio = document.createElement("audio");
+    vi.spyOn(audio, "play").mockRejectedValue(new DOMException("", "NotAllowedError"));
+    vi.spyOn(audio, "pause").mockImplementation(() => {});
+    vi.spyOn(audio, "load").mockImplementation(() => {});
+
+    await expect(primeAudioForLaterPlayback(audio)).resolves.toBe(false);
+    expect(audio.hasAttribute("src")).toBe(false);
   });
 
   it("does not disturb an audio element that already has a track", async () => {

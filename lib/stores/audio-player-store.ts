@@ -131,6 +131,8 @@ function getStoredMuted(): boolean {
   }
 }
 
+let playAttempt = 0;
+
 export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   // Initial state
   tracks: [],
@@ -166,6 +168,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       element.volume = isMuted ? 0 : volume;
     }
     set({ audioElement: element });
+    if (element && get().isVisible) void get().play();
   },
 
   // Set a new playlist and optionally start playing
@@ -182,28 +185,16 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       currentTime: 0,
       duration: 0,
       isVisible: true,
+      autoplayBlocked: false,
       shuffledIndices: createShuffledIndices(tracks.length, startIndex),
       lyricsOffset: savedOffset,  // Load saved timing offset for this track
     });
 
-    // Load the track and auto-play.
-    // audioElement may not exist yet (MiniPlayer mounts after isVisible becomes true),
-    // so retry until it's available.
-    const tryLoadAndPlay = (retries = 0) => {
-      const { audioElement } = get();
-      if (!audioElement) {
-        if (retries < 10) {
-          setTimeout(() => tryLoadAndPlay(retries + 1), 150);
-        }
-        return;
-      }
-      if (track) {
-        audioElement.src = track.file_url;
-        audioElement.load();
-      }
-      get().play();
-    };
-    setTimeout(tryLoadAndPlay, 100);
+    const { audioElement } = get();
+    if (audioElement && track) {
+      audioElement.src = track.file_url;
+      void get().play();
+    }
   },
 
   // Play a specific track by index
@@ -228,10 +219,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       audioElement.load();
     }
 
-    // Auto-play after setting track
-    setTimeout(() => {
-      get().play();
-    }, 100);
+    void get().play();
   },
 
   // Play — calls audioElement.play() immediately to preserve iOS user gesture context.
@@ -242,6 +230,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
     if (!audioElement || !track) return;
 
+    const attempt = ++playAttempt;
     try {
       set({ isLoading: true });
 
@@ -258,8 +247,10 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
       // Call play() immediately — the browser handles buffering internally.
       // This preserves user gesture context on iOS (awaiting canplaythrough broke it).
       await audioElement.play();
+      if (attempt !== playAttempt) return;
       set({ isPlaying: true, isLoading: false, autoplayBlocked: false });
     } catch (error) {
+      if (attempt !== playAttempt) return;
       console.warn('[AudioPlayer] Autoplay blocked (will retry on user interaction):', (error as Error).name);
       // Check if this is an autoplay block (NotAllowedError)
       const isAutoplayBlocked = error instanceof Error &&
@@ -270,11 +261,9 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
   // Pause
   pause: () => {
-    const { audioElement } = get();
-    if (audioElement) {
-      audioElement.pause();
-    }
-    set({ isPlaying: false });
+    playAttempt++;
+    get().audioElement?.pause();
+    set({ isPlaying: false, isLoading: false, autoplayBlocked: false });
   },
 
   // Toggle play/pause
@@ -416,14 +405,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
 
   // Close player (hides but keeps playlist for reopening)
   close: () => {
-    const { audioElement } = get();
-    if (audioElement) {
-      audioElement.pause();
-    }
-    set({
-      isVisible: false,
-      isPlaying: false,
-    });
+    get().pause();
+    set({ isVisible: false });
   },
 
   // Show player (reopen hidden player)
