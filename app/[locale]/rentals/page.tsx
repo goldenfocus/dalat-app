@@ -24,13 +24,15 @@ type Props = {
   }>;
 };
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { locale } = await params;
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  const browseVariant = Boolean(query.q || query.filter || query.bedrooms || query.bathrooms || query.browse);
   const t = await getTranslations({ locale, namespace: "rentalsPilot" });
   const alt = `${t("photos")} · King’s Paradise`;
   const host = "https://dalat.app/rentals";
   return generateLocalizedMetadata({
-    locale, path: "/rentals", title: t("title"), description: t("intro"), index: false,
+    locale, path: "/rentals", title: `${t("title")} · Đà Lạt`, description: t("intro"), index: !browseVariant,
+    availableLocales: browseVariant ? [] : undefined,
     socialImages: [
       { url: host + "/rentals-preview-wide.jpg", type: "image/jpeg", width: 1200, height: 630, alt },
       { url: host + "/rentals-preview-square.jpg", type: "image/jpeg", width: 800, height: 800, alt },

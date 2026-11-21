@@ -5,6 +5,7 @@ import { rentalListingMedia } from "@/components/rentals/listing-media";
 import { RentalTourEditor } from "@/components/rentals/tour-editor";
 import type { Locale } from "@/lib/i18n/routing";
 import { buildAlternates } from "@/lib/metadata";
+import { rentalListingPath } from "@/lib/rentals/urls";
 import { automaticRentalTour, rentalTourFrames } from "@/lib/rentals/tour";
 import { saveRentalTour } from "./actions";
 import { readOwnedRentalTour } from "./owner";
@@ -37,7 +38,7 @@ export default async function RentalTourEditorPage({ params }: Props) {
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-4 px-4 py-6">
-      <RentalLocaleLink locale={locale} href={`/rentals/listing/${listing.id}`}
+      <RentalLocaleLink locale={locale} href={rentalListingPath(listing)}
         className="inline-flex min-h-11 items-center text-sm underline">{common("back")}</RentalLocaleLink>
       <h1 data-rentals-title className="text-4xl">{t("editTour")}</h1>
       {media.length ? <RentalTourEditor media={media} labels={labels}

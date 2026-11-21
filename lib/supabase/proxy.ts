@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { hasEnvVars } from "../utils";
 import { routing } from "../i18n/routing";
+import { isRentalSlug, rentalListingPath } from "../rentals/urls";
 import {
   normalizeLocale,
   resolvePreferredLocale,
@@ -19,10 +20,12 @@ const localeStripRegex = new RegExp(`^\\/(${localePattern})`);
 // Social media crawlers that Next.js doesn't recognize as bots.
 // These need metadata in the initial <head> for link previews to work.
 const socialCrawlerPattern = /Zalo|Line\/|Telegram|Viber|KakaoTalk|Slackbot|Discordbot|PinterestBot|LinkedInBot|Whatsapp|Snapchat|Twitterbot|vkShare/i;
-const indexingCrawlerPattern = /Googlebot|bingbot|BingPreview|DuckDuckBot|YandexBot|Baiduspider|Slurp|Applebot|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|PerplexityBot|cohere-ai|Bytespider|meta-externalagent|Amazonbot|FacebookBot/i;
+const indexingCrawlerPattern = /Googlebot|bingbot|BingPreview|DuckDuckBot|YandexBot|Baiduspider|Slurp|Applebot|GPTBot|ChatGPT-User|OAI-SearchBot|ClaudeBot|Claude-SearchBot|Claude-User|PerplexityBot|Perplexity-User|Bravebot|cohere-ai|Bytespider|meta-externalagent|Amazonbot|FacebookBot/i;
 const eventDetailPathRegex = new RegExp(
   `^(?:\/(${localePattern}))?\/events\/([a-zA-Z0-9_-]+)$`,
 );
+const rentalDetailPathRegex = new RegExp(`^(?:/(${localePattern}))?/rentals/listing/([^/]+)$`);
+const rentalUuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 const eventCollectionSegments = new Set([
   'new',
   'suggest',
@@ -138,6 +141,28 @@ async function resolvePublishedEventSlug(
   }
 }
 
+async function resolvePublicRental(key: string, byId: boolean): Promise<{ id: string; slug: string } | null | undefined> {
+  if (!hasEnvVars) return;
+  try {
+    const endpoint = new URL("/rest/v1/rental_listings", process.env.NEXT_PUBLIC_SUPABASE_URL!);
+    endpoint.search = new URLSearchParams({
+      select: "id,slug", status: "eq.published", limit: "1",
+      [byId ? "id" : "slug"]: "eq." + key,
+    }).toString();
+    const res = await fetch(endpoint, {
+      headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY! },
+      cache: "no-store",
+      signal: AbortSignal.timeout(1800),
+    });
+    if (!res.ok) return;
+    const [listing] = await res.json() as Array<{ id: string; slug: string | null }>;
+    if (!listing) return null;
+    if (listing.slug && isRentalSlug(listing.slug)) return { id: listing.id, slug: listing.slug };
+  } catch {
+    // Leave requests to the page's regular RLS-backed lookup on transient failure.
+  }
+}
+
 export async function updateSession(request: NextRequest) {
   // Normalize pathname by removing trailing slash (except for root "/")
   // This prevents redirect loops with Next.js default trailingSlash: false
@@ -190,6 +215,32 @@ export async function updateSession(request: NextRequest) {
         const canonicalUrl = request.nextUrl.clone();
         canonicalUrl.pathname = `${prefix}/events/${canonicalSlug}`;
         return NextResponse.redirect(canonicalUrl, { status: 308 });
+      }
+    }
+  }
+
+  if (request.method === "GET" || request.method === "HEAD") {
+    const match = pathname.match(rentalDetailPathRegex);
+    if (match) {
+      const locale = match[1] || routing.defaultLocale;
+      let key = "";
+      try { key = decodeURIComponent(match[2]); } catch { /* malformed paths reach normal routing */ }
+      const byId = rentalUuid.test(key);
+      const crawler = (isIndexingCrawler || isSocialCrawler) && !hasSupabaseSessionCookie(request);
+      if (byId || (crawler && isRentalSlug(key))) {
+        const listing = await resolvePublicRental(key, byId);
+        if (byId && listing) {
+          const canonical = request.nextUrl.clone();
+          canonical.pathname = (locale === routing.defaultLocale ? "" : "/" + locale)
+            + rentalListingPath({ ...listing, status: "published" });
+          return NextResponse.redirect(canonical, { status: 308, headers: { "Cache-Control": "private, no-store" } });
+        }
+        if (crawler && listing === null) {
+          return new NextResponse(null, {
+            status: 404,
+            headers: { "Content-Language": locale, "X-Robots-Tag": "noindex, nofollow" },
+          });
+        }
       }
     }
   }

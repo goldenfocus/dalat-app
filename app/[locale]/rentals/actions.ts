@@ -1,5 +1,6 @@
 "use server";
 
+import { after } from "next/server";
 import { revalidatePath } from "next/cache";
 import { hasLocale } from "next-intl";
 import { getLocale } from "next-intl/server";
@@ -10,6 +11,8 @@ import { availabilityTimes } from "@/lib/rentals/calendar";
 import { readRentalDetails } from "@/lib/rentals/details";
 import { readRentalLeaseTerms } from "@/lib/rentals/lease";
 import { rentalVideoId } from "@/lib/rentals/video";
+import { rentalListingPath } from "@/lib/rentals/urls";
+import { notifyRentalSearch } from "@/lib/seo/indexnow-rentals";
 import { createClient } from "@/lib/supabase/server";
 
 const listingForm = z.object({
@@ -54,12 +57,17 @@ export async function saveRental(form: FormData) {
   if (!fields.success || !details.success || !leaseTerms || form.has("uploading") || fields.data.photos.some(photo => !photo.startsWith("/api/rentals/photos/" + user.id + "/") && id.data !== "c7725f24-49f5-469f-b95f-417b7e5ec3d3")) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
   const values = { ...fields.data, ...leaseTerms, details: details.data };
   const result = id.success
-    ? await db.from("rental_listings").update(values).eq("id", id.data).eq("host_id", user.id).select("id").single()
-    : await db.from("rental_listings").insert(values).select("id").single();
+    ? await db.from("rental_listings").update(values).eq("id", id.data).eq("host_id", user.id).select("id,slug,status").single()
+    : await db.from("rental_listings").insert(values).select("id,slug,status").single();
   if (!result.data || result.error) return redirect({ href: path + (id.success ? "&" : "?") + "error=1", locale });
   revalidatePath("/[locale]/rentals", "page");
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
-  redirect({ href: `/rentals/listing/${result.data.id}`, locale });
+  if (result.data.slug) {
+    revalidatePath("/sitemap.xml");
+    const { id: savedId, status, slug } = result.data;
+    after(() => notifyRentalSearch(db, savedId, status === "draft" ? slug : undefined));
+  }
+  redirect({ href: rentalListingPath(result.data), locale });
 }
 
 export async function requestViewing(form: FormData) {

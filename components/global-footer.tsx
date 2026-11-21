@@ -25,7 +25,7 @@ const LOCALE_LABELS: Record<ContentLocale, string> = {
  * Minimal global footer with translated text.
  * Language links are visually hidden but SEO-crawlable.
  */
-export function GlobalFooter() {
+export function GlobalFooter({ rentalsLabel }: { rentalsLabel: string }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
   const tHome = useTranslations("home");
@@ -77,6 +77,10 @@ export function GlobalFooter() {
             className="hover:text-muted-foreground transition-colors"
           >
             {t("footer.discover")}
+          </Link>
+          <span>·</span>
+          <Link href="/rentals" className="hover:text-muted-foreground transition-colors">
+            {rentalsLabel}
           </Link>
           <span>·</span>
           <a

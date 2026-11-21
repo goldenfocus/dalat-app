@@ -12,3 +12,12 @@ it("lets search crawlers render pages and fetch public venue photos while exclud
   expect(rules[0].disallow).toContain("/api/");
   expect(rules[0].disallow).toContain("/de/admin/");
 });
+
+
+it("lets crawlers load rental listing photos while excluding owner and viewing routes", () => {
+  const [rule] = robots().rules as { allow: string[]; disallow: string[] }[];
+  expect(rule.allow).toContain("/api/rentals/photos/");
+  expect(rule.disallow).toContain("/fr/rentals/listing/*/tour");
+  expect(rule.disallow).toContain("/vi/rentals/viewings/");
+  expect(rule.disallow).not.toContain("/rentals/listing/");
+});

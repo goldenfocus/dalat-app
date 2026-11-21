@@ -8,6 +8,7 @@ import { buildAlternates, localeUrl } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { rentalId, type RentalViewingThread } from "@/lib/rentals/data";
+import { rentalListingPath } from "@/lib/rentals/urls";
 import { halfHour } from "@/lib/rentals/calendar";
 import { readRentalSlots } from "@/lib/rentals/read-slots";
 import { rentalDirectionLinks, rentalDirectionsColumns, type RentalDirections } from "@/lib/rentals/directions";
@@ -64,7 +65,6 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   const listingId = visit.listing_id;
   const threadListingId = listingId ?? visit.archived_listing_id;
   if (!threadListingId) notFound();
-  const publicListing = listingId ? "/rentals/listing/" + listingId : null;
   const thread = "/rentals/viewings/" + id;
   const now = currentTime();
   const upcoming = !visit.starts_at || Date.parse(visit.starts_at) > now;
@@ -72,7 +72,7 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   const page = history.success ? history.data : 0;
   const pageSize = 60;
   const [listingResult, proposed, directions, eventsResult, translated] = await Promise.all([
-    listingId ? db.from("rental_listings").select("title,status").eq("id", listingId).maybeSingle() : null,
+    listingId ? db.from("rental_listings").select("id,title,status,slug").eq("id", listingId).maybeSingle() : null,
     listingId && visit.status === "confirmed"
       ? db.from("rental_reschedules").select("proposed_by,starts_at").eq("visit_id", id).maybeSingle()
       : null,
@@ -88,6 +88,7 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
     listingId ? translatedRecords("rental", [listingId], locale).catch(() => new Map()) : null,
   ]);
   const listing = listingResult?.data;
+  const publicListing = listing ? rentalListingPath(listing) : null;
   const savedDirections = directions?.data as RentalDirections | undefined;
   const place = savedDirections ? rentalDirectionLinks(savedDirections) : null;
   const proposal = proposed?.data as Proposal | null;

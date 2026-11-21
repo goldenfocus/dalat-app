@@ -5,13 +5,14 @@ import type { RentalListing } from "@/lib/rentals/data";
 import { rentalListingMedia } from "./listing-media";
 import { RentalListingPrices } from "./listing-prices";
 import { RentalTourMedia } from "./tour-media";
+import { rentalListingPath } from "@/lib/rentals/urls";
 import { buildRentalTour } from "@/lib/rentals/tour";
 import type { TranslationFieldName } from "@/lib/types";
 
 export async function RentalBrowseListing({ listing, strings, locale, owner, tours }: {
   listing: RentalListing; strings?: Map<TranslationFieldName, string>; locale: Locale; owner: boolean; tours: boolean;
 }) {
-  const path = "/rentals/listing/" + listing.id;
+  const path = rentalListingPath(listing);
   const title = strings?.get("title") || listing.title;
   const description = strings?.get("description") || listing.description;
   const [t, common, media] = await Promise.all([
@@ -31,7 +32,7 @@ export async function RentalBrowseListing({ listing, strings, locale, owner, tou
         <RentalLocaleLink locale={locale} href={path} className="inline-flex min-h-11 items-center rounded-lg bg-primary px-3 font-medium text-primary-foreground">
           {t("viewListing")}
         </RentalLocaleLink>
-        {owner && <RentalLocaleLink locale={locale} href={path + "/tour"} className="inline-flex min-h-11 items-center rounded-lg border px-3">
+        {owner && <RentalLocaleLink locale={locale} href={"/rentals/listing/" + listing.id + "/tour"} className="inline-flex min-h-11 items-center rounded-lg border px-3">
           {t("editTour")}
         </RentalLocaleLink>}
       </div>

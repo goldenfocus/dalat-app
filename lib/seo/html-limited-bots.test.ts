@@ -9,6 +9,16 @@ it("delivers initial-head metadata to search and AI fetchers", () => {
     "Claude-User",
     "PerplexityBot/1.0",
     "Perplexity-User",
+    "Bingbot",
+    "DuckDuckBot",
+    "Applebot",
+    "YandexBot",
+    "Baiduspider",
+    "Bravebot",
+    "GPTBot",
+    "ClaudeBot",
+    "Amazonbot",
+    "meta-externalagent",
   ])
     expect(searchHtmlLimitedBots.test(ua)).toBe(true);
 });

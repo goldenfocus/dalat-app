@@ -2,11 +2,13 @@ import { z } from "zod";
 
 export const pilotListingId = "c7725f24-49f5-469f-b95f-417b7e5ec3d3";
 export const pilotMedia = "/rentals/king-paradise";
-export const rentalColumns = "id,host_id,title,description,source_locale,monthly_rent,three_month_rent,six_month_rent,yearly_rent,custom_lease_rates,minimum_lease_months,deposit_months,photos,videos,offer_type,sale_price,status,details,tour_frames";
+export const rentalColumns = "id,host_id,title,description,source_locale,monthly_rent,three_month_rent,six_month_rent,yearly_rent,custom_lease_rates,minimum_lease_months,deposit_months,photos,videos,offer_type,sale_price,status,details,tour_frames,slug,updated_at";
 export const rentalOfferTypes = ["rent", "sale", "both"] as const;
 
 export type RentalListing = {
   id: string;
+  slug?: string | null;
+  updated_at?: string;
   host_id: string;
   title: string;
   description: string;
