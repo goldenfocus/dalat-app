@@ -22,10 +22,10 @@ export function RentalOfferEditor({ initial }: { initial: Initial | null }) {
       </select>
     </label>
     <fieldset hidden={offer === "sale"} disabled={offer === "sale"} className="min-w-0">
-      <legend className="mb-2 font-semibold">{pilot("rent")}</legend>
+      <legend className="mb-2 font-semibold">{pilot("rentCurrency")}</legend>
       <div className="grid gap-3 sm:grid-cols-3">
         {periods.map(([key, label]) => <label className="grid min-w-0 gap-1 text-sm" key={key}>
-          {pilot(label)} (VND)
+          {pilot(label)}
           <input name={key} inputMode="numeric" pattern="[0-9]+" required={key === "monthly_rent" && offer !== "sale"}
             className={input} defaultValue={initial?.[key] ?? undefined} />
         </label>)}

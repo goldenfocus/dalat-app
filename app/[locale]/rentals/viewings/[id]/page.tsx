@@ -4,12 +4,14 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { z } from "zod";
 import { redirect, type Locale } from "@/lib/i18n/routing";
-import { buildAlternates } from "@/lib/metadata";
+import { buildAlternates, localeUrl } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";
 import { translatedRecords } from "@/lib/translations/public-content";
-import { rentalId, type RentalVisit } from "@/lib/rentals/data";
+import { rentalId, type RentalViewingThread } from "@/lib/rentals/data";
+import { halfHour } from "@/lib/rentals/calendar";
 import { readRentalSlots } from "@/lib/rentals/read-slots";
-import { rentalDirectionsColumns, type RentalDirections } from "@/lib/rentals/directions";
+import { rentalDirectionLinks, rentalDirectionsColumns, type RentalDirections } from "@/lib/rentals/directions";
+import { AddToCalendar } from "@/components/events/add-to-calendar";
 import { RentalDirectionsPanel } from "@/components/rentals/directions";
 import { ViewingPicker } from "@/components/rentals/viewing-picker";
 import { answerViewingTime, changeViewingStatus, offerReplacementViewing, proposeViewingTime, sendViewingMessage } from "./actions";
@@ -55,11 +57,14 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
     const next = (locale === "en" ? "" : "/" + locale) + "/rentals/viewings/" + id;
     return redirect({ href: "/auth/login?next=" + encodeURIComponent(next), locale });
   }
-  const result = await db.from("rental_visits").select("id,listing_id,renter_id,slot_id,starts_at,status").eq("id", id).maybeSingle();
-  const visit = result.data as RentalVisit | null;
+  const result = await db.from("rental_visits").select("id,listing_id,renter_id,slot_id,starts_at,status,archived_listing_id").eq("id", id).maybeSingle();
+  const visit = result.data as RentalViewingThread | null;
   if (!visit) notFound();
   const isHost = visit.renter_id !== user.id;
-  const publicListing = "/rentals/listing/" + visit.listing_id;
+  const listingId = visit.listing_id;
+  const threadListingId = listingId ?? visit.archived_listing_id;
+  if (!threadListingId) notFound();
+  const publicListing = listingId ? "/rentals/listing/" + listingId : null;
   const thread = "/rentals/viewings/" + id;
   const now = currentTime();
   const upcoming = !visit.starts_at || Date.parse(visit.starts_at) > now;
@@ -67,38 +72,41 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   const page = history.success ? history.data : 0;
   const pageSize = 60;
   const [listingResult, proposed, directions, eventsResult, translated] = await Promise.all([
-    db.from("rental_listings").select("title,status").eq("id", visit.listing_id).maybeSingle(),
-    visit.status === "confirmed"
+    listingId ? db.from("rental_listings").select("title,status").eq("id", listingId).maybeSingle() : null,
+    listingId && visit.status === "confirmed"
       ? db.from("rental_reschedules").select("proposed_by,starts_at").eq("visit_id", id).maybeSingle()
       : null,
-    visit.status === "confirmed"
-      ? db.from("rental_directions").select(rentalDirectionsColumns).eq("listing_id", visit.listing_id).maybeSingle()
+    listingId && visit.status === "confirmed"
+      ? db.from("rental_directions").select(rentalDirectionsColumns).eq("listing_id", listingId).maybeSingle()
       : null,
     db.from("rental_visit_events")
-      .select("id,actor_id,kind,starts_at,body,recorded_at,visit:rental_visits!inner(listing_id,renter_id)")
-      .eq("visit.listing_id", visit.listing_id).eq("visit.renter_id", visit.renter_id)
+      .select("id,actor_id,kind,starts_at,body,recorded_at,visit:rental_visits!inner(listing_id,archived_listing_id,renter_id)")
+      .eq(listingId ? "visit.listing_id" : "visit.archived_listing_id", threadListingId)
+      .eq("visit.renter_id", visit.renter_id)
       .order("recorded_at", { ascending: false }).order("id", { ascending: false })
       .range(page * pageSize, (page + 1) * pageSize),
-    translatedRecords("rental", [visit.listing_id], locale).catch(() => new Map()),
+    listingId ? translatedRecords("rental", [listingId], locale).catch(() => new Map()) : null,
   ]);
-  const listing = listingResult.data;
+  const listing = listingResult?.data;
+  const savedDirections = directions?.data as RentalDirections | undefined;
+  const place = savedDirections ? rentalDirectionLinks(savedDirections) : null;
   const proposal = proposed?.data as Proposal | null;
   const pendingProposal = proposal && upcoming && Date.parse(proposal.starts_at) > now ? proposal : null;
   const canMove = upcoming && listing?.status === "published" && !pendingProposal &&
     (visit.status === "confirmed" || (!isHost && visit.status === "pending"));
-  const slots = canMove && !isHost
-    ? await readRentalSlots((from, to) => db.rpc("rental_open_times", { listing: visit.listing_id }).order("starts_at").range(from, to))
+  const slots = listingId && canMove && !isHost
+    ? await readRentalSlots((from, to) => db.rpc("rental_open_times", { listing: listingId }).order("starts_at").range(from, to))
     : [];
   const choices = slots?.filter(slot => slot.starts_at !== visit.starts_at) ?? [];
-  const canPropose = isHost && (visit.status === "pending" || visit.status === "proposed");
-  const canConfirm = upcoming && ((isHost && visit.status === "pending" && !!visit.starts_at) || (!isHost && visit.status === "proposed"));
-  const canCancel = upcoming && ["pending", "proposed", "confirmed"].includes(visit.status);
+  const canPropose = listingId && isHost && (visit.status === "pending" || visit.status === "proposed");
+  const canConfirm = listingId && upcoming && ((isHost && visit.status === "pending" && !!visit.starts_at) || (!isHost && visit.status === "proposed"));
+  const canCancel = listingId && upcoming && ["pending", "proposed", "confirmed"].includes(visit.status);
   const closed = visit.status === "declined" || visit.status === "cancelled";
   const canOfferReplacement = isHost && closed && listing?.status === "published";
   const canRebook = !isHost && listing?.status === "published" && (!upcoming || closed);
   const tDate = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Ho_Chi_Minh" });
   const format = (at: string) => tDate.format(new Date(at));
-  const title = listing ? translated.get(visit.listing_id)?.get("title") || listing.title : t("viewings");
+  const title = listing && listingId ? translated?.get(listingId)?.get("title") || listing.title : t("viewings");
   const all = (eventsResult.data ?? []) as Event[];
   const events = all.slice(0, pageSize).reverse();
   const statusAction = changeViewingStatus.bind(null, id);
@@ -107,7 +115,7 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
   return <article className="mx-auto w-full max-w-2xl space-y-5 px-4 py-5 sm:px-8 sm:py-8">
     <RentalLocaleLink locale={locale} href="/rentals#viewings" className={secondary}>{t("viewings")}</RentalLocaleLink>
     <header className="space-y-1">
-      <h1 data-rentals-title className="break-words text-3xl sm:text-4xl">{listing ? <RentalLocaleLink locale={locale} href={publicListing}>{title}</RentalLocaleLink> : title}</h1>
+      <h1 data-rentals-title className="break-words text-3xl sm:text-4xl">{listing && publicListing ? <RentalLocaleLink locale={locale} href={publicListing}>{title}</RentalLocaleLink> : title}</h1>
       <p className="font-semibold">{t(visit.status)}{visit.starts_at && " · " + format(visit.starts_at)}</p>
     </header>
     {feedback.requested && <p role="status" className="rounded-lg border border-primary p-3">{t("requested")}</p>}
@@ -124,19 +132,28 @@ export default async function RentalViewingThread({ params, searchParams }: Prop
           </>}
       </form>
     </section>}
-    {directions?.data && <RentalDirectionsPanel locale={locale} directions={directions.data as RentalDirections} />}
+    {savedDirections && <RentalDirectionsPanel locale={locale} directions={savedDirections} />}
+    {visit.status === "confirmed" && upcoming && visit.starts_at && (
+      <div className="w-fit">
+        <AddToCalendar title={listing ? t("calendarViewing", { title }) : t("viewingTime")} startsAt={visit.starts_at}
+          endsAt={new Date(Date.parse(visit.starts_at) + halfHour).toISOString()}
+          url={localeUrl(locale, thread)} uid={`rental-viewing-${id}@dalat.app`}
+          address={place?.address} googleMapsUrl={place?.map}
+          pageLabel={t("viewings")} locationLabel={t("directions")} />
+      </div>
+    )}
     {canConfirm && <form action={statusAction}>
       <button name="next" value="confirmed" className={primary}>{t("confirm")}</button>
     </form>}
-    {(canPropose || (canMove && (isHost || choices.length > 0)) || canCancel || canRebook || canOfferReplacement) &&
+    {(canPropose || (canMove && (isHost || choices.length > 0)) || canCancel || canRebook || canOfferReplacement) && listingId &&
       <div className="flex flex-col gap-2">
-        {canRebook && <RentalLocaleLink locale={locale} href={publicListing} className={primary}>{t("rebook")}</RentalLocaleLink>}
+        {canRebook && publicListing && <RentalLocaleLink locale={locale} href={publicListing} className={primary}>{t("rebook")}</RentalLocaleLink>}
         {(canPropose || (canMove && (isHost || choices.length > 0))) && <details className="rounded-lg border p-3">
           <summary className="min-h-9 cursor-pointer font-medium">{canPropose ? t("proposeNewTime") : t("reschedule")}</summary>
           {isHost ? <form action={canPropose ? statusAction : proposalAction} className="space-y-3">
             <label className="block">{t("viewingTime")}<input required className={input} type="datetime-local" name="proposed_time" /></label>
             <button name="next" value="proposed" className={primary}>{t("propose")}</button>
-          </form> : <ViewingPicker listing={visit.listing_id} slots={choices} locale={locale}
+          </form> : <ViewingPicker listing={listingId} slots={choices} locale={locale}
             title={t("viewingTime")} action={visit.status === "pending" ? t("changeRequestedTime") : t("propose")}
             formAction={proposalAction} />}
         </details>}

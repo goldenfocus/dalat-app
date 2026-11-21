@@ -1,4 +1,3 @@
-import { RentalLocaleLink } from "@/components/rentals/locale-link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
@@ -16,8 +15,8 @@ import { saveRental } from "../actions";
 type Props = { params: Promise<{ locale: Locale }>; searchParams: Promise<{ id?: string; error?: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "common" });
-  return { title: t("addRental"), alternates: buildAlternates(locale, "/rentals/new"), robots: { index: false, follow: false } };
+  const t = await getTranslations({ locale, namespace: "rentalsPilot" });
+  return { title: t("addListing"), alternates: buildAlternates(locale, "/rentals/new"), robots: { index: false, follow: false } };
 }
 export default async function NewRental({ params, searchParams }: Props) {
   const { locale } = await params;
@@ -41,8 +40,7 @@ export default async function NewRental({ params, searchParams }: Props) {
   const input = "mt-1 w-full rounded-lg border bg-background px-3 py-2";
   return (
     <div className="mx-auto w-full min-w-0 max-w-2xl space-y-5 px-4 py-6">
-      <RentalLocaleLink locale={locale} href="/rentals" className="text-sm underline">{common("back")}</RentalLocaleLink>
-      <h1 data-rentals-title className="text-4xl">{listing ? common("edit") : common("addRental")}</h1>
+      <h1 data-rentals-title className="text-4xl">{listing ? common("edit") : t("addListing")}</h1>
       {error && <p role="alert" className="rounded-lg border border-destructive p-3">{t("failed")}</p>}
       <form action={saveRental} className="space-y-4">
         {listing && <input type="hidden" name="id" value={listing.id} />}

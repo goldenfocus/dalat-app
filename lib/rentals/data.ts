@@ -23,12 +23,14 @@ export type RentalListing = {
 };
 export type RentalVisit = {
   id: string;
-  listing_id: string;
+  listing_id: string | null;
   renter_id: string;
   slot_id: string | null;
   starts_at: string | null;
   status: "pending" | "proposed" | "confirmed" | "declined" | "cancelled";
 };
+
+export type RentalViewingThread = RentalVisit & { archived_listing_id: string | null };
 
 export const rentalId = z.uuid();
 export const isRentalPhotoPath = (value: string) =>

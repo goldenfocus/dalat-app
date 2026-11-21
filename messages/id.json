@@ -4731,7 +4731,6 @@
     "noMatches": "Tidak ada properti sewa yang sesuai",
     "noTours": "Belum ada tur properti",
     "viewListing": "Lihat iklan",
-    "preview": "Pratinjau draf",
     "unpublish": "Tarik iklan",
     "resetZoom": "Atur ulang zoom",
     "play": "Putar video",
@@ -4774,7 +4773,6 @@
     "intro": "Lihat pratinjau iklan sewa dan video singkat propertinya.",
     "reel": "Video properti {name}",
     "captions": "Keunggulan properti",
-    "rent": "Sewa bulanan",
     "monthly": "Sewa per bulan",
     "sixMonths": "Kontrak 6 bulan",
     "yearly": "Kontrak 12 bulan",
@@ -4788,7 +4786,15 @@
     "opening": "Bangun di perbukitan Đà Lạt",
     "bedroom": "Kamar tidur dengan pemandangan",
     "coffee": "Ngopi dengan pemandangan ini?",
-    "endCard": "30 juta ₫/bulan • Kontrak 12 bulan"
+    "endCard": "30 juta ₫/bulan • Kontrak 12 bulan",
+    "addListing": "Tambah iklan",
+    "unlisted": "Tidak ditayangkan",
+    "rentCurrency": "Sewa (VND)",
+    "deleteListing": "Hapus iklan",
+    "deleteTitle": "Hapus iklan ini secara permanen?",
+    "deleteDescription": "Iklan beserta detailnya akan dihapus secara permanen. Pesan terkait kunjungan tetap bersifat pribadi.",
+    "deleteActive": "Selesaikan permintaan kunjungan yang masih terbuka dan janji yang akan datang sebelum menghapus iklan ini.",
+    "calendarViewing": "Kunjungan properti · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Luas properti",

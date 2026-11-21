@@ -4731,7 +4731,6 @@
     "noMatches": "No hay alquileres que coincidan con tu búsqueda",
     "noTours": "Aún no hay recorridos",
     "viewListing": "Ver anuncio",
-    "preview": "Vista previa del borrador",
     "unpublish": "Retirar anuncio",
     "resetZoom": "Restablecer el zoom",
     "play": "Reproducir el vídeo",
@@ -4774,7 +4773,6 @@
     "intro": "Explora un anuncio de alquiler y su breve vídeo de presentación.",
     "reel": "Vídeo de presentación de {name}",
     "captions": "Lo más destacado de la propiedad",
-    "rent": "Alquiler mensual",
     "monthly": "Alquiler mes a mes",
     "sixMonths": "Contrato de 6 meses",
     "yearly": "Contrato de 12 meses",
@@ -4788,7 +4786,15 @@
     "opening": "Despierta en las colinas de Đà Lạt",
     "bedroom": "Un dormitorio con vistas",
     "coffee": "¿Un café con estas vistas?",
-    "endCard": "30 millones de ₫ al mes • Contrato de 12 meses"
+    "endCard": "30 millones de ₫ al mes • Contrato de 12 meses",
+    "addListing": "Añadir anuncio",
+    "unlisted": "No publicado",
+    "rentCurrency": "Alquiler (VND)",
+    "deleteListing": "Eliminar anuncio",
+    "deleteTitle": "¿Eliminar este anuncio de forma definitiva?",
+    "deleteDescription": "El anuncio y sus datos se eliminarán definitivamente. Los mensajes sobre las visitas seguirán siendo privados.",
+    "deleteActive": "Resuelve las solicitudes de visita abiertas y las citas próximas antes de eliminar este anuncio.",
+    "calendarViewing": "Visita · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Superficie",

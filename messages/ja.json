@@ -4731,7 +4731,6 @@
     "noMatches": "条件に合う賃貸物件がありません",
     "noTours": "物件ツアーはまだありません",
     "viewListing": "物件を見る",
-    "preview": "下書きのプレビュー",
     "unpublish": "公開を取り消す",
     "resetZoom": "ズームをリセット",
     "play": "動画を再生",
@@ -4774,7 +4773,6 @@
     "intro": "賃貸物件の情報と短い紹介動画をご覧ください。",
     "reel": "{name}の物件紹介動画",
     "captions": "物件の見どころ",
-    "rent": "月額賃料",
     "monthly": "月単位の契約",
     "sixMonths": "6か月契約",
     "yearly": "12か月契約",
@@ -4788,7 +4786,15 @@
     "opening": "ダラットの丘で迎える朝",
     "bedroom": "眺めの良い寝室",
     "coffee": "この景色を眺めながらコーヒーを？",
-    "endCard": "月額3,000万ドン • 12か月契約"
+    "endCard": "月額3,000万ドン • 12か月契約",
+    "addListing": "物件を掲載",
+    "unlisted": "非公開",
+    "rentCurrency": "賃料（VND）",
+    "deleteListing": "掲載を削除",
+    "deleteTitle": "この物件情報を完全に削除しますか？",
+    "deleteDescription": "掲載とその詳細が完全に削除されます。内見に関するメッセージは非公開のまま残ります。",
+    "deleteActive": "掲載を削除する前に、未対応の内見リクエストと今後の予約に対応してください。",
+    "calendarViewing": "内見 · {title}"
   },
   "rentalsDetails": {
     "propertySize": "面積",

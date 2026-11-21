@@ -22,3 +22,17 @@ export async function publishSavedRental(form: FormData) {
   revalidatePath("/[locale]/rentals/listing/[id]", "page");
   redirect({ href: data && !error ? path : path + "?error=1", locale });
 }
+
+export async function deleteSavedRental(id: string): Promise<"active" | "failed"> {
+  if (!rentalId.safeParse(id).success) return "failed";
+  const locale = await getLocale() as Locale;
+  const db = await createClient();
+  const { data: { user } } = await db.auth.getUser();
+  if (!user) return "failed";
+  const { data, error } = await db.rpc("rental_delete_listing", { listing: id });
+  if (error || data !== "deleted") return data === "active" ? "active" : "failed";
+  revalidatePath("/[locale]/rentals", "page");
+  revalidatePath("/[locale]/rentals/listing/[id]", "page");
+  revalidatePath("/[locale]/rentals/viewings/[id]", "page");
+  return redirect({ href: "/rentals", locale });
+}

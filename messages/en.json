@@ -4731,7 +4731,6 @@
     "noMatches": "No rentals match your search",
     "noTours": "No property tours yet",
     "viewListing": "View listing",
-    "preview": "Draft preview",
     "unpublish": "Unpublish",
     "resetZoom": "Reset zoom",
     "play": "Play video",
@@ -4774,7 +4773,6 @@
     "intro": "Preview a rental listing and its short property reel.",
     "reel": "{name} property reel",
     "captions": "Property highlights",
-    "rent": "Monthly rent",
     "monthly": "Month to month",
     "sixMonths": "6-month lease",
     "yearly": "12-month lease",
@@ -4788,7 +4786,15 @@
     "opening": "Wake up above Đà Lạt",
     "bedroom": "A bedroom with a view",
     "coffee": "Coffee with this view?",
-    "endCard": "₫30 million/month • 12-month lease"
+    "endCard": "₫30 million/month • 12-month lease",
+    "addListing": "Add listing",
+    "unlisted": "Unlisted",
+    "rentCurrency": "Rent (VND)",
+    "deleteListing": "Delete listing",
+    "deleteTitle": "Permanently delete this listing?",
+    "deleteDescription": "This permanently removes the listing and its details. Viewing messages stay private.",
+    "deleteActive": "Resolve any open viewing requests and upcoming appointments before deleting this listing.",
+    "calendarViewing": "Viewing · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Property size",

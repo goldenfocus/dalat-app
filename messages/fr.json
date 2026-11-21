@@ -4731,7 +4731,6 @@
     "noMatches": "Aucune location ne correspond à votre recherche",
     "noTours": "Aucune visite virtuelle pour le moment",
     "viewListing": "Voir l’annonce",
-    "preview": "Aperçu du brouillon",
     "unpublish": "Retirer l’annonce",
     "resetZoom": "Réinitialiser le zoom",
     "play": "Lire la vidéo",
@@ -4774,7 +4773,6 @@
     "intro": "Découvrez une annonce de location et sa courte vidéo de présentation.",
     "reel": "Vidéo de présentation de {name}",
     "captions": "Atouts du logement",
-    "rent": "Loyer mensuel",
     "monthly": "Location au mois",
     "sixMonths": "Bail de 6 mois",
     "yearly": "Bail de 12 mois",
@@ -4788,7 +4786,15 @@
     "opening": "Réveillez-vous sur les hauteurs de Đà Lạt",
     "bedroom": "Une chambre avec vue",
     "coffee": "Un café avec cette vue ?",
-    "endCard": "30 millions ₫/mois • Bail de 12 mois"
+    "endCard": "30 millions ₫/mois • Bail de 12 mois",
+    "addListing": "Ajouter une annonce",
+    "unlisted": "Non publiée",
+    "rentCurrency": "Loyer (VND)",
+    "deleteListing": "Supprimer l’annonce",
+    "deleteTitle": "Supprimer définitivement cette annonce ?",
+    "deleteDescription": "L’annonce et ses détails seront supprimés définitivement. Les messages concernant les visites restent privés.",
+    "deleteActive": "Traitez les demandes de visite en cours et les rendez-vous à venir avant de supprimer cette annonce.",
+    "calendarViewing": "Visite · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Superficie",

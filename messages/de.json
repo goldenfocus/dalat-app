@@ -4731,7 +4731,6 @@
     "noMatches": "Keine passenden Mietobjekte",
     "noTours": "Noch keine Rundgänge",
     "viewListing": "Angebot ansehen",
-    "preview": "Entwurfsvorschau",
     "unpublish": "Veröffentlichung zurücknehmen",
     "resetZoom": "Zoom zurücksetzen",
     "play": "Video abspielen",
@@ -4774,7 +4773,6 @@
     "intro": "Eine Mietanzeige und ihr kurzes Immobilienvideo in der Vorschau.",
     "reel": "Immobilienvideo zu {name}",
     "captions": "Besonderheiten der Immobilie",
-    "rent": "Monatsmiete",
     "monthly": "Monatsweise Miete",
     "sixMonths": "Mietvertrag über 6 Monate",
     "yearly": "Mietvertrag über 12 Monate",
@@ -4788,7 +4786,15 @@
     "opening": "Auf den Hügeln über Đà Lạt aufwachen",
     "bedroom": "Ein Schlafzimmer mit Aussicht",
     "coffee": "Kaffee mit dieser Aussicht?",
-    "endCard": "30 Mio. ₫/Monat • Mietvertrag über 12 Monate"
+    "endCard": "30 Mio. ₫/Monat • Mietvertrag über 12 Monate",
+    "addListing": "Inserat hinzufügen",
+    "unlisted": "Nicht gelistet",
+    "rentCurrency": "Miete (VND)",
+    "deleteListing": "Inserat löschen",
+    "deleteTitle": "Dieses Inserat dauerhaft löschen?",
+    "deleteDescription": "Das Inserat und seine Angaben werden dauerhaft gelöscht. Nachrichten zu Besichtigungen bleiben privat.",
+    "deleteActive": "Kläre offene Besichtigungsanfragen und bevorstehende Termine, bevor du dieses Inserat löschst.",
+    "calendarViewing": "Besichtigung · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Fläche",

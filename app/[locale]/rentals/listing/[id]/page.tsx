@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { cache } from "react";
-import { ArrowLeft } from "lucide-react";
 import { OriginalText } from "@/components/ui/original-text";
 import { SharePageButton } from "@/components/shared/share-page-button";
 import { type Locale } from "@/lib/i18n/routing";
@@ -19,7 +18,8 @@ import { rentalListingMedia } from "@/components/rentals/listing-media";
 import { RentalDirectionsPanel } from "@/components/rentals/directions";
 import { rentalDirectionsColumns, type RentalDirections } from "@/lib/rentals/directions";
 import { ViewingPicker } from "@/components/rentals/viewing-picker";
-import { publishSavedRental } from "./actions";
+import { DeleteRentalListing } from "@/components/rentals/delete-listing";
+import { deleteSavedRental, publishSavedRental } from "./actions";
 
 type Props = { params: Promise<{ locale: Locale; id: string }>; searchParams: Promise<{ error?: string }> };
 const primary = "inline-flex min-h-11 items-center justify-center rounded-lg bg-primary px-4 font-medium text-primary-foreground";
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const path = "/rentals/listing/" + id;
   const t = await getTranslations({ locale, namespace: "rentalsPilot" });
   if (listing.status !== "published") {
-    return { title: t("preview"), alternates: buildAlternates(locale, path), robots: { index: false, follow: false },
+    return { title: t("unlisted"), alternates: buildAlternates(locale, path), robots: { index: false, follow: false },
       openGraph: null, twitter: null };
   }
   const cover = listing.photos.find(safeRentalPhoto);
@@ -76,41 +76,43 @@ export default async function RentalListingPage({ params, searchParams }: Props)
     rentalListingMedia(listing, locale),
     db.from("rental_directions").select(rentalDirectionsColumns).eq("listing_id", id).maybeSingle(),
   ]);
-  return <article className="mx-auto w-full min-w-0 max-w-5xl space-y-5 px-3 py-5 sm:px-8 sm:py-8">
-    <div className="flex flex-wrap items-center justify-between gap-2">
-      <RentalLocaleLink locale={locale} href="/rentals" className={secondary}><ArrowLeft className="me-2 size-4 rtl:rotate-180" aria-hidden="true" />{t("listings")}</RentalLocaleLink>
-      <div className="flex flex-wrap items-center gap-2">
+  return <div data-rental-unlisted={!published ? "" : undefined} className="min-h-[calc(100svh-3.5rem)] bg-background">
+    <article className="mx-auto w-full min-w-0 max-w-5xl space-y-5 px-3 py-5 sm:px-8 sm:py-8">
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {owner && <RentalLocaleLink locale={locale} href={path + "/directions"} className={secondary}>{t("directions")}</RentalLocaleLink>}
         {owner && <RentalLocaleLink locale={locale} href={`/rentals/new?id=${id}`} className={secondary}>{common("edit")}</RentalLocaleLink>}
         {published && <SharePageButton url={localeUrl(locale, path)} />}
       </div>
-    </div>
-    <header>
-      {!published && <p className="text-sm text-muted-foreground">{t("preview")}</p>}
-      <h1 data-rentals-title className="break-words text-4xl sm:text-5xl">{title}</h1>
-    </header>
-    {feedback.error && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
-    <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
-      <RentalGallery items={media.items} labels={media.labels} title={t("photos")} videoTitle={media.videoTitle} />
-      <div className="min-w-0 space-y-5">
-        <RentalListingPrices locale={locale} listing={listing} />
-        {description && <p className="break-words whitespace-pre-wrap">{description}</p>}
-        {(description !== listing.description || title !== listing.title) &&
-          <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}
-        <RentalListingFacts data={listing.details} translation={tags} locale={locale} sourceLocale={listing.source_locale} pilot={id === pilotListingId} />
-        {directions.data && <RentalDirectionsPanel locale={locale} directions={directions.data as RentalDirections} />}
-        {owner && <form action={publishSavedRental}>
-          <input type="hidden" name="listing" value={id} />
-          <input type="hidden" name="status" value={published ? "draft" : "published"} />
-          <button className={published ? secondary : primary}>{t(published ? "unpublish" : "publish")}</button>
-        </form>}
-        {!owner && published && (
-          !user ? <RentalLocaleLink locale={locale} href={"/auth/login?next=" + encodeURIComponent(next)} className={primary}>{t("request")}</RentalLocaleLink>
-          : active?.error || slots === null ? <p role="alert">{t("failed")}</p>
-          : active?.data ? <RentalLocaleLink locale={locale} href={"/rentals/viewings/" + active.data.id} className={secondary}>{t("openViewing")}</RentalLocaleLink>
-          : <ViewingPicker listing={id} slots={slots} locale={locale} title={t("viewingTime")} action={t("request")} />
-        )}
+      <header>
+        {!published && <p className="text-sm text-muted-foreground">{t("unlisted")}</p>}
+        <h1 data-rentals-title className="break-words text-4xl sm:text-5xl">{title}</h1>
+      </header>
+      {feedback.error && <p role="alert" className="rounded-lg border p-3">{t("failed")}</p>}
+      <div className="grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]">
+        <RentalGallery items={media.items} labels={media.labels} title={t("photos")} videoTitle={media.videoTitle} />
+        <div className="min-w-0 space-y-5">
+          <RentalListingPrices locale={locale} listing={listing} />
+          {description && <p className="break-words whitespace-pre-wrap">{description}</p>}
+          {(description !== listing.description || title !== listing.title) &&
+            <OriginalText text={[listing.title, listing.description].join("\n")} sourceLocale={listing.source_locale} />}
+          <RentalListingFacts data={listing.details} translation={tags} locale={locale} sourceLocale={listing.source_locale} pilot={id === pilotListingId} />
+          {directions.data && <RentalDirectionsPanel locale={locale} directions={directions.data as RentalDirections} />}
+          {owner && <div className="flex flex-wrap gap-2">
+            <form action={publishSavedRental}>
+              <input type="hidden" name="listing" value={id} />
+              <input type="hidden" name="status" value={published ? "draft" : "published"} />
+              <button className={published ? secondary : primary}>{t(published ? "unpublish" : "publish")}</button>
+            </form>
+            {!published && <DeleteRentalListing remove={deleteSavedRental.bind(null, id)} />}
+          </div>}
+          {!owner && published && (
+            !user ? <RentalLocaleLink locale={locale} href={"/auth/login?next=" + encodeURIComponent(next)} className={primary}>{t("request")}</RentalLocaleLink>
+            : active?.error || slots === null ? <p role="alert">{t("failed")}</p>
+            : active?.data ? <RentalLocaleLink locale={locale} href={"/rentals/viewings/" + active.data.id} className={secondary}>{t("openViewing")}</RentalLocaleLink>
+            : <ViewingPicker listing={id} slots={slots} locale={locale} title={t("viewingTime")} action={t("request")} />
+          )}
+        </div>
       </div>
-    </div>
-  </article>;
+    </article>
+  </div>;
 }

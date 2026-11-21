@@ -9,28 +9,24 @@ body:has([data-rentals-page]) [data-app-content] {
 }
 
 [data-rentals-page] {
-  color-scheme: light;
-  --background: 90 22% 96%;
-  --foreground: 155 16% 15%;
-  --card: 136 31% 94%;
-  --card-foreground: var(--foreground);
-  --popover: 0 0% 100%;
-  --popover-foreground: var(--foreground);
-  --muted: 100 20% 97%;
-  --muted-foreground: 150 10% 33%;
-  --primary: 158 42% 22%;
-  --primary-foreground: 0 0% 100%;
-  --secondary: 134 24% 92%;
-  --secondary-foreground: var(--primary);
-  --accent: var(--secondary);
-  --accent-foreground: var(--primary);
-  --border: 126 13% 81%;
-  --input: 138 10% 67%;
-  --ring: 151 32% 42%;
-  --radius: 0.875rem;
   min-height: 100svh;
   min-width: 0;
   background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+[data-rental-unlisted] {
+  color-scheme: dark;
+  --background: 150 14% 13%;
+  --foreground: 140 16% 94%;
+  --card: 151 16% 17%;
+  --card-foreground: var(--foreground);
+  --muted: 150 13% 22%;
+  --muted-foreground: 144 10% 77%;
+  --primary: 145 37% 76%;
+  --primary-foreground: 150 30% 12%;
+  --border: 149 12% 38%;
+  --ring: var(--primary);
   color: hsl(var(--foreground));
 }
 

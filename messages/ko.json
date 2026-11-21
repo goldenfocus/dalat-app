@@ -4731,7 +4731,6 @@
     "noMatches": "검색 조건에 맞는 매물이 없습니다",
     "noTours": "아직 매물 투어가 없습니다",
     "viewListing": "매물 보기",
-    "preview": "초안 미리보기",
     "unpublish": "게시 취소",
     "resetZoom": "확대 초기화",
     "play": "동영상 재생",
@@ -4774,7 +4773,6 @@
     "intro": "임대 매물과 짧은 소개 영상을 미리 보세요.",
     "reel": "{name} 매물 소개 영상",
     "captions": "매물의 주요 특징",
-    "rent": "월 임대료",
     "monthly": "월 단위 임대",
     "sixMonths": "6개월 계약",
     "yearly": "12개월 계약",
@@ -4788,7 +4786,15 @@
     "opening": "달랏 언덕에서 맞는 아침",
     "bedroom": "전망이 좋은 침실",
     "coffee": "이 풍경을 보며 커피 한 잔?",
-    "endCard": "월 3,000만 동 • 12개월 계약"
+    "endCard": "월 3,000만 동 • 12개월 계약",
+    "addListing": "매물 등록",
+    "unlisted": "비공개",
+    "rentCurrency": "임대료(VND)",
+    "deleteListing": "매물 삭제",
+    "deleteTitle": "이 매물을 영구 삭제할까요?",
+    "deleteDescription": "매물과 상세 정보가 영구 삭제됩니다. 방문 관련 메시지는 비공개로 유지됩니다.",
+    "deleteActive": "매물을 삭제하기 전에 진행 중인 방문 요청과 예정된 방문 일정을 정리해 주세요.",
+    "calendarViewing": "매물 방문 · {title}"
   },
   "rentalsDetails": {
     "propertySize": "면적",

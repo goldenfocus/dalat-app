@@ -4731,7 +4731,6 @@
     "noMatches": "没有符合条件的出租房源",
     "noTours": "暂无看房导览",
     "viewListing": "查看房源",
-    "preview": "草稿预览",
     "unpublish": "取消发布",
     "resetZoom": "重置缩放",
     "play": "播放视频",
@@ -4774,7 +4773,6 @@
     "intro": "预览出租房源信息和房屋介绍短片。",
     "reel": "{name} 房屋介绍短片",
     "captions": "房源亮点",
-    "rent": "每月租金",
     "monthly": "按月租赁",
     "sixMonths": "6 个月租约",
     "yearly": "12 个月租约",
@@ -4788,7 +4786,15 @@
     "opening": "在大叻山间醒来",
     "bedroom": "能欣赏风景的卧室",
     "coffee": "来杯咖啡，欣赏这片风景？",
-    "endCard": "每月 3,000 万越南盾 • 12 个月租约"
+    "endCard": "每月 3,000 万越南盾 • 12 个月租约",
+    "addListing": "添加房源",
+    "unlisted": "已下架",
+    "rentCurrency": "租金（VND）",
+    "deleteListing": "删除房源",
+    "deleteTitle": "永久删除此房源？",
+    "deleteDescription": "房源及其详情将被永久删除。看房消息仍会保密。",
+    "deleteActive": "请先处理尚未完成的看房请求和即将到来的预约，再删除此房源。",
+    "calendarViewing": "看房 · {title}"
   },
   "rentalsDetails": {
     "propertySize": "面积",

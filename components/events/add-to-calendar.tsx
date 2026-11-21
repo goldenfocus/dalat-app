@@ -23,6 +23,9 @@ interface AddToCalendarProps {
   startsAt: string;
   endsAt?: string | null;
   url: string;
+  uid?: string;
+  locationLabel?: string;
+  pageLabel?: string;
   // For recurring events: provide series slug to show "Add entire series" option
   seriesSlug?: string | null;
 }
@@ -32,106 +35,88 @@ function formatDateForGoogle(isoString: string): string {
   return formatInDaLat(isoString, "yyyyMMdd'T'HHmmss");
 }
 
-// Format date for ICS (YYYYMMDDTHHmmss)
 function formatDateForICS(isoString: string): string {
-  return formatInDaLat(isoString, "yyyyMMdd'T'HHmmss");
+  return new Date(isoString).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
-// Add 2 hours to an ISO string
-function addTwoHours(isoString: string): string {
-  const date = new Date(isoString);
-  date.setHours(date.getHours() + 2);
-  return date.toISOString();
+function endOfCalendarEvent(startsAt: string, endsAt?: string | null): string {
+  return endsAt || new Date(Date.parse(startsAt) + 2 * 60 * 60 * 1000).toISOString();
 }
 
-function generateGoogleCalendarUrl({
-  title,
-  description,
-  locationName,
-  address,
-  googleMapsUrl,
-  latitude,
-  longitude,
-  startsAt,
-  endsAt,
-  url,
-}: AddToCalendarProps): string {
-  // Default to 2 hours if no end time
-  const endTime = endsAt || addTwoHours(startsAt);
+function escapeCalendarText(text: string): string {
+  return text.replace(/\\/g, "\\\\").replace(/\r\n|\r|\n/g, "\\n").replace(/([;,])/g, "\\$1");
+}
 
-  const place = getCalendarLocation({
+function foldCalendarLine(line: string, encoder: TextEncoder): string {
+  let length = 0;
+  let output = "";
+  for (const character of line) {
+    const bytes = encoder.encode(character).length;
+    if (length + bytes > 75) {
+      output += "\r\n ";
+      length = 1;
+    }
+    output += character;
+    length += bytes;
+  }
+  return output;
+}
+
+function calendarDetails({ description, url, pageLabel = "Event page", locationLabel = "Location" }: AddToCalendarProps, mapUrl: string | null) {
+  return [description, mapUrl && `${locationLabel}: ${mapUrl}`, `${pageLabel}: ${url}`].filter(Boolean).join("\n\n");
+}
+
+function eventLocation({ locationName, address, googleMapsUrl, latitude, longitude }: AddToCalendarProps) {
+  return getCalendarLocation({
     location_name: locationName,
     address,
     google_maps_url: googleMapsUrl,
     latitude,
     longitude,
   });
+}
 
-  let details = description || "";
-  if (place.mapUrl) {
-    details += `\n\nLocation: ${place.mapUrl}`;
-  }
-  details += `\n\nEvent page: ${url}`;
-
+function generateGoogleCalendarUrl(props: AddToCalendarProps): string {
+  const { title, startsAt, endsAt } = props;
+  const endTime = endOfCalendarEvent(startsAt, endsAt);
+  const place = eventLocation(props);
   const params = new URLSearchParams({
     action: "TEMPLATE",
     text: title,
     dates: `${formatDateForGoogle(startsAt)}/${formatDateForGoogle(endTime)}`,
-    details: details.trim(),
+    details: calendarDetails(props, place.mapUrl),
     location: place.text,
-    ctz: DALAT_TIMEZONE, // Display in Đà Lạt timezone
+    ctz: DALAT_TIMEZONE,
   });
 
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
 }
 
-function generateICSContent({
-  title,
-  description,
-  locationName,
-  address,
-  googleMapsUrl,
-  latitude,
-  longitude,
-  startsAt,
-  endsAt,
-  url,
-}: AddToCalendarProps): string {
-  // Default to 2 hours if no end time
-  const endTime = endsAt || addTwoHours(startsAt);
-  const nowFormatted = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+function generateICSContent(props: AddToCalendarProps): string {
+  const { title, startsAt, endsAt, url, uid = `${Date.parse(startsAt)}@dalat.app` } = props;
+  const place = eventLocation(props);
+  const encoder = new TextEncoder();
 
-  const place = getCalendarLocation({
-    location_name: locationName,
-    address,
-    google_maps_url: googleMapsUrl,
-    latitude,
-    longitude,
-  });
-  const mapLine = place.mapUrl ? `\\n\\nLocation: ${place.mapUrl}` : "";
-
-  // ICS with timezone (TZID parameter tells calendar app the local time)
-  const icsContent = [
+  return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     "PRODID:-//dalat.app//Event//EN",
     "CALSCALE:GREGORIAN",
     "METHOD:PUBLISH",
     "BEGIN:VEVENT",
-    `DTSTART;TZID=${DALAT_TIMEZONE}:${formatDateForICS(startsAt)}`,
-    `DTEND;TZID=${DALAT_TIMEZONE}:${formatDateForICS(endTime)}`,
-    `DTSTAMP:${nowFormatted}Z`,
-    `UID:${new Date(startsAt).getTime()}@dalat.app`,
-    `SUMMARY:${title}`,
-    `DESCRIPTION:${(description || "").replace(/\n/g, "\\n")}${mapLine}\\n\\nEvent page: ${url}`,
-    `LOCATION:${place.text}`,
+    `DTSTART:${formatDateForICS(startsAt)}`,
+    `DTEND:${formatDateForICS(endOfCalendarEvent(startsAt, endsAt))}`,
+    `DTSTAMP:${formatDateForICS(new Date().toISOString())}`,
+    `UID:${escapeCalendarText(uid)}`,
+    `SUMMARY:${escapeCalendarText(title)}`,
+    `DESCRIPTION:${escapeCalendarText(calendarDetails(props, place.mapUrl))}`,
+    `LOCATION:${escapeCalendarText(place.text)}`,
     ...(place.geo ? [`GEO:${place.geo}`] : []),
-    `URL:${url}`,
+    `URL:${new URL(url, window.location.origin).href}`,
     "END:VEVENT",
     "END:VCALENDAR",
-  ].join("\r\n");
-
-  return icsContent;
+    "",
+  ].map(line => foldCalendarLine(line, encoder)).join("\r\n");
 }
 
 function downloadICS(props: AddToCalendarProps) {
@@ -141,7 +126,7 @@ function downloadICS(props: AddToCalendarProps) {
 
   const link = document.createElement("a");
   link.href = url;
-  link.download = `${props.title.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.ics`;
+  link.download = `${props.title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "").toLowerCase() || "calendar"}.ics`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);

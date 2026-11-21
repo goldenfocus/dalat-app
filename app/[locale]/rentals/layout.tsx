@@ -1,9 +1,7 @@
-import { RentalLocaleLink } from "@/components/rentals/locale-link";
-import { ArrowLeft } from "lucide-react";
+import { RentalsHeader } from "@/components/rentals/header";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { notFound } from "next/navigation";
-import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
-import { DeferredLocalePicker } from "@/components/site-header-deferred";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { locales } from "@/lib/i18n/routing";
 import "./rentals.css";
 
@@ -14,23 +12,14 @@ export default async function RentalsLayout({ children, params }: Readonly<{
   const { locale } = await params;
   if (!hasLocale(locales, locale)) notFound();
   setRequestLocale(locale);
-  const [t, messages] = await Promise.all([getTranslations({ locale, namespace: "common" }), getMessages({ locale })]);
-  const rentalsMessages = Object.fromEntries(["common", "rentalsDetails", "rentalsPilot", "translations"]
+  const messages = await getMessages({ locale });
+  const rentalsMessages = Object.fromEntries(["calendar", "common", "nav", "rentalsDetails", "rentalsPilot", "translations", "userMenu"]
     .map(key => [key, messages[key]]));
 
   return (
     <NextIntlClientProvider locale={locale} messages={rentalsMessages}>
       <div data-rentals-page>
-        <header className="border-b bg-card">
-          <div className="mx-auto flex min-h-14 w-full max-w-5xl items-center justify-between gap-2 px-4 sm:px-8">
-            <RentalLocaleLink locale={locale} href="/" prefetch={false} aria-label={`${t("back")} · ĐàLạt.app`}
-              className="inline-flex min-h-11 items-center gap-2 rounded-lg text-sm font-semibold text-primary sm:text-base">
-              <ArrowLeft className="size-4 shrink-0 rtl:rotate-180" aria-hidden="true" />
-              ĐàLạt.app
-            </RentalLocaleLink>
-            <DeferredLocalePicker />
-          </div>
-        </header>
+        <RentalsHeader locale={locale} />
         {children}
       </div>
     </NextIntlClientProvider>

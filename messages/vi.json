@@ -4731,7 +4731,6 @@
     "noMatches": "Không tìm thấy nhà cho thuê phù hợp",
     "noTours": "Chưa có nội dung tham quan",
     "viewListing": "Xem tin đăng",
-    "preview": "Xem trước bản nháp",
     "unpublish": "Gỡ tin",
     "resetZoom": "Đặt lại thu phóng",
     "play": "Phát video",
@@ -4774,7 +4773,6 @@
     "intro": "Xem thử tin cho thuê và video ngắn giới thiệu căn nhà.",
     "reel": "Video giới thiệu {name}",
     "captions": "Điểm nổi bật của căn nhà",
-    "rent": "Tiền thuê mỗi tháng",
     "monthly": "Thuê theo tháng",
     "sixMonths": "Hợp đồng 6 tháng",
     "yearly": "Hợp đồng 12 tháng",
@@ -4788,7 +4786,15 @@
     "opening": "Thức dậy trên đồi Đà Lạt",
     "bedroom": "Phòng ngủ có tầm nhìn đẹp",
     "coffee": "Cà phê cùng khung cảnh này?",
-    "endCard": "30 triệu đồng/tháng • Hợp đồng 12 tháng"
+    "endCard": "30 triệu đồng/tháng • Hợp đồng 12 tháng",
+    "addListing": "Thêm tin đăng",
+    "unlisted": "Đã ẩn",
+    "rentCurrency": "Tiền thuê (VND)",
+    "deleteListing": "Xóa tin đăng",
+    "deleteTitle": "Xóa vĩnh viễn tin đăng này?",
+    "deleteDescription": "Tin đăng và các thông tin đi kèm sẽ bị xóa vĩnh viễn. Tin nhắn về lịch xem nhà vẫn được giữ riêng tư.",
+    "deleteActive": "Hãy xử lý các yêu cầu xem nhà đang mở và các lịch hẹn sắp tới trước khi xóa tin đăng.",
+    "calendarViewing": "Xem nhà · {title}"
   },
   "rentalsDetails": {
     "propertySize": "Diện tích",

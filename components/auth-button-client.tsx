@@ -12,7 +12,7 @@ const NotificationBell = dynamic(
   { ssr: false },
 );
 
-export function AuthButtonClient() {
+export function AuthButtonClient({ showNotifications = true }: { showNotifications?: boolean }) {
   const t = useTranslations("nav");
   const { profile, isGodMode, isLoading } = useViewer();
 
@@ -27,7 +27,7 @@ export function AuthButtonClient() {
 
   return (
     <div className="flex items-center gap-2 shrink-0">
-      <NotificationBell key={`notifications-${profile.id}`} userId={profile.id} />
+      {showNotifications && <NotificationBell key={`notifications-${profile.id}`} userId={profile.id} />}
       <UserMenu
         key={`menu-${profile.id}`}
         avatarUrl={profile.avatar_url}
