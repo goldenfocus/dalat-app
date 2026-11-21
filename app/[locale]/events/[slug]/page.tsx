@@ -1287,7 +1287,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                   >
                     {formattedEndDate}
                   </time>
-                  {formattedEndTime && (
+                  {!timeTbd && formattedEndTime && (
                     <p className="text-sm text-muted-foreground">
                       {formattedEndTime}
                     </p>
