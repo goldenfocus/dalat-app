@@ -58,15 +58,16 @@ export default async function RentalsPage({ params, searchParams }: Props) {
     translatedRecords("rental", publishedListings.map(l => l.id), locale).catch(() => new Map()),
     getTranslations({ locale, namespace: "rentalsDetails" }),
   ]);
-  const translateFact = (key: string, values?: { age: number }) =>
-    key === "wifi" || key === "quiet" ? t(key) : facts(key, values);
+  const translateFact = (key: string) => key === "wifi" || key === "quiet" ? t(key) : facts(key);
   const catalog = publishedListings.map(listing => ({
     listing, discovery: rentalDiscovery(listing, translated.get(listing.id), translateFact),
   }));
   const filters = [...new Map(catalog.flatMap(({ discovery }) => discovery.filters.map(fact => [fact.key, fact] as const))).values()]
     .sort((a, b) => a.label.localeCompare(b.label, locale));
   const query = typeof feedback.q === "string" ? feedback.q.trim().slice(0, 120) : "";
-  const selected = [...new Set([feedback.filter ?? []].flat())].slice(0, 50);
+  const availableFilterKeys = new Set(filters.map(fact => fact.key));
+  const selected = [...new Set([feedback.filter ?? []].flat())]
+    .filter(key => availableFilterKeys.has(key)).slice(0, 50);
   const tours = feedback.browse === "tours";
   const matching = catalog.filter(({ discovery }) => matchesRental(discovery, query, selected)).map(({ listing }) => listing);
   const visible = tours ? matching.filter(listing => listing.id === pilotListingId || listing.photos.some(safeRentalPhoto) || listing.videos.length > 0)

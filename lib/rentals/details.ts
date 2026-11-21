@@ -36,6 +36,10 @@ export const detailsSchema = z.object({
 });
 export type RentalDetails = z.infer<typeof detailsSchema>;
 
+export function isRentalAmenityExtra(pricing: "included" | "notIncluded" | number | undefined) {
+  return pricing === "notIncluded" || typeof pricing === "number";
+}
+
 export function rentalDetails(value: unknown) {
   return detailsSchema.safeParse(value).data ?? detailsSchema.parse({});
 }

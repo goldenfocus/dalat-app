@@ -82,7 +82,7 @@ export default async function RentalListingPage({ params, searchParams }: Props)
       <div className="flex flex-wrap items-center gap-2">
         {owner && <RentalLocaleLink locale={locale} href={path + "/directions"} className={secondary}>{t("directions")}</RentalLocaleLink>}
         {owner && <RentalLocaleLink locale={locale} href={`/rentals/new?id=${id}`} className={secondary}>{common("edit")}</RentalLocaleLink>}
-        {published && <SharePageButton url={localeUrl(locale, path)} title={title} showLabel className="me-0 min-h-11" />}
+        {published && <SharePageButton url={localeUrl(locale, path)} />}
       </div>
     </div>
     <header>

@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import type { RentalListing } from "./data";
-import { rentalDetails, rentalDetailTranslations } from "./details";
+import { isRentalAmenityExtra, rentalDetails, rentalDetailTranslations } from "./details";
 
 export const filterGroups = ["amenities", "area", "rules", "rooms"] as const;
 type FilterGroup = (typeof filterGroups)[number];
 type Filter = { group: FilterGroup; key: string; label: string; original?: string };
-type Localize = (key: string, values?: { age: number }) => string;
+type Localize = (key: string) => string;
 
 export function normalizeRentalSearch(value: string) {
   return value.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "")
@@ -22,28 +22,21 @@ export function rentalDiscovery(listing: RentalListing, strings: Map<string, str
   for (const key of details.amenities) add("amenities", key, t(key));
   for (const key of details.area) add("area", key, t(key));
   for (const [key, status] of Object.entries(details.utilities)) {
-    add("amenities", key + ":" + status, t(key) + " · " + t(status));
+    if (status === "included") add("amenities", key + ":" + status, t(key));
   }
   for (const [key, status] of Object.entries(details.rules)) {
-    add("rules", key + ":" + status, t(key) + " · " + t(status));
-  }
-  if (details.minimumChildAge) {
-    const age = details.minimumChildAge;
-    add("rules", "age:" + age, age === 18 ? t("adultsOnly") : t("ageRule", { age }));
+    if (status === "allowed") add("rules", key + ":" + status, t(key) + " · " + t(status));
   }
   for (const [key, count] of Object.entries(details.rooms)) {
     if (count > 0) add("rooms", key, t(key));
   }
   details.custom.forEach((fact, index) => {
+    if (fact.group === "rules" || (fact.group === "amenities" && isRentalAmenityExtra(fact.pricing))) return;
     const group = fact.group === "nearby" ? "area" : fact.group;
     const label = translated[index] ?? fact.label;
     const normalized = fact.label.normalize("NFC").trim().toLowerCase();
     const key = "custom:" + createHash("sha256").update(normalized).digest("base64url").slice(0, 22);
-    if (fact.group === "amenities" && fact.pricing === "notIncluded") {
-      add(group, key + ":excluded", label + " · " + t("notIncluded"), fact.label);
-    } else {
-      add(group, key, label, fact.label);
-    }
+    add(group, key, label, fact.label);
   });
   const text = normalizeRentalSearch([
     "Đà Lạt", t(listing.offer_type), listing.title, listing.description, strings?.get("title"), strings?.get("description"),
