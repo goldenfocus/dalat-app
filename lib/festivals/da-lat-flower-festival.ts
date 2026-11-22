@@ -52,6 +52,15 @@ export const FLOWER_FESTIVAL_SOURCES = {
 } as const;
 
 export const FLOWER_FESTIVAL_2026_DATES = {
-  opening: "2026-12-19",
+  editionStart: "2026-12-19",
   closing: "2026-12-31",
+} as const;
+
+export const FLOWER_FESTIVAL_2026_OPENING = {
+  startsAt: "2026-12-12T20:00:00+07:00",
+  lastChecked: "2026-11-22",
+  sources: {
+    visitorGuide: "https://festivaldalat.lamdongtructuyen.vn/thong-tin-can-biet/",
+    livestream: "https://festivaldalat.lamdongtructuyen.vn/livestream/",
+  },
 } as const;

@@ -5,6 +5,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { allLocales } from "@/lib/i18n/config";
 import { getMonthSlug, isPastMonth } from "@/lib/events/archive-utils";
 import {
+  FLOWER_FESTIVAL_2026_OPENING,
   FLOWER_FESTIVAL_2026_PATH,
   FLOWER_FESTIVAL_LAST_CHECKED,
   FLOWER_FESTIVAL_PATH,
@@ -487,13 +488,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     );
   }
 
-  const flowerFestivalLastModified = new Date(
-    `${FLOWER_FESTIVAL_LAST_CHECKED}T00:00:00+07:00`,
-  );
-  for (const path of [FLOWER_FESTIVAL_PATH, FLOWER_FESTIVAL_2026_PATH]) {
+  for (const [path, lastChecked] of [
+    [FLOWER_FESTIVAL_PATH, FLOWER_FESTIVAL_LAST_CHECKED],
+    [FLOWER_FESTIVAL_2026_PATH, FLOWER_FESTIVAL_2026_OPENING.lastChecked],
+  ]) {
     sitemapEntries.push(
       ...localizedEntries(path, {
-        lastModified: flowerFestivalLastModified,
+        lastModified: new Date(`${lastChecked}T00:00:00+07:00`),
         changeFrequency: "weekly",
         priority: 0.9,
       }),

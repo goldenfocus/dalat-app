@@ -23,10 +23,10 @@ import {
 } from "@/lib/structured-data";
 import {
   FLOWER_FESTIVAL_2026_DATES,
+  FLOWER_FESTIVAL_2026_OPENING,
   FLOWER_FESTIVAL_2026_PATH,
   FLOWER_FESTIVAL_EVENT_PATH,
   FLOWER_FESTIVAL_IMAGE,
-  FLOWER_FESTIVAL_LAST_CHECKED,
   FLOWER_FESTIVAL_PAST_PHOTOS,
   FLOWER_FESTIVAL_PATH,
   FLOWER_FESTIVAL_SOURCES,
@@ -118,7 +118,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
     description: t("edition2026.seoDescription"),
     url: localeUrl(locale, FLOWER_FESTIVAL_2026_PATH),
     image: [FLOWER_FESTIVAL_IMAGE],
-    startDate: `${FLOWER_FESTIVAL_2026_DATES.opening}T20:00:00+07:00`,
+    startDate: `${FLOWER_FESTIVAL_2026_DATES.editionStart}T20:00:00+07:00`,
     endDate: `${FLOWER_FESTIVAL_2026_DATES.closing}T20:00:00+07:00`,
     eventStatus: "https://schema.org/EventScheduled",
     eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
@@ -133,7 +133,8 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
       {
         "@type": "Event",
         name: t("edition2026.schema.openingName"),
-        startDate: "2026-12-19T20:00:00+07:00",
+        startDate: FLOWER_FESTIVAL_2026_OPENING.startsAt,
+        sameAs: Object.values(FLOWER_FESTIVAL_2026_OPENING.sources),
         eventStatus: "https://schema.org/EventScheduled",
         eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
         location: square,
@@ -184,7 +185,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
       },
     ],
     sameAs: Object.values(FLOWER_FESTIVAL_SOURCES),
-    dateModified: FLOWER_FESTIVAL_LAST_CHECKED,
+    dateModified: FLOWER_FESTIVAL_2026_OPENING.lastChecked,
   };
 
   const programs = [
@@ -345,7 +346,7 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
                       </dt>
                       <dd className="mt-2 text-lg font-semibold">
                         {detail === "opening" ? (
-                          <time dateTime="2026-12-19T20:00:00+07:00">
+                          <time dateTime={FLOWER_FESTIVAL_2026_OPENING.startsAt}>
                             {t(`edition2026.details.${detail}Value`)}
                           </time>
                         ) : detail === "closing" ? (
@@ -357,7 +358,26 @@ export default async function DaLatFlowerFestival2026Page({ params }: PageProps)
                         )}
                       </dd>
                       <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                        {t(`edition2026.details.${detail}Note`)}
+                        {detail === "opening"
+                          ? t.rich("edition2026.details.openingNote", {
+                              schedule: (chunks) => (
+                                <a
+                                  href={FLOWER_FESTIVAL_2026_OPENING.sources.visitorGuide}
+                                  className="text-primary underline underline-offset-2"
+                                >
+                                  {chunks}
+                                </a>
+                              ),
+                              livestream: (chunks) => (
+                                <a
+                                  href={FLOWER_FESTIVAL_2026_OPENING.sources.livestream}
+                                  className="text-primary underline underline-offset-2"
+                                >
+                                  {chunks}
+                                </a>
+                              ),
+                            })
+                          : t(`edition2026.details.${detail}Note`)}
                       </p>
                     </div>
                   )
