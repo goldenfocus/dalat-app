@@ -104,7 +104,7 @@ export default async function FestivalsPage({ params }: PageProps) {
         item: {
           "@type": "Festival",
           name: tFlowerFestival("edition2026.title"),
-          startDate: `${FLOWER_FESTIVAL_2026_DATES.opening}T20:00:00+07:00`,
+          startDate: `${FLOWER_FESTIVAL_2026_DATES.editionStart}T20:00:00+07:00`,
           endDate: `${FLOWER_FESTIVAL_2026_DATES.closing}T20:00:00+07:00`,
           location: {
             "@type": "Place",

@@ -3,6 +3,7 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   FLOWER_FESTIVAL_2026_DATES,
+  FLOWER_FESTIVAL_2026_OPENING,
   FLOWER_FESTIVAL_2026_PATH,
   FLOWER_FESTIVAL_EVENT_PATH,
   FLOWER_FESTIVAL_LAST_CHECKED,
@@ -61,10 +62,18 @@ describe("Da Lat Flower Festival guide", () => {
 
   it("keeps the official 2026 core dates and source audit explicit", () => {
     expect(FLOWER_FESTIVAL_2026_DATES).toEqual({
-      opening: "2026-12-19",
+      editionStart: "2026-12-19",
       closing: "2026-12-31",
     });
     expect(FLOWER_FESTIVAL_LAST_CHECKED).toBe("2026-08-27");
+    expect(FLOWER_FESTIVAL_2026_OPENING).toEqual({
+      startsAt: "2026-12-12T20:00:00+07:00",
+      lastChecked: "2026-11-22",
+      sources: {
+        visitorGuide: "https://festivaldalat.lamdongtructuyen.vn/thong-tin-can-biet/",
+        livestream: "https://festivaldalat.lamdongtructuyen.vn/livestream/",
+      },
+    });
 
     const sources = Object.values(FLOWER_FESTIVAL_SOURCES).map(
       (source) => new URL(source)
@@ -106,6 +115,10 @@ describe("Da Lat Flower Festival guide", () => {
       const actualKeys = leafKeys(messages.flowerFestivalGuide).sort();
       const guide = messages.flowerFestivalGuide as {
         common?: { imageAlt?: string; imageCaption?: string };
+        edition2026: {
+          details: { openingValue: string; openingNote: string };
+          faq: { datesAnswer: string };
+        };
       };
 
       expect(actualKeys, locale).toEqual(expectedKeys);
@@ -113,6 +126,11 @@ describe("Da Lat Flower Festival guide", () => {
       expect(messages.events?.ends, locale).toBeTruthy();
       expect(guide.common?.imageAlt, locale).toContain("2024");
       expect(guide.common?.imageCaption, locale).toContain("2024");
+      expect(guide.edition2026.details.openingValue, locale).toContain("12");
+      expect(guide.edition2026.details.openingNote, locale).toMatch(
+        /<schedule>[^<]+<\/schedule>.*<livestream>[^<]+<\/livestream>/,
+      );
+      expect(guide.edition2026.faq.datesAnswer, locale).not.toContain("19");
     }
   });
 });
