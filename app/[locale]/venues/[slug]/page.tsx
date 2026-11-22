@@ -811,7 +811,6 @@ export default async function VenuePage({ params }: PageProps) {
               approximate={venue.geocode_source === "osm_street"}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
-              locale={locale}
             />
           </section>
         )}

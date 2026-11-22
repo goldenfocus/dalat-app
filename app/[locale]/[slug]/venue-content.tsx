@@ -1055,7 +1055,6 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               approximate={approximateLocation}
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
-              locale={locale}
             />
           </section>
         )}

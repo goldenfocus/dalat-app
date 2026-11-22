@@ -1,7 +1,4 @@
-"use client";
-
-import { getLocationMapLinks } from "@/lib/events/location";
-import { useState } from "react";
+import { getLocationMapLinks, hasCoordinates } from "@/lib/events/location";
 import { MapPin, ExternalLink, Navigation } from "lucide-react";
 
 interface VenueMapProps {
@@ -13,7 +10,21 @@ interface VenueMapProps {
   approximate?: boolean;
   directionsLabel: string;
   viewOnMapLabel: string;
-  locale?: string;
+}
+
+function getMapEmbedUrl(latitude: number, longitude: number) {
+  const bounds = [
+    Math.max(-180, longitude - 0.0075),
+    Math.max(-90, latitude - 0.0045),
+    Math.min(180, longitude + 0.0075),
+    Math.min(90, latitude + 0.0045),
+  ];
+  const query = new URLSearchParams({
+    bbox: bounds.map((coordinate) => coordinate.toFixed(7)).join(","),
+    layer: "mapnik",
+    marker: `${latitude},${longitude}`,
+  });
+  return `https://www.openstreetmap.org/export/embed.html?${query}`;
 }
 
 export function VenueMap({
@@ -25,18 +36,12 @@ export function VenueMap({
   approximate = false,
   directionsLabel,
   viewOnMapLabel,
-  locale,
 }: VenueMapProps) {
-  const [mapError, setMapError] = useState(false);
-
-  // Google Static Maps API URL — pass language param so labels match page locale
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-  const langParam = locale ? `&language=${locale}` : "";
-  const mapUrl = apiKey && !approximate
-    ? `https://maps.googleapis.com/maps/api/staticmap?center=${latitude},${longitude}&zoom=15&size=640x360&scale=2&markers=color:red%7C${latitude},${longitude}${langParam}&region=VN&key=${apiKey}`
+  const coordinates = { latitude, longitude };
+  const mapUrl = !approximate && hasCoordinates(coordinates)
+    ? getMapEmbedUrl(latitude, longitude)
     : null;
 
-  // Google Maps links
   const links = getLocationMapLinks({
     latitude: approximate ? null : latitude,
     longitude: approximate ? null : longitude,
@@ -50,24 +55,15 @@ export function VenueMap({
 
   return (
     <div className="rounded-xl overflow-hidden border border-border">
-      {/* Map Image */}
+      {/* Map preview */}
       <div className="relative aspect-[16/9] bg-muted">
-        {mapUrl && !mapError ? (
-          <a
-            href={mapsLink ?? undefined}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="block w-full h-full"
-          >
-            <img
-              src={mapUrl}
-              alt={`Map showing ${name}`}
-              className="w-full h-full object-cover"
-              onError={() => setMapError(true)}
-            />
-            {/* Subtle overlay for better contrast */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
-          </a>
+        {mapUrl ? (
+          <iframe
+            src={mapUrl}
+            title={`${viewOnMapLabel} · ${name}`}
+            loading="lazy"
+            className="block h-full w-full border-0"
+          />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground">
             <MapPin className="w-8 h-8 mb-2" />
