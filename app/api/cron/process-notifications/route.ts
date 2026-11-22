@@ -242,8 +242,30 @@ export async function GET(request: Request) {
         }
       }
 
-      // Send the notification
-      const notifyResult = await notify(payload, onlyChannels ? { onlyChannels } : {});
+      if (payload.type === 'venue_claim_review') {
+        const [claim, recipient] = await Promise.all([
+          supabase.from('venue_claims').select('status').eq('id', payload.claimId).maybeSingle(),
+          supabase.from('profiles').select('role,is_ghost').eq('id', payload.userId).maybeSingle(),
+        ]);
+        if (claim.error || recipient.error) throw new RetryableError('Venue claim eligibility check failed');
+        if (
+          claim.data?.status !== 'pending' ||
+          !recipient.data ||
+          recipient.data.is_ghost ||
+          !['admin', 'superadmin'].includes(recipient.data.role)
+        ) {
+          const { error } = await supabase.from('scheduled_notifications')
+            .update({ status: 'cancelled' }).eq('id', scheduled.id);
+          if (error) throw new RetryableError('Could not cancel the venue claim alert');
+          processed++;
+          continue;
+        }
+      }
+
+      const notifyResult = await notify(payload, {
+        onlyChannels,
+        deliveryId: payload.type === 'venue_claim_review' ? scheduled.id : undefined,
+      });
 
       if (notifyResult.success) {
         const { error: sentError } = await supabase

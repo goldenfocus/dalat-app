@@ -26,6 +26,7 @@ function createServiceClient() {
 
 export interface InAppNotificationOptions {
   userId: string;
+  notificationId?: string;
   type: NotificationType;
   content: NotificationContent;
   metadata?: Record<string, unknown>;
@@ -38,7 +39,7 @@ export interface InAppNotificationOptions {
 export async function sendInAppNotification(
   options: InAppNotificationOptions
 ): Promise<ChannelResult> {
-  const { userId, type, content, metadata = {} } = options;
+  const { userId, type, content, metadata = {}, notificationId } = options;
 
   const supabase = createServiceClient();
 
@@ -51,21 +52,22 @@ export async function sendInAppNotification(
   }
 
   try {
-    const { data, error } = await supabase
-      .from('notifications')
-      .insert({
-        user_id: userId,
-        type,
-        title: content.title,
-        body: content.body || null,
-        primary_action_url: content.primaryActionUrl || null,
-        primary_action_label: content.primaryActionLabel || null,
-        secondary_action_url: content.secondaryActionUrl || null,
-        secondary_action_label: content.secondaryActionLabel || null,
-        metadata,
-      })
-      .select('id')
-      .single();
+    const row = {
+      user_id: userId,
+      type,
+      title: content.title,
+      body: content.body || null,
+      primary_action_url: content.primaryActionUrl || null,
+      primary_action_label: content.primaryActionLabel || null,
+      secondary_action_url: content.secondaryActionUrl || null,
+      secondary_action_label: content.secondaryActionLabel || null,
+      metadata,
+    };
+    const table = supabase.from('notifications');
+    const query = notificationId
+      ? table.upsert({ id: notificationId, ...row }, { onConflict: 'id', ignoreDuplicates: true })
+      : table.insert(row);
+    const { data, error } = await query.select('id').maybeSingle();
 
     if (error) {
       console.error('[in-app] Failed to insert notification:', error.message);
@@ -76,12 +78,9 @@ export async function sendInAppNotification(
       };
     }
 
-    console.log('[in-app] Notification inserted:', data.id);
-    return {
-      channel: 'in_app',
-      success: true,
-      messageId: data.id,
-    };
+    const messageId = data?.id ?? notificationId;
+    console.log('[in-app] Notification delivered:', messageId);
+    return { channel: 'in_app', success: Boolean(messageId), messageId };
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[in-app] Exception inserting notification:', message);

@@ -18,6 +18,7 @@ function getResendClient(): Resend | null {
 
 export interface SendEmailOptions {
   to: string;
+  idempotencyKey?: string;
   content: EmailNotificationContent;
   replyTo?: string;
   /** Tokenized unsubscribe URL. When present, adds List-Unsubscribe headers + footer link. */
@@ -30,7 +31,7 @@ export interface SendEmailOptions {
 export async function sendEmailNotification(
   options: SendEmailOptions
 ): Promise<ChannelResult> {
-  const { to, content, replyTo, unsubscribeUrl } = options;
+  const { to, content, replyTo, unsubscribeUrl, idempotencyKey } = options;
   const client = getResendClient();
 
   if (!client) {
@@ -61,7 +62,7 @@ export async function sendEmailNotification(
             },
           }
         : {}),
-    });
+    }, idempotencyKey ? { idempotencyKey } : undefined);
 
     if (result.error) {
       console.error('[email] Failed to send:', result.error.message);
