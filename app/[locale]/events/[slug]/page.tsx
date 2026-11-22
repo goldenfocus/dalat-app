@@ -6,6 +6,7 @@ import { ActivitySourceFooter } from "@/components/events/activity-source-footer
 import { WhatsAppSourceCredit } from "@/components/events/whatsapp-source-credit";
 import { isWhatsAppSourced } from "@/lib/events/whatsapp-source";
 import { eventImageAlt } from "@/lib/events/image-alt";
+import { resolveCanonicalEventSlug } from "@/lib/events/slug-resolution";
 import { notFound, permanentRedirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import { Suspense, cache } from "react";
@@ -125,13 +126,23 @@ export async function generateMetadata({
   const supabase = createStaticClient();
   if (!supabase) return { title: "Event" };
 
-  const { data: row } = await supabase
+  // Resolve aliases first, and never use .single() on a miss: PostgREST 406
+  // from .single() can abort this Server Component before the page redirects.
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    return {
+      title: "Event not found",
+    };
+  }
+
+  const { data: rows } = await supabase
     .from("events")
     .select(
       `id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, is_online, tribe_id, tribe_visibility, venue_id, venues(${LOCATION_VENUE_FIELDS}), event_series(venues(${LOCATION_VENUE_FIELDS}))`,
     )
-    .eq("slug", slug)
-    .single();
+    .eq("slug", canonicalSlug)
+    .limit(1);
+  const row = rows?.[0];
 
   if (!row) {
     return {
@@ -299,31 +310,29 @@ type GetEventResult =
 async function getEvent(slug: string): Promise<GetEventResult> {
   const supabase = await createClient();
 
-  // First, try to find by current slug
-  // Include organizer's owner profile for avatar fallback when organizer has no logo
-  const { data: event, error } = await supabase
+  const canonicalSlug = await resolveCanonicalEventSlug(supabase, slug);
+  if (!canonicalSlug) {
+    return { type: "not_found" };
+  }
+  if (canonicalSlug !== slug) {
+    return { type: "redirect", newSlug: canonicalSlug };
+  }
+
+  // Include organizer's owner profile for avatar fallback when organizer has no logo.
+  // Use limit(1), not .single(): a 406 miss would skip the redirect path above.
+  const { data: rows, error } = await supabase
     .from("events")
     .select(
       `*, profiles!events_created_by_fkey(*), organizers(*, owner:profiles!owner_id(avatar_url, display_name, username)), event_series(slug, title, rrule, venue_id, venues(${LOCATION_VENUE_FIELDS})), venues(${LOCATION_VENUE_FIELDS}), tribes(id, slug, name, cover_image_url, access_type, settings)`,
     )
     .eq("slug", slug)
-    .single();
+    .limit(1);
+  const event = rows?.[0];
 
   if (!error && event) {
     const joined = event as EventWithJoins;
     const venue = joined.venue_id ? joined.venues : joined.event_series?.venues;
     return { type: "found", event: { ...resolveEventLocation(joined, venue), venues: joined.has_private_details ? null : venue ?? null } };
-  }
-
-  // If not found, check if this is an old slug that needs redirect
-  const { data: eventByOldSlug } = await supabase
-    .from("events")
-    .select("slug")
-    .contains("previous_slugs", [slug])
-    .single();
-
-  if (eventByOldSlug) {
-    return { type: "redirect", newSlug: eventByOldSlug.slug };
   }
 
   return { type: "not_found" };
