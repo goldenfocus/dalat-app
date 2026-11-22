@@ -1,6 +1,6 @@
 alter type public.notification_type add value if not exists 'venue_claim_review';
 
-create function public.queue_venue_claim_review()
+create or replace function public.queue_venue_claim_review()
 returns trigger
 language plpgsql
 security definer
@@ -38,7 +38,7 @@ $$;
 
 revoke all on function public.queue_venue_claim_review() from public, anon, authenticated;
 
-create trigger queue_venue_claim_review
+create or replace trigger queue_venue_claim_review
 after insert on public.venue_claims
 for each row
 when (new.status = 'pending')
