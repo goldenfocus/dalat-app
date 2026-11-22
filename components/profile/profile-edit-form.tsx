@@ -38,13 +38,23 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
   const [isPrivate, setIsPrivate] = useState(profile.is_private ?? false);
   const [privacySaving, setPrivacySaving] = useState(false);
   const [bio, setBio] = useState(profile.bio || "");
+  const [zalo, setZalo] = useState(profile.zalo || "");
+  const [whatsapp, setWhatsapp] = useState(profile.whatsapp || "");
+  const [telegram, setTelegram] = useState(profile.telegram || "");
+  const [phone, setPhone] = useState(profile.phone || "");
 
   async function savePrivacy(value: boolean) {
     setPrivacySaving(true);
     setError(null);
-    const { error } = await createClient().from("profiles").update({ is_private: value }).eq("id", profile.id);
+    const { error } = await createClient()
+      .from("profiles")
+      .update({ is_private: value })
+      .eq("id", profile.id);
     setPrivacySaving(false);
-    if (error) { setError(t("privacySaveFailed")); return; }
+    if (error) {
+      setError(t("privacySaveFailed"));
+      return;
+    }
     setIsPrivate(value);
     router.refresh();
   }
@@ -54,30 +64,74 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
     username: profile.username || "",
     displayName: profile.display_name || "",
     bio: profile.bio || "",
+    zalo: profile.zalo || "",
+    whatsapp: profile.whatsapp || "",
+    telegram: profile.telegram || "",
+    phone: profile.phone || "",
   });
 
   // Validation state
   const [usernameError, setUsernameError] = useState<string | null>(null);
   const [usernameChecking, setUsernameChecking] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null,
+  );
 
   // Autosave function
   const saveProfile = useCallback(
-    async (fields: { username?: string; displayName?: string; bio?: string }) => {
+    async (fields: {
+      username?: string;
+      displayName?: string;
+      bio?: string;
+      zalo?: string;
+      whatsapp?: string;
+      telegram?: string;
+      phone?: string;
+    }) => {
       setSaveStatus("saving");
       setError(null);
 
       const supabase = createClient();
       const updates: Partial<Profile> = {};
 
-      if (fields.username !== undefined && fields.username !== lastSavedRef.current.username) {
+      if (
+        fields.username !== undefined &&
+        fields.username !== lastSavedRef.current.username
+      ) {
         updates.username = fields.username || null;
       }
-      if (fields.displayName !== undefined && fields.displayName !== lastSavedRef.current.displayName) {
+      if (
+        fields.displayName !== undefined &&
+        fields.displayName !== lastSavedRef.current.displayName
+      ) {
         updates.display_name = fields.displayName.trim() || null;
       }
       if (fields.bio !== undefined && fields.bio !== lastSavedRef.current.bio) {
         updates.bio = fields.bio.trim();
+      }
+      if (
+        fields.zalo !== undefined &&
+        fields.zalo !== lastSavedRef.current.zalo
+      ) {
+        updates.zalo = fields.zalo.trim() || null;
+      }
+      if (
+        fields.whatsapp !== undefined &&
+        fields.whatsapp !== lastSavedRef.current.whatsapp
+      ) {
+        updates.whatsapp = fields.whatsapp.trim() || null;
+      }
+      if (
+        fields.telegram !== undefined &&
+        fields.telegram !== lastSavedRef.current.telegram
+      ) {
+        updates.telegram = fields.telegram.trim() || null;
+      }
+      if (
+        fields.phone !== undefined &&
+        fields.phone !== lastSavedRef.current.phone
+      ) {
+        updates.phone = fields.phone.trim() || null;
       }
 
       // Nothing to save
@@ -104,12 +158,24 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       }
 
       // Update last saved values
-      if (fields.username !== undefined) lastSavedRef.current.username = fields.username;
-      if (fields.displayName !== undefined) lastSavedRef.current.displayName = fields.displayName;
+      if (fields.username !== undefined)
+        lastSavedRef.current.username = fields.username;
+      if (fields.displayName !== undefined)
+        lastSavedRef.current.displayName = fields.displayName;
       if (fields.bio !== undefined) lastSavedRef.current.bio = fields.bio;
+      if (fields.zalo !== undefined) lastSavedRef.current.zalo = fields.zalo;
+      if (fields.whatsapp !== undefined)
+        lastSavedRef.current.whatsapp = fields.whatsapp;
+      if (fields.telegram !== undefined)
+        lastSavedRef.current.telegram = fields.telegram;
+      if (fields.phone !== undefined) lastSavedRef.current.phone = fields.phone;
 
       // Trigger translation for bio if it changed
-      if (!isPrivate && fields.bio && fields.bio.trim() !== (profile.bio || "")) {
+      if (
+        !isPrivate &&
+        fields.bio &&
+        fields.bio.trim() !== (profile.bio || "")
+      ) {
         triggerTranslation("profile", profile.id, [
           { field_name: "bio", text: fields.bio.trim() },
         ]);
@@ -118,7 +184,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
       setSaveStatus("saved");
       router.refresh();
     },
-    [profile.id, profile.bio, router, isPrivate]
+    [profile.id, profile.bio, router, isPrivate],
   );
 
   // Debounced username availability check
@@ -170,24 +236,33 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
 
   // Autosave username after validation passes
   useEffect(() => {
-    if (usernameAvailable === true && username !== lastSavedRef.current.username) {
+    if (
+      usernameAvailable === true &&
+      username !== lastSavedRef.current.username
+    ) {
       saveProfile({ username });
     }
   }, [usernameAvailable, username, saveProfile]);
 
   // Autosave displayName and bio with debounce
   useEffect(() => {
-    const hasDisplayNameChange = displayName !== lastSavedRef.current.displayName;
+    const hasDisplayNameChange =
+      displayName !== lastSavedRef.current.displayName;
     const hasBioChange = bio !== lastSavedRef.current.bio;
+    const hasContactChange =
+      zalo !== lastSavedRef.current.zalo ||
+      whatsapp !== lastSavedRef.current.whatsapp ||
+      telegram !== lastSavedRef.current.telegram ||
+      phone !== lastSavedRef.current.phone;
 
-    if (!hasDisplayNameChange && !hasBioChange) return;
+    if (!hasDisplayNameChange && !hasBioChange && !hasContactChange) return;
 
     const timer = setTimeout(() => {
-      saveProfile({ displayName, bio });
+      saveProfile({ displayName, bio, zalo, whatsapp, telegram, phone });
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [displayName, bio, saveProfile]);
+  }, [displayName, bio, zalo, whatsapp, telegram, phone, saveProfile]);
 
   // Auto-hide "Saved" status after 2 seconds
   useEffect(() => {
@@ -231,7 +306,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
         }
       }
     },
-    [profile.id, profile.avatar_url, router]
+    [profile.id, profile.avatar_url, router],
   );
 
   return (
@@ -259,9 +334,16 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
           <div className="flex items-start justify-between gap-4 rounded-xl border p-4">
             <div className="space-y-1">
               <Label htmlFor="profile-private">{t("makePrivate")}</Label>
-              <p className="text-sm text-muted-foreground">{t("privacyHint")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t("privacyHint")}
+              </p>
             </div>
-            <Switch id="profile-private" checked={isPrivate} onCheckedChange={savePrivacy} disabled={privacySaving || saveStatus === "saving"} />
+            <Switch
+              id="profile-private"
+              checked={isPrivate}
+              onCheckedChange={savePrivacy}
+              disabled={privacySaving || saveStatus === "saving"}
+            />
           </div>
           {/* Avatar */}
           <div className="space-y-3">
@@ -305,7 +387,8 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                   placeholder={t("usernamePlaceholder")}
                   className={cn(
                     "pr-10",
-                    usernameError && "border-destructive focus-visible:ring-destructive"
+                    usernameError &&
+                      "border-destructive focus-visible:ring-destructive",
                   )}
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -329,7 +412,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
             {!usernameError &&
               usernameAvailable === true &&
               username !== profile.username && (
-                <p className="text-sm text-green-600">{t("usernameAvailable")}</p>
+                <p className="text-sm text-green-600">
+                  {t("usernameAvailable")}
+                </p>
               )}
             <p className="text-xs text-muted-foreground">{t("usernameHelp")}</p>
           </div>
@@ -345,7 +430,9 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               placeholder={t("displayNamePlaceholder")}
               maxLength={50}
             />
-            <p className="text-xs text-muted-foreground">{t("displayNameHelp")}</p>
+            <p className="text-xs text-muted-foreground">
+              {t("displayNameHelp")}
+            </p>
           </div>
 
           {/* Bio */}
@@ -359,7 +446,7 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
                     ? "text-destructive"
                     : bio.length >= BIO_MAX_LENGTH - 20
                       ? "text-amber-500"
-                      : "text-muted-foreground"
+                      : "text-muted-foreground",
                 )}
               >
                 {bio.length}/{BIO_MAX_LENGTH}
@@ -376,6 +463,58 @@ export function ProfileEditForm({ profile }: ProfileEditFormProps) {
               className="resize-none"
             />
             <p className="text-xs text-muted-foreground">{t("bioHelp")}</p>
+          </div>
+
+          <div className="space-y-2 pt-2">
+            <Label>{t("contactDetails")}</Label>
+            <p className="text-xs text-muted-foreground">
+              {t("contactDetailsHelp")}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="zalo">{t("zalo")}</Label>
+            <Input
+              id="zalo"
+              name="zalo"
+              value={zalo}
+              onChange={(e) => setZalo(e.target.value)}
+              placeholder={t("zaloPlaceholder")}
+              autoComplete="off"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp">{t("whatsapp")}</Label>
+            <Input
+              id="whatsapp"
+              name="whatsapp"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder={t("whatsappPlaceholder")}
+              autoComplete="tel"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="telegram">{t("telegram")}</Label>
+            <Input
+              id="telegram"
+              name="telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+              placeholder={t("telegramPlaceholder")}
+              autoComplete="username"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="phone">{t("phone")}</Label>
+            <Input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder={t("phonePlaceholder")}
+              autoComplete="tel"
+            />
           </div>
 
           {/* Error message */}

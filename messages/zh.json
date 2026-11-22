@@ -1003,7 +1003,17 @@
     "makePrivate": "将我的个人资料设为不公开",
     "privacyHint": "个人资料页面和简介将不公开。姓名、头像和公开活动的参与信息仍然可见。",
     "privacySaveFailed": "无法保存，请重试。",
-    "joinDalat": "加入 DaLat"
+    "joinDalat": "加入 DaLat",
+    "contactDetails": "公开联系方式",
+    "contactDetailsHelp": "会显示在您的租房信息页，方便访客直接联系。",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "电话",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "设置",
@@ -4377,19 +4387,15 @@
     "findGuest": "查找来宾",
     "noCheckedIn": "来宾签到后即可安排桌位",
     "rehearsalCheckInAll": "为所有示例来宾签到",
-
     "findingTable": "正在为你安排桌位…",
     "waitingList": "等待中",
-
     "waitingPartner": "等待语言交流伙伴",
     "learningLabel": "正在学习",
     "speaksLabel": "会说",
-
     "byEzviet": "由 EZViet 提供",
     "playAudio": "播放{text}",
     "turnPlayer": "轮到{name}",
     "audioUnavailable": "音频不可用，请重试。",
-
     "arriveNow": "我到了",
     "playCards": "开始",
     "moveToTable": "移至{number}号桌",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "永久删除此房源？",
     "deleteDescription": "房源及其详情将被永久删除。看房消息仍会保密。",
     "deleteActive": "请先处理尚未完成的看房请求和即将到来的预约，再删除此房源。",
-    "calendarViewing": "看房 · {title}"
+    "calendarViewing": "看房 · {title}",
+    "listedBy": "发布者",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "拨打"
   },
   "rentalsDetails": {
     "propertySize": "面积",

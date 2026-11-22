@@ -1003,7 +1003,17 @@
     "makePrivate": "Сделать мой профиль закрытым",
     "privacyHint": "Страница профиля и описание будут закрыты. Имя, аватар и участие в открытых мероприятиях останутся видимыми.",
     "privacySaveFailed": "Не удалось сохранить. Попробуйте ещё раз.",
-    "joinDalat": "Присоединиться к DaLat"
+    "joinDalat": "Присоединиться к DaLat",
+    "contactDetails": "Публичные контакты",
+    "contactDetailsHelp": "Показываются в объявлениях об аренде, чтобы гости могли связаться с вами.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Телефон",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Настройки",
@@ -4377,19 +4387,15 @@
     "findGuest": "Найти гостя",
     "noCheckedIn": "Отметьте гостей, чтобы распределить их по столам",
     "rehearsalCheckInAll": "Отметить всех тестовых гостей",
-
     "findingTable": "Подбираем вам стол…",
     "waitingList": "Ожидание",
-
     "waitingPartner": "Ждём партнёра для языкового обмена",
     "learningLabel": "Изучает",
     "speaksLabel": "Говорит",
-
     "byEzviet": "От EZViet",
     "playAudio": "Слушать: {text}",
     "turnPlayer": "Ход: {name}",
     "audioUnavailable": "Аудио недоступно. Попробуйте ещё раз.",
-
     "arriveNow": "Я на месте",
     "playCards": "Играть",
     "moveToTable": "Переместить за стол {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Удалить это объявление навсегда?",
     "deleteDescription": "Объявление и сведения о нём будут удалены навсегда. Переписка о просмотрах останется приватной.",
     "deleteActive": "Разберите открытые заявки и предстоящие просмотры перед удалением объявления.",
-    "calendarViewing": "Просмотр · {title}"
+    "calendarViewing": "Просмотр · {title}",
+    "listedBy": "Разместил",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Позвонить"
   },
   "rentalsDetails": {
     "propertySize": "Площадь",

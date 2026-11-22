@@ -1003,7 +1003,17 @@
     "makePrivate": "プロフィールを非公開にする",
     "privacyHint": "プロフィールページと自己紹介は非公開になります。名前、アバター、公開イベントへの参加情報は引き続き表示されます。",
     "privacySaveFailed": "保存できませんでした。もう一度お試しください。",
-    "joinDalat": "DaLatに参加"
+    "joinDalat": "DaLatに参加",
+    "contactDetails": "公開連絡先",
+    "contactDetailsHelp": "賃貸物件ページに表示され、訪問者が直接連絡できます。",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "電話",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "設定",
@@ -4377,19 +4387,15 @@
     "findGuest": "ゲストを探す",
     "noCheckedIn": "テーブル分けをするには、ゲストの受付を済ませてください",
     "rehearsalCheckInAll": "サンプルのゲスト全員を受付",
-
     "findingTable": "テーブルを探しています…",
     "waitingList": "待機中",
-
     "waitingPartner": "言語交換のパートナーを待っています",
     "learningLabel": "学習中",
     "speaksLabel": "話せる言語",
-
     "byEzviet": "提供：EZViet",
     "playAudio": "{text}を聞く",
     "turnPlayer": "{name}の番",
     "audioUnavailable": "音声を再生できません。もう一度お試しください。",
-
     "arriveNow": "到着しました",
     "playCards": "プレイ",
     "moveToTable": "テーブル{number}へ移動",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "この物件情報を完全に削除しますか？",
     "deleteDescription": "掲載とその詳細が完全に削除されます。内見に関するメッセージは非公開のまま残ります。",
     "deleteActive": "掲載を削除する前に、未対応の内見リクエストと今後の予約に対応してください。",
-    "calendarViewing": "内見 · {title}"
+    "calendarViewing": "内見 · {title}",
+    "listedBy": "掲載者",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "電話する"
   },
   "rentalsDetails": {
     "propertySize": "面積",

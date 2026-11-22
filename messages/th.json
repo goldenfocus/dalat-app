@@ -1003,7 +1003,17 @@
     "makePrivate": "ตั้งโปรไฟล์ของฉันเป็นส่วนตัว",
     "privacyHint": "หน้าโปรไฟล์และประวัติจะเป็นส่วนตัว ชื่อ รูปประจำตัว และการเข้าร่วมกิจกรรมสาธารณะยังคงแสดงอยู่",
     "privacySaveFailed": "บันทึกไม่สำเร็จ โปรดลองอีกครั้ง",
-    "joinDalat": "เข้าร่วม DaLat"
+    "joinDalat": "เข้าร่วม DaLat",
+    "contactDetails": "ช่องทางติดต่อสาธารณะ",
+    "contactDetailsHelp": "แสดงในประกาศเช่าของคุณ เพื่อให้ผู้เข้าชมติดต่อคุณได้",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "โทรศัพท์",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "การตั้งค่า",
@@ -4377,19 +4387,15 @@
     "findGuest": "ค้นหาผู้เข้าร่วม",
     "noCheckedIn": "เช็กอินผู้เข้าร่วมเพื่อจัดโต๊ะ",
     "rehearsalCheckInAll": "เช็กอินผู้เข้าร่วมตัวอย่างทั้งหมด",
-
     "findingTable": "กำลังหาโต๊ะให้คุณ…",
     "waitingList": "กำลังรอ",
-
     "waitingPartner": "กำลังรอเพื่อนแลกเปลี่ยนภาษา",
     "learningLabel": "กำลังเรียน",
     "speaksLabel": "พูดได้",
-
     "byEzviet": "โดย EZViet",
     "playAudio": "ฟัง {text}",
     "turnPlayer": "ตาของ {name}",
     "audioUnavailable": "เล่นเสียงไม่ได้ ลองอีกครั้ง",
-
     "arriveNow": "มาถึงแล้ว",
     "playCards": "เล่น",
     "moveToTable": "ย้ายไปโต๊ะ {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "ลบประกาศนี้อย่างถาวรหรือไม่",
     "deleteDescription": "ประกาศและรายละเอียดจะถูกลบอย่างถาวร ข้อความเกี่ยวกับการนัดเข้าชมจะยังเป็นส่วนตัว",
     "deleteActive": "จัดการคำขอเข้าชมที่ยังเปิดอยู่และนัดหมายที่กำลังจะมาถึงก่อนลบประกาศนี้",
-    "calendarViewing": "เข้าชมที่พัก · {title}"
+    "calendarViewing": "เข้าชมที่พัก · {title}",
+    "listedBy": "ลงประกาศโดย",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "โทร"
   },
   "rentalsDetails": {
     "propertySize": "ขนาดพื้นที่",

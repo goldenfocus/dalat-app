@@ -1003,7 +1003,17 @@
     "makePrivate": "Jadikan profil saya peribadi",
     "privacyHint": "Halaman profil dan bio anda akan menjadi peribadi. Nama, avatar dan penyertaan dalam acara awam kekal kelihatan.",
     "privacySaveFailed": "Tidak dapat menyimpan. Sila cuba lagi.",
-    "joinDalat": "Sertai DaLat"
+    "joinDalat": "Sertai DaLat",
+    "contactDetails": "Hubungan awam",
+    "contactDetailsHelp": "Dipaparkan pada iklan sewa anda supaya pelawat dapat menghubungi anda.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Telefon",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Tetapan",
@@ -4377,19 +4387,15 @@
     "findGuest": "Cari peserta",
     "noCheckedIn": "Daftar masuk peserta untuk membentuk meja",
     "rehearsalCheckInAll": "Daftar masuk semua peserta contoh",
-
     "findingTable": "Mencari meja untuk anda…",
     "waitingList": "Menunggu",
-
     "waitingPartner": "Menunggu rakan pertukaran bahasa",
     "learningLabel": "Belajar",
     "speaksLabel": "Bertutur",
-
     "byEzviet": "Oleh EZViet",
     "playAudio": "Dengar {text}",
     "turnPlayer": "Giliran {name}",
     "audioUnavailable": "Audio tidak tersedia. Cuba lagi.",
-
     "arriveNow": "Saya sudah tiba",
     "playCards": "Main",
     "moveToTable": "Pindahkan ke meja {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Padam iklan ini secara kekal?",
     "deleteDescription": "Iklan dan butirannya akan dipadam secara kekal. Mesej berkaitan lawatan kekal peribadi.",
     "deleteActive": "Selesaikan permintaan lawatan yang masih terbuka dan janji temu akan datang sebelum memadam iklan ini.",
-    "calendarViewing": "Lawatan hartanah · {title}"
+    "calendarViewing": "Lawatan hartanah · {title}",
+    "listedBy": "Disenaraikan oleh",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Hubungi"
   },
   "rentalsDetails": {
     "propertySize": "Keluasan hartanah",

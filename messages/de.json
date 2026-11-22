@@ -1003,7 +1003,17 @@
     "makePrivate": "Mein Profil privat machen",
     "privacyHint": "Deine Profilseite und Biografie werden privat. Dein Name, Avatar und deine Teilnahme an öffentlichen Veranstaltungen bleiben sichtbar.",
     "privacySaveFailed": "Speichern fehlgeschlagen. Bitte erneut versuchen.",
-    "joinDalat": "DaLat beitreten"
+    "joinDalat": "DaLat beitreten",
+    "contactDetails": "Öffentlicher Kontakt",
+    "contactDetailsHelp": "Wird auf Ihren Mietinseraten angezeigt, damit Besucher Sie erreichen können.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Telefon",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Einstellungen",
@@ -4377,19 +4387,15 @@
     "findGuest": "Gast suchen",
     "noCheckedIn": "Gäste einchecken, um Tische zu bilden",
     "rehearsalCheckInAll": "Alle Beispielgäste einchecken",
-
     "findingTable": "Wir suchen deinen Tisch…",
     "waitingList": "Wartend",
-
     "waitingPartner": "Warten auf einen Sprachpartner",
     "learningLabel": "Lernt",
     "speaksLabel": "Spricht",
-
     "byEzviet": "Von EZViet",
     "playAudio": "{text} anhören",
     "turnPlayer": "{name} ist dran",
     "audioUnavailable": "Audio nicht verfügbar. Erneut versuchen.",
-
     "arriveNow": "Ich bin da",
     "playCards": "Spielen",
     "moveToTable": "Zu Tisch {number} verschieben",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Dieses Inserat dauerhaft löschen?",
     "deleteDescription": "Das Inserat und seine Angaben werden dauerhaft gelöscht. Nachrichten zu Besichtigungen bleiben privat.",
     "deleteActive": "Kläre offene Besichtigungsanfragen und bevorstehende Termine, bevor du dieses Inserat löschst.",
-    "calendarViewing": "Besichtigung · {title}"
+    "calendarViewing": "Besichtigung · {title}",
+    "listedBy": "Angeboten von",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Anrufen"
   },
   "rentalsDetails": {
     "propertySize": "Fläche",

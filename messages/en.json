@@ -1097,7 +1097,17 @@
     "makePrivate": "Make my profile private",
     "privacyHint": "Your profile page and bio will be private. Your name, avatar and participation in public events remain visible.",
     "privacySaveFailed": "Could not save. Please try again.",
-    "joinDalat": "Join DaLat"
+    "joinDalat": "Join DaLat",
+    "contactDetails": "Public contact",
+    "contactDetailsHelp": "Shown on your rental listings so visitors can reach you.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Phone",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Settings",
@@ -4377,19 +4387,15 @@
     "findGuest": "Find a guest",
     "noCheckedIn": "Check in guests to form tables",
     "rehearsalCheckInAll": "Check in all sample guests",
-
     "findingTable": "Finding your table…",
     "waitingList": "Waiting",
-
     "waitingPartner": "Waiting for a language partner",
     "learningLabel": "Learning",
     "speaksLabel": "Speaks",
-
     "byEzviet": "By EZViet",
     "playAudio": "Play {text}",
     "turnPlayer": "{name}’s turn",
     "audioUnavailable": "Audio unavailable. Try again.",
-
     "arriveNow": "I’m here",
     "playCards": "Play",
     "moveToTable": "Move to table {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Permanently delete this listing?",
     "deleteDescription": "This permanently removes the listing and its details. Viewing messages stay private.",
     "deleteActive": "Resolve any open viewing requests and upcoming appointments before deleting this listing.",
-    "calendarViewing": "Viewing · {title}"
+    "calendarViewing": "Viewing · {title}",
+    "listedBy": "Listed by",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Call"
   },
   "rentalsDetails": {
     "propertySize": "Property size",

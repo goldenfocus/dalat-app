@@ -1003,7 +1003,17 @@
     "makePrivate": "Hacer privado mi perfil",
     "privacyHint": "Tu página de perfil y biografía serán privadas. Tu nombre, avatar y participación en eventos públicos seguirán visibles.",
     "privacySaveFailed": "No se pudo guardar. Inténtalo de nuevo.",
-    "joinDalat": "Unirse a DaLat"
+    "joinDalat": "Unirse a DaLat",
+    "contactDetails": "Contacto público",
+    "contactDetailsHelp": "Se muestra en tus anuncios de alquiler para que los visitantes puedan contactarte.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Teléfono",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Configuración",
@@ -4377,19 +4387,15 @@
     "findGuest": "Buscar invitado",
     "noCheckedIn": "Registra invitados para formar mesas",
     "rehearsalCheckInAll": "Registrar a todos los invitados de prueba",
-
     "findingTable": "Buscando tu mesa…",
     "waitingList": "En espera",
-
     "waitingPartner": "Esperando a un compañero de idiomas",
     "learningLabel": "Aprende",
     "speaksLabel": "Habla",
-
     "byEzviet": "Por EZViet",
     "playAudio": "Escuchar {text}",
     "turnPlayer": "Turno de {name}",
     "audioUnavailable": "Audio no disponible. Inténtalo de nuevo.",
-
     "arriveNow": "Ya llegué",
     "playCards": "Jugar",
     "moveToTable": "Mover a la mesa {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "¿Eliminar este anuncio de forma definitiva?",
     "deleteDescription": "El anuncio y sus datos se eliminarán definitivamente. Los mensajes sobre las visitas seguirán siendo privados.",
     "deleteActive": "Resuelve las solicitudes de visita abiertas y las citas próximas antes de eliminar este anuncio.",
-    "calendarViewing": "Visita · {title}"
+    "calendarViewing": "Visita · {title}",
+    "listedBy": "Publicado por",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Llamar"
   },
   "rentalsDetails": {
     "propertySize": "Superficie",
