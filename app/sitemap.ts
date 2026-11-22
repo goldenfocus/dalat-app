@@ -82,7 +82,10 @@ function localeEntry(
     ...(lastModified ? { lastModified } : {}),
     ...(changeFrequency ? { changeFrequency } : {}),
     ...(priority !== undefined ? { priority } : {}),
-    ...(images?.length ? { images } : {}),
+    // Next interpolates image locations directly into the XML.
+    ...(images?.length
+      ? { images: images.map((image) => image.replaceAll("&", "&amp;")) }
+      : {}),
   };
 }
 

@@ -111,7 +111,7 @@ describe("sitemap event and recurring activity images", () => {
     eventsQuery = queryResult([
       indexableEvent(
         "ha-nhi-da-lat",
-        "https://dalat.app/activity-art/events/ha-nhi-da-lat.png#preview",
+        "https://dalat.app/activity-art/events/ha-nhi-da-lat.png?w=1200&h=630#preview",
         "2026-08-27T13:00:00.000Z",
       ),
       indexableEvent(
@@ -217,7 +217,7 @@ describe("sitemap event and recurring activity images", () => {
     expect(eventEntries).toHaveLength(1);
     expect(eventEntries[0]).toMatchObject({
       url: "https://dalat.app/events/ha-nhi-da-lat",
-      images: ["https://dalat.app/activity-art/events/ha-nhi-da-lat.png"],
+      images: ["https://dalat.app/activity-art/events/ha-nhi-da-lat.png?w=1200&amp;h=630"],
     });
     expect(eventEntries[0]).not.toHaveProperty("alternates");
     expect(eventWithoutImage).not.toHaveProperty("images");
