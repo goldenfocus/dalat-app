@@ -1345,6 +1345,21 @@ function eventAddressRevealTemplate(payload: EventAddressRevealPayload): Templat
   };
 }
 
+const venueClaimCopy = {
+  en: ['New venue claim', 'Review claim'],
+  vi: ['Yêu cầu quản lý địa điểm mới', 'Xem yêu cầu'],
+  ko: ['새 장소 관리 권한 요청', '요청 검토'],
+  zh: ['新的场所管理权申请', '审核申请'],
+  ru: ['Новая заявка на управление заведением', 'Рассмотреть заявку'],
+  fr: ['Nouvelle demande de gestion d’un lieu', 'Examiner la demande'],
+  ja: ['施設の管理権限に関する新しい申請', '申請を確認'],
+  ms: ['Tuntutan pengurusan tempat baharu', 'Semak tuntutan'],
+  th: ['มีคำขอจัดการสถานที่ใหม่', 'ตรวจสอบคำขอ'],
+  de: ['Neue Anfrage zur Verwaltung eines Orts', 'Anfrage prüfen'],
+  es: ['Nueva solicitud para gestionar un lugar', 'Revisar solicitud'],
+  id: ['Permintaan pengelolaan tempat baru', 'Tinjau permintaan'],
+} satisfies Record<Locale, [string, string]>;
+
 export function getNotificationTemplate(payload: NotificationPayload): TemplateResult {
   switch (payload.type) {
     case 'collaboration_update': {
@@ -1355,6 +1370,26 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
         primaryActionLabel: 'Open private planner',
       };
       return { inApp: content, push: { ...content, tag: `phuong-${payload.actionId}` } };
+    }
+    case 'venue_claim_review': {
+      const locale = Object.hasOwn(venueClaimCopy, payload.locale) ? payload.locale : 'en';
+      const [title, primaryActionLabel] = venueClaimCopy[locale];
+      const path = `${locale === 'en' ? '' : `/${locale}`}/admin/venue-claims#claim-${encodeURIComponent(payload.claimId)}`;
+      const primaryActionUrl = new URL(path, getBaseUrl()).href;
+      const signInUrl = new URL('/auth/continue', getBaseUrl());
+      signInUrl.searchParams.set('next', path);
+      const content = { title, body: payload.venueName, primaryActionUrl, primaryActionLabel };
+      return {
+        inApp: content,
+        push: content,
+        email: {
+          ...content,
+          subject: title,
+          primaryActionUrl: signInUrl.href,
+          html: `<h1>${escapeHtml(title)}</h1><p>${escapeHtml(payload.venueName)}</p><p><a href="${escapeHtml(signInUrl.href)}">${escapeHtml(primaryActionLabel)}</a></p>`,
+          text: `${title}\n\n${payload.venueName}\n\n${primaryActionLabel}\n${signInUrl.href}`,
+        },
+      };
     }
     case 'rsvp_confirmation':
       return rsvpConfirmationTemplate(payload);

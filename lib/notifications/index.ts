@@ -98,7 +98,7 @@ export async function notify(
   if (await isCommunityNotificationMuted(createServiceClient(), payload)) {
     return { success: true, channels: [] };
   }
-  const { channels: forcedChannels, skipPreferences, onlyChannels } = options;
+  const { channels: forcedChannels, skipPreferences, onlyChannels, deliveryId } = options;
 
   console.log(`[notify] Starting notification: ${payload.type} for user ${payload.userId}`);
 
@@ -138,6 +138,7 @@ export async function notify(
     sendPromises.push(
       sendInAppNotification({
         userId: payload.userId,
+        notificationId: deliveryId,
         type: payload.type,
         content: template.inApp,
         metadata: { payload },
@@ -164,6 +165,7 @@ export async function notify(
       sendPromises.push(
         sendEmailNotification({
           to: userEmail,
+          idempotencyKey: deliveryId ? `${payload.type}/${deliveryId}` : undefined,
           content: template.email,
           unsubscribeUrl: buildUnsubscribeUrl(payload.userId, scope) ?? undefined,
         }).then((result) => {

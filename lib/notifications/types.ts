@@ -6,6 +6,7 @@ import type { Locale } from '@/lib/types';
 
 export type NotificationType =
   | 'collaboration_update'
+  | 'venue_claim_review'
   | 'rsvp_confirmation'
   | 'confirm_attendance_24h'
   | 'final_reminder_2h'
@@ -357,8 +358,15 @@ export interface CollaborationUpdatePayload extends BaseNotificationPayload {
   actionId: string;
 }
 
+export interface VenueClaimReviewPayload extends BaseNotificationPayload {
+  type: 'venue_claim_review';
+  claimId: string;
+  venueName: string;
+}
+
 export type NotificationPayload =
   | CollaborationUpdatePayload
+  | VenueClaimReviewPayload
   | RsvpConfirmationPayload
   | ConfirmAttendance24hPayload
   | FinalReminder2hPayload
@@ -396,6 +404,8 @@ export type NotificationPayload =
 // ============================================
 
 export interface NotifyOptions {
+  // Stable scheduled row ID for channels that support idempotent retries.
+  deliveryId?: string;
   // Override default channels for this notification
   channels?: NotificationChannel[];
   // Restrict to a subset of channels — intersects with preference-derived

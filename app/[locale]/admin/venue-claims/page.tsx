@@ -26,7 +26,7 @@ export default async function VenueClaimsAdminPage() {
         const venue = c.venue as unknown as { slug: string; name: string; address: string | null } | null;
         const who = c.claimant as unknown as { username: string | null; display_name: string | null } | null;
         return (
-          <div key={c.id} className="space-y-2 rounded-xl border p-4">
+          <div key={c.id} id={`claim-${c.id}`} className="scroll-mt-24 space-y-2 rounded-xl border p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <Link href={`/${venue?.slug}`} className="font-semibold underline">{venue?.name}</Link>
               <span className="text-xs text-muted-foreground">{c.created_at.slice(0, 10)}</span>
