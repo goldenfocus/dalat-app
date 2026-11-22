@@ -12,18 +12,23 @@ const props = {
 describe("venue map precision", () => {
   it("never routes to or draws a street-level approximation", () => {
     render(<VenueMap {...props} approximate />);
-    expect(screen.queryByTitle(`View on map · ${props.name}`)).toBeNull();
+    expect(screen.queryByRole("link", { name: `View on map · ${props.name}` })).toBeNull();
     expect(screen.getByText(props.address)).toBeTruthy();
     expect(screen.getByRole("link", { name: "Get directions" }).getAttribute("href")).toBe(props.googleMapsUrl);
     expect(screen.getByRole("link", { name: "View on map" }).getAttribute("href")).toBe(props.googleMapsUrl);
   });
-  it("shows a map with the same precise coordinates used for directions", () => {
-    render(<VenueMap {...props} />);
-    const frame = screen.getByTitle(`View on map · ${props.name}`);
-    const embed = new URL(frame.getAttribute("src")!);
+  it("uses lazy image tiles and keeps coordinate links and attribution", () => {
+    const { container } = render(<VenueMap {...props} />);
+    const preview = screen.getByRole("link", { name: `View on map · ${props.name}` });
+    const tiles = Array.from(container.querySelectorAll("img"));
 
-    expect(embed.origin + embed.pathname).toBe("https://www.openstreetmap.org/export/embed.html");
-    expect(embed.searchParams.get("marker")).toBe(`${props.latitude},${props.longitude}`);
+    expect(tiles.length).toBeGreaterThan(0);
+    expect(tiles.every((tile) =>
+      tile.src.startsWith("https://tile.openstreetmap.org/15/") &&
+      tile.getAttribute("loading") === "lazy",
+    )).toBe(true);
+    expect(preview.getAttribute("href")).toBe("https://www.google.com/maps/search/?api=1&query=11.9411827,108.4605052");
+    expect(screen.getByRole("link", { name: /OpenStreetMap/ }).getAttribute("href")).toBe("https://www.openstreetmap.org/copyright");
     expect(screen.getByRole("link", { name: "Get directions" }).getAttribute("href")).toBe("https://www.google.com/maps/dir/?api=1&destination=11.9411827,108.4605052");
   });
 });
