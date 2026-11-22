@@ -30,6 +30,7 @@ import {
   sourceAllowsOfficialMedia,
 } from "./media";
 import { isLamVienTbdActivity } from "./lam-vien-tbd";
+import { hasLockedSchedule } from "./schedule-lock";
 import {
   freshnessScore,
   scoreEventDuplicate,
@@ -406,12 +407,18 @@ type LinkedOccurrence = {
 };
 
 function sourceTextChanged(
-  current: { title?: string | null; description?: string | null } | null | undefined,
+  current:
+    | { title?: string | null; description?: string | null }
+    | null
+    | undefined,
   title: string,
   description: string | null,
 ): boolean {
   if (!current) return true;
-  return (current.title ?? "") !== title || (current.description ?? "") !== (description ?? "");
+  return (
+    (current.title ?? "") !== title ||
+    (current.description ?? "") !== (description ?? "")
+  );
 }
 
 function refreshedSourceMetadata(
@@ -420,7 +427,8 @@ function refreshedSourceMetadata(
   now: string,
 ): Record<string, unknown> {
   const media = projectedActivityMedia(input.source, input.activity);
-  const preserveCurated = hasCuratedActivityMedia(existing) && !media?.provenance;
+  const preserveCurated =
+    hasCuratedActivityMedia(existing) && !media?.provenance;
   const metadata: Record<string, unknown> = {
     ...(existing ?? {}),
     activity_source_id: input.source.id,
@@ -474,7 +482,9 @@ async function reconcileActivityGraphSeries(
   const today = dalatDateKey(now);
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,series_instance_date,is_exception,starts_at,title,description,source_metadata")
+    .select(
+      "id,series_instance_date,is_exception,starts_at,title,description,source_metadata",
+    )
     .eq("series_id", currentSeries.id)
     .gte("series_instance_date", today);
   if (existingError) {
@@ -546,11 +556,14 @@ async function reconcileActivityGraphSeries(
         source_platform: "activity-graph",
         source_metadata: withEventTranslationStamp(
           {
-            ...((refreshedSeries.source_metadata as Record<string, unknown> | null) ??
-              {}),
+            ...((refreshedSeries.source_metadata as Record<
+              string,
+              unknown
+            > | null) ?? {}),
           },
           {
-            neededAt: refreshedSeries.last_checked_at ?? new Date().toISOString(),
+            neededAt:
+              refreshedSeries.last_checked_at ?? new Date().toISOString(),
             sourceTextChanged: sourceTextChanged(
               occurrence,
               refreshedSeries.title,
@@ -648,12 +661,19 @@ async function refreshLinkedActivity(
         startsAt: input.activity.startsAt,
         endsAt: input.activity.endsAt,
       };
-      const moved = scheduleChanged(previousWindow, nextWindow);
+      const locked = hasLockedSchedule(currentMetadata);
+      const moved = !locked && scheduleChanged(previousWindow, nextWindow);
       let refreshedMetadata = refreshedSourceMetadata(
         input,
         currentMetadata,
         now,
       );
+      if (locked) {
+        refreshedMetadata = {
+          ...refreshedMetadata,
+          schedule_locked: true,
+        };
+      }
       if (moved) {
         // Log the move and flag it for Review's post-publish check. A schedule
         // change always forces retranslation (date text lives in the copy).
@@ -680,8 +700,12 @@ async function refreshLinkedActivity(
         }),
         title: input.activity.title,
         description,
-        starts_at: input.activity.startsAt,
-        ends_at: input.activity.endsAt,
+        ...(locked
+          ? {}
+          : {
+              starts_at: input.activity.startsAt,
+              ends_at: input.activity.endsAt,
+            }),
         location_name: input.activity.locationName,
         address: input.activity.address,
         latitude: input.activity.latitude,
@@ -870,7 +894,9 @@ async function createEvent(
     throw new Error("Cannot project an event without startsAt");
   const { data: existing, error: existingError } = await input.supabase
     .from("events")
-    .select("id,slug,image_url,image_alt,image_description,source_metadata,title,description,venue_id")
+    .select(
+      "id,slug,image_url,image_alt,image_description,source_metadata,title,description,venue_id",
+    )
     .eq("activity_graph_candidate_id", input.candidateId)
     .maybeSingle();
   if (existingError)
@@ -1118,7 +1144,10 @@ async function withStableExplanation(
     return { ...next, activity: await explainActivity(next.activity) };
   }
   const stored = await loadStoredExplanation(next, link);
-  if (shouldReuseStoredExplanation(stored, next.activity) && stored.description) {
+  if (
+    shouldReuseStoredExplanation(stored, next.activity) &&
+    stored.description
+  ) {
     return {
       ...next,
       activity: { ...next.activity, description: stored.description },
@@ -1158,7 +1187,12 @@ function fallbackLinkedDescription(
   const oldStart =
     typeof storedFacts?.startsAt === "string" ? storedFacts.startsAt : null;
   if (!oldStart || !activity.startsAt) return stored.description;
-  if (!scheduleChanged({ startsAt: oldStart, endsAt: null }, { startsAt: activity.startsAt, endsAt: null })) {
+  if (
+    !scheduleChanged(
+      { startsAt: oldStart, endsAt: null },
+      { startsAt: activity.startsAt, endsAt: null },
+    )
+  ) {
     return stored.description;
   }
   return rewriteDateMentions(stored.description, oldStart, activity.startsAt);

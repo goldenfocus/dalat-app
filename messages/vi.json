@@ -1003,7 +1003,17 @@
     "makePrivate": "Đặt hồ sơ của tôi ở chế độ riêng tư",
     "privacyHint": "Trang hồ sơ và tiểu sử sẽ riêng tư. Tên, ảnh đại diện và việc tham gia sự kiện công khai vẫn hiển thị.",
     "privacySaveFailed": "Không thể lưu. Vui lòng thử lại.",
-    "joinDalat": "Tham gia DaLat"
+    "joinDalat": "Tham gia DaLat",
+    "contactDetails": "Liên hệ công khai",
+    "contactDetailsHelp": "Hiện trên tin cho thuê để khách liên hệ trực tiếp với bạn.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Điện thoại",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Cài đặt",
@@ -4377,19 +4387,15 @@
     "findGuest": "Tìm khách",
     "noCheckedIn": "Điểm danh khách để xếp bàn",
     "rehearsalCheckInAll": "Điểm danh tất cả khách mẫu",
-
     "findingTable": "Đang tìm bàn cho bạn…",
     "waitingList": "Đang chờ",
-
     "waitingPartner": "Đang chờ bạn trao đổi ngôn ngữ",
     "learningLabel": "Đang học",
     "speaksLabel": "Nói được",
-
     "byEzviet": "Bởi EZViet",
     "playAudio": "Nghe {text}",
     "turnPlayer": "Lượt của {name}",
     "audioUnavailable": "Không phát được âm thanh. Thử lại.",
-
     "arriveNow": "Tôi đã đến",
     "playCards": "Chơi",
     "moveToTable": "Chuyển đến bàn {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Xóa vĩnh viễn tin đăng này?",
     "deleteDescription": "Tin đăng và các thông tin đi kèm sẽ bị xóa vĩnh viễn. Tin nhắn về lịch xem nhà vẫn được giữ riêng tư.",
     "deleteActive": "Hãy xử lý các yêu cầu xem nhà đang mở và các lịch hẹn sắp tới trước khi xóa tin đăng.",
-    "calendarViewing": "Xem nhà · {title}"
+    "calendarViewing": "Xem nhà · {title}",
+    "listedBy": "Đăng bởi",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Gọi"
   },
   "rentalsDetails": {
     "propertySize": "Diện tích",

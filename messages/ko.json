@@ -1003,7 +1003,17 @@
     "makePrivate": "내 프로필 비공개로 설정",
     "privacyHint": "프로필 페이지와 소개는 비공개가 됩니다. 이름, 아바타 및 공개 행사 참여 내역은 계속 표시됩니다.",
     "privacySaveFailed": "저장하지 못했습니다. 다시 시도해 주세요.",
-    "joinDalat": "DaLat 가입"
+    "joinDalat": "DaLat 가입",
+    "contactDetails": "공개 연락처",
+    "contactDetailsHelp": "임대 매물 페이지에 표시되어 방문자가 연락할 수 있습니다.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "전화",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "설정",
@@ -4377,19 +4387,15 @@
     "findGuest": "참가자 찾기",
     "noCheckedIn": "테이블을 구성하려면 참가자를 체크인해 주세요",
     "rehearsalCheckInAll": "모든 예시 참가자 체크인",
-
     "findingTable": "테이블을 찾고 있어요…",
     "waitingList": "대기 중",
-
     "waitingPartner": "언어 교환 파트너를 기다리는 중",
     "learningLabel": "학습 중",
     "speaksLabel": "구사 언어",
-
     "byEzviet": "제공: EZViet",
     "playAudio": "{text} 듣기",
     "turnPlayer": "{name} 차례",
     "audioUnavailable": "오디오를 재생할 수 없습니다. 다시 시도하세요.",
-
     "arriveNow": "도착했어요",
     "playCards": "시작",
     "moveToTable": "{number}번 테이블로 이동",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "이 매물을 영구 삭제할까요?",
     "deleteDescription": "매물과 상세 정보가 영구 삭제됩니다. 방문 관련 메시지는 비공개로 유지됩니다.",
     "deleteActive": "매물을 삭제하기 전에 진행 중인 방문 요청과 예정된 방문 일정을 정리해 주세요.",
-    "calendarViewing": "매물 방문 · {title}"
+    "calendarViewing": "매물 방문 · {title}",
+    "listedBy": "등록자",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "전화"
   },
   "rentalsDetails": {
     "propertySize": "면적",

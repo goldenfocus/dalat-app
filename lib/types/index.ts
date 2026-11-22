@@ -213,6 +213,11 @@ export interface Profile {
   discoverable?: boolean;
   follower_count?: number;
   following_count?: number;
+  /** Public rental contact; shown on listings when set. */
+  zalo?: string | null;
+  whatsapp?: string | null;
+  telegram?: string | null;
+  phone?: string | null;
   created_at: string;
   updated_at: string;
 }

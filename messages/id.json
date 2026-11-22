@@ -1003,7 +1003,17 @@
     "makePrivate": "Jadikan profil saya privat",
     "privacyHint": "Halaman profil dan bio Anda akan privat. Nama, avatar, dan partisipasi dalam acara publik tetap terlihat.",
     "privacySaveFailed": "Tidak dapat menyimpan. Coba lagi.",
-    "joinDalat": "Gabung DaLat"
+    "joinDalat": "Gabung DaLat",
+    "contactDetails": "Kontak publik",
+    "contactDetailsHelp": "Ditampilkan di iklan sewa Anda agar pengunjung dapat menghubungi Anda.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Telepon",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Pengaturan",
@@ -4377,19 +4387,15 @@
     "findGuest": "Cari peserta",
     "noCheckedIn": "Check-in peserta untuk membentuk meja",
     "rehearsalCheckInAll": "Check-in semua peserta contoh",
-
     "findingTable": "Mencari meja untukmu…",
     "waitingList": "Menunggu",
-
     "waitingPartner": "Menunggu teman bertukar bahasa",
     "learningLabel": "Belajar",
     "speaksLabel": "Berbicara",
-
     "byEzviet": "Oleh EZViet",
     "playAudio": "Dengarkan {text}",
     "turnPlayer": "Giliran {name}",
     "audioUnavailable": "Audio tidak tersedia. Coba lagi.",
-
     "arriveNow": "Saya sudah tiba",
     "playCards": "Main",
     "moveToTable": "Pindahkan ke meja {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Hapus iklan ini secara permanen?",
     "deleteDescription": "Iklan beserta detailnya akan dihapus secara permanen. Pesan terkait kunjungan tetap bersifat pribadi.",
     "deleteActive": "Selesaikan permintaan kunjungan yang masih terbuka dan janji yang akan datang sebelum menghapus iklan ini.",
-    "calendarViewing": "Kunjungan properti · {title}"
+    "calendarViewing": "Kunjungan properti · {title}",
+    "listedBy": "Dipasang oleh",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Telepon"
   },
   "rentalsDetails": {
     "propertySize": "Luas properti",

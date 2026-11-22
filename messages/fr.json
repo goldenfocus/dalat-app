@@ -1017,7 +1017,17 @@
     "makePrivate": "Rendre mon profil privé",
     "privacyHint": "Votre page de profil et votre biographie seront privées. Votre nom, votre avatar et votre participation aux événements publics resteront visibles.",
     "privacySaveFailed": "Impossible d’enregistrer. Réessayez.",
-    "joinDalat": "Rejoindre DaLat"
+    "joinDalat": "Rejoindre DaLat",
+    "contactDetails": "Contact public",
+    "contactDetailsHelp": "Affiché sur vos annonces locatives pour que les visiteurs puissent vous joindre.",
+    "zalo": "Zalo",
+    "whatsapp": "WhatsApp",
+    "telegram": "Telegram",
+    "phone": "Téléphone",
+    "zaloPlaceholder": "0369 169 913",
+    "whatsappPlaceholder": "+1 514 865 3435",
+    "telegramPlaceholder": "@username",
+    "phonePlaceholder": "+84 369 169 913"
   },
   "settings": {
     "settings": "Paramètres",
@@ -4377,19 +4387,15 @@
     "findGuest": "Trouver un invité",
     "noCheckedIn": "Enregistrez les invités pour former les tables",
     "rehearsalCheckInAll": "Enregistrer tous les invités fictifs",
-
     "findingTable": "Nous cherchons votre table…",
     "waitingList": "En attente",
-
     "waitingPartner": "En attente d’un partenaire linguistique",
     "learningLabel": "Apprend",
     "speaksLabel": "Parle",
-
     "byEzviet": "Par EZViet",
     "playAudio": "Écouter {text}",
     "turnPlayer": "Au tour de {name}",
     "audioUnavailable": "Audio indisponible. Réessayez.",
-
     "arriveNow": "Je suis là",
     "playCards": "Jouer",
     "moveToTable": "Déplacer à la table {number}",
@@ -4837,7 +4843,12 @@
     "deleteTitle": "Supprimer définitivement cette annonce ?",
     "deleteDescription": "L’annonce et ses détails seront supprimés définitivement. Les messages concernant les visites restent privés.",
     "deleteActive": "Traitez les demandes de visite en cours et les rendez-vous à venir avant de supprimer cette annonce.",
-    "calendarViewing": "Visite · {title}"
+    "calendarViewing": "Visite · {title}",
+    "listedBy": "Publié par",
+    "contactZalo": "Zalo",
+    "contactWhatsApp": "WhatsApp",
+    "contactTelegram": "Telegram",
+    "contactPhone": "Appeler"
   },
   "rentalsDetails": {
     "propertySize": "Superficie",
