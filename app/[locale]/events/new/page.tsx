@@ -1,7 +1,7 @@
-import { redirect } from "next/navigation";
 import { Copy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
+import { getPathname, redirect, type Locale } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
@@ -9,7 +9,8 @@ import { EventForm } from "@/components/events/event-form";
 import type { Event, Sponsor, EventSponsor, UserRole } from "@/lib/types";
 
 interface PageProps {
-  searchParams: Promise<{ copyFrom?: string; tribe?: string }>;
+  params: Promise<{ locale: Locale }>;
+  searchParams: Promise<{ copyFrom?: string | string[]; tribe?: string | string[] }>;
 }
 
 // Data to copy from source event
@@ -43,17 +44,24 @@ async function getCopyFromData(eventId: string): Promise<CopyFromData | null> {
   };
 }
 
-export default async function NewEventPage({ searchParams }: PageProps) {
+export default async function NewEventPage({ params, searchParams }: PageProps) {
+  const [{ locale }, query] = await Promise.all([params, searchParams]);
+  setRequestLocale(locale);
+  const copyFrom = typeof query.copyFrom === "string" ? query.copyFrom : undefined;
+  const tribe = typeof query.tribe === "string" ? query.tribe : undefined;
   const supabase = await createClient();
-  const { copyFrom, tribe } = await searchParams;
-  const t = await getTranslations("eventForm");
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/auth/login");
+    const query = new URLSearchParams();
+    if (copyFrom) query.set("copyFrom", copyFrom);
+    if (tribe) query.set("tribe", tribe);
+    const pathname = getPathname({ href: "/events/new", locale });
+    const next = query.size ? `${pathname}?${query}` : pathname;
+    return redirect({ href: { pathname: "/auth/login", query: { next } }, locale });
   }
 
   // Fetch user profile to get role
@@ -70,6 +78,7 @@ export default async function NewEventPage({ searchParams }: PageProps) {
   }
 
   const isCopying = !!copyFromData;
+  const t = await getTranslations("eventForm");
 
   return (
     <main className="min-h-screen">
