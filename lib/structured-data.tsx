@@ -20,6 +20,7 @@ import type {
 } from "@/lib/types";
 import { hasLamVienTbdSchedule } from "@/lib/activity-graph/lam-vien-tbd";
 import { formatInDaLat } from "@/lib/timezone";
+import { splitVenueLinks } from "@/lib/venues/social-links";
 import type { BlogPostFull } from "@/lib/types/blog";
 
 const SITE_URL = "https://dalat.app";
@@ -413,6 +414,7 @@ export function generateLocalBusinessSchema(
     ),
   ];
   const mapsUrl = options.mapsUrl || venue.google_maps_url;
+  const links = splitVenueLinks(venue.website_url, venue.tiktok_url);
   return {
     "@context": "https://schema.org",
     "@type": venue.venue_type
@@ -448,9 +450,10 @@ export function generateLocalBusinessSchema(
     ...(venue.phone && { telephone: venue.phone }),
     ...(venue.email && { email: venue.email }),
     sameAs: [
-      venue.website_url,
+      links.website,
       venue.facebook_url,
       venue.instagram_url,
+      links.tiktok?.profile,
       venue.google_maps_url,
     ].filter(Boolean),
     ...(openingHoursSpecification.length && { openingHoursSpecification }),

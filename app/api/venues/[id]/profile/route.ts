@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { venueEditor } from "@/lib/venues/access";
 import { experienceAdmin } from "@/lib/experiences/server";
+import { getTikTokLink } from "@/lib/venues/social-links";
 
 const time = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 const day = z.union([z.literal("closed"), z.object({ open: time, close: time })]);
@@ -16,6 +17,7 @@ const body = z.object({
   menu_url: url,
   facebook_url: url,
   instagram_url: url,
+  tiktok_url: url.refine((value) => value === null || getTikTokLink(value) !== null),
   logo_url: url,
   cover_photo_url: url,
   operating_hours: z

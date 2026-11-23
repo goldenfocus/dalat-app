@@ -14,7 +14,7 @@ export default async function EditVenueProfilePage({ params }: Props) {
   const db = await createClient();
   const { data: venue } = await db
     .from("venues")
-    .select("id,slug,name,description,phone,email,website_url,menu_url,facebook_url,instagram_url,logo_url,operating_hours")
+    .select("id,slug,name,description,phone,email,website_url,menu_url,facebook_url,instagram_url,tiktok_url,logo_url,operating_hours")
     .eq("slug", slug)
     .maybeSingle();
   if (!venue) notFound();
