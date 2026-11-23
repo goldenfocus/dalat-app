@@ -36,11 +36,22 @@ const siteUrl = "https://dalat.app";
 // Chrome-only progressive enhancement; other browsers ignore the script.
 // Event links come in both shapes: /events/<slug> (default locale, unprefixed
 // via localePrefix: 'as-needed') and /<locale>/events/<slug>.
+const eventFormPaths = { href_matches: ["/events/new", "/*/events/new"] };
 const speculationRules = JSON.stringify({
   prerender: [
-    { where: { href_matches: ["/events/*", "/*/events/*"] }, eagerness: "moderate" },
+    {
+      where: {
+        and: [
+          { href_matches: ["/events/*", "/*/events/*"] },
+          { not: eventFormPaths },
+        ],
+      },
+      eagerness: "moderate",
+    },
   ],
-  prefetch: [{ where: { href_matches: "/*" }, eagerness: "conservative" }],
+  prefetch: [
+    { where: { and: [{ href_matches: "/*" }, { not: eventFormPaths }] }, eagerness: "conservative" },
+  ],
 });
 
 interface Props {

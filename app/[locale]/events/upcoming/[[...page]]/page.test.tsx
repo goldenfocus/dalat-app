@@ -15,7 +15,7 @@ vi.mock("next-intl/server", () => ({
   getTranslations: async () => (key: string) => ({ title: "Live & Upcoming Events", "happeningNow.title": "Happening Now", "tabs.upcoming": "Upcoming", createEvent: "Create an event" })[key] || key,
 }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("not found"); } }));
-vi.mock("@/lib/i18n/routing", () => ({ buildLocales: ["en"], Link: ({ children, href, className }: React.ComponentProps<"a">) => <a href={href} className={className}>{children}</a> }));
+vi.mock("@/lib/i18n/routing", () => ({ buildLocales: ["en"], getPathname: ({ href }: { href: string }) => href }));
 vi.mock("@/lib/supabase/server", () => ({ createStaticClient: () => ({ from: (table: string) => {
   const query = {
     select: () => query,

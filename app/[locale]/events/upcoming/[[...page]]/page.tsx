@@ -275,7 +275,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
           </div>
 
           <div className="mb-4 mt-3">
-            <CreateEventButton label={t("createEvent")} />
+            <CreateEventButton label={t("createEvent")} locale={locale} />
           </div>
 
           {/* Top pagination for pages > 1 */}
