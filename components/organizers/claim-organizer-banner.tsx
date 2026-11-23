@@ -56,14 +56,9 @@ export function ClaimOrganizerBanner({
       <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 mb-6">
         <div className="flex items-start gap-3">
           <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-medium text-green-700 dark:text-green-300">
-              {t("claimBanner.successTitle")}
-            </h3>
-            <p className="text-sm text-green-600/90 dark:text-green-400/90 mt-1">
-              {t("claimBanner.successDescription")}
-            </p>
-          </div>
+          <h3 className="font-medium text-green-700 dark:text-green-300" role="status">
+            {t("claimBanner.successTitle")}
+          </h3>
         </div>
       </div>
     );
@@ -96,6 +91,7 @@ export function ClaimOrganizerBanner({
             <div className="mt-3 space-y-3">
               <textarea
                 value={message}
+                maxLength={1000}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder={t("claimBanner.messagePlaceholder")}
                 className="w-full px-3 py-2 text-sm rounded-md border border-border bg-background resize-none focus:outline-none focus:ring-2 focus:ring-primary/20"

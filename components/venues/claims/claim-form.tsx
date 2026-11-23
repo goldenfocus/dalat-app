@@ -25,7 +25,7 @@ export function VenueClaimForm({ venueId }: { venueId: string }) {
     setState("error");
     setError(code === "already_pending" ? t("alreadyPending") : code === "not_claimable" ? t("alreadyClaimed") : t("failed"));
   };
-  if (state === "sent") return <p className="rounded-2xl bg-muted p-5">{t("sent")}</p>;
+  if (state === "sent") return <p role="status" className="rounded-2xl bg-muted p-5">{t("alreadyPending")}</p>;
   return (
     <form onSubmit={submit} className="space-y-4">
       <label className="block space-y-1.5">
