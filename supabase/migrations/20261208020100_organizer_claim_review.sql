@@ -1,4 +1,4 @@
-create table public.organizer_claims (
+create table if not exists public.organizer_claims (
   id uuid primary key default gen_random_uuid(),
   organizer_id uuid not null references public.organizers(id) on delete cascade,
   user_id uuid not null references public.profiles(id) on delete cascade,
@@ -10,7 +10,7 @@ create table public.organizer_claims (
   created_at timestamptz not null default now()
 );
 
-create unique index organizer_claims_one_pending
+create unique index if not exists organizer_claims_one_pending
   on public.organizer_claims (organizer_id, user_id) where status = 'pending';
 
 alter table public.organizer_claims enable row level security;
@@ -18,6 +18,7 @@ revoke all on public.organizer_claims from public, anon, authenticated;
 grant select on public.organizer_claims to authenticated;
 grant select, insert, update on public.organizer_claims to service_role;
 
+drop policy if exists organizer_claims_select_own_or_admin on public.organizer_claims;
 create policy organizer_claims_select_own_or_admin
   on public.organizer_claims for select to authenticated
   using (
@@ -28,7 +29,7 @@ create policy organizer_claims_select_own_or_admin
   );
 
 -- A shared queue for venues and organizers, with a single in-app delivery per reviewer.
-create function public.enqueue_claim_review(
+create or replace function public.enqueue_claim_review(
   p_claim_id uuid, p_kind text, p_name text
 )
 returns void
@@ -72,7 +73,7 @@ begin
 end;
 $$;
 
-create function public.queue_organizer_claim_review()
+create or replace function public.queue_organizer_claim_review()
 returns trigger
 language plpgsql
 security definer
@@ -87,13 +88,13 @@ $$;
 
 revoke all on function public.queue_organizer_claim_review() from public, anon, authenticated;
 
-create trigger queue_organizer_claim_review
+create or replace trigger queue_organizer_claim_review
   after insert on public.organizer_claims for each row
   when (new.status = 'pending') execute function public.queue_organizer_claim_review();
 
 -- Serialize submission with ownership changes so a retried request doesn't
 -- open another claim after the organizer has been assigned.
-create function public.submit_organizer_claim(
+create or replace function public.submit_organizer_claim(
   p_slug text, p_user_id uuid, p_email text, p_note text
 )
 returns boolean
@@ -114,7 +115,7 @@ begin
 end;
 $$;
 
-create function public.review_organizer_claim(
+create or replace function public.review_organizer_claim(
   p_claim_id uuid, p_reviewer uuid, p_action text
 )
 returns text
@@ -174,6 +175,10 @@ where type = 'venue_claim_review'
 -- Recover legacy requests that were actually saved. Many email-only requests
 -- never got past the original organizer update policy.
 insert into public.organizer_claims (organizer_id, user_id, created_at)
-select id, claim_requested_by, claim_requested_at from public.organizers
-where owner_id is null and claim_requested_by is not null and claim_requested_at is not null
+select o.id, o.claim_requested_by, o.claim_requested_at from public.organizers o
+where o.owner_id is null and o.claim_requested_by is not null and o.claim_requested_at is not null
+  and not exists (
+    select 1 from public.organizer_claims c
+    where c.organizer_id = o.id and c.user_id = o.claim_requested_by
+  )
 on conflict (organizer_id, user_id) where status = 'pending' do nothing;
