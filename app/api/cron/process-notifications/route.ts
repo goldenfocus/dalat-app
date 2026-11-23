@@ -243,12 +243,14 @@ export async function GET(request: Request) {
       }
 
       if (payload.type === 'venue_claim_review') {
+        const table = payload.organizerName !== undefined ? 'organizer_claims' : 'venue_claims';
         const [claim, recipient] = await Promise.all([
-          supabase.from('venue_claims').select('status').eq('id', payload.claimId).maybeSingle(),
+          supabase.from(table).select('status').eq('id', payload.claimId).maybeSingle(),
           supabase.from('profiles').select('role,is_ghost').eq('id', payload.userId).maybeSingle(),
         ]);
-        if (claim.error || recipient.error) throw new RetryableError('Venue claim eligibility check failed');
+        if (claim.error || recipient.error) throw new RetryableError('Claim eligibility check failed');
         if (
+          onlyChannels?.includes('email') ||
           claim.data?.status !== 'pending' ||
           !recipient.data ||
           recipient.data.is_ghost ||
@@ -256,16 +258,15 @@ export async function GET(request: Request) {
         ) {
           const { error } = await supabase.from('scheduled_notifications')
             .update({ status: 'cancelled' }).eq('id', scheduled.id);
-          if (error) throw new RetryableError('Could not cancel the venue claim alert');
+          if (error) throw new RetryableError('Could not cancel the claim alert');
           processed++;
           continue;
         }
       }
 
-      const notifyResult = await notify(payload, {
-        onlyChannels,
-        deliveryId: payload.type === 'venue_claim_review' ? scheduled.id : undefined,
-      });
+      const notifyResult = await notify(payload, payload.type === 'venue_claim_review'
+        ? { channels: ['in_app'], deliveryId: scheduled.id }
+        : { onlyChannels });
 
       if (notifyResult.success) {
         const { error: sentError } = await supabase

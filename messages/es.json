@@ -1218,7 +1218,7 @@
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "Resumen diario",
-    "navVenueClaims": "Reclamaciones de lugares"
+    "navVenueClaims": "Solicitudes"
   },
   "verification": {
     "requestSubmitted": "¡Solicitud Enviada!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "Este lugar ya ha sido reclamado.",
     "youOwn": "Gestionas este lugar.",
     "failed": "Algo salió mal. Inténtalo de nuevo.",
-    "queueTitle": "Reclamaciones de lugares",
+    "queueTitle": "Solicitudes",
     "queueEmpty": "No hay solicitudes pendientes.",
     "approve": "Aprobar",
     "reject": "Rechazar",

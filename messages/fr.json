@@ -1232,7 +1232,7 @@
     "sourceManual": "Manuel",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "Résumé quotidien",
-    "navVenueClaims": "Revendications de lieux"
+    "navVenueClaims": "Demandes de gestion"
   },
   "verification": {
     "requestSubmitted": "Demande envoyée !",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "Ce lieu a déjà été revendiqué.",
     "youOwn": "Vous gérez ce lieu.",
     "failed": "Une erreur est survenue. Réessayez.",
-    "queueTitle": "Revendications de lieux",
+    "queueTitle": "Demandes de gestion",
     "queueEmpty": "Aucune demande en attente.",
     "approve": "Approuver",
     "reject": "Refuser",

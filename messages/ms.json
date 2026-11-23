@@ -1218,7 +1218,7 @@
     "sourceManual": "Manual",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "Ringkasan Harian",
-    "navVenueClaims": "Tuntutan tempat"
+    "navVenueClaims": "Permohonan pengurusan"
   },
   "verification": {
     "requestSubmitted": "Permintaan Dihantar!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "Tempat ini sudah dituntut.",
     "youOwn": "Anda mengurus tempat ini.",
     "failed": "Ralat berlaku. Cuba lagi.",
-    "queueTitle": "Tuntutan tempat",
+    "queueTitle": "Permohonan pengurusan",
     "queueEmpty": "Tiada tuntutan tertunda.",
     "approve": "Luluskan",
     "reject": "Tolak",

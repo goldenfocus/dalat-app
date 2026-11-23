@@ -1218,7 +1218,7 @@
     "sourceManual": "สร้างเอง",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "สรุปประจำวัน",
-    "navVenueClaims": "คำขอเป็นเจ้าของสถานที่"
+    "navVenueClaims": "คำขอจัดการ"
   },
   "verification": {
     "requestSubmitted": "ส่งคำขอแล้ว!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "สถานที่นี้มีเจ้าของแล้ว",
     "youOwn": "คุณดูแลสถานที่นี้อยู่",
     "failed": "เกิดข้อผิดพลาด โปรดลองอีกครั้ง",
-    "queueTitle": "คำขอเป็นเจ้าของสถานที่",
+    "queueTitle": "คำขอจัดการ",
     "queueEmpty": "ไม่มีคำขอที่รออยู่",
     "approve": "อนุมัติ",
     "reject": "ปฏิเสธ",

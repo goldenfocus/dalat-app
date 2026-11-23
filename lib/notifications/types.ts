@@ -358,11 +358,13 @@ export interface CollaborationUpdatePayload extends BaseNotificationPayload {
   actionId: string;
 }
 
-export interface VenueClaimReviewPayload extends BaseNotificationPayload {
+export type VenueClaimReviewPayload = BaseNotificationPayload & {
   type: 'venue_claim_review';
   claimId: string;
-  venueName: string;
-}
+} & (
+  | { venueName: string; organizerName?: never }
+  | { organizerName: string; venueName?: never }
+);
 
 export type NotificationPayload =
   | CollaborationUpdatePayload

@@ -1360,6 +1360,21 @@ const venueClaimCopy = {
   id: ['Permintaan pengelolaan tempat baru', 'Tinjau permintaan'],
 } satisfies Record<Locale, [string, string]>;
 
+const organizerClaimTitles = {
+  en: 'New organizer claim',
+  vi: 'Yêu cầu quản lý trang nhà tổ chức mới',
+  ko: '새 주최자 페이지 관리 권한 요청',
+  zh: '新的主办方页面管理权申请',
+  ru: 'Новая заявка на управление страницей организатора',
+  fr: 'Nouvelle demande de gestion d’une page organisateur',
+  ja: '主催者ページの管理権限に関する新しい申請',
+  ms: 'Permohonan baharu untuk mengurus halaman penganjur',
+  th: 'มีคำขอจัดการหน้าโปรไฟล์ผู้จัดใหม่',
+  de: 'Neue Anfrage zur Verwaltung einer Veranstalterseite',
+  es: 'Nueva solicitud para gestionar una página de organizador',
+  id: 'Permintaan baru untuk mengelola halaman penyelenggara',
+} satisfies Record<Locale, string>;
+
 export function getNotificationTemplate(payload: NotificationPayload): TemplateResult {
   switch (payload.type) {
     case 'collaboration_update': {
@@ -1373,23 +1388,15 @@ export function getNotificationTemplate(payload: NotificationPayload): TemplateR
     }
     case 'venue_claim_review': {
       const locale = Object.hasOwn(venueClaimCopy, payload.locale) ? payload.locale : 'en';
-      const [title, primaryActionLabel] = venueClaimCopy[locale];
+      const [venueTitle, primaryActionLabel] = venueClaimCopy[locale];
       const path = `${locale === 'en' ? '' : `/${locale}`}/admin/venue-claims#claim-${encodeURIComponent(payload.claimId)}`;
-      const primaryActionUrl = new URL(path, getBaseUrl()).href;
-      const signInUrl = new URL('/auth/continue', getBaseUrl());
-      signInUrl.searchParams.set('next', path);
-      const content = { title, body: payload.venueName, primaryActionUrl, primaryActionLabel };
-      return {
-        inApp: content,
-        push: content,
-        email: {
-          ...content,
-          subject: title,
-          primaryActionUrl: signInUrl.href,
-          html: `<h1>${escapeHtml(title)}</h1><p>${escapeHtml(payload.venueName)}</p><p><a href="${escapeHtml(signInUrl.href)}">${escapeHtml(primaryActionLabel)}</a></p>`,
-          text: `${title}\n\n${payload.venueName}\n\n${primaryActionLabel}\n${signInUrl.href}`,
-        },
+      const content = {
+        title: payload.organizerName !== undefined ? organizerClaimTitles[locale] : venueTitle,
+        body: payload.organizerName ?? payload.venueName,
+        primaryActionUrl: new URL(path, getBaseUrl()).href,
+        primaryActionLabel,
       };
+      return { inApp: content, push: content };
     }
     case 'rsvp_confirmation':
       return rsvpConfirmationTemplate(payload);

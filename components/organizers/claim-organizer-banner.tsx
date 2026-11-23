@@ -31,7 +31,6 @@ export function ClaimOrganizerBanner({
         body: JSON.stringify({
           entityType: "organizer",
           entitySlug: organizerSlug,
-          entityName: organizerName,
           message: message || undefined,
         }),
       });
@@ -40,7 +39,7 @@ export function ClaimOrganizerBanner({
         const data = await res.json();
         if (res.status === 401) {
           // Not logged in - redirect to sign in
-          window.location.href = `/sign-in?redirect=/${organizerSlug}`;
+          window.location.href = `/auth/continue?next=${encodeURIComponent(`/${organizerSlug}`)}`;
           return;
         }
         throw new Error(data.error || "Failed to submit");

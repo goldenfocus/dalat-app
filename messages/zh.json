@@ -1218,7 +1218,7 @@
     "sourceManual": "手动",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "每日摘要",
-    "navVenueClaims": "地点认领"
+    "navVenueClaims": "管理权申请"
   },
   "verification": {
     "requestSubmitted": "请求已提交！",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "该地点已被认领。",
     "youOwn": "您正在管理该地点。",
     "failed": "出错了，请重试。",
-    "queueTitle": "地点认领",
+    "queueTitle": "管理权申请",
     "queueEmpty": "暂无待审核申请。",
     "approve": "通过",
     "reject": "拒绝",
