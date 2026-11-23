@@ -90,6 +90,7 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
                 alt={group.event_title}
                 width={40}
                 height={40}
+                unoptimized
                 className="object-cover w-full h-full"
               />
             </div>

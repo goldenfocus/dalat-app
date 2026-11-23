@@ -226,6 +226,10 @@
     "copyLink": "Salin tautan"
   },
   "nav": {
+    "history": "Riwayat navigasi",
+    "forward": "Maju",
+    "breadcrumbs": "Jejak navigasi",
+    "moment": "Momen",
     "people": "Orang",
     "events": "Acara",
     "moments": "Momen",

@@ -1,6 +1,7 @@
 import { Link } from "@/lib/i18n/routing";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { CreateEventLink } from "@/components/auth/create-event-link";
+import { HistoryControls } from "@/components/navigation/history-controls";
 import { ContentNav } from "@/components/navigation/content-nav";
 import {
   DeferredHeaderSearch,
@@ -22,7 +23,7 @@ interface SiteHeaderProps {
 export function SiteHeader({ actions, rentalsLabel, datingLabel }: SiteHeaderProps) {
   return (
     <header data-floating-chrome="site-header" className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-4 lg:px-4">
+      <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)_auto] items-center lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:gap-x-4 lg:px-4">
         <div className="col-start-1 row-start-1 flex h-14 items-center gap-0.5 pl-2 min-[360px]:gap-1.5 min-[360px]:pl-4 lg:pl-0">
           <Link
             href="/"
@@ -46,6 +47,7 @@ export function SiteHeader({ actions, rentalsLabel, datingLabel }: SiteHeaderPro
           {actions}
           <AuthButtonClient />
         </div>
+        <HistoryControls className="col-span-full row-start-3 flex items-center gap-1 border-t border-border/40 px-2 lg:row-start-2 lg:px-0" />
       </div>
     </header>
   );

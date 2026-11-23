@@ -226,6 +226,10 @@
     "copyLink": "링크 복사"
   },
   "nav": {
+    "history": "페이지 방문 기록",
+    "forward": "앞으로",
+    "breadcrumbs": "탐색 경로",
+    "moment": "모먼트",
     "people": "사람들",
     "events": "이벤트",
     "moments": "모먼트",

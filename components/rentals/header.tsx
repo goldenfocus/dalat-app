@@ -3,6 +3,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useSelectedLayoutSegment } from "next/navigation";
+import { HistoryControls } from "@/components/navigation/history-controls";
 import { AuthButtonClient } from "@/components/auth-button-client";
 import { DeferredLocalePicker } from "@/components/site-header-deferred";
 import type { Locale } from "@/lib/i18n/routing";
@@ -25,6 +26,7 @@ export function RentalsHeader({ locale }: { locale: Locale }) {
           <AuthButtonClient showNotifications={false} />
         </div>
       </div>
+      <HistoryControls className="mx-auto flex max-w-5xl gap-1 border-t px-4 sm:px-8" />
     </header>
   );
 }

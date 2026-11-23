@@ -226,6 +226,10 @@
     "copyLink": "リンクをコピー"
   },
   "nav": {
+    "history": "ページの履歴",
+    "forward": "進む",
+    "breadcrumbs": "パンくずリスト",
+    "moment": "モーメント",
     "people": "人と出会う",
     "events": "イベント",
     "moments": "モーメント",

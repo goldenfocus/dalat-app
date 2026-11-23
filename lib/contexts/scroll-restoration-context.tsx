@@ -3,9 +3,15 @@
 import {
   createContext,
   useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
   useCallback,
   type ReactNode,
 } from "react";
+import { usePathname } from "next/navigation";
+import { getAppHistoryEntryKey } from "@/lib/navigation-history";
 
 interface ScrollRestorationState {
   eventFeedIndex: number;
@@ -23,11 +29,64 @@ const STORAGE_KEY = "dalat-scroll-restoration";
 const ScrollRestorationContext =
   createContext<ScrollRestorationContextType | null>(null);
 
+interface PendingScroll {
+  entry: string;
+  pathname: string;
+  top: number;
+}
+
+function useHistoryScrollRestoration() {
+  const pathname = usePathname();
+  const positions = useRef(new Map<string, number>());
+  const pending = useRef<PendingScroll | undefined>(undefined);
+  const [restore, setRestore] = useState<PendingScroll>();
+
+  useEffect(() => {
+    function savePosition() {
+      const entry = getAppHistoryEntryKey();
+      if (entry && pending.current?.entry !== entry) {
+        positions.current.set(entry, window.scrollY);
+      }
+    }
+
+    function handleTraversal() {
+      const entry = getAppHistoryEntryKey();
+      const top = entry ? positions.current.get(entry) : undefined;
+      pending.current = entry && top !== undefined
+        ? { entry, pathname: window.location.pathname, top }
+        : undefined;
+      setRestore(pending.current);
+    }
+
+    window.addEventListener("scroll", savePosition, { passive: true });
+    document.addEventListener("click", savePosition, true);
+    window.addEventListener("popstate", handleTraversal, true);
+    return () => {
+      window.removeEventListener("scroll", savePosition);
+      document.removeEventListener("click", savePosition, true);
+      window.removeEventListener("popstate", handleTraversal, true);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!restore || restore.pathname !== pathname) return;
+    const frame = requestAnimationFrame(() => {
+      if (getAppHistoryEntryKey() === restore.entry) {
+        window.scrollTo({ top: restore.top, behavior: "instant" });
+      }
+      if (pending.current === restore) pending.current = undefined;
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [pathname, restore]);
+}
+
 export function ScrollRestorationProvider({
   children,
 }: {
   children: ReactNode;
 }) {
+  useHistoryScrollRestoration();
+
   const saveEventFeedPosition = useCallback((index: number, tab: string) => {
     try {
       sessionStorage.setItem(

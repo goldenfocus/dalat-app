@@ -226,6 +226,10 @@
     "copyLink": "复制链接"
   },
   "nav": {
+    "history": "页面浏览记录",
+    "forward": "前进",
+    "breadcrumbs": "面包屑导航",
+    "moment": "瞬间",
     "people": "认识朋友",
     "events": "活动",
     "moments": "瞬间",

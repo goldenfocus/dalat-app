@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { OriginalText } from "@/components/ui/original-text";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { Suspense } from "react";
@@ -244,6 +245,7 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
 
   const t = await getTranslations("moments");
   const tCommon = await getTranslations("common");
+  const nav = await getTranslations("nav");
 
   const event = moment.events;
   const eventTitles = await getEventTranslationsBatch([event.id], locale as Locale);
@@ -313,6 +315,17 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
           mimeType={moment.mime_type}
         />
         <main className="container max-w-4xl mx-auto px-4 py-6">
+          <Breadcrumbs
+            parents={from === "discovery"
+              ? [{ label: t("viewAll"), href: "/moments" }]
+              : [
+                  { label: nav("events"), href: "/events/upcoming" },
+                  { label: eventTitle, href: `/events/${event.slug}` },
+                  { label: t("moments"), href: `/events/${event.slug}/moments` },
+                ]}
+            current={nav("moment")}
+            className="mb-3"
+          />
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr),320px] gap-6">
             {/* Main content */}
             <div className="min-w-0 space-y-4">

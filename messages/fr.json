@@ -226,6 +226,10 @@
     "copyLink": "Copier le lien"
   },
   "nav": {
+    "history": "Historique de navigation",
+    "forward": "Suivant",
+    "breadcrumbs": "Fil d’Ariane",
+    "moment": "Moment",
     "people": "Rencontres",
     "events": "Événements",
     "moments": "Moments",

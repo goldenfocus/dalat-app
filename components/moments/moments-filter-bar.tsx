@@ -29,6 +29,7 @@ export function MomentsFilterBar({
         return (
           <button
             key={option.key}
+            aria-pressed={isActive}
             type="button"
             onClick={() => {
               triggerHaptic("selection");
