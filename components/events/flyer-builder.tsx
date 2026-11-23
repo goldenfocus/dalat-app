@@ -126,6 +126,7 @@ type ImageFit = "cover" | "contain";
 
 interface FlyerBuilderProps {
   title: string;
+  showTitle?: boolean;
   onTitleChange: (title: string) => void;
   imageUrl: string | null;
   onImageChange: (url: string | null, file?: File) => void;
@@ -142,6 +143,7 @@ function generateDefaultPrompt(title: string): string {
 
 export function FlyerBuilder({
   title,
+  showTitle = true,
   onTitleChange,
   imageUrl,
   onImageChange,
@@ -464,20 +466,21 @@ export function FlyerBuilder({
 
   return (
     <div className="space-y-4">
-      {/* Title input - prominent and required */}
-      <div className="space-y-2">
-        <label htmlFor="event-title" className="text-sm font-medium">
-          {t("eventTitlePlaceholder")} <span className="text-red-500">*</span>
-        </label>
-        <Input
-          id="event-title"
-          value={title}
-          onChange={(e) => onTitleChange(e.target.value)}
-          placeholder={titlePlaceholder}
-          className="text-lg font-semibold h-12"
-          autoComplete="off"
-        />
-      </div>
+      {showTitle && (
+        <div className="space-y-2">
+          <label htmlFor="event-title" className="text-sm font-medium">
+            {t("eventTitlePlaceholder")} <span className="text-red-500">*</span>
+          </label>
+          <Input
+            id="event-title"
+            value={title}
+            onChange={(e) => onTitleChange(e.target.value)}
+            placeholder={titlePlaceholder}
+            className="text-lg font-semibold h-12"
+            autoComplete="off"
+          />
+        </div>
+      )}
 
       {/* Preview area - click to upload */}
       <div

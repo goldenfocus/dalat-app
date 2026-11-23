@@ -49,7 +49,7 @@ import {
 } from "@/components/events/event-materials-input";
 import { toast } from "sonner";
 import { PlaylistImportInput } from "@/components/events/playlist-import-input";
-import { emptyMusicImport, MUSIC_IMPORT_PREFERENCE } from "@/lib/playlist-import";
+import { emptyMusicImport } from "@/lib/playlist-import";
 import { PlaylistInput } from "@/components/events/playlist-input";
 import { EventSettingsForm } from "@/components/events/event-settings-form";
 import { TicketTierInput } from "@/components/events/ticket-tier-input";
@@ -390,6 +390,12 @@ export function EventForm({
   const [title, setTitle] = useState(event?.title ?? copyDefaults?.title ?? "");
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  const [advancedVisited, setAdvancedVisited] = useState(false);
+
+  function changeAdvancedOpen(open: boolean) {
+    setAdvancedOpen(open);
+    if (open) setAdvancedVisited(true);
+  }
 
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
@@ -707,18 +713,13 @@ export function EventForm({
 
     // Validate slug if editable
     if (slugEditable && slugStatus === "taken") {
-      setAdvancedOpen(true);
+      changeAdvancedOpen(true);
       setError(t("urlTaken"));
       return;
     }
     if (slugEditable && slugStatus === "invalid") {
-      setAdvancedOpen(true);
+      changeAdvancedOpen(true);
       setError(t("urlInvalid"));
-      return;
-    }
-
-    if (!event && musicImport.enabled && (!musicImport.sourcePlaylistId || musicImport.trackIds?.length === 0)) {
-      setError(tPlaylist("importSelectionRequired"));
       return;
     }
 
@@ -730,19 +731,7 @@ export function EventForm({
 
     const supabase = createClient();
     const importMusic = async (eventIds: string[]) => {
-      // Preferences belong to the authenticated account, never to an impersonated host.
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user?.id === userId) {
-          const { error: preferenceError } = await supabase.auth.updateUser({ data: {
-            [MUSIC_IMPORT_PREFERENCE]: { enabled: musicImport.enabled, sourcePlaylistId: musicImport.sourcePlaylistId, trackIds: musicImport.trackIds },
-          } });
-          if (preferenceError) toast.error(tPlaylist("importPreferenceError"));
-        }
-      } catch {
-        toast.error(tPlaylist("importPreferenceError"));
-      }
-      if (!musicImport.enabled) return;
+      if (!musicImport.enabled || !musicImport.sourcePlaylistId || musicImport.trackIds?.length === 0) return;
       for (const eventId of eventIds) {
         try {
           const response = await fetch("/api/playlists/import", {
@@ -1213,114 +1202,21 @@ export function EventForm({
     <form onSubmit={handleSubmit}>
       <Card>
         <CardContent className="p-6 space-y-6">
-          {/* Series Edit Scope (only shown when editing a series event) */}
-          {isEditing && isSeriesEvent && (
-            <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Repeat className="w-4 h-4" />
-                {tSeries("editingSeriesEvent")}
-              </div>
-              <RadioGroup
-                value={seriesEditScope}
-                onValueChange={(value) =>
-                  setSeriesEditScope(value as "this" | "future" | "all")
-                }
-              >
-                <div className="flex items-start gap-3">
-                  <RadioGroupItem
-                    value="this"
-                    id="scope-this"
-                    className="mt-1"
-                  />
-                  <div>
-                    <Label
-                      htmlFor="scope-this"
-                      className="cursor-pointer font-medium"
-                    >
-                      {tSeries("editThisEventOnly")}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {tSeries("editThisEventOnlyDescription")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <RadioGroupItem
-                    value="future"
-                    id="scope-future-events"
-                    className="mt-1"
-                  />
-                  <div>
-                    <Label
-                      htmlFor="scope-future-events"
-                      className="cursor-pointer font-medium"
-                    >
-                      {tSeries("editThisAndFutureEvents")}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {tSeries("editThisAndFutureEventsDescription")}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <RadioGroupItem
-                    value="all"
-                    id="scope-all-events"
-                    className="mt-1"
-                  />
-                  <div>
-                    <Label
-                      htmlFor="scope-all-events"
-                      className="cursor-pointer font-medium"
-                    >
-                      {tSeries("editAllEventsInSeries")}
-                    </Label>
-                    <p className="text-sm text-muted-foreground">
-                      {tSeries("editAllEventsInSeriesDescription")}
-                    </p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-          )}
-
-          {/* Event flyer and title */}
-          {isEditing ? (
-            <>
-              <EventMediaUpload
-                eventId={event.id}
-                eventTitle={title}
-                currentMediaUrl={imageUrl}
-                onMediaChange={setImageUrl}
-              />
-              <div className="space-y-2">
-                <Label htmlFor="title">{t("titleRequired")}</Label>
-                <Input
-                  id="title"
-                  name="title"
-                  placeholder={t("titlePlaceholder")}
-                  value={title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  required
-                />
-              </div>
-            </>
-          ) : (
-            <FlyerBuilder
-              title={title}
-              onTitleChange={handleTitleChange}
-              imageUrl={imageUrl}
-              onImageChange={handleImageChange}
-              imageFit={imageFit}
-              onImageFitChange={setImageFit}
-              focalPoint={focalPoint}
-              onFocalPointChange={setFocalPoint}
+          <div className="space-y-2">
+            <Label htmlFor="title">{t("titleRequired")}</Label>
+            <Input
+              id="title"
+              name="title"
+              placeholder={t("titlePlaceholder")}
+              value={title}
+              onChange={(e) => handleTitleChange(e.target.value)}
+              required
             />
-          )}
+          </div>
 
           {/* Date and time */}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor="date">{t("dateRequired")}</Label>
               <Input
                 id="date"
@@ -1332,7 +1228,7 @@ export function EventForm({
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor="time">{t("timeRequired")}</Label>
               <Input
                 id="time"
@@ -1341,32 +1237,6 @@ export function EventForm({
                 defaultValue={defaults.time}
               />
             </div>
-          </div>
-
-          {/* Recurrence (only for new events) */}
-          {!isEditing && (
-            <RecurrencePicker
-              selectedDate={selectedDate}
-              value={recurrence}
-              onChange={setRecurrence}
-            />
-          )}
-
-          {/* Online event toggle */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="isOnline"
-                checked={isOnline}
-                onCheckedChange={(checked) => setIsOnline(!!checked)}
-              />
-              <Label htmlFor="isOnline" className="cursor-pointer">
-                {t("onlineEvent")}
-              </Label>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {t("onlineEventHelp")}
-            </p>
           </div>
 
           {/* Online link (when online event) */}
@@ -1390,576 +1260,697 @@ export function EventForm({
 
           {/* Location - unified venue + address picker (hidden for online events) */}
           {!isOnline && (
-            <>
-              <LocationPicker
-                defaultValue={
-                  event?.location_name || initialPrivateDetails
+            <LocationPicker
+              defaultValue={
+                event?.location_name || initialPrivateDetails
+                  ? {
+                      type: event?.venue_id ? "venue" : "place",
+                      venueId: event?.venue_id ?? undefined,
+                      // Secret events: location_name is the public label; the
+                      // real location comes from the private details row
+                      name: event?.has_private_details
+                        ? initialPrivateDetails?.address ||
+                          event?.location_name ||
+                          ""
+                        : event?.location_name || "",
+                      address:
+                        event?.address ||
+                        initialPrivateDetails?.address ||
+                        "",
+                      googleMapsUrl:
+                        event?.google_maps_url ||
+                        initialPrivateDetails?.google_maps_url ||
+                        "",
+                      latitude:
+                        event?.latitude ??
+                        initialPrivateDetails?.latitude ??
+                        null,
+                      longitude:
+                        event?.longitude ??
+                        initialPrivateDetails?.longitude ??
+                        null,
+                    }
+                  : copyDefaults?.locationName
                     ? {
-                        type: event?.venue_id ? "venue" : "place",
-                        venueId: event?.venue_id ?? undefined,
-                        // Secret events: location_name is the public label; the
-                        // real location comes from the private details row
-                        name: event?.has_private_details
-                          ? initialPrivateDetails?.address ||
-                            event?.location_name ||
-                            ""
-                          : event?.location_name || "",
-                        address:
-                          event?.address ||
-                          initialPrivateDetails?.address ||
-                          "",
-                        googleMapsUrl:
-                          event?.google_maps_url ||
-                          initialPrivateDetails?.google_maps_url ||
-                          "",
-                        latitude:
-                          event?.latitude ??
-                          initialPrivateDetails?.latitude ??
-                          null,
-                        longitude:
-                          event?.longitude ??
-                          initialPrivateDetails?.longitude ??
-                          null,
+                        type: "place",
+                        name: copyDefaults.locationName,
+                        address: copyDefaults.address,
+                        googleMapsUrl: copyDefaults.googleMapsUrl,
+                        latitude: null,
+                        longitude: null,
                       }
-                    : copyDefaults?.locationName
-                      ? {
-                          type: "place",
-                          name: copyDefaults.locationName,
-                          address: copyDefaults.address,
-                          googleMapsUrl: copyDefaults.googleMapsUrl,
-                          latitude: null,
-                          longitude: null,
-                        }
-                      : null
+                    : null
+              }
+              defaultVenueId={event?.venue_id}
+              onLocationSelect={handleLocationSelect}
+              onVenueIdChange={(id) => {
+                if (!id) {
+                  clearVenue();
                 }
-                defaultVenueId={event?.venue_id}
-                onLocationSelect={handleLocationSelect}
-                onVenueIdChange={(id) => {
-                  if (!id) {
-                    clearVenue();
-                  }
-                }}
-              />
-
-              {/* Venue Linker - shows auto-suggestions and manual link option */}
-              <VenueLinker
-                venueId={venueId}
-                venueName={venueName}
-                latitude={locationLat}
-                longitude={locationLng}
-                onVenueChange={handleVenueLink}
-                disabled={isPending}
-              />
-
-              {/* Secret address (not for venues or recurring events) */}
-              {!venueId && !recurrence.isRecurring && !isSeriesEvent && (
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Checkbox
-                      id="secretAddress"
-                      checked={secretAddress}
-                      onCheckedChange={(checked) => setSecretAddress(!!checked)}
-                    />
-                    <Label
-                      htmlFor="secretAddress"
-                      className="cursor-pointer flex items-center gap-1.5"
-                    >
-                      <Lock className="w-3.5 h-3.5" />
-                      {t("secretAddress")}
-                    </Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {t("secretAddressHelp")}
-                  </p>
-                  {secretAddress && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="secret_public_label">
-                          {t("secretAddressPublicLabel")}
-                        </Label>
-                        <Input
-                          id="secret_public_label"
-                          type="text"
-                          value={publicLabel}
-                          onChange={(e) => setPublicLabel(e.target.value)}
-                          placeholder={t("secretAddressPublicLabelPlaceholder")}
-                        />
-                        <p className="text-xs text-muted-foreground">
-                          {t("secretAddressPublicLabelHelp")}
-                        </p>
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="arrival_notes">
-                          {t("secretAddressArrivalNotes")}
-                        </Label>
-                        <Textarea
-                          id="arrival_notes"
-                          value={arrivalNotes}
-                          onChange={(e) => setArrivalNotes(e.target.value)}
-                          placeholder={t(
-                            "secretAddressArrivalNotesPlaceholder",
-                          )}
-                          rows={2}
-                        />
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-            </>
+              }}
+            />
           )}
 
-          {/* Info */}
-          <div className="space-y-2">
-            <Label htmlFor="description">{t("eventDescription")}</Label>
-            <AIEnhanceTextarea
-              id="description"
-              name="description"
-              defaultValue={
-                event?.description ?? copyDefaults?.description ?? ""
-              }
-              rows={3}
-              placeholder={t("descriptionPlaceholder")}
-              aria-describedby="event-description-help"
-              context="an event description for a local community event in Đà Lạt, Vietnam"
-            />
-            <p id="event-description-help" className="text-xs text-muted-foreground">
-              {t("descriptionAutoHelp")}
-            </p>
-          </div>
+          <Collapsible open={advancedOpen} onOpenChange={changeAdvancedOpen} className="border-t">
+            <CollapsibleTrigger className="flex min-h-11 w-full items-center justify-between py-2 text-sm font-medium hover:text-foreground [&[data-state=open]>svg]:rotate-180">
+              <span className="flex items-center gap-2">
+                <Settings className="size-4" aria-hidden="true" />
+                {t("advancedSettings")}
+              </span>
+              <ChevronDown className="size-4 text-muted-foreground transition-transform" aria-hidden="true" />
+            </CollapsibleTrigger>
+            <CollapsibleContent forceMount className="space-y-6 pt-3 data-[state=closed]:hidden">
+              {/* Info */}
+              <div className="space-y-2">
+                <Label htmlFor="description">{t("eventDescription")}</Label>
+                <AIEnhanceTextarea
+                  id="description"
+                  name="description"
+                  defaultValue={
+                    event?.description ?? copyDefaults?.description ?? ""
+                  }
+                  rows={3}
+                  placeholder={t("descriptionPlaceholder")}
+                  aria-describedby="event-description-help"
+                  context="an event description for a local community event in Đà Lạt, Vietnam"
+                />
+                <p id="event-description-help" className="text-xs text-muted-foreground">
+                  {t("descriptionAutoHelp")}
+                </p>
+              </div>
 
-          {/* External link */}
-          <div className="space-y-2">
-            <Label htmlFor="external_chat_url">{t("externalLink")}</Label>
-            <Input
-              id="external_chat_url"
-              name="external_chat_url"
-              type="text"
-              inputMode="url"
-              autoCapitalize="none"
-              autoCorrect="off"
-              spellCheck={false}
-              aria-describedby="event-contact-help"
-              placeholder={t("externalLinkPlaceholder")}
-              defaultValue={event?.external_chat_url ?? ""}
-            />
-            <p id="event-contact-help" className="text-xs text-muted-foreground">
-              {t("externalLinkHelp")}
-            </p>
-            {isCopying && (
-              <p className="text-xs text-muted-foreground">
-                {t("externalLinkNotCopied")}
-              </p>
-            )}
-          </div>
+              {/* External link */}
+              <div className="space-y-2">
+                <Label htmlFor="external_chat_url">{t("externalLink")}</Label>
+                <Input
+                  id="external_chat_url"
+                  name="external_chat_url"
+                  type="text"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  aria-describedby="event-contact-help"
+                  placeholder={t("externalLinkPlaceholder")}
+                  defaultValue={event?.external_chat_url ?? ""}
+                />
+                <p id="event-contact-help" className="text-xs text-muted-foreground">
+                  {t("externalLinkHelp")}
+                </p>
+                {isCopying && (
+                  <p className="text-xs text-muted-foreground">
+                    {t("externalLinkNotCopied")}
+                  </p>
+                )}
+              </div>
 
-          {/* Preselected tribe couldn't load / wasn't found — warn before a personal event gets created */}
-          {!isEditing &&
-            initialTribeSlug &&
-            (tribesLoadState === "error" ||
-              (tribesLoadState === "ready" &&
-                !hostableTribes.some(
-                  (tr) => tr.slug === initialTribeSlug,
-                ))) && (
-              <p className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-600">
-                {t("tribesLoadFailed")}
-              </p>
-            )}
-
-          {/* Hosting as — tribe selector (new events, tribe leaders/admins only) */}
-          {!isEditing && hostableTribes.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="hostingAs">{t("hostingAs")}</Label>
-              <Select
-                value={tribeId ?? "personal"}
-                onValueChange={handleHostingTribeChange}
-              >
-                <SelectTrigger id="hostingAs">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="personal">
-                    {t("hostingPersonal")}
-                  </SelectItem>
-                  {hostableTribes.map((tr) => (
-                    <SelectItem key={tr.id} value={tr.id}>
-                      {tr.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {t("hostingAsHelp")}
-              </p>
-              {tribeId && (
-                <div className="space-y-2 pt-2">
-                  <Label htmlFor="tribeVisibility">
-                    {t("tribeVisibility")}
-                  </Label>
-                  <Select
-                    value={tribeVisibility}
-                    onValueChange={(v) =>
-                      setTribeVisibility(v as TribeEventVisibility)
+              {/* Series Edit Scope (only shown when editing a series event) */}
+              {isEditing && isSeriesEvent && (
+                <div className="p-4 bg-muted/50 rounded-lg border space-y-4">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <Repeat className="w-4 h-4" />
+                    {tSeries("editingSeriesEvent")}
+                  </div>
+                  <RadioGroup
+                    value={seriesEditScope}
+                    onValueChange={(value) =>
+                      setSeriesEditScope(value as "this" | "future" | "all")
                     }
                   >
-                    <SelectTrigger id="tribeVisibility">
+                    <div className="flex items-start gap-3">
+                      <RadioGroupItem
+                        value="this"
+                        id="scope-this"
+                        className="mt-1"
+                      />
+                      <div>
+                        <Label
+                          htmlFor="scope-this"
+                          className="cursor-pointer font-medium"
+                        >
+                          {tSeries("editThisEventOnly")}
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {tSeries("editThisEventOnlyDescription")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <RadioGroupItem
+                        value="future"
+                        id="scope-future-events"
+                        className="mt-1"
+                      />
+                      <div>
+                        <Label
+                          htmlFor="scope-future-events"
+                          className="cursor-pointer font-medium"
+                        >
+                          {tSeries("editThisAndFutureEvents")}
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {tSeries("editThisAndFutureEventsDescription")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <RadioGroupItem
+                        value="all"
+                        id="scope-all-events"
+                        className="mt-1"
+                      />
+                      <div>
+                        <Label
+                          htmlFor="scope-all-events"
+                          className="cursor-pointer font-medium"
+                        >
+                          {tSeries("editAllEventsInSeries")}
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          {tSeries("editAllEventsInSeriesDescription")}
+                        </p>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                </div>
+              )}
+
+              {advancedVisited && (isEditing ? (
+                <EventMediaUpload
+                  eventId={event.id}
+                  eventTitle={title}
+                  currentMediaUrl={imageUrl}
+                  onMediaChange={setImageUrl}
+                />
+              ) : (
+                <FlyerBuilder
+                  title={title}
+                  onTitleChange={handleTitleChange}
+                  imageUrl={imageUrl}
+                  onImageChange={handleImageChange}
+                  imageFit={imageFit}
+                  onImageFitChange={setImageFit}
+                  focalPoint={focalPoint}
+                  onFocalPointChange={setFocalPoint}
+                  showTitle={false}
+                />
+              ))}
+
+              {/* Recurrence (only for new events) */}
+              {!isEditing && (
+                <RecurrencePicker
+                  selectedDate={selectedDate}
+                  value={recurrence}
+                  onChange={setRecurrence}
+                />
+              )}
+
+              {/* Online event toggle */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="isOnline"
+                    checked={isOnline}
+                    onCheckedChange={(checked) => setIsOnline(!!checked)}
+                  />
+                  <Label htmlFor="isOnline" className="cursor-pointer">
+                    {t("onlineEvent")}
+                  </Label>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("onlineEventHelp")}
+                </p>
+              </div>
+
+              {!isOnline && (
+                <>
+                  {/* Venue Linker - shows auto-suggestions and manual link option */}
+                  <VenueLinker
+                    venueId={venueId}
+                    venueName={venueName}
+                    latitude={locationLat}
+                    longitude={locationLng}
+                    onVenueChange={handleVenueLink}
+                    disabled={isPending}
+                  />
+
+                  {/* Secret address (not for venues or recurring events) */}
+                  {!venueId && !recurrence.isRecurring && !isSeriesEvent && (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <Checkbox
+                          id="secretAddress"
+                          checked={secretAddress}
+                          onCheckedChange={(checked) => setSecretAddress(!!checked)}
+                        />
+                        <Label
+                          htmlFor="secretAddress"
+                          className="cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Lock className="w-3.5 h-3.5" />
+                          {t("secretAddress")}
+                        </Label>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {t("secretAddressHelp")}
+                      </p>
+                      {secretAddress && (
+                        <>
+                          <div className="space-y-2">
+                            <Label htmlFor="secret_public_label">
+                              {t("secretAddressPublicLabel")}
+                            </Label>
+                            <Input
+                              id="secret_public_label"
+                              type="text"
+                              value={publicLabel}
+                              onChange={(e) => setPublicLabel(e.target.value)}
+                              placeholder={t("secretAddressPublicLabelPlaceholder")}
+                            />
+                            <p className="text-xs text-muted-foreground">
+                              {t("secretAddressPublicLabelHelp")}
+                            </p>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="arrival_notes">
+                              {t("secretAddressArrivalNotes")}
+                            </Label>
+                            <Textarea
+                              id="arrival_notes"
+                              value={arrivalNotes}
+                              onChange={(e) => setArrivalNotes(e.target.value)}
+                              placeholder={t(
+                                "secretAddressArrivalNotesPlaceholder",
+                              )}
+                              rows={2}
+                            />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Preselected tribe couldn't load / wasn't found — warn before a personal event gets created */}
+              {!isEditing &&
+                initialTribeSlug &&
+                (tribesLoadState === "error" ||
+                  (tribesLoadState === "ready" &&
+                    !hostableTribes.some(
+                      (tr) => tr.slug === initialTribeSlug,
+                    ))) && (
+                  <p className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/30 text-sm text-amber-600">
+                    {t("tribesLoadFailed")}
+                  </p>
+                )}
+
+              {/* Hosting as — tribe selector (new events, tribe leaders/admins only) */}
+              {!isEditing && hostableTribes.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="hostingAs">{t("hostingAs")}</Label>
+                  <Select
+                    value={tribeId ?? "personal"}
+                    onValueChange={handleHostingTribeChange}
+                  >
+                    <SelectTrigger id="hostingAs">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="public">
-                        {t("tribeVisibilityPublic")}
+                      <SelectItem value="personal">
+                        {t("hostingPersonal")}
                       </SelectItem>
-                      <SelectItem value="members_only">
-                        {t("tribeVisibilityMembers")}
+                      {hostableTribes.map((tr) => (
+                        <SelectItem key={tr.id} value={tr.id}>
+                          {tr.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {t("hostingAsHelp")}
+                  </p>
+                  {tribeId && (
+                    <div className="space-y-2 pt-2">
+                      <Label htmlFor="tribeVisibility">
+                        {t("tribeVisibility")}
+                      </Label>
+                      <Select
+                        value={tribeVisibility}
+                        onValueChange={(v) =>
+                          setTribeVisibility(v as TribeEventVisibility)
+                        }
+                      >
+                        <SelectTrigger id="tribeVisibility">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="public">
+                            {t("tribeVisibilityPublic")}
+                          </SelectItem>
+                          <SelectItem value="members_only">
+                            {t("tribeVisibilityMembers")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {t("tribeVisibilityHelp")}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Organizer (only show for moderators+ if organizers exist) */}
+              {canSelectOrganizer && organizers.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="organizer">{t("organizer")}</Label>
+                  <Select
+                    value={organizerId ?? "none"}
+                    onValueChange={(value) =>
+                      setOrganizerId(value === "none" ? null : value)
+                    }
+                  >
+                    <SelectTrigger id="organizer">
+                      <SelectValue placeholder={t("selectOrganizer")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("noOrganizer")}</SelectItem>
+                      {organizers.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          {org.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {t("organizerHelp")}
+                  </p>
+                </div>
+              )}
+
+              {/* Sponsor Tier (admin only) */}
+              {canSetSponsorTier && (
+                <div className="space-y-2">
+                  <Label htmlFor="sponsorTier">
+                    {t("sponsorTier") || "Featured/Sponsored"}
+                  </Label>
+                  <Select
+                    value={sponsorTier?.toString() ?? "none"}
+                    onValueChange={(value) =>
+                      setSponsorTier(value === "none" ? null : parseInt(value, 10))
+                    }
+                  >
+                    <SelectTrigger id="sponsorTier">
+                      <SelectValue
+                        placeholder={t("selectSponsorTier") || "Select tier..."}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">
+                        {t("notSponsored") || "Not featured"}
+                      </SelectItem>
+                      <SelectItem value="1">
+                        {t("sponsorTier1") || "Basic (Tier 1)"}
+                      </SelectItem>
+                      <SelectItem value="2">
+                        {t("sponsorTier2") || "Premium (Tier 2)"}
+                      </SelectItem>
+                      <SelectItem value="3">
+                        {t("sponsorTier3") || "Gold (Tier 3)"}
                       </SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-muted-foreground">
-                    {t("tribeVisibilityHelp")}
+                    {t("sponsorTierHelp") ||
+                      "Featured events appear first in feeds with a gold badge."}
                   </p>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Organizer (only show for moderators+ if organizers exist) */}
-          {canSelectOrganizer && organizers.length > 0 && (
-            <div className="space-y-2">
-              <Label htmlFor="organizer">{t("organizer")}</Label>
-              <Select
-                value={organizerId ?? "none"}
-                onValueChange={(value) =>
-                  setOrganizerId(value === "none" ? null : value)
-                }
-              >
-                <SelectTrigger id="organizer">
-                  <SelectValue placeholder={t("selectOrganizer")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("noOrganizer")}</SelectItem>
-                  {organizers.map((org) => (
-                    <SelectItem key={org.id} value={org.id}>
-                      {org.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {t("organizerHelp")}
-              </p>
-            </div>
-          )}
-
-          {/* Sponsor Tier (admin only) */}
-          {canSetSponsorTier && (
-            <div className="space-y-2">
-              <Label htmlFor="sponsorTier">
-                {t("sponsorTier") || "Featured/Sponsored"}
-              </Label>
-              <Select
-                value={sponsorTier?.toString() ?? "none"}
-                onValueChange={(value) =>
-                  setSponsorTier(value === "none" ? null : parseInt(value, 10))
-                }
-              >
-                <SelectTrigger id="sponsorTier">
-                  <SelectValue
-                    placeholder={t("selectSponsorTier") || "Select tier..."}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">
-                    {t("notSponsored") || "Not featured"}
-                  </SelectItem>
-                  <SelectItem value="1">
-                    {t("sponsorTier1") || "Basic (Tier 1)"}
-                  </SelectItem>
-                  <SelectItem value="2">
-                    {t("sponsorTier2") || "Premium (Tier 2)"}
-                  </SelectItem>
-                  <SelectItem value="3">
-                    {t("sponsorTier3") || "Gold (Tier 3)"}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {t("sponsorTierHelp") ||
-                  "Featured events appear first in feeds with a gold badge."}
-              </p>
-            </div>
-          )}
-
-          {/* Admin: showcase a past event's moments until this one has its own */}
-          {event && canSetSponsorTier && (
-            <LinkedPastEventPicker
-              eventId={event.id}
-              initialLinkedEventId={event.linked_past_event_id ?? null}
-            />
-          )}
-
-          {/* Capacity */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-3">
-              <Checkbox
-                id="hasCapacityLimit"
-                checked={hasCapacityLimit}
-                onCheckedChange={(checked) => setHasCapacityLimit(!!checked)}
-              />
-              <Label htmlFor="hasCapacityLimit" className="cursor-pointer">
-                {t("limitAttendees")}
-              </Label>
-              {hasCapacityLimit && (
-                <Input
-                  id="capacity"
-                  name="capacity"
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  defaultValue={initialCapacity ?? ""}
-                  className="w-24"
+              {/* Admin: showcase a past event's moments until this one has its own */}
+              {event && canSetSponsorTier && (
+                <LinkedPastEventPicker
+                  eventId={event.id}
+                  initialLinkedEventId={event.linked_past_event_id ?? null}
                 />
               )}
-            </div>
-          </div>
 
-          {/* Tickets & Pricing */}
-          <TicketTierInput
-            priceType={priceType}
-            tiers={ticketTiers}
-            onPriceTypeChange={setPriceType}
-            onTiersChange={setTicketTiers}
-          />
-
-          {slugEditable && (
-            <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="pt-4 border-t">
-              <CollapsibleTrigger className="flex min-h-11 w-full items-center justify-between py-2 text-sm font-medium hover:text-foreground [&[data-state=open]>svg]:rotate-180">
-                <span className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" aria-hidden="true" />
-                  {t("advancedSettings")}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" aria-hidden="true" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
-                <div className="space-y-2">
-                  <Label htmlFor="slug">{t("eventUrl")}</Label>
-                  <div className="flex items-center gap-0">
-                    <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
-                      {t("eventUrlPrefix")}
-                    </span>
+              {/* Capacity */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-3">
+                  <Checkbox
+                    id="hasCapacityLimit"
+                    checked={hasCapacityLimit}
+                    onCheckedChange={(checked) => setHasCapacityLimit(!!checked)}
+                  />
+                  <Label htmlFor="hasCapacityLimit" className="cursor-pointer">
+                    {t("limitAttendees")}
+                  </Label>
+                  {hasCapacityLimit && (
                     <Input
-                      id="slug"
-                      value={slug}
-                      onChange={handleSlugChange}
-                      onBlur={handleSlugBlur}
-                      placeholder={t("urlPlaceholder")}
-                      className="rounded-l-none"
+                      id="capacity"
+                      name="capacity"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      defaultValue={initialCapacity ?? ""}
+                      className="w-24"
                     />
-                  </div>
-                  {slugTouched && (
-                    <p
-                      className={`text-xs ${
-                        slugStatus === "available"
-                          ? "text-green-600"
-                          : slugStatus === "taken"
-                            ? "text-red-500"
-                            : slugStatus === "invalid"
-                              ? "text-red-500"
-                              : slugStatus === "checking"
-                                ? "text-muted-foreground"
-                                : "text-muted-foreground"
-                      }`}
-                    >
-                      {slugStatus === "checking" && t("checkingAvailability")}
-                      {slugStatus === "available" && `✓ ${t("urlAvailable")}`}
-                      {slugStatus === "taken" && `✗ ${t("urlTaken")}`}
-                      {slugStatus === "invalid" && t("urlValidation")}
-                    </p>
-                  )}
-                  {isEditing && slug !== event?.slug && (
-                    <p className="text-xs text-amber-600">
-                      ⚠ {t("urlChangeWarning")}
-                    </p>
                   )}
                 </div>
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {/* Activity Tags */}
-          <Collapsible className="pt-4 border-t">
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-              <span className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                {t("activityTags") || "Activity Type"}
-                {selectedTags.length > 0 && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-pill">
-                    {selectedTags.length}
-                  </span>
-                )}
-              </span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              <p className="text-sm text-muted-foreground mb-3">
-                {t("activityTagsHelp") ||
-                  "Select tags to help people find your event. AI will also auto-tag based on content."}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {(
-                  [
-                    "sports",
-                    "fitness",
-                    "music",
-                    "art",
-                    "food",
-                    "games",
-                    "workshop",
-                    "meetup",
-                    "outdoor",
-                  ] as EventTag[]
-                ).map((tag) => {
-                  const config = TAG_CONFIG[tag];
-                  const isSelected = selectedTags.includes(tag);
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedTags(
-                            selectedTags.filter((t) => t !== tag),
-                          );
-                        } else {
-                          setSelectedTags([...selectedTags, tag]);
-                        }
-                      }}
-                      className={`px-3 py-1.5 rounded-pill text-sm font-medium transition-all ${
-                        isSelected
-                          ? config.color
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
-                      }`}
-                    >
-                      {tTags(tag)}
-                    </button>
-                  );
-                })}
               </div>
-            </CollapsibleContent>
-          </Collapsible>
 
-          {/* Sponsors */}
-          <Collapsible className="pt-4 border-t">
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-              <span>{t("sponsors") || "Sponsors"}</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              {isEditing && event ? (
-                <SponsorForm
-                  eventId={event.id}
-                  initialSponsors={initialSponsors}
-                  onChange={() => {}}
-                />
-              ) : (
-                <SponsorForm
-                  draftSponsors={draftSponsors}
-                  onDraftChange={setDraftSponsors}
-                />
+              {/* Tickets & Pricing */}
+              <TicketTierInput
+                priceType={priceType}
+                tiers={ticketTiers}
+                onPriceTypeChange={setPriceType}
+                onTiersChange={setTicketTiers}
+              />
+
+              {slugEditable && (
+                    <div className="space-y-2">
+                      <Label htmlFor="slug">{t("eventUrl")}</Label>
+                      <div className="flex items-center gap-0">
+                        <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
+                          {t("eventUrlPrefix")}
+                        </span>
+                        <Input
+                          id="slug"
+                          value={slug}
+                          onChange={handleSlugChange}
+                          onBlur={handleSlugBlur}
+                          placeholder={t("urlPlaceholder")}
+                          className="rounded-l-none"
+                        />
+                      </div>
+                      {slugTouched && (
+                        <p
+                          className={`text-xs ${
+                            slugStatus === "available"
+                              ? "text-green-600"
+                              : slugStatus === "taken"
+                                ? "text-red-500"
+                                : slugStatus === "invalid"
+                                  ? "text-red-500"
+                                  : slugStatus === "checking"
+                                    ? "text-muted-foreground"
+                                    : "text-muted-foreground"
+                          }`}
+                        >
+                          {slugStatus === "checking" && t("checkingAvailability")}
+                          {slugStatus === "available" && `✓ ${t("urlAvailable")}`}
+                          {slugStatus === "taken" && `✗ ${t("urlTaken")}`}
+                          {slugStatus === "invalid" && t("urlValidation")}
+                        </p>
+                      )}
+                      {isEditing && slug !== event?.slug && (
+                        <p className="text-xs text-amber-600">
+                          ⚠ {t("urlChangeWarning")}
+                        </p>
+                      )}
+                    </div>
               )}
-            </CollapsibleContent>
-          </Collapsible>
 
-          {/* Materials */}
-          <Collapsible className="pt-4 border-t">
-            <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-              <span>{t("materials") || "Materials"}</span>
-              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-            </CollapsibleTrigger>
-            <CollapsibleContent className="pt-4">
-              {isEditing && event ? (
-                <EventMaterialsInput
-                  eventId={event.id}
-                  initialMaterials={initialMaterials}
-                  onChange={() => {}}
-                />
-              ) : (
-                <EventMaterialsInput
-                  draftMaterials={draftMaterials}
-                  onDraftChange={setDraftMaterials}
-                />
+              {/* Activity Tags */}
+              <Collapsible className="pt-4 border-t">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                  <span className="flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    {t("activityTags") || "Activity Type"}
+                    {selectedTags.length > 0 && (
+                      <span className="text-xs bg-primary/10 text-primary px-2 py-0.5 rounded-pill">
+                        {selectedTags.length}
+                      </span>
+                    )}
+                  </span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {t("activityTagsHelp") ||
+                      "Select tags to help people find your event. AI will also auto-tag based on content."}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(
+                      [
+                        "sports",
+                        "fitness",
+                        "music",
+                        "art",
+                        "food",
+                        "games",
+                        "workshop",
+                        "meetup",
+                        "outdoor",
+                      ] as EventTag[]
+                    ).map((tag) => {
+                      const config = TAG_CONFIG[tag];
+                      const isSelected = selectedTags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => {
+                            if (isSelected) {
+                              setSelectedTags(
+                                selectedTags.filter((t) => t !== tag),
+                              );
+                            } else {
+                              setSelectedTags([...selectedTags, tag]);
+                            }
+                          }}
+                          className={`px-3 py-1.5 rounded-pill text-sm font-medium transition-all ${
+                            isSelected
+                              ? config.color
+                              : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          }`}
+                        >
+                          {tTags(tag)}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Sponsors */}
+              <Collapsible className="pt-4 border-t">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                  <span>{t("sponsors") || "Sponsors"}</span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  {isEditing && event ? (
+                    <SponsorForm
+                      eventId={event.id}
+                      initialSponsors={initialSponsors}
+                      onChange={() => {}}
+                    />
+                  ) : (
+                    <SponsorForm
+                      draftSponsors={draftSponsors}
+                      onDraftChange={setDraftSponsors}
+                    />
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Materials */}
+              <Collapsible className="pt-4 border-t">
+                <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                  <span>{t("materials") || "Materials"}</span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="pt-4">
+                  {isEditing && event ? (
+                    <EventMaterialsInput
+                      eventId={event.id}
+                      initialMaterials={initialMaterials}
+                      onChange={() => {}}
+                    />
+                  ) : (
+                    <EventMaterialsInput
+                      draftMaterials={draftMaterials}
+                      onDraftChange={setDraftMaterials}
+                    />
+                  )}
+                </CollapsibleContent>
+              </Collapsible>
+
+              {/* Promo (only when editing) */}
+              {isEditing && event && (
+                <Collapsible className="pt-4 border-t">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="h-4 w-4" />
+                      {t("promo") || "Promo"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4">
+                    <PromoManager
+                      eventId={event.id}
+                      eventSlug={event.slug}
+                      seriesId={event.series_id}
+                      isSeriesEvent={isSeriesEvent}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
               )}
+
+              {advancedVisited && !isEditing && <PlaylistImportInput value={musicImport} onChange={setMusicImport} disabled={isPending} />}
+
+              {/* Playlist (only when editing) */}
+              {isEditing && event && (
+                <Collapsible className="pt-4 border-t">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                    <span>{tPlaylist("title") || "Playlist"}</span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4 space-y-6">
+                    <PlaylistImportInput value={musicImport} onChange={setMusicImport}
+                      eventId={event.id} disabled={isPending} onImported={() => router.refresh()} />
+                    <PlaylistInput
+                      key={`${initialPlaylistId}-${initialPlaylistTracks.map(track => track.id).join(",")}`}
+                      eventId={event.id}
+                      initialPlaylistId={initialPlaylistId}
+                      initialTracks={initialPlaylistTracks}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
+              {/* Settings (only when editing) */}
+              {isEditing && event && (
+                <Collapsible className="pt-4 border-t">
+                  <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
+                    <span className="flex items-center gap-2">
+                      <Settings className="h-4 w-4" />
+                      {t("settings") || "Settings"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="pt-4">
+                    <EventSettingsForm
+                      eventId={event.id}
+                      eventSlug={event.slug}
+                      eventTitle={title}
+                      eventDescription={event.description}
+                      startsAt={event.starts_at}
+                      endsAt={event.ends_at}
+                      initialSettings={initialSettings ?? null}
+                      pendingCount={pendingMomentsCount}
+                    />
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Promo (only when editing) */}
-          {isEditing && event && (
-            <Collapsible className="pt-4 border-t">
-              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-                <span className="flex items-center gap-2">
-                  <Sparkles className="h-4 w-4" />
-                  {t("promo") || "Promo"}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
-                <PromoManager
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  seriesId={event.series_id}
-                  isSeriesEvent={isSeriesEvent}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {!isEditing && <PlaylistImportInput value={musicImport} onChange={setMusicImport} userId={userId} disabled={isPending} />}
-
-          {/* Playlist (only when editing) */}
-          {isEditing && event && (
-            <Collapsible className="pt-4 border-t">
-              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-                <span>{tPlaylist("title") || "Playlist"}</span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4 space-y-6">
-                <PlaylistImportInput value={musicImport} onChange={setMusicImport} userId={userId}
-                  eventId={event.id} disabled={isPending} onImported={() => router.refresh()} />
-                <PlaylistInput
-                  key={`${initialPlaylistId}-${initialPlaylistTracks.map(track => track.id).join(",")}`}
-                  eventId={event.id}
-                  initialPlaylistId={initialPlaylistId}
-                  initialTracks={initialPlaylistTracks}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {/* Settings (only when editing) */}
-          {isEditing && event && (
-            <Collapsible className="pt-4 border-t">
-              <CollapsibleTrigger className="flex items-center justify-between w-full py-2 text-sm font-medium hover:text-foreground transition-colors [&[data-state=open]>svg]:rotate-180">
-                <span className="flex items-center gap-2">
-                  <Settings className="h-4 w-4" />
-                  {t("settings") || "Settings"}
-                </span>
-                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="pt-4">
-                <EventSettingsForm
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  eventTitle={title}
-                  eventDescription={event.description}
-                  startsAt={event.starts_at}
-                  endsAt={event.ends_at}
-                  initialSettings={initialSettings ?? null}
-                  pendingCount={pendingMomentsCount}
-                />
-              </CollapsibleContent>
-            </Collapsible>
-          )}
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
 
           <Button
             type="submit"
