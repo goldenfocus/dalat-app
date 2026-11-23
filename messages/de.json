@@ -1218,7 +1218,7 @@
     "sourceManual": "Manuell",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "Tägliche Zusammenfassung",
-    "navVenueClaims": "Ortsanfragen"
+    "navVenueClaims": "Anträge"
   },
   "verification": {
     "requestSubmitted": "Anfrage gesendet!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "Dieser Ort wurde bereits beansprucht.",
     "youOwn": "Sie verwalten diesen Ort.",
     "failed": "Etwas ist schiefgelaufen. Bitte erneut versuchen.",
-    "queueTitle": "Ortsanfragen",
+    "queueTitle": "Anträge",
     "queueEmpty": "Keine offenen Anfragen.",
     "approve": "Freigeben",
     "reject": "Ablehnen",

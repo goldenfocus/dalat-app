@@ -1218,7 +1218,7 @@
     "sourceManual": "Thủ công",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "Tóm tắt hàng ngày",
-    "navVenueClaims": "Yêu cầu nhận địa điểm"
+    "navVenueClaims": "Yêu cầu quản lý"
   },
   "verification": {
     "requestSubmitted": "Đã gửi yêu cầu!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "Địa điểm này đã có người quản lý.",
     "youOwn": "Bạn đang quản lý địa điểm này.",
     "failed": "Đã có lỗi. Vui lòng thử lại.",
-    "queueTitle": "Yêu cầu nhận địa điểm",
+    "queueTitle": "Yêu cầu quản lý",
     "queueEmpty": "Không có yêu cầu nào đang chờ.",
     "approve": "Duyệt",
     "reject": "Từ chối",

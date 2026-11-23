@@ -22,7 +22,7 @@ function createServiceClient() {
 // Default channels for each notification type
 const DEFAULT_CHANNELS: Record<NotificationType, NotificationChannel[]> = {
   collaboration_update: ['in_app', 'push'],
-  venue_claim_review: ['in_app', 'email'],
+  venue_claim_review: ['in_app'],
   // Event confirmations - in-app + push
   rsvp_confirmation: ['in_app', 'push'],
 

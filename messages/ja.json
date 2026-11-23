@@ -1218,7 +1218,7 @@
     "sourceManual": "手動",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "日次サマリー",
-    "navVenueClaims": "スポットの申請"
+    "navVenueClaims": "管理権限の申請"
   },
   "verification": {
     "requestSubmitted": "リクエストが送信されました！",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "このスポットはすでに申請済みです。",
     "youOwn": "このスポットを管理しています。",
     "failed": "問題が発生しました。もう一度お試しください。",
-    "queueTitle": "スポットの申請",
+    "queueTitle": "管理権限の申請",
     "queueEmpty": "保留中の申請はありません。",
     "approve": "承認",
     "reject": "却下",

@@ -1312,7 +1312,7 @@
     "roleOrganizer": "Organizer",
     "roleContributor": "Contributor",
     "noData": "No data",
-    "navVenueClaims": "Venue claims"
+    "navVenueClaims": "Claims"
   },
   "verification": {
     "requestSubmitted": "Request Submitted!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "This venue has already been claimed.",
     "youOwn": "You manage this venue.",
     "failed": "Something went wrong. Please try again.",
-    "queueTitle": "Venue claims",
+    "queueTitle": "Claims",
     "queueEmpty": "No pending claims.",
     "approve": "Approve",
     "reject": "Reject",

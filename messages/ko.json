@@ -1218,7 +1218,7 @@
     "sourceManual": "수동",
     "sourceGithub": "GitHub",
     "sourceDailySummary": "일일 요약",
-    "navVenueClaims": "장소 소유권 신청"
+    "navVenueClaims": "관리 권한 요청"
   },
   "verification": {
     "requestSubmitted": "요청이 제출되었습니다!",
@@ -4071,7 +4071,7 @@
     "alreadyClaimed": "이미 소유자가 있는 장소입니다.",
     "youOwn": "이 장소를 관리하고 있어요.",
     "failed": "문제가 발생했어요. 다시 시도해 주세요.",
-    "queueTitle": "장소 소유권 신청",
+    "queueTitle": "관리 권한 요청",
     "queueEmpty": "대기 중인 신청이 없습니다.",
     "approve": "승인",
     "reject": "거절",

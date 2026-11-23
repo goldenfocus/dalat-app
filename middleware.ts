@@ -41,6 +41,17 @@ export async function middleware(request: NextRequest) {
     destination.port = "";
     return NextResponse.redirect(destination);
   }
+  // Older organizer claim emails linked to a slug-based admin route.
+  const legacyClaim = request.nextUrl.pathname.match(
+    new RegExp(`^/(?:(${locales.join("|")})/)?admin/organizers/([^/]+)/?$`),
+  );
+  if (legacyClaim && legacyClaim[2] !== "new") {
+    const [, locale, slug] = legacyClaim;
+    const returnTo = new URLSearchParams({ organizer: slug });
+    const destination = new URL("/auth/continue", request.url);
+    destination.searchParams.set("next", `${locale ? `/${locale}` : ""}/admin/venue-claims?${returnTo}`);
+    return NextResponse.redirect(destination);
+  }
   // Links from the redesign preview (/v3/…) go to the page they showed.
   const retired = retiredPreviewTarget(request.nextUrl.pathname);
   if (retired) {
