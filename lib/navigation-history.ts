@@ -47,18 +47,20 @@ function startFallback() {
 }
 
 export function subscribeToAppHistory(onChange: () => void) {
+  // Next writes history during an insertion effect. Notify React after the commit.
+  const notify = () => queueMicrotask(onChange);
   const navigation = getNavigation();
   if (navigation) {
-    navigation.addEventListener("currententrychange", onChange);
-    return () => navigation.removeEventListener("currententrychange", onChange);
+    navigation.addEventListener("currententrychange", notify);
+    return () => navigation.removeEventListener("currententrychange", notify);
   }
 
   startFallback();
-  window.addEventListener("dalat-history-change", onChange);
-  window.addEventListener("popstate", onChange);
+  window.addEventListener("dalat-history-change", notify);
+  window.addEventListener("popstate", notify);
   return () => {
-    window.removeEventListener("dalat-history-change", onChange);
-    window.removeEventListener("popstate", onChange);
+    window.removeEventListener("dalat-history-change", notify);
+    window.removeEventListener("popstate", notify);
   };
 }
 
