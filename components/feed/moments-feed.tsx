@@ -5,10 +5,9 @@ import { MomentReelCard } from "./moment-reel-card";
 import { MomentJoinCard } from "./moment-join-card";
 import { useMomentsFeed } from "@/lib/hooks/use-supabase-query";
 import { useReactions } from "@/lib/hooks/use-reactions";
+import { readHistoryEntryValue, saveHistoryEntryValue } from "@/lib/navigation-history";
 import { GATING_CONFIG } from "@/lib/config/gating";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
-
-const feedScrollPositions = new Map<string, number>();
 
 type FeedItem =
   | { type: "moment"; moment: MomentWithEvent; index: number }
@@ -99,7 +98,7 @@ export function MomentsFeed({
   useLayoutEffect(() => {
     const container = containerRef.current;
     if (!container || !historyEntryKey || restoredEntry.current === historyEntryKey) return;
-    container.scrollTop = feedScrollPositions.get(historyEntryKey) ?? 0;
+    container.scrollTop = Number(readHistoryEntryValue(historyEntryKey, "moments-scroll") ?? 0);
     restoredEntry.current = historyEntryKey;
   }, [historyEntryKey, feedItems.length]);
 
@@ -166,7 +165,7 @@ export function MomentsFeed({
       <div
         ref={containerRef}
         onScroll={historyEntryKey ? (event) => {
-          feedScrollPositions.set(historyEntryKey, event.currentTarget.scrollTop);
+          saveHistoryEntryValue(historyEntryKey, "moments-scroll", String(event.currentTarget.scrollTop));
         } : undefined}
         className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
       >

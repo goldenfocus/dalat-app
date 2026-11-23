@@ -81,4 +81,29 @@ export function getAppHistoryEntryKey(): string | undefined {
   return getFallbackEntry()?.key;
 }
 
+// Keep per-entry UI state through a full document traversal or reload.
+const entryValues = new Map<string, string>();
+
+export function readHistoryEntryValue(entry: string, field: string): string | undefined {
+  const key = `dalat-history:${entry}:${field}`;
+  const value = entryValues.get(key);
+  if (value !== undefined) return value;
+  try {
+    return sessionStorage.getItem(key) ?? undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+export function saveHistoryEntryValue(entry: string, field: string, value: string) {
+  const key = `dalat-history:${entry}:${field}`;
+  if (entryValues.get(key) === value) return;
+  entryValues.set(key, value);
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // The in-memory value still works for client-side navigation.
+  }
+}
+
 export { BACK, FORWARD };

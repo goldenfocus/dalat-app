@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Film, Layers, Grid3X3, X } from "lucide-react";
+import { HistoryControls } from "@/components/navigation/history-controls";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useCinemaChromeHidden } from "@/lib/stores/cinema-mode-store";
@@ -32,47 +33,54 @@ export function FloatingViewModeSwitcher({
   // In cinema, this joins the rest of the chrome: hidden while playing, back on tap.
   const chromeHidden = useCinemaChromeHidden();
   return (
-    <div
-      className={cn(
-        "fixed top-4 right-4 z-[60] flex items-center gap-1.5 transition-[opacity,visibility] duration-300 motion-reduce:transition-none",
-        chromeHidden ? "invisible opacity-0 pointer-events-none" : "visible opacity-100 pointer-events-auto",
-      )}
-    >
-      <div className="flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md p-1">
-        {modes.map(({ mode, icon: Icon, label }) => (
-          <button
-            key={mode}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              triggerHaptic("selection");
-              onViewModeChange(mode);
-            }}
-            className={cn(
-              "p-2 rounded-full transition-all",
-              viewMode === mode
-                ? "bg-white/20 text-white"
-                : "text-white/50 hover:text-white hover:bg-white/10",
-            )}
-            aria-label={t(label)}
-            aria-pressed={viewMode === mode}
-          >
-            <Icon className="w-5 h-5" />
-          </button>
-        ))}
-      </div>
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          triggerHaptic("selection");
-          onClose();
-        }}
-        className="p-2 rounded-full bg-black/50 backdrop-blur-md text-white/50 hover:text-white hover:bg-black/70 transition-all"
-        aria-label={t("lightbox.close")}
+    <>
+      <HistoryControls
+        className="fixed left-4 top-[calc(max(1rem,env(safe-area-inset-top))+3.5rem)] z-[60] flex gap-1"
+        overlay
+        onBackFallback={onClose}
+      />
+      <div
+        className={cn(
+          "fixed top-4 right-4 z-[60] flex items-center gap-1.5 transition-[opacity,visibility] duration-300 motion-reduce:transition-none",
+          chromeHidden ? "invisible opacity-0 pointer-events-none" : "visible opacity-100 pointer-events-auto",
+        )}
       >
-        <X className="w-5 h-5" />
-      </button>
-    </div>
+        <div className="flex items-center gap-1 rounded-full bg-black/50 backdrop-blur-md p-1">
+          {modes.map(({ mode, icon: Icon, label }) => (
+            <button
+              key={mode}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                triggerHaptic("selection");
+                onViewModeChange(mode);
+              }}
+              className={cn(
+                "p-2 rounded-full transition-all",
+                viewMode === mode
+                  ? "bg-white/20 text-white"
+                  : "text-white/50 hover:text-white hover:bg-white/10",
+              )}
+              aria-label={t(label)}
+              aria-pressed={viewMode === mode}
+            >
+              <Icon className="w-5 h-5" />
+            </button>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            triggerHaptic("selection");
+            onClose();
+          }}
+          className="p-2 rounded-full bg-black/50 backdrop-blur-md text-white/50 hover:text-white hover:bg-black/70 transition-all"
+          aria-label={t("lightbox.close")}
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+    </>
   );
 }
