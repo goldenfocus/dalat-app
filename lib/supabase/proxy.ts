@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import createIntlMiddleware from "next-intl/middleware";
 import { hasEnvVars } from "../utils";
+import { eventCreationLoginPath } from "../auth/continuation";
 import { routing } from "../i18n/routing";
 import { isRentalSlug, rentalListingPath } from "../rentals/urls";
 import {
@@ -368,6 +369,27 @@ export async function updateSession(request: NextRequest) {
       acceptLanguage: request.headers.get('accept-language'),
       fallbackLocale: defaultLocale,
     });
+
+    // Redirect guests before rendering the event form so a tap can reach sign-in
+    // directly. The form still verifies sessions, including stale cookies.
+    const localizedEventCreationPath = pathnameLocale
+      ? '/' + pathnameLocale + '/events/new'
+      : '/events/new';
+    if (
+      pathname === localizedEventCreationPath &&
+      (request.method === 'GET' || request.method === 'HEAD') &&
+      !hasSupabaseSessionCookie(request)
+    ) {
+      const { searchParams } = request.nextUrl;
+      const login = eventCreationLoginPath(
+        pathnameLocale ?? preferredLocale,
+        searchParams.get('copyFrom'),
+        searchParams.get('tribe'),
+      );
+      return NextResponse.redirect(new URL(login, request.url), {
+        headers: { 'Cache-Control': 'private, no-store' },
+      });
+    }
 
     // If no locale in path, handle based on localePrefix: 'as-needed' setting
     // Only redirect if user prefers non-default locale; default locale uses rewrite (no redirect)

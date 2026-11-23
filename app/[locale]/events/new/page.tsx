@@ -1,7 +1,9 @@
 import { Copy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { getPathname, redirect, type Locale } from "@/lib/i18n/routing";
+import { redirect } from "next/navigation";
+import { eventCreationLoginPath } from "@/lib/auth/continuation";
+import type { Locale } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout
 export const maxDuration = 60;
@@ -56,12 +58,7 @@ export default async function NewEventPage({ params, searchParams }: PageProps) 
   } = await supabase.auth.getUser();
 
   if (!user) {
-    const query = new URLSearchParams();
-    if (copyFrom) query.set("copyFrom", copyFrom);
-    if (tribe) query.set("tribe", tribe);
-    const pathname = getPathname({ href: "/events/new", locale });
-    const next = query.size ? `${pathname}?${query}` : pathname;
-    return redirect({ href: { pathname: "/auth/login", query: { next } }, locale });
+    redirect(eventCreationLoginPath(locale, copyFrom, tribe));
   }
 
   // Fetch user profile to get role
