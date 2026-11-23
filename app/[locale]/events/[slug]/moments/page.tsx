@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { getEventTranslationsBatch } from "@/lib/translations";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { OriginalText } from "@/components/ui/original-text";
@@ -410,7 +411,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   const event = result.event;
 
-  const t = await getTranslations("moments");
+  const [t, nav] = await Promise.all([getTranslations("moments"), getTranslations("nav")]);
 
   const [{ moments, hasMore, totalCount }, canPost, playlist, titles] = await Promise.all([
     getMoments(event.id),
@@ -450,6 +451,14 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         )}
       />
       <div className="container max-w-4xl mx-auto px-4 py-6">
+        <Breadcrumbs
+          parents={[
+            { label: nav("events"), href: "/events/upcoming" },
+            { label: eventTitle, href: `/events/${event.slug}` },
+          ]}
+          current={t("moments")}
+          className="mb-2"
+        />
         {/* Title */}
         <div className="mb-6">
           <div className="flex items-center gap-2">
@@ -464,12 +473,6 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
               </Link>
             )}
           </div>
-          <Link
-            href={`/events/${event.slug}`}
-            className="text-muted-foreground hover:text-foreground hover:underline transition-colors"
-          >
-            {eventTitle} &rarr;
-          </Link>
           {eventTitle !== event.title && <OriginalText text={event.title} />}
           {/* Moments inherit their tribe from the event — no moments.tribe_id */}
           {event.tribes && (

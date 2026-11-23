@@ -226,6 +226,10 @@
     "copyLink": "Copy link"
   },
   "nav": {
+    "history": "Page history",
+    "forward": "Forward",
+    "breadcrumbs": "Breadcrumbs",
+    "moment": "Moment",
     "people": "People",
     "events": "Events",
     "moments": "Moments",

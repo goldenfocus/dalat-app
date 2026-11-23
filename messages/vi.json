@@ -226,6 +226,10 @@
     "copyLink": "Sao chép link"
   },
   "nav": {
+    "history": "Lịch sử điều hướng",
+    "forward": "Tiến tới",
+    "breadcrumbs": "Đường dẫn điều hướng",
+    "moment": "Khoảnh khắc",
     "people": "Mọi người",
     "events": "Sự kiện",
     "moments": "Khoảnh khắc",

@@ -226,6 +226,10 @@
     "copyLink": "Salin pautan"
   },
   "nav": {
+    "history": "Sejarah navigasi",
+    "forward": "Ke hadapan",
+    "breadcrumbs": "Laluan navigasi",
+    "moment": "Momen",
     "people": "Orang",
     "events": "Acara",
     "moments": "Momen",

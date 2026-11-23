@@ -1,3 +1,4 @@
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { canEditEvent } from "@/lib/events/editor-access";
 import { eventParticipationVisibility } from "@/lib/events/participation-visibility";
@@ -1511,41 +1512,47 @@ export default async function EventPage({ params, searchParams }: PageProps) {
         </Suspense>
 
         <div className="container max-w-4xl mx-auto px-4 py-8">
-          {/* Event actions bar */}
-          <div className="flex items-center justify-end gap-1 mb-4 -mt-2">
-            <EventShareButton
-              eventSlug={event.slug}
-              eventTitle={event.title}
-              eventDescription={event.description}
-              startsAt={event.starts_at}
+          <div className="mb-4 -mt-2 flex flex-wrap items-center justify-between gap-x-2">
+            <Breadcrumbs
+              parents={[{ label: tNavigation("events"), href: "/events/upcoming" }]}
+              current={eventTranslations.title}
+              className="min-w-0 flex-1"
             />
-            {canManageEvent && (
-              <>
-                <InviteModal
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  eventDescription={event.description}
-                  startsAt={event.starts_at}
-                  isAdmin={isAdmin}
-                  isPast={isPast}
-                />
-                <EventSettingsSheet
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  eventTitle={event.title}
-                  eventDescription={event.description}
-                  startsAt={event.starts_at}
-                  endsAt={event.ends_at}
-                  initialSettings={eventSettings}
-                  pendingCount={momentCounts?.pending_count ?? 0}
-                />
-                <EventActions
-                  eventId={event.id}
-                  eventSlug={event.slug}
-                  seriesSlug={event.event_series?.slug}
-                />
-              </>
-            )}
+            <div className="ml-auto flex items-center justify-end gap-1">
+              <EventShareButton
+                eventSlug={event.slug}
+                eventTitle={event.title}
+                eventDescription={event.description}
+                startsAt={event.starts_at}
+              />
+              {canManageEvent && (
+                <>
+                  <InviteModal
+                    eventSlug={event.slug}
+                    eventTitle={event.title}
+                    eventDescription={event.description}
+                    startsAt={event.starts_at}
+                    isAdmin={isAdmin}
+                    isPast={isPast}
+                  />
+                  <EventSettingsSheet
+                    eventId={event.id}
+                    eventSlug={event.slug}
+                    eventTitle={event.title}
+                    eventDescription={event.description}
+                    startsAt={event.starts_at}
+                    endsAt={event.ends_at}
+                    initialSettings={eventSettings}
+                    pendingCount={momentCounts?.pending_count ?? 0}
+                  />
+                  <EventActions
+                    eventId={event.id}
+                    eventSlug={event.slug}
+                    seriesSlug={event.event_series?.slug}
+                  />
+                </>
+              )}
+            </div>
           </div>
           {event.arrival_enabled && <StaffDeskEntry slug={event.slug} />}
           {event.arrival_enabled && /^language-exchange-social-house-z8oc-\d{8}$/.test(event.slug) && <EventPractice slug={event.slug} />}

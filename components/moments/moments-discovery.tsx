@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { createContext, useContext, useMemo, useState, useCallback, useEffect, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, Search } from "lucide-react";
+import { getAppHistoryEntryKey, subscribeToAppHistory } from "@/lib/navigation-history";
 import { createClient } from "@/lib/supabase/client";
 import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
@@ -14,6 +15,8 @@ import { MomentsJoinPill } from "./moments-join-pill";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
 import type { LightboxMoment } from "./moment-lightbox";
 import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
+
+const rememberedFilters = new Map<string, string>();
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
   { key: "all", contentTypes: ["photo", "video"] },
@@ -57,9 +60,31 @@ function useIsAuthenticated() {
   return isAuthenticated;
 }
 
+const MomentsFilterContext = createContext<ReturnType<typeof useMomentFilterState> | null>(null);
+
+export function MomentsDiscoveryFilters({ children }: { children: React.ReactNode }) {
+  const filters = useMomentFilterState();
+  return <MomentsFilterContext.Provider value={filters}>{children}</MomentsFilterContext.Provider>;
+}
+
 function useMomentFilters() {
+  const filters = useContext(MomentsFilterContext);
+  if (!filters) throw new Error("MomentsDiscoveryFilters is missing");
+  return filters;
+}
+
+function useMomentFilterState() {
   const t = useTranslations("moments");
-  const [activeKey, setActiveKey] = useState("all");
+  const entryKey = useSyncExternalStore(subscribeToAppHistory, getAppHistoryEntryKey, () => undefined);
+  const [selection, setSelection] = useState<{ entryKey?: string; filter: string }>();
+  const activeKey = selection && selection.entryKey === entryKey
+    ? selection.filter
+    : (entryKey && rememberedFilters.get(entryKey)) || "all";
+
+  function setActiveKey(filter: string) {
+    if (entryKey) rememberedFilters.set(entryKey, filter);
+    setSelection({ entryKey, filter });
+  }
 
   const options = useMemo<MomentsFilterOption[]>(
     () => [
@@ -74,7 +99,7 @@ function useMomentFilters() {
     return FILTER_CONFIG.find((filter) => filter.key === activeKey) ?? FILTER_CONFIG[0];
   }, [activeKey]);
 
-  return { options, activeKey, setActiveKey, activeConfig };
+  return { options, activeKey, setActiveKey, activeConfig, entryKey };
 }
 
 /** Convert MomentWithEvent to LightboxMoment format (includes event_slug for "Open full page") */
@@ -119,16 +144,13 @@ export function MomentsDiscoveryMobile({
 }: MomentsDiscoveryMobileProps) {
   const t = useTranslations("moments");
   const isAuthenticated = useIsAuthenticated();
-  const { options, activeKey, setActiveKey, activeConfig } = useMomentFilters();
+  const { options, activeKey, setActiveKey, activeConfig, entryKey } = useMomentFilters();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-black text-white relative">
       {/* Floating header bar - overlays the video TikTok-style */}
-      <div
-        className="fixed top-0 left-0 right-0 z-40 pointer-events-none"
-        style={{ paddingTop: "env(safe-area-inset-top)" }}
-      >
+      <div className="absolute inset-x-0 top-0 z-40 pointer-events-none">
         {/* Gradient background for better visibility over varied content */}
         <div className="bg-gradient-to-b from-black/60 via-black/30 to-transparent">
           <div className="px-4 pt-3 pb-4 pointer-events-auto flex items-center justify-between gap-3">
@@ -151,6 +173,9 @@ export function MomentsDiscoveryMobile({
       </div>
 
       <MomentsFeed
+        key={activeKey}
+        historyEntryKey={entryKey ? `${entryKey}:${activeKey}` : undefined}
+        useInitialMoments={activeKey === "all"}
         initialMoments={initialMoments}
         hasMore={initialHasMore}
         contentTypes={activeConfig.contentTypes}

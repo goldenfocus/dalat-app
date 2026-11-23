@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, useMemo } from "react";
 import { MomentReelCard } from "./moment-reel-card";
 import { MomentJoinCard } from "./moment-join-card";
 import { useMomentsFeed } from "@/lib/hooks/use-supabase-query";
 import { useReactions } from "@/lib/hooks/use-reactions";
 import { GATING_CONFIG } from "@/lib/config/gating";
 import type { MomentContentType, MomentWithEvent } from "@/lib/types";
+
+const feedScrollPositions = new Map<string, number>();
 
 type FeedItem =
   | { type: "moment"; moment: MomentWithEvent; index: number }
@@ -16,6 +18,8 @@ interface MomentsFeedProps {
   initialMoments: MomentWithEvent[];
   hasMore: boolean;
   contentTypes?: MomentContentType[];
+  historyEntryKey?: string;
+  useInitialMoments?: boolean;
   /** Whether the user is authenticated (hides gates when true) */
   isAuthenticated?: boolean;
 }
@@ -30,10 +34,13 @@ export function MomentsFeed({
   initialMoments,
   contentTypes = ["photo", "video"],
   isAuthenticated = false,
+  historyEntryKey,
+  useInitialMoments = true,
 }: MomentsFeedProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const restoredEntry = useRef<string | undefined>(undefined);
 
   // Use TanStack Query for infinite scroll with caching
   const {
@@ -41,12 +48,12 @@ export function MomentsFeed({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useMomentsFeed(contentTypes, initialMoments);
+  } = useMomentsFeed(contentTypes, useInitialMoments ? initialMoments : undefined);
 
   // Flatten pages into single array of moments
   const moments = useMemo(
-    () => data?.pages.flat() ?? initialMoments,
-    [data?.pages, initialMoments]
+    () => data?.pages.flat() ?? (useInitialMoments ? initialMoments : []),
+    [data?.pages, initialMoments, useInitialMoments]
   );
 
   // Hydrate reaction counts client-side — these change far more often than the
@@ -88,6 +95,13 @@ export function MomentsFeed({
 
     return items;
   }, [moments, isAuthenticated]);
+
+  useLayoutEffect(() => {
+    const container = containerRef.current;
+    if (!container || !historyEntryKey || restoredEntry.current === historyEntryKey) return;
+    container.scrollTop = feedScrollPositions.get(historyEntryKey) ?? 0;
+    restoredEntry.current = historyEntryKey;
+  }, [historyEntryKey, feedItems.length]);
 
   // Track active card via IntersectionObserver
   useEffect(() => {
@@ -151,6 +165,9 @@ export function MomentsFeed({
     <div className="flex justify-center bg-black min-h-screen">
       <div
         ref={containerRef}
+        onScroll={historyEntryKey ? (event) => {
+          feedScrollPositions.set(historyEntryKey, event.currentTarget.scrollTop);
+        } : undefined}
         className="w-full max-w-lg lg:max-w-xl h-[100dvh] overflow-y-auto snap-y snap-mandatory overscroll-contain scrollbar-hide"
       >
         {feedItems.map((item) =>

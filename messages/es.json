@@ -226,6 +226,10 @@
     "copyLink": "Copiar enlace"
   },
   "nav": {
+    "history": "Historial de navegación",
+    "forward": "Adelante",
+    "breadcrumbs": "Ruta de navegación",
+    "moment": "Momento",
     "people": "Personas",
     "events": "Eventos",
     "moments": "Momentos",

@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
 import {
   MomentsDiscoveryDesktop,
+  MomentsDiscoveryFilters,
   MomentsDiscoveryMobile,
 } from "@/components/moments/moments-discovery";
 import { generateMomentsDiscoveryMetadata } from "@/lib/metadata";
@@ -109,23 +110,25 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
   return (
     <>
       <JsonLd data={[discoverySchema, breadcrumbSchema]} />
-      {/* Mobile: TikTok-style immersive feed with floating filter bar */}
-      <div className="lg:hidden">
-        <MomentsDiscoveryMobile
-          initialMoments={moments}
-          initialHasMore={mobileHasMore}
-        />
-      </div>
-
-      {/* Desktop: Event-grouped feed */}
-      <main className="hidden lg:flex min-h-screen flex-col">
-        <div className="flex-1 container max-w-5xl mx-auto px-4 py-8">
-          <MomentsDiscoveryDesktop
-            initialGroups={groupedData.groups}
-            initialHasMore={groupedData.hasMore}
+      <MomentsDiscoveryFilters>
+        {/* Mobile: TikTok-style immersive feed with floating filter bar */}
+        <div className="lg:hidden">
+          <MomentsDiscoveryMobile
+            initialMoments={moments}
+            initialHasMore={mobileHasMore}
           />
         </div>
-      </main>
+
+        {/* Desktop: Event-grouped feed */}
+        <main className="hidden lg:flex min-h-screen flex-col">
+          <div className="flex-1 container max-w-5xl mx-auto px-4 py-8">
+            <MomentsDiscoveryDesktop
+              initialGroups={groupedData.groups}
+              initialHasMore={groupedData.hasMore}
+            />
+          </div>
+        </main>
+      </MomentsDiscoveryFilters>
     </>
   );
 }
