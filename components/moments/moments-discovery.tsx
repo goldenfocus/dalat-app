@@ -3,7 +3,12 @@
 import { createContext, useContext, useMemo, useState, useCallback, useEffect, useSyncExternalStore } from "react";
 import { useTranslations } from "next-intl";
 import { Camera, Search } from "lucide-react";
-import { getAppHistoryEntryKey, subscribeToAppHistory } from "@/lib/navigation-history";
+import {
+  getAppHistoryEntryKey,
+  readHistoryEntryValue,
+  saveHistoryEntryValue,
+  subscribeToAppHistory,
+} from "@/lib/navigation-history";
 import { createClient } from "@/lib/supabase/client";
 import { MomentsFeed } from "@/components/feed/moments-feed";
 import { MomentsFilterBar, type MomentsFilterOption } from "./moments-filter-bar";
@@ -15,8 +20,6 @@ import { MomentsJoinPill } from "./moments-join-pill";
 import { MomentsLightboxProvider, useMomentsLightbox } from "./moments-lightbox-provider";
 import type { LightboxMoment } from "./moment-lightbox";
 import type { MomentContentType, MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
-
-const rememberedFilters = new Map<string, string>();
 
 const FILTER_CONFIG: Array<{ key: string; contentTypes: MomentContentType[] }> = [
   { key: "all", contentTypes: ["photo", "video"] },
@@ -79,10 +82,10 @@ function useMomentFilterState() {
   const [selection, setSelection] = useState<{ entryKey?: string; filter: string }>();
   const activeKey = selection && selection.entryKey === entryKey
     ? selection.filter
-    : (entryKey && rememberedFilters.get(entryKey)) || "all";
+    : (entryKey && readHistoryEntryValue(entryKey, "moments-filter")) || "all";
 
   function setActiveKey(filter: string) {
-    if (entryKey) rememberedFilters.set(entryKey, filter);
+    if (entryKey) saveHistoryEntryValue(entryKey, "moments-filter", filter);
     setSelection({ entryKey, filter });
   }
 
