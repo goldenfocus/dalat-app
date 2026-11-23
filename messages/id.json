@@ -634,9 +634,9 @@
     "venueName": "Nama tempat",
     "streetAddress": "Alamat",
     "eventDescription": "Deskripsi acara",
-    "externalLink": "Tautan eksternal",
+    "externalLink": "Tautan kontak atau pemesanan (opsional)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "Tautan ke formulir, grup chat, website, atau media sosial",
+    "externalLinkHelp": "Tempel undangan Zalo atau WhatsApp, tautan media sosial, halaman pemesanan, atau situs web.",
     "maxAttendees": "Peserta maksimal",
     "maxAttendeesPlaceholder": "Kosongkan untuk tidak terbatas",
     "maxAttendeesHelp": "Saat penuh, RSVP baru akan masuk daftar tunggu",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "Semua orang (publik)",
     "tribeVisibilityMembers": "Hanya anggota Komunitas",
     "tribeVisibilityHelp": "Acara khusus anggota disembunyikan dari orang di luar Komunitas.",
-    "tribesLoadFailed": "Tidak dapat memuat Komunitas kamu — acara ini akan dibuat sebagai acara pribadi."
+    "tribesLoadFailed": "Tidak dapat memuat Komunitas kamu — acara ini akan dibuat sebagai acara pribadi.",
+    "advancedSettings": "Pengaturan lanjutan",
+    "externalLinkInvalid": "Tambahkan tautan yang valid, seperti zalo.me/g/… atau chat.whatsapp.com/…",
+    "descriptionAutoHelp": "Deskripsi diisi berdasarkan judul acara. Anda bisa mengeditnya kapan saja.",
+    "descriptionAutoFill": "Ikuti acara {title}. Lihat waktu acara dan cara bergabung di halaman ini."
   },
   "eventActions": {
     "eventOptions": "Opsi acara",

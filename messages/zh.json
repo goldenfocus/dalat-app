@@ -634,9 +634,9 @@
     "venueName": "场地名称",
     "streetAddress": "街道地址",
     "eventDescription": "活动描述",
-    "externalLink": "外部链接",
+    "externalLink": "联系或预订链接（选填）",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "链接到表单、群聊、网站或社交媒体",
+    "externalLinkHelp": "粘贴 Zalo 或 WhatsApp 邀请链接、社交媒体链接、预订页面或网站链接。",
     "maxAttendees": "最大参与人数",
     "maxAttendeesPlaceholder": "留空表示无限制",
     "maxAttendeesHelp": "满员后新报名将进入等候名单",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "所有人(公开)",
     "tribeVisibilityMembers": "仅社区成员",
     "tribeVisibilityHelp": "仅成员可见的活动对社区以外的人隐藏。",
-    "tribesLoadFailed": "无法加载你的社区——此活动将以个人活动的形式创建。"
+    "tribesLoadFailed": "无法加载你的社区——此活动将以个人活动的形式创建。",
+    "advancedSettings": "高级设置",
+    "externalLinkInvalid": "请输入有效链接，例如 zalo.me/g/… 或 chat.whatsapp.com/…",
+    "descriptionAutoHelp": "系统会根据活动标题填写简介，你可以随时修改。",
+    "descriptionAutoFill": "欢迎参加「{title}」。出发前，请在本页面查看活动的开始时间、集合地点或线上参加方式，并以页面上的活动详情为准。如果你计划参加，请提前在这里确认出席，方便主办方做好活动当天的安排。"
   },
   "eventActions": {
     "eventOptions": "活动选项",

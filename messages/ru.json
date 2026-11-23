@@ -634,9 +634,9 @@
     "venueName": "Название места",
     "streetAddress": "Адрес",
     "eventDescription": "Описание события",
-    "externalLink": "Внешняя ссылка",
+    "externalLink": "Ссылка для связи или бронирования (необязательно)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "Ссылка на форму, чат, сайт или соцсети",
+    "externalLinkHelp": "Вставьте приглашение в Zalo или WhatsApp, ссылку на соцсеть, страницу бронирования или сайт.",
     "maxAttendees": "Макс. участников",
     "maxAttendeesPlaceholder": "Оставьте пустым для неограниченного",
     "maxAttendeesHelp": "При заполнении новые участники попадут в очередь",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "Все (открыто)",
     "tribeVisibilityMembers": "Только участники сообщества",
     "tribeVisibilityHelp": "События только для участников скрыты от людей вне сообщества.",
-    "tribesLoadFailed": "Не удалось загрузить ваши сообщества — событие будет создано как личное."
+    "tribesLoadFailed": "Не удалось загрузить ваши сообщества — событие будет создано как личное.",
+    "advancedSettings": "Расширенные настройки",
+    "externalLinkInvalid": "Добавьте действительную ссылку, например zalo.me/g/… или chat.whatsapp.com/…",
+    "descriptionAutoHelp": "Описание заполняется на основе названия события. Вы можете изменить его в любое время.",
+    "descriptionAutoFill": "Приглашаем на событие «{title}». Время и условия участия указаны на этой странице."
   },
   "eventActions": {
     "eventOptions": "Опции события",

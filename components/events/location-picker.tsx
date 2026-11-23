@@ -211,11 +211,14 @@ export function LocationPicker({
         `/api/venues/search?q=${encodeURIComponent(searchQuery)}`
       );
       const data = await response.json();
-      setVenues(data.venues || []);
+      if (!response.ok) throw new Error("Venue search failed");
+      if (seq === searchSeq.current) setVenues(data.venues || []);
     } catch (error) {
       console.error("Venue search error:", error);
-      setVenues([]);
-      if (seq === searchSeq.current) setSearchDegraded(true);
+      if (seq === searchSeq.current) {
+        setVenues([]);
+        setSearchDegraded(true);
+      }
     } finally {
       setIsLoadingVenues(false);
     }
@@ -370,18 +373,20 @@ export function LocationPicker({
           input: searchQuery,
           sessionToken: sessionToken.current!,
           includedRegionCodes: ["vn"],
-          includedPrimaryTypes: ["establishment", "geocode"],
+          locationBias: { center: { lat: 11.9404, lng: 108.4583 }, radius: 30000 },
         };
 
         const { suggestions } =
           await google.maps.places.AutocompleteSuggestion.fetchAutocompleteSuggestions(
             request
           );
-        setPlaceSuggestions(suggestions || []);
+        if (seq === searchSeq.current) setPlaceSuggestions(suggestions || []);
       } catch (error) {
         console.error("Places search error:", error);
-        setPlaceSuggestions([]);
-        if (seq === searchSeq.current) setSearchDegraded(true);
+        if (seq === searchSeq.current) {
+          setPlaceSuggestions([]);
+          setSearchDegraded(true);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -389,12 +394,21 @@ export function LocationPicker({
     [isGoogleReady]
   );
 
+  useEffect(() => {
+    const input = inputRef.current;
+    const typedAddress = input?.value.trim() || "";
+    if (isGoogleReady && document.activeElement === input && isCustomLocationCandidate(typedAddress)) {
+      void searchPlaces(typedAddress, searchSeq.current);
+    }
+  }, [isGoogleReady, searchPlaces]);
+
   const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
+    const seq = ++searchSeq.current;
 
-    // Clear selection when typing (unless we detect coords/URL)
-    if (selectedLocation && !detectedCoords) {
+    // Clearing the previous selection also clears its hidden coordinates.
+    if (selectedLocation) {
       setSelectedLocation(null);
       setSelectedVenueId(null);
       onLocationSelect?.(null);
@@ -412,10 +426,10 @@ export function LocationPicker({
 
     if (value.length >= MIN_CHARS) {
       debounceTimer.current = setTimeout(async () => {
-        const seq = ++searchSeq.current;
         setSearchDegraded(false);
         // Try smart detection first (coordinates or URLs)
         const detected = await handleSmartDetection(value);
+        if (seq !== searchSeq.current) return;
         if (detected) {
           // Coordinates/URL detected and applied - don't search
           setVenues([]);
@@ -539,6 +553,8 @@ export function LocationPicker({
   };
 
   const handleClear = () => {
+    searchSeq.current++;
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
     setQuery("");
     setSelectedLocation(null);
     setSelectedVenueId(null);
@@ -729,7 +745,7 @@ export function LocationPicker({
           )}
 
           {/* Genuinely no matches */}
-          {!hasResults && !searchDegraded && !showLoading && (
+          {!hasResults && !searchDegraded && !showLoading && !canOfferCustom && (
             <li className="px-3 py-2 text-sm text-muted-foreground">
               {t("locationNoResults")}
             </li>
@@ -748,10 +764,10 @@ export function LocationPicker({
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="font-medium text-sm">
-                    {t("locationUseCustom", { text: customText })}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
                     {t("locationUseAsTyped")}
+                  </p>
+                  <p className="break-words text-xs text-muted-foreground">
+                    {customText}
                   </p>
                 </div>
               </button>

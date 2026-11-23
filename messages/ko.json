@@ -634,9 +634,9 @@
     "venueName": "장소명",
     "streetAddress": "도로명 주소",
     "eventDescription": "이벤트 설명",
-    "externalLink": "외부 링크",
+    "externalLink": "연락처 또는 예약 링크(선택 사항)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "양식, 채팅 그룹, 웹사이트 또는 소셜 미디어 링크",
+    "externalLinkHelp": "Zalo나 WhatsApp 초대 링크, 소셜 미디어, 예약 페이지 또는 웹사이트 주소를 붙여 넣으세요.",
     "maxAttendees": "최대 참석자 수",
     "maxAttendeesPlaceholder": "무제한은 비워두세요",
     "maxAttendeesHelp": "마감 시 새 참석자는 대기자 명단에 등록됩니다",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "전체 공개",
     "tribeVisibilityMembers": "커뮤니티 멤버만",
     "tribeVisibilityHelp": "멤버 전용 이벤트는 커뮤니티 외부 사람에게 보이지 않습니다.",
-    "tribesLoadFailed": "커뮤니티를 불러오지 못했어요 — 이 이벤트는 개인 이벤트로 만들어집니다."
+    "tribesLoadFailed": "커뮤니티를 불러오지 못했어요 — 이 이벤트는 개인 이벤트로 만들어집니다.",
+    "advancedSettings": "고급 설정",
+    "externalLinkInvalid": "zalo.me/g/… 또는 chat.whatsapp.com/… 같은 유효한 링크를 입력하세요.",
+    "descriptionAutoHelp": "행사 제목을 바탕으로 설명이 자동 입력됩니다. 언제든 수정할 수 있습니다.",
+    "descriptionAutoFill": "{title} 행사에 초대합니다. 행사 시간과 집합 장소 또는 온라인 참여 방법은 이 페이지의 세부 정보를 확인해 주세요. 참석할 예정이라면 주최자가 미리 준비할 수 있도록 이 페이지에서 참석 여부를 알려 주세요."
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",

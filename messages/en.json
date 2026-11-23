@@ -654,9 +654,9 @@
     "venueName": "Venue name",
     "streetAddress": "Street address",
     "eventDescription": "Event description",
-    "externalLink": "External link",
+    "externalLink": "Contact or booking link (optional)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "Link to a form, chat group, website, or social media",
+    "externalLinkHelp": "Paste a Zalo or WhatsApp invite, a social link, a booking page, or a website.",
     "externalLinkNotCopied": "External link not copied (usually each event has its own link)",
     "maxAttendees": "Max attendees",
     "maxAttendeesPlaceholder": "Leave empty for unlimited",
@@ -746,7 +746,11 @@
     "tribeVisibilityPublic": "Everyone (public)",
     "tribeVisibilityMembers": "Community members only",
     "tribeVisibilityHelp": "Members-only events are hidden from people outside the community.",
-    "tribesLoadFailed": "Couldn't load your communities — this event will be created as a personal event."
+    "tribesLoadFailed": "Couldn't load your communities — this event will be created as a personal event.",
+    "advancedSettings": "Advanced settings",
+    "externalLinkInvalid": "Add a valid link, such as zalo.me/g/… or chat.whatsapp.com/…",
+    "descriptionAutoHelp": "We start the description from your event title. You can edit it anytime.",
+    "descriptionAutoFill": "Join us for {title}. Check this page for the event time and how to join."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",
