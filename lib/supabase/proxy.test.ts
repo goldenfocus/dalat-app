@@ -44,6 +44,34 @@ describe('locale routing', () => {
     vi.mocked(createServerClient).mockReset();
   });
 
+  it('sends guests straight to sign-in with the event form as the return destination', async () => {
+    const response = await updateSession(request('/events/new'));
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('https://dalat.app/auth/login?next=%2Fevents%2Fnew');
+    expect(response.headers.get('cache-control')).toBe('private, no-store');
+    expect(createServerClient).not.toHaveBeenCalled();
+  });
+
+  it('preserves the event creation locale and context through sign-in', async () => {
+    const response = await updateSession(request('/vi/events/new?tribe=makers&copyFrom=source-event', {
+      acceptLanguage: 'en-US',
+    }));
+    const login = new URL(response.headers.get('location')!);
+    const next = new URL(login.searchParams.get('next')!, login.origin);
+    expect(login.pathname).toBe('/vi/auth/login');
+    expect(next.pathname).toBe('/vi/events/new');
+    expect(next.searchParams.get('tribe')).toBe('makers');
+    expect(next.searchParams.get('copyFrom')).toBe('source-event');
+  });
+
+  it('lets the event form verify an existing session', async () => {
+    const response = await updateSession(request('/events/new', {
+      cookie: 'NEXT_LOCALE=en; sb-test-auth-token=session',
+    }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-middleware-rewrite')).toBe('https://dalat.app/en/events/new');
+  });
+
   it('keeps venue management out of legacy public venue redirects', async () => {
     for (const path of ['/venues/manage', '/en/venues/manage', '/vi/venues/manage', '/fr/venues/manage']) {
       const response = await updateSession(request(path));

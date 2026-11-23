@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
-import { Link } from "@/lib/i18n/routing";
 import { buildLocales, type Locale } from "@/lib/i18n/routing";
 import { createStaticClient } from "@/lib/supabase/server";
+import { CreateEventButton } from "@/components/events/create-event-button";
 import { EventGrid } from "@/components/events/event-grid";
 import { getCachedEventSocialBatch } from "@/lib/cache/server-cache";
 import { EventViewToggle } from "@/components/events/event-view-toggle";
@@ -260,8 +260,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
       <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
         {/* Content */}
         <div className="flex-1 container max-w-6xl mx-auto px-4 py-4 lg:py-6">
-          {/* Page title + View toggle */}
-          <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h1 className="text-2xl font-bold mb-1">
                 {page === 1 ? t("title") : t("titlePage", { page })}
@@ -273,6 +272,10 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
               </p>
             </div>
             <EventViewToggle />
+          </div>
+
+          <div className="mb-4 mt-3">
+            <CreateEventButton label={t("createEvent")} />
           </div>
 
           {/* Top pagination for pages > 1 */}
@@ -302,12 +305,7 @@ export default async function UpcomingEventsPage({ params }: PageProps) {
               </section>}
             </div>
           ) : (
-            <div className="text-center py-12 text-muted-foreground">
-              <p className="mb-4">{t("noEvents")}</p>
-              <Link href="/events/new">
-                <span className="text-primary hover:underline">{t("createEvent")}</span>
-              </Link>
-            </div>
+            <p className="py-12 text-center text-muted-foreground">{t("noEvents")}</p>
           )}
 
           {/* Bottom pagination */}

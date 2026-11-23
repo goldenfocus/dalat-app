@@ -12,10 +12,10 @@ const { queryCalls, rows } = vi.hoisted(() => ({
 }));
 vi.mock("next-intl/server", () => ({
   setRequestLocale: vi.fn(),
-  getTranslations: async () => (key: string) => ({ title: "Live & Upcoming Events", "happeningNow.title": "Happening Now", "tabs.upcoming": "Upcoming" })[key] || key,
+  getTranslations: async () => (key: string) => ({ title: "Live & Upcoming Events", "happeningNow.title": "Happening Now", "tabs.upcoming": "Upcoming", createEvent: "Create an event" })[key] || key,
 }));
 vi.mock("next/navigation", () => ({ notFound: () => { throw new Error("not found"); } }));
-vi.mock("@/lib/i18n/routing", () => ({ buildLocales: ["en"], Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a> }));
+vi.mock("@/lib/i18n/routing", () => ({ buildLocales: ["en"], Link: ({ children, href, className }: React.ComponentProps<"a">) => <a href={href} className={className}>{children}</a> }));
 vi.mock("@/lib/supabase/server", () => ({ createStaticClient: () => ({ from: (table: string) => {
   const query = {
     select: () => query,
@@ -39,7 +39,8 @@ afterEach(() => { cleanup(); vi.useRealTimers(); });
 it("renders the current event ahead of upcoming choices after it has started", async () => {
   render(await UpcomingEventsPage({ params: Promise.resolve({ locale: "en" }) }));
   expect(screen.getAllByRole("heading", { level: 2 }).map(h => h.textContent)).toEqual(["Happening Now", "Upcoming"]);
-  expect(screen.getAllByRole("link").map(link => link.textContent)).toEqual(["Tonight’s exchange", "Tomorrow’s workshop"]);
+  expect(screen.getAllByRole("link").map(link => link.textContent)).toEqual(["Create an event", "Tonight’s exchange", "Tomorrow’s workshop"]);
+  expect(screen.getByRole("link", { name: "Create an event" })).toHaveAttribute("href", "/events/new");
   expect(screen.getByRole("link", { name: "Tonight’s exchange" })).toHaveAttribute("href", "/events/tonights-exchange");
   expect(queryCalls).toContain("status=published");
   expect(queryCalls).toContain("starts_at.gt.2026-11-04T11:30:00.000Z,ends_at.gt.2026-11-04T11:30:00.000Z,and(ends_at.is.null,starts_at.gt.2026-11-04T07:30:00.000Z)");
