@@ -736,7 +736,10 @@
     "advancedSettings": "Cài đặt nâng cao",
     "externalLinkInvalid": "Nhập liên kết hợp lệ, ví dụ zalo.me/g/… hoặc chat.whatsapp.com/…",
     "descriptionAutoHelp": "Mô tả sẽ được điền từ tên sự kiện. Bạn có thể sửa bất cứ lúc nào.",
-    "descriptionAutoFill": "Mời bạn tham gia sự kiện {title}. Hãy xem giờ và cách tham gia trên trang này. Nếu có thể đến, bạn hãy xác nhận tham dự để người tổ chức chuẩn bị nhé."
+    "descriptionAutoFill": "Mời bạn tham gia sự kiện {title}. Hãy xem giờ và cách tham gia trên trang này. Nếu có thể đến, bạn hãy xác nhận tham dự để người tổ chức chuẩn bị nhé.",
+    "addressAssist": "Thử tìm địa chỉ bằng AI",
+    "addressAssistSuggestion": "Tìm {address}",
+    "addressAssistUnavailable": "Trợ lý chưa có cách tìm khác. Bạn vẫn có thể lưu địa chỉ đã nhập."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

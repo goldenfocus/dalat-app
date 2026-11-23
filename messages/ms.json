@@ -736,7 +736,10 @@
     "advancedSettings": "Tetapan lanjutan",
     "externalLinkInvalid": "Masukkan pautan yang sah, seperti zalo.me/g/… atau chat.whatsapp.com/…",
     "descriptionAutoHelp": "Keterangan diisi berdasarkan tajuk acara. Anda boleh mengeditnya pada bila-bila masa.",
-    "descriptionAutoFill": "Sertai kami untuk {title}. Lihat masa acara dan cara menyertai di halaman ini."
+    "descriptionAutoFill": "Sertai kami untuk {title}. Lihat masa acara dan cara menyertai di halaman ini.",
+    "addressAssist": "Cuba carian alamat dengan AI",
+    "addressAssistSuggestion": "Cari {address}",
+    "addressAssistUnavailable": "Pembantu tiada cadangan carian lain. Anda masih boleh menyimpan alamat yang ditaip."
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",

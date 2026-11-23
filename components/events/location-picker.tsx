@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, X, Check, Navigation, PenLine } from "lucide-react";
+import { MapPin, Loader2, X, Check, Navigation, PenLine, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
@@ -82,6 +82,12 @@ export function LocationPicker({
 
   // True when a search backend failed — the typed text still saves as a custom address
   const [searchDegraded, setSearchDegraded] = useState(false);
+
+  const [addressAssist, setAddressAssist] = useState<{
+    pending?: boolean;
+    suggestion?: string;
+    unavailable?: boolean;
+  }>({});
 
   // Smart detection state for coordinates/URLs
   const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
@@ -402,8 +408,8 @@ export function LocationPicker({
     }
   }, [isGoogleReady, searchPlaces]);
 
-  const handleInputChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const updateQuery = (value: string) => {
+    setAddressAssist({});
     setQuery(value);
     const seq = ++searchSeq.current;
 
@@ -451,6 +457,24 @@ export function LocationPicker({
       setVenues([]);
       setPlaceSuggestions([]);
       setIsOpen(false);
+    }
+  };
+
+  const searchWithAddressAssist = async () => {
+    const seq = searchSeq.current;
+    setAddressAssist({ pending: true });
+    try {
+      const response = await fetch("/api/events/address-assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim() }),
+      });
+      if (!response.ok) throw new Error("Address assistant unavailable");
+      const data = await response.json() as { suggestion: string | null };
+      if (seq !== searchSeq.current) return;
+      setAddressAssist(data.suggestion ? { suggestion: data.suggestion } : { unavailable: true });
+    } catch {
+      if (seq === searchSeq.current) setAddressAssist({ unavailable: true });
     }
   };
 
@@ -563,6 +587,7 @@ export function LocationPicker({
     setDetectedCoords(null);
     setUrlResolveError(null);
     setSearchDegraded(false);
+    setAddressAssist({});
     onLocationSelect?.(null);
     onVenueIdChange?.(null);
     inputRef.current?.focus();
@@ -584,7 +609,7 @@ export function LocationPicker({
           id="location"
           type="text"
           value={query}
-          onChange={handleInputChange}
+          onChange={(e) => updateQuery(e.target.value)}
           onFocus={handleFocus}
           placeholder={
             isLoadingScript
@@ -748,6 +773,37 @@ export function LocationPicker({
           {!hasResults && !searchDegraded && !showLoading && !canOfferCustom && (
             <li className="px-3 py-2 text-sm text-muted-foreground">
               {t("locationNoResults")}
+            </li>
+          )}
+
+          {canOfferCustom && !hasResults && !showLoading && customText.length >= 4 && customText.length <= 160 && (
+            <li>
+              {addressAssist.suggestion ? (
+                <button
+                  type="button"
+                  onClick={() => updateQuery(addressAssist.suggestion!)}
+                  className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted"
+                >
+                  <MapPin className="size-4 shrink-0" aria-hidden="true" />
+                  {t("addressAssistSuggestion", { address: addressAssist.suggestion })}
+                </button>
+              ) : addressAssist.unavailable ? (
+                <p role="status" className="px-3 py-2 text-xs text-muted-foreground">
+                  {t("addressAssistUnavailable")}
+                </p>
+              ) : (
+                <button
+                  type="button"
+                  onClick={searchWithAddressAssist}
+                  disabled={addressAssist.pending}
+                  className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted disabled:opacity-60"
+                >
+                  {addressAssist.pending
+                    ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                    : <Sparkles className="size-4" aria-hidden="true" />}
+                  {t(addressAssist.pending ? "locationLookingUp" : "addressAssist")}
+                </button>
+              )}
             </li>
           )}
 

@@ -736,7 +736,10 @@
     "advancedSettings": "詳細設定",
     "externalLinkInvalid": "zalo.me/g/… や chat.whatsapp.com/… など、有効なリンクを入力してください。",
     "descriptionAutoHelp": "イベント名から説明文が自動入力されます。いつでも編集できます。",
-    "descriptionAutoFill": "「{title}」にぜひご参加ください。開催時間や集合場所、オンラインでの参加方法などは、このページのイベント詳細をご確認ください。参加予定の方は、主催者が当日の準備をできるよう、こちらで参加登録をお願いします。"
+    "descriptionAutoFill": "「{title}」にぜひご参加ください。開催時間や集合場所、オンラインでの参加方法などは、このページのイベント詳細をご確認ください。参加予定の方は、主催者が当日の準備をできるよう、こちらで参加登録をお願いします。",
+    "addressAssist": "AIで住所を検索",
+    "addressAssistSuggestion": "{address} を検索",
+    "addressAssistUnavailable": "別の検索候補がありません。入力した住所はそのまま保存できます。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",

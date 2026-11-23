@@ -736,7 +736,10 @@
     "advancedSettings": "Расширенные настройки",
     "externalLinkInvalid": "Добавьте действительную ссылку, например zalo.me/g/… или chat.whatsapp.com/…",
     "descriptionAutoHelp": "Описание заполняется на основе названия события. Вы можете изменить его в любое время.",
-    "descriptionAutoFill": "Приглашаем на событие «{title}». Время и условия участия указаны на этой странице."
+    "descriptionAutoFill": "Приглашаем на событие «{title}». Время и условия участия указаны на этой странице.",
+    "addressAssist": "Попробовать поиск адреса с ИИ",
+    "addressAssistSuggestion": "Искать {address}",
+    "addressAssistUnavailable": "Других вариантов поиска нет. Можно сохранить введённый адрес."
   },
   "eventActions": {
     "eventOptions": "Опции события",

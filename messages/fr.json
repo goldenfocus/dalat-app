@@ -750,7 +750,10 @@
     "advancedSettings": "Paramètres avancés",
     "externalLinkInvalid": "Ajoutez un lien valide, comme zalo.me/g/… ou chat.whatsapp.com/…",
     "descriptionAutoHelp": "La description est préremplie à partir du titre. Vous pouvez la modifier à tout moment.",
-    "descriptionAutoFill": "Participez à {title}. Consultez cette page pour connaître l’horaire et savoir comment nous rejoindre."
+    "descriptionAutoFill": "Participez à {title}. Consultez cette page pour connaître l’horaire et savoir comment nous rejoindre.",
+    "addressAssist": "Essayer la recherche d’adresse par IA",
+    "addressAssistSuggestion": "Rechercher {address}",
+    "addressAssistUnavailable": "L’assistant n’a pas d’autre recherche à proposer. Vous pouvez enregistrer votre saisie."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",

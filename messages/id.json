@@ -736,7 +736,10 @@
     "advancedSettings": "Pengaturan lanjutan",
     "externalLinkInvalid": "Tambahkan tautan yang valid, seperti zalo.me/g/… atau chat.whatsapp.com/…",
     "descriptionAutoHelp": "Deskripsi diisi berdasarkan judul acara. Anda bisa mengeditnya kapan saja.",
-    "descriptionAutoFill": "Ikuti acara {title}. Lihat waktu acara dan cara bergabung di halaman ini."
+    "descriptionAutoFill": "Ikuti acara {title}. Lihat waktu acara dan cara bergabung di halaman ini.",
+    "addressAssist": "Coba pencarian alamat dengan AI",
+    "addressAssistSuggestion": "Cari {address}",
+    "addressAssistUnavailable": "Asisten tidak punya saran pencarian lain. Anda masih dapat menyimpan alamat yang diketik."
   },
   "eventActions": {
     "eventOptions": "Opsi acara",

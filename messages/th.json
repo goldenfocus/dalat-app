@@ -736,7 +736,10 @@
     "advancedSettings": "การตั้งค่าขั้นสูง",
     "externalLinkInvalid": "ใส่ลิงก์ที่ถูกต้อง เช่น zalo.me/g/… หรือ chat.whatsapp.com/…",
     "descriptionAutoHelp": "ระบบกรอกคำอธิบายจากชื่อกิจกรรมให้ก่อน คุณแก้ไขได้ทุกเมื่อ",
-    "descriptionAutoFill": "มาร่วมกิจกรรม {title} กับเรา ดูเวลาและวิธีเข้าร่วมได้ในหน้านี้"
+    "descriptionAutoFill": "มาร่วมกิจกรรม {title} กับเรา ดูเวลาและวิธีเข้าร่วมได้ในหน้านี้",
+    "addressAssist": "ลองค้นหาที่อยู่ด้วย AI",
+    "addressAssistSuggestion": "ค้นหา {address}",
+    "addressAssistUnavailable": "ผู้ช่วยไม่มีคำค้นอื่นแนะนำ คุณยังบันทึกที่อยู่ตามที่พิมพ์ไว้ได้"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

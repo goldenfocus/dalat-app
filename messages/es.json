@@ -736,7 +736,10 @@
     "advancedSettings": "Configuración avanzada",
     "externalLinkInvalid": "Añade un enlace válido, como zalo.me/g/… o chat.whatsapp.com/…",
     "descriptionAutoHelp": "Rellenamos la descripción a partir del título del evento. Puedes editarla en cualquier momento.",
-    "descriptionAutoFill": "Ven a {title}. En esta página encontrarás la hora y la información para participar."
+    "descriptionAutoFill": "Ven a {title}. En esta página encontrarás la hora y la información para participar.",
+    "addressAssist": "Probar la búsqueda de direcciones con IA",
+    "addressAssistSuggestion": "Buscar {address}",
+    "addressAssistUnavailable": "El asistente no tiene otra búsqueda que sugerir. Puedes guardar la dirección que escribiste."
   },
   "eventActions": {
     "eventOptions": "Opciones del evento",
