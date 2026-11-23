@@ -60,7 +60,7 @@ export default async function Home({ params }: PageProps) {
     <>
     <JsonLd data={websiteSchema} />
     <main className="min-h-screen flex flex-col pb-20 lg:pb-0">
-      <FogHeadline />
+      <FogHeadline locale={locale} />
 
       {/* Time board: only shows "live" when real events are underway */}
       <FogTimeBoard

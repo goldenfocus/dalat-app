@@ -648,9 +648,9 @@
     "venueName": "Nom du lieu",
     "streetAddress": "Adresse",
     "eventDescription": "Description de l'événement",
-    "externalLink": "Lien externe",
+    "externalLink": "Lien de contact ou de réservation (facultatif)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "Lien vers un formulaire, groupe de discussion, site web ou réseau social",
+    "externalLinkHelp": "Collez une invitation Zalo ou WhatsApp, un lien vers un réseau social, une page de réservation ou un site web.",
     "maxAttendees": "Nombre max de participants",
     "maxAttendeesPlaceholder": "Laisser vide pour illimité",
     "maxAttendeesHelp": "Une fois complet, les nouvelles inscriptions vont en liste d'attente",
@@ -746,7 +746,11 @@
     "tribeVisibilityPublic": "Tout le monde (public)",
     "tribeVisibilityMembers": "Membres de la communauté uniquement",
     "tribeVisibilityHelp": "Les événements réservés aux membres sont masqués pour les personnes hors de la communauté.",
-    "tribesLoadFailed": "Impossible de charger vos communautés — cet événement sera créé comme un événement personnel."
+    "tribesLoadFailed": "Impossible de charger vos communautés — cet événement sera créé comme un événement personnel.",
+    "advancedSettings": "Paramètres avancés",
+    "externalLinkInvalid": "Ajoutez un lien valide, comme zalo.me/g/… ou chat.whatsapp.com/…",
+    "descriptionAutoHelp": "La description est préremplie à partir du titre. Vous pouvez la modifier à tout moment.",
+    "descriptionAutoFill": "Participez à {title}. Consultez cette page pour connaître l’horaire et savoir comment nous rejoindre."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",

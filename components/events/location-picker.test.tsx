@@ -60,7 +60,7 @@ describe("LocationPicker free-text fallback", () => {
     render(<LocationPicker onLocationSelect={onLocationSelect} />);
 
     await typeQuery(TYPED);
-    fireEvent.click(screen.getByText(`locationUseCustom:${TYPED}`));
+    fireEvent.click(screen.getByRole("button", { name: /locationUseAsTyped/ }));
 
     expect(onLocationSelect).toHaveBeenCalledWith(
       expect.objectContaining({ type: "custom", name: TYPED, address: TYPED })
@@ -77,6 +77,6 @@ describe("LocationPicker free-text fallback", () => {
     expect(screen.getByText("locationSearchUnavailable")).toBeInTheDocument();
     expect(screen.queryByText("locationNoResults")).not.toBeInTheDocument();
     // The fallback row is still offered — never a dead end
-    expect(screen.getByText(`locationUseCustom:${TYPED}`)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /locationUseAsTyped/ })).toBeInTheDocument();
   });
 });

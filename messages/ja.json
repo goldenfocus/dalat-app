@@ -634,9 +634,9 @@
     "venueName": "会場名",
     "streetAddress": "住所",
     "eventDescription": "イベントの説明",
-    "externalLink": "外部リンク",
+    "externalLink": "連絡先・予約リンク（任意）",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "フォーム、チャットグループ、ウェブサイト、SNSへのリンク",
+    "externalLinkHelp": "ZaloやWhatsAppの招待リンク、SNS、予約ページ、ウェブサイトのリンクを貼り付けてください。",
     "maxAttendees": "最大参加者数",
     "maxAttendeesPlaceholder": "無制限の場合は空白",
     "maxAttendeesHelp": "満員になると新しい参加者はキャンセル待ちになります",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "全員に公開",
     "tribeVisibilityMembers": "コミュニティのメンバーのみ",
     "tribeVisibilityHelp": "メンバー限定イベントはコミュニティ外の人には表示されません。",
-    "tribesLoadFailed": "コミュニティを読み込めませんでした — このイベントは個人イベントとして作成されます。"
+    "tribesLoadFailed": "コミュニティを読み込めませんでした — このイベントは個人イベントとして作成されます。",
+    "advancedSettings": "詳細設定",
+    "externalLinkInvalid": "zalo.me/g/… や chat.whatsapp.com/… など、有効なリンクを入力してください。",
+    "descriptionAutoHelp": "イベント名から説明文が自動入力されます。いつでも編集できます。",
+    "descriptionAutoFill": "「{title}」にぜひご参加ください。開催時間や集合場所、オンラインでの参加方法などは、このページのイベント詳細をご確認ください。参加予定の方は、主催者が当日の準備をできるよう、こちらで参加登録をお願いします。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",

@@ -1,9 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { ArrowRight } from "lucide-react";
-import { Link } from "@/lib/i18n/routing";
+import { Link, type Locale } from "@/lib/i18n/routing";
 import { CreateEventButton } from "@/components/events/create-event-button";
 
-export async function FogHeadline() {
+export async function FogHeadline({ locale }: { locale: Locale }) {
   const [t, tEvents] = await Promise.all([
     getTranslations("hero"),
     getTranslations("upcomingEvents"),
@@ -21,7 +21,7 @@ export async function FogHeadline() {
             {t("subtitle")}
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-            <CreateEventButton label={tEvents("createEvent")} />
+            <CreateEventButton label={tEvents("createEvent")} locale={locale} />
             {/* prefetch off: that page's hero-image preload hint would otherwise
                 fire on every home view and compete with the LCP photo */}
             <Link

@@ -634,9 +634,9 @@
     "venueName": "ชื่อสถานที่",
     "streetAddress": "ที่อยู่",
     "eventDescription": "รายละเอียดกิจกรรม",
-    "externalLink": "ลิงก์ภายนอก",
+    "externalLink": "ลิงก์ติดต่อหรือจอง (ไม่บังคับ)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "ลิงก์ไปยังแบบฟอร์ม กลุ่มแชท เว็บไซต์ หรือโซเชียลมีเดีย",
+    "externalLinkHelp": "วางลิงก์เชิญจาก Zalo หรือ WhatsApp ลิงก์โซเชียลมีเดีย หน้าจอง หรือเว็บไซต์",
     "maxAttendees": "ผู้เข้าร่วมสูงสุด",
     "maxAttendeesPlaceholder": "เว้นว่างสำหรับไม่จำกัด",
     "maxAttendeesHelp": "เมื่อเต็ม การตอบรับใหม่จะเข้ารายชื่อรอ",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "ทุกคน (สาธารณะ)",
     "tribeVisibilityMembers": "เฉพาะสมาชิก ชุมชน",
     "tribeVisibilityHelp": "อีเวนต์เฉพาะสมาชิกจะถูกซ่อนจากคนนอก ชุมชน",
-    "tribesLoadFailed": "โหลด ชุมชน ของคุณไม่สำเร็จ — อีเวนต์นี้จะถูกสร้างเป็นอีเวนต์ส่วนตัว"
+    "tribesLoadFailed": "โหลด ชุมชน ของคุณไม่สำเร็จ — อีเวนต์นี้จะถูกสร้างเป็นอีเวนต์ส่วนตัว",
+    "advancedSettings": "การตั้งค่าขั้นสูง",
+    "externalLinkInvalid": "ใส่ลิงก์ที่ถูกต้อง เช่น zalo.me/g/… หรือ chat.whatsapp.com/…",
+    "descriptionAutoHelp": "ระบบกรอกคำอธิบายจากชื่อกิจกรรมให้ก่อน คุณแก้ไขได้ทุกเมื่อ",
+    "descriptionAutoFill": "มาร่วมกิจกรรม {title} กับเรา ดูเวลาและวิธีเข้าร่วมได้ในหน้านี้"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

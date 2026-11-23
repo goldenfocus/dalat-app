@@ -92,6 +92,7 @@ import type {
   TribeMemberRole,
 } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
+import { normalizeEventContactLink } from "@/lib/events/contact-link";
 import { finalizeSlug } from "@/lib/utils";
 import {
   EVENT_TAGS,
@@ -100,7 +101,6 @@ import {
 } from "@/lib/constants/event-tags";
 import { pingSearchEngines } from "@/lib/seo/indexnow-client";
 import {
-  MIN_EVENT_DESCRIPTION_LENGTH,
   MIN_EVENT_TITLE_LENGTH,
 } from "@/lib/translations-readiness";
 
@@ -389,6 +389,8 @@ export function EventForm({
   // Title state (controlled for FlyerBuilder integration)
   const [title, setTitle] = useState(event?.title ?? copyDefaults?.title ?? "");
 
+  const [advancedOpen, setAdvancedOpen] = useState(false);
+
   // Online event state
   const [isOnline, setIsOnline] = useState(event?.is_online ?? false);
   const [onlineLink, setOnlineLink] = useState(event?.online_link ?? "");
@@ -639,11 +641,15 @@ export function EventForm({
     const longitudeStr = formData.get("longitude") as string;
     const latitude = latitudeStr ? parseFloat(latitudeStr) : null;
     const longitude = longitudeStr ? parseFloat(longitudeStr) : null;
-    const externalChatUrl = formData.get("external_chat_url") as string;
+    const externalInput = String(formData.get("external_chat_url") ?? "").trim();
+    const externalChatUrl = externalInput === event?.external_chat_url
+      ? event.external_chat_url
+      : normalizeEventContactLink(externalInput);
     const capacityStr = formData.get("capacity") as string;
     // Use state-managed venueId (set by LocationPicker or VenueLinker)
     const venueIdToSave = venueId;
-    const normalizedDescription = description?.trim() || null;
+    const normalizedDescription = description.trim()
+      || t("descriptionAutoFill", { title: title.trim() });
     const normalizedOnlineLink = normalizeUrl(onlineLink.trim());
 
     // Secret address only applies to non-venue, non-recurring, single events
@@ -658,7 +664,6 @@ export function EventForm({
     if (!title.trim()) missingFields.push(tErrors("fieldTitle"));
     if (!date) missingFields.push(tErrors("fieldDate"));
     if (!time) missingFields.push(tErrors("fieldTime"));
-    if (!normalizedDescription) missingFields.push(tErrors("fieldDescription"));
 
     if (isOnline) {
       if (!normalizedOnlineLink) missingFields.push(tErrors("fieldOnlineLink"));
@@ -680,16 +685,8 @@ export function EventForm({
       setError(tErrors("titleTooShort", { minimum: MIN_EVENT_TITLE_LENGTH }));
       return;
     }
-    if (
-      !normalizedDescription ||
-      normalizedContentLength(normalizedDescription) <
-        MIN_EVENT_DESCRIPTION_LENGTH
-    ) {
-      setError(
-        tErrors("descriptionTooShort", {
-          minimum: MIN_EVENT_DESCRIPTION_LENGTH,
-        }),
-      );
+    if (externalInput && !externalChatUrl) {
+      setError(t("externalLinkInvalid"));
       return;
     }
     if (isOnline && !isPublicHttpUrl(normalizedOnlineLink)) {
@@ -710,10 +707,12 @@ export function EventForm({
 
     // Validate slug if editable
     if (slugEditable && slugStatus === "taken") {
+      setAdvancedOpen(true);
       setError(t("urlTaken"));
       return;
     }
     if (slugEditable && slugStatus === "invalid") {
+      setAdvancedOpen(true);
       setError(t("urlInvalid"));
       return;
     }
@@ -1194,7 +1193,7 @@ export function EventForm({
             setCreatedEvent({
               slug: data.slug,
               title: title.trim(),
-              description: description || null,
+              description: normalizedDescription,
               startsAt: startsAt,
               imageUrl: eventImageUrl,
             });
@@ -1318,70 +1317,6 @@ export function EventForm({
               onFocalPointChange={setFocalPoint}
             />
           )}
-
-          {/* Custom URL Slug */}
-          {slugEditable && (
-            <div className="space-y-2">
-              <Label htmlFor="slug">{t("url")}</Label>
-              <div className="flex items-center gap-0">
-                <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
-                  {t("eventUrlPrefix")}
-                </span>
-                <Input
-                  id="slug"
-                  value={slug}
-                  onChange={handleSlugChange}
-                  onBlur={handleSlugBlur}
-                  placeholder={t("urlPlaceholder")}
-                  className="rounded-l-none"
-                />
-              </div>
-              {slugTouched && (
-                <p
-                  className={`text-xs ${
-                    slugStatus === "available"
-                      ? "text-green-600"
-                      : slugStatus === "taken"
-                        ? "text-red-500"
-                        : slugStatus === "invalid"
-                          ? "text-red-500"
-                          : slugStatus === "checking"
-                            ? "text-muted-foreground"
-                            : "text-muted-foreground"
-                  }`}
-                >
-                  {slugStatus === "checking" && t("checkingAvailability")}
-                  {slugStatus === "available" && `✓ ${t("urlAvailable")}`}
-                  {slugStatus === "taken" && `✗ ${t("urlTaken")}`}
-                  {slugStatus === "invalid" && t("urlValidation")}
-                </p>
-              )}
-              {isEditing && slug !== event?.slug && (
-                <p className="text-xs text-amber-600">
-                  ⚠ {t("urlChangeWarning")}
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Info */}
-          <div className="space-y-2">
-            <Label htmlFor="description">{t("info")} *</Label>
-            <AIEnhanceTextarea
-              id="description"
-              name="description"
-              defaultValue={
-                event?.description ?? copyDefaults?.description ?? ""
-              }
-              rows={3}
-              required
-              minLength={MIN_EVENT_DESCRIPTION_LENGTH}
-              context="an event description for a local community event in Đà Lạt, Vietnam"
-            />
-            <p className="text-xs text-muted-foreground">
-              {t("infoHelperText")}
-            </p>
-          </div>
 
           {/* Date and time */}
           <div className="grid gap-4 sm:grid-cols-2">
@@ -1574,16 +1509,43 @@ export function EventForm({
             </>
           )}
 
+          {/* Info */}
+          <div className="space-y-2">
+            <Label htmlFor="description">{t("eventDescription")}</Label>
+            <AIEnhanceTextarea
+              id="description"
+              name="description"
+              defaultValue={
+                event?.description ?? copyDefaults?.description ?? ""
+              }
+              rows={3}
+              placeholder={t("descriptionPlaceholder")}
+              aria-describedby="event-description-help"
+              context="an event description for a local community event in Đà Lạt, Vietnam"
+            />
+            <p id="event-description-help" className="text-xs text-muted-foreground">
+              {t("descriptionAutoHelp")}
+            </p>
+          </div>
+
           {/* External link */}
           <div className="space-y-2">
             <Label htmlFor="external_chat_url">{t("externalLink")}</Label>
             <Input
               id="external_chat_url"
               name="external_chat_url"
-              type="url"
+              type="text"
+              inputMode="url"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
+              aria-describedby="event-contact-help"
               placeholder={t("externalLinkPlaceholder")}
               defaultValue={event?.external_chat_url ?? ""}
             />
+            <p id="event-contact-help" className="text-xs text-muted-foreground">
+              {t("externalLinkHelp")}
+            </p>
             {isCopying && (
               <p className="text-xs text-muted-foreground">
                 {t("externalLinkNotCopied")}
@@ -1767,6 +1729,61 @@ export function EventForm({
             onPriceTypeChange={setPriceType}
             onTiersChange={setTicketTiers}
           />
+
+          {slugEditable && (
+            <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen} className="pt-4 border-t">
+              <CollapsibleTrigger className="flex min-h-11 w-full items-center justify-between py-2 text-sm font-medium hover:text-foreground [&[data-state=open]>svg]:rotate-180">
+                <span className="flex items-center gap-2">
+                  <Settings className="h-4 w-4" aria-hidden="true" />
+                  {t("advancedSettings")}
+                </span>
+                <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform" aria-hidden="true" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="pt-4">
+                <div className="space-y-2">
+                  <Label htmlFor="slug">{t("eventUrl")}</Label>
+                  <div className="flex items-center gap-0">
+                    <span className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-l-md border border-r-0 border-input">
+                      {t("eventUrlPrefix")}
+                    </span>
+                    <Input
+                      id="slug"
+                      value={slug}
+                      onChange={handleSlugChange}
+                      onBlur={handleSlugBlur}
+                      placeholder={t("urlPlaceholder")}
+                      className="rounded-l-none"
+                    />
+                  </div>
+                  {slugTouched && (
+                    <p
+                      className={`text-xs ${
+                        slugStatus === "available"
+                          ? "text-green-600"
+                          : slugStatus === "taken"
+                            ? "text-red-500"
+                            : slugStatus === "invalid"
+                              ? "text-red-500"
+                              : slugStatus === "checking"
+                                ? "text-muted-foreground"
+                                : "text-muted-foreground"
+                      }`}
+                    >
+                      {slugStatus === "checking" && t("checkingAvailability")}
+                      {slugStatus === "available" && `✓ ${t("urlAvailable")}`}
+                      {slugStatus === "taken" && `✗ ${t("urlTaken")}`}
+                      {slugStatus === "invalid" && t("urlValidation")}
+                    </p>
+                  )}
+                  {isEditing && slug !== event?.slug && (
+                    <p className="text-xs text-amber-600">
+                      ⚠ {t("urlChangeWarning")}
+                    </p>
+                  )}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
+          )}
 
           {/* Activity Tags */}
           <Collapsible className="pt-4 border-t">

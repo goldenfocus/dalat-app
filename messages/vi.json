@@ -634,9 +634,9 @@
     "venueName": "Tên địa điểm",
     "streetAddress": "Địa chỉ đường",
     "eventDescription": "Mô tả sự kiện",
-    "externalLink": "Liên kết ngoài",
+    "externalLink": "Liên kết liên hệ hoặc đặt chỗ (không bắt buộc)",
     "externalLinkPlaceholder": "https://...",
-    "externalLinkHelp": "Liên kết đến form, nhóm chat, website hoặc mạng xã hội",
+    "externalLinkHelp": "Dán link mời vào nhóm Zalo hoặc WhatsApp, link mạng xã hội, trang đặt chỗ hoặc trang web.",
     "maxAttendees": "Số người tham gia tối đa",
     "maxAttendeesPlaceholder": "Để trống nếu không giới hạn",
     "maxAttendeesHelp": "Khi đầy, đăng ký mới sẽ vào danh sách chờ",
@@ -732,7 +732,11 @@
     "tribeVisibilityPublic": "Mọi người (công khai)",
     "tribeVisibilityMembers": "Chỉ thành viên cộng đồng",
     "tribeVisibilityHelp": "Sự kiện chỉ dành cho thành viên sẽ ẩn với người ngoài cộng đồng.",
-    "tribesLoadFailed": "Không thể tải cộng đồng của bạn — sự kiện này sẽ được tạo dưới dạng sự kiện cá nhân."
+    "tribesLoadFailed": "Không thể tải cộng đồng của bạn — sự kiện này sẽ được tạo dưới dạng sự kiện cá nhân.",
+    "advancedSettings": "Cài đặt nâng cao",
+    "externalLinkInvalid": "Nhập liên kết hợp lệ, ví dụ zalo.me/g/… hoặc chat.whatsapp.com/…",
+    "descriptionAutoHelp": "Mô tả sẽ được điền từ tên sự kiện. Bạn có thể sửa bất cứ lúc nào.",
+    "descriptionAutoFill": "Mời bạn tham gia sự kiện {title}. Hãy xem giờ và cách tham gia trên trang này. Nếu có thể đến, bạn hãy xác nhận tham dự để người tổ chức chuẩn bị nhé."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",
