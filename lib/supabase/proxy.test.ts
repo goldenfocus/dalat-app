@@ -72,6 +72,29 @@ describe('locale routing', () => {
     expect(response.headers.get('x-middleware-rewrite')).toBe('https://dalat.app/en/events/new');
   });
 
+  it.each(['/events/firepit-gathering', '/vi/events/firepit-gathering', '/events/new'])(
+    'preserves the user session for a Zalo in-app browser at %s',
+    async (path) => {
+      const response = await updateSession(request(path, {
+        userAgent: 'Mozilla/5.0 (iPhone) Mobile Safari Zalo',
+        cookie: 'NEXT_LOCALE=en; sb-test-auth-token.0=session-fragment',
+      }));
+      expect(response.status).toBe(200);
+      expect(response.headers.get('location')).toBeNull();
+      expect(response.headers.get('x-middleware-request-user-agent')).toBeNull();
+      const overrides = response.headers.get('x-middleware-override-headers');
+      expect(!overrides || overrides.split(',').includes('cookie')).toBe(true);
+    },
+  );
+
+  it('continues rendering metadata for an anonymous Zalo link preview', async () => {
+    const response = await updateSession(request('/events/firepit-gathering', {
+      userAgent: 'Zalo',
+    }));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-middleware-request-user-agent')).toBe('facebookexternalhit/1.1');
+  });
+
   it('keeps venue management out of legacy public venue redirects', async () => {
     for (const path of ['/venues/manage', '/en/venues/manage', '/vi/venues/manage', '/fr/venues/manage']) {
       const response = await updateSession(request(path));

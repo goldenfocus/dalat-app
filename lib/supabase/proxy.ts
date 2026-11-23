@@ -257,7 +257,9 @@ export async function updateSession(request: NextRequest) {
       getLocaleFromPath(pathname) || routing.defaultLocale,
     );
 
-    if (isSocialCrawler) {
+    // In-app browsers can use the same UA tokens as their link-preview crawler.
+    // The Next.js override replaces request headers and would discard auth cookies.
+    if (isSocialCrawler && !hasSupabaseSessionCookie(request)) {
       response.headers.set('x-middleware-override-headers', 'user-agent');
       response.headers.set('x-middleware-request-user-agent', 'facebookexternalhit/1.1');
     }
