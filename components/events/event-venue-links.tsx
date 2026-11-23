@@ -6,13 +6,13 @@ import { OfficialVenueLinks } from "@/components/venues/official-links";
 export async function EventVenueLinks({ venueId, organizerId }: { venueId?: string; organizerId?: string }) {
   const db = createStaticClient();
   if (!db || (!venueId && !organizerId)) return null;
-  const query = db.from("venues").select("slug,name,website_url,menu_url");
+  const query = db.from("venues").select("slug,name,website_url,menu_url,tiktok_url");
   // A venue-backed organizer can also host an outdoor event. Link its business
   // without changing the event's location; ambiguous multi-venue organizers skip.
   const { data: venue } = await (venueId ? query.eq("id", venueId) : query.eq("organizer_id", organizerId!)).maybeSingle();
-  if (!venue || (!venue.website_url && !venue.menu_url)) return null;
+  if (!venue || (!venue.website_url && !venue.menu_url && !venue.tiktok_url)) return null;
   return <aside className="space-y-3 rounded-xl border p-4">
     <Link href={`/${venue.slug}`} className="font-semibold hover:underline">{venue.name}</Link>
-    <OfficialVenueLinks website={venue.website_url} menu={venue.menu_url} name={venue.name} />
+    <OfficialVenueLinks website={venue.website_url} tiktok={venue.tiktok_url} menu={venue.menu_url} name={venue.name} />
   </aside>;
 }

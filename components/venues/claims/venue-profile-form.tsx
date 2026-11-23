@@ -8,11 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { uploadFile } from "@/lib/storage/client";
 import type { OperatingHours } from "@/lib/types";
+import { splitVenueLinks } from "@/lib/venues/social-links";
 
 const DAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"] as const;
 type Fields = {
   name: string; description: string; phone: string; email: string; website_url: string; menu_url?: string;
-  facebook_url: string; instagram_url: string; logo_url: string;
+  facebook_url: string; instagram_url: string; tiktok_url?: string; logo_url: string;
 };
 
 export function VenueProfileForm({ venue }: {
@@ -25,10 +26,13 @@ export function VenueProfileForm({ venue }: {
   const router = useRouter();
   const dayLabel = (i: number) =>
     new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" }).format(new Date(Date.UTC(2024, 0, 1 + i)));
-  const [f, setF] = useState<Fields>({
-    name: venue.name, description: venue.description || "", phone: venue.phone || "", email: venue.email || "",
-    website_url: venue.website_url || "", menu_url: venue.menu_url || "", facebook_url: venue.facebook_url || "",
-    instagram_url: venue.instagram_url || "", logo_url: venue.logo_url || "",
+  const [f, setF] = useState<Fields>(() => {
+    const links = splitVenueLinks(venue.website_url, venue.tiktok_url);
+    return {
+      name: venue.name, description: venue.description || "", phone: venue.phone || "", email: venue.email || "",
+      website_url: links.website || "", menu_url: venue.menu_url || "", facebook_url: venue.facebook_url || "",
+      instagram_url: venue.instagram_url || "", tiktok_url: links.tiktok?.href || "", logo_url: venue.logo_url || "",
+    };
   });
   const [hours, setHours] = useState<OperatingHours>(venue.operating_hours || {});
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -82,6 +86,7 @@ export function VenueProfileForm({ venue }: {
       {field("menu_url", th("officialMenu"), "url")}
       {field("facebook_url", "Facebook", "url")}
       {field("instagram_url", "Instagram", "url")}
+      {field("tiktok_url", "TikTok", "url")}
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">{tv("hours")}</legend>
         {DAYS.map((d, i) => {

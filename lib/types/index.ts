@@ -292,6 +292,7 @@ export interface GooglePlaceReview {
 export interface VenuePhoto {
   url: string;
   caption?: string;
+  credit?: { name: string; url: string };
   sort_order: number;
 }
 
@@ -308,7 +309,7 @@ export interface Venue {
   address: string | null;
   google_maps_url: string | null;
   google_place_id: string | null;
-  geocode_source?: "google" | "osm" | "osm_street" | null;
+  geocode_source?: "google" | "google_maps_link" | "osm" | "osm_street" | null;
 
   // Contact
   website_url: string | null;
@@ -316,6 +317,7 @@ export interface Venue {
   highlight_moment_ids?: string[];
   facebook_url: string | null;
   instagram_url: string | null;
+  tiktok_url?: string | null;
   zalo_url: string | null;
   phone: string | null;
   email: string | null;

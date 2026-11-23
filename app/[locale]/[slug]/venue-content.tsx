@@ -39,12 +39,15 @@ import {
 import { EventHighlights } from "@/components/venues/event-highlights";
 import { getVenueHighlightPhotos } from "@/lib/venues/highlights-server";
 import { OfficialVenueLinks } from "@/components/venues/official-links";
+import { TikTokIcon } from "@/components/venues/tiktok-icon";
+import { safeVenueUrl, splitVenueLinks } from "@/lib/venues/social-links";
 import { venueEditor } from "@/lib/venues/access";
 import { VenuePhotoManager } from "@/components/venues/venue-photo-manager";
 import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { VenueCopyAddress } from "@/components/venues/venue-copy-address";
 import { JsonLd, generateVenuePageSchema } from "@/lib/structured-data";
 import { getVenuePastEventsPath } from "@/lib/venues/routes";
+import { getLocationMapLinks } from "@/lib/events/location";
 import { localeUrl } from "@/lib/i18n/locale-url";
 import { getPublicMenu } from "@/lib/menu/queries";
 import { generateMenuSchema, venueMenuPath } from "@/lib/menu/schema";
@@ -266,6 +269,8 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
   // Own photos first, then Google Places photos (proxied, attributed, never stored).
   const placePhoto = (name: string, w: number) =>
     `/api/places/photo?w=${w}&name=${encodeURIComponent(name)}`;
+  const coverPhoto = localizedPhotos.find((photo) => photo.url === venue.cover_photo_url);
+  const originalCoverPhoto = venue.photos?.find((photo) => photo.url === venue.cover_photo_url);
   const gallery: VenueGalleryPhoto[] = [
     ...(venue.cover_photo_url
       ? [
@@ -273,7 +278,10 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
             id: "cover",
             src: venue.cover_photo_url,
             thumb: venue.cover_photo_url,
-            alt: venue.name,
+            alt: coverPhoto?.caption || venue.name,
+            caption: coverPhoto?.caption,
+            originalCaption: originalCoverPhoto?.caption,
+            credit: coverPhoto?.credit,
           },
         ]
       : []),
@@ -284,6 +292,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         src: p.url,
         thumb: p.url,
         alt: p.caption || venue.name,
+        credit: p.credit,
         caption: p.caption || null,
         originalCaption:
           venue.photos?.find((photo) => photo.url === p.url)?.caption || null,
@@ -296,17 +305,19 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
       googleAuthors: p.attributions || [],
     })),
   ];
-  const heroImage = gallery[0]?.thumb
-    ? gallery[0].googleAuthors
-      ? placePhoto(venue.google_photos![0].name, 1600)
-      : gallery[0].src
-    : null;
+  const hero = gallery[0];
+  const { website, tiktok } = splitVenueLinks(venue.website_url, venue.tiktok_url);
+  const facebook = safeVenueUrl(venue.facebook_url)?.href;
+  const instagram = safeVenueUrl(venue.instagram_url)?.href;
+  const socialClass = "inline-flex min-h-11 items-center gap-2 rounded-full border bg-background px-3 text-sm font-medium transition-colors hover:bg-muted";
   const approximateLocation = venue.geocode_source === "osm_street";
-  const directionsUrl = approximateLocation && venue.google_maps_url
-    ? venue.google_maps_url
-    : `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
-    [venue.name, venue.address].filter(Boolean).join(", "),
-  )}${venue.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
+  const preciseDirections = venue.geocode_source === "google_maps_link"
+    ? getLocationMapLinks(venue).directions
+    : null;
+  const directionsUrl = (approximateLocation && venue.google_maps_url) || preciseDirections
+    || `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(
+      [venue.name, venue.address].filter(Boolean).join(", "),
+    )}${venue.google_place_id ? `&destination_place_id=${encodeURIComponent(venue.google_place_id)}` : ""}`;
   const mapsUrl =
     venue.google_maps_url ||
     `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([venue.name, venue.address].filter(Boolean).join(", "))}`;
@@ -417,7 +428,7 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
 
       <nav
         aria-label={t("title")}
-        className="mb-4 flex items-center gap-2 text-sm text-muted-foreground"
+        className="mx-auto mb-4 flex w-[calc(100%_-_2rem)] max-w-5xl flex-wrap items-center gap-2 text-sm text-muted-foreground"
       >
         <Link href="/venues" className="hover:underline">
           {t("title")}
@@ -426,256 +437,97 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
         <span aria-current="page">{venue.name}</span>
       </nav>
 
-      {/* Hero Section with Cover Photo */}
-      {heroImage ? (
-        <div className="relative">
-          <div className="aspect-[16/9] sm:aspect-[2.5/1] bg-muted overflow-hidden">
-            <img
-              src={heroImage}
-              alt=""
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+      <section className={`mx-auto mb-8 grid w-[calc(100%_-_2rem)] max-w-5xl overflow-hidden rounded-3xl border bg-card shadow-sm ${hero ? "md:grid-cols-2" : ""}`}>
+        {hero && <VenueGallery photos={gallery} venueName={venue.name} hero />}
 
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="container max-w-4xl mx-auto px-4 pb-6 sm:pb-8">
-              <div className="flex items-end gap-4 sm:gap-6">
-                {venue.logo_url ? (
-                  <img
-                    src={venue.logo_url}
-                    alt={venue.name}
-                    className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl object-cover border-4 border-white/20 shadow-2xl bg-background"
-                  />
-                ) : (
-                  <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-xl bg-white/10 backdrop-blur-sm flex items-center justify-center border-4 border-white/20 shadow-2xl">
-                    {TypeIcon ? (
-                      <TypeIcon className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-                    ) : (
-                      <MapPin className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-                    )}
-                  </div>
-                )}
-
-                <div className="flex-1 pb-1">
-                  {venue.is_verified && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/20 text-primary-foreground backdrop-blur-sm mb-2">
-                      <BadgeCheck className="w-3.5 h-3.5" />
-                      {t("verified")}
-                    </span>
-                  )}
-
-                  <h1 className="text-2xl sm:text-4xl font-bold text-white drop-shadow-lg">
-                    {venue.name}
-                  </h1>
-                  {rating && (
-                    <div className="mt-1 text-white drop-shadow">{rating}</div>
-                  )}
-
-                  <div className="flex items-center gap-3 mt-2 flex-wrap">
-                    {typeConfig && TypeIcon && venue.venue_type && (
-                      <span className="inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded bg-white/20 text-white backdrop-blur-sm">
-                        <TypeIcon className="w-3.5 h-3.5" />
-                        {t(`types.${venue.venue_type}`)}
-                      </span>
-                    )}
-                    {venue.operating_hours && (
-                      <VenueHoursBadge operatingHours={venue.operating_hours} />
-                    )}
-                    {venue.price_range && (
-                      <span className="text-sm text-white/80">
-                        {venue.price_range}
-                      </span>
-                    )}
-                  </div>
-
-                  {venue.address && (
-                    <p className="text-sm text-white/70 mt-2 flex items-start gap-1">
-                      <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      {translatedAddress}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="container max-w-4xl mx-auto px-4 py-6">
-          <div className="flex items-start gap-4 sm:gap-6">
-            {venue.logo_url ? (
-              <img
-                src={venue.logo_url}
-                alt={venue.name}
-                className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border-4 border-background shadow-lg bg-background"
-              />
-            ) : (
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-primary/10 flex items-center justify-center border-4 border-background shadow-lg">
-                {TypeIcon ? (
-                  <TypeIcon className={`w-10 h-10 ${typeConfig?.color}`} />
-                ) : (
-                  <MapPin className="w-10 h-10 text-primary" />
-                )}
-              </div>
-            )}
-
-            <div className="flex-1">
-              {venue.is_verified && (
-                <span className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-pill bg-primary/10 text-primary mb-2">
-                  <BadgeCheck className="w-3.5 h-3.5" />
-                  {t("verified")}
+        <div className={`min-w-0 px-5 py-6 sm:px-8 sm:py-8 ${hero ? "md:py-12" : ""}`}>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+              {typeConfig && TypeIcon && venue.venue_type && (
+                <span className="inline-flex items-center gap-1.5 font-medium">
+                  <TypeIcon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  {t(`types.${venue.venue_type}`)}
                 </span>
               )}
-
-              <h1 className="text-2xl sm:text-3xl font-bold">{venue.name}</h1>
-              {rating && <div className="mt-1">{rating}</div>}
-
-              <div className="flex items-center gap-3 mt-2 flex-wrap">
-                {typeConfig && TypeIcon && venue.venue_type && (
-                  <span
-                    className={`inline-flex items-center gap-1 text-sm px-2 py-0.5 rounded ${typeConfig.bgColor} ${typeConfig.darkBgColor} ${typeConfig.color} ${typeConfig.darkColor}`}
-                  >
-                    <TypeIcon className="w-3.5 h-3.5" />
-                    {t(`types.${venue.venue_type}`)}
-                  </span>
-                )}
-                {venue.operating_hours && (
-                  <VenueHoursBadge operatingHours={venue.operating_hours} />
-                )}
-                {venue.price_range && (
-                  <span className="text-sm text-muted-foreground">
-                    {venue.price_range}
-                  </span>
-                )}
-              </div>
-
-              {venue.address && (
-                <p className="text-sm text-muted-foreground mt-2 flex items-start gap-1">
-                  <MapPin className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                  {translatedAddress}
-                </p>
-              )}
+              {venue.operating_hours && <VenueHoursBadge operatingHours={venue.operating_hours} />}
+              {venue.price_range && <span>{venue.price_range}</span>}
             </div>
+            <VenueShareButton url={localeUrl(locale as Locale, `/${venue.slug}`)} label={t("shareVenue")} compact />
           </div>
-        </div>
-      )}
-
-      <div className="container max-w-4xl mx-auto px-4 pt-6">
-        {/* Claim / manage */}
-        {isUnclaimed && !venue.is_verified ? (
-          <Link
-            href={`/venues/${venue.slug}/claim`}
-            className="mb-6 flex items-center justify-between gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 transition-colors hover:bg-amber-100 dark:border-amber-800 dark:bg-amber-950/30"
-          >
-            <span>
-              <span className="block font-medium text-amber-900 dark:text-amber-100">
-                {t("claimVenue")}
-              </span>
-              <span className="block text-sm text-amber-800/80 dark:text-amber-200/80">
-                {t("claimDescription")}
-              </span>
+          <div className="flex items-center gap-3">
+            {venue.logo_url && (
+              /* eslint-disable-next-line @next/next/no-img-element */
+              <img src={venue.logo_url} alt="" className="h-12 w-12 shrink-0 rounded-xl border bg-background object-contain sm:h-14 sm:w-14" />
+            )}
+            <h1 className="min-w-0 text-balance text-3xl leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-4xl lg:text-5xl">
+              {venue.name}
+            </h1>
+          </div>
+          {venue.is_verified && (
+            <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary">
+              <BadgeCheck className="h-3.5 w-3.5" aria-hidden="true" />
+              {t("verified")}
             </span>
-            <BadgeCheck className="h-5 w-5 shrink-0 text-amber-700" />
-          </Link>
-        ) : canManageVenue ? (
-          <Link
-            href={`/venues/${venue.slug}/edit`}
-            className="mb-6 inline-flex min-h-11 items-center rounded-xl border px-4 py-2 text-sm font-medium hover:bg-muted"
-          >
-            {t("editVenuePage")}
-          </Link>
-        ) : null}
+          )}
+          {rating && <div className="mt-2">{rating}</div>}
 
-        <div className="mb-4">
-          <VenueShareButton
-            url={localeUrl(locale as Locale, `/${venue.slug}`)}
-            label={t("shareVenue")}
-          />
-        </div>
+          {translatedAddress && (
+            <p className="mt-3 flex items-start gap-2 text-sm leading-relaxed text-muted-foreground">
+              <MapPin className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+              {translatedAddress}
+            </p>
+          )}
 
-        {/* Primary links and a separate, stable row of contact icons. */}
-        <div className="mb-6 space-y-3" data-venue-contact-actions>
-          <OfficialVenueLinks
-            website={venue.website_url}
-            menu={venue.menu_url}
-            name={venue.name}
-            layout="grid"
-            websiteLabel={t("visitWebsite")}
-          />
-          {(venue.phone || venue.email || venue.facebook_url || venue.instagram_url) && (
-            <div className="flex items-center gap-2" data-venue-contact-icons>
-              {venue.phone && (
-                <PhoneActionButton
-                  phone={venue.phone}
-                  zaloUrl={venue.zalo_url}
-                  className="flex items-center justify-center w-11 h-11 shrink-0 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
-                />
-              )}
-
-              {venue.email && (
-                <a
-                  href={`mailto:${venue.email}`}
-                  className="flex items-center justify-center w-11 h-11 shrink-0 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
-                  aria-label="Email"
-                >
-                  <Mail className="w-4 h-4" />
-                </a>
-              )}
-
-              {venue.facebook_url && (
-                <a
-                  href={venue.facebook_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-11 h-11 shrink-0 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
-                  aria-label="Facebook"
-                >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+          <div className="mt-6 flex flex-wrap items-center gap-2" data-venue-contact-actions>
+            <a href={directionsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 max-w-full items-center justify-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90">
+              <Navigation className="h-4 w-4 shrink-0" aria-hidden="true" />
+              {t("directionsGoogle")}
+            </a>
+            {venue.phone && (
+              <PhoneActionButton phone={venue.phone} zaloUrl={venue.zalo_url} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted" />
+            )}
+            {venue.email && (
+              <a href={`mailto:${venue.email}`} aria-label="Email" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border bg-background transition-colors hover:bg-muted">
+                <Mail className="h-4 w-4" aria-hidden="true" />
+              </a>
+            )}
+          </div>
+          {(facebook || instagram || tiktok) && (
+            <div className="mt-3 flex flex-wrap items-center gap-2" data-venue-contact-icons>
+              {facebook && (
+                <a href={facebook} target="_blank" rel="noopener noreferrer" className={socialClass}>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                     <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                   </svg>
+                  Facebook
                 </a>
               )}
-
-              {venue.instagram_url && (
-                <a
-                  href={venue.instagram_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center w-11 h-11 shrink-0 rounded-lg border border-border hover:bg-muted active:scale-95 transition-all"
-                  aria-label="Instagram"
-                >
-                  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current">
+              {instagram && (
+                <a href={instagram} target="_blank" rel="noopener noreferrer" className={socialClass}>
+                  <svg aria-hidden="true" viewBox="0 0 24 24" className="w-4 h-4 fill-current">
                     <path d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.76-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
                   </svg>
+                  Instagram
+                </a>
+              )}
+              {tiktok && (
+                <a href={tiktok.profile || tiktok.href} target="_blank" rel="noopener noreferrer" className={socialClass}>
+                  <TikTokIcon className="h-4 w-4" />
+                  TikTok
                 </a>
               )}
             </div>
           )}
+          {(website || venue.menu_url) && (
+            <div className="mt-3">
+              <OfficialVenueLinks website={website} menu={venue.menu_url} name={venue.name} websiteLabel={t("visitWebsite")} />
+            </div>
+          )}
         </div>
+      </section>
 
-        {/* Directions — the first thing a visitor needs */}
-        <div className="mb-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <a
-            href={directionsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 font-medium text-primary-foreground transition-opacity hover:opacity-90 active:scale-[0.99]"
-          >
-            <Navigation className="h-4 w-4" />
-            {t("directionsGoogle")}
-          </a>
-          <a
-            href={mapsUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex min-h-12 items-center justify-center gap-2 rounded-xl border px-4 py-3 font-medium hover:bg-muted"
-          >
-            <ExternalLink className="h-4 w-4" />
-            {t("openInGoogleMaps")}
-          </a>
-        </div>
-
-        <VenueGallery photos={gallery} venueName={venue.name} />
+      <div className="container max-w-4xl mx-auto px-4">
+        {gallery.length > 1 && <VenueGallery photos={gallery} venueName={venue.name} skipCover />}
 
         {/* About section */}
         {translatedDescription && (
@@ -1094,21 +946,25 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
                   url={localeUrl(locale as Locale, `/${venue.slug}`)}
                   label={t("shareVenue")}
                 />
-                {venue.website_url && (
-                  <a
-                    href={venue.website_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium hover:bg-muted active:scale-95 transition-all"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                    {t("visitWebsite")}
-                  </a>
-                )}
+                <a href={mapsUrl} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted">
+                  <ExternalLink className="h-4 w-4" aria-hidden="true" />
+                  {t("openInGoogleMaps")}
+                </a>
               </div>
             </CardContent>
           </Card>
         </section>
+
+        {isUnclaimed && !venue.is_verified ? (
+          <Link href={`/venues/${venue.slug}/claim`} className="mb-8 inline-flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-medium transition-colors hover:bg-muted">
+            <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+            {t("claimVenue")}
+          </Link>
+        ) : canManageVenue ? (
+          <Link href={`/venues/${venue.slug}/edit`} className="mb-8 inline-flex min-h-11 items-center rounded-full border px-4 text-sm font-medium transition-colors hover:bg-muted">
+            {t("editVenuePage")}
+          </Link>
+        ) : null}
 
         {/* Explore more venues of the same type */}
         {venue.venue_type && (
