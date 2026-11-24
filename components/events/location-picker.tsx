@@ -146,6 +146,12 @@ export function LocationPicker({
     script.async = true;
     script.defer = true;
 
+    const releaseLoader = setTimeout(() => setIsLoadingScript(false), 5000);
+    script.onerror = () => {
+      clearTimeout(releaseLoader);
+      setIsLoadingScript(false);
+      setSearchDegraded(true);
+    };
     script.onload = () => {
       const checkReady = setInterval(() => {
         if (typeof google !== "undefined" && google.maps?.places) {
@@ -153,6 +159,7 @@ export function LocationPicker({
           sessionToken.current =
             new google.maps.places.AutocompleteSessionToken();
           setIsGoogleReady(true);
+          clearTimeout(releaseLoader);
           setIsLoadingScript(false);
         }
       }, 100);
