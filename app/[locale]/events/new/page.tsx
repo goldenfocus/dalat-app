@@ -2,7 +2,8 @@ import { Copy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { redirect } from "next/navigation";
-import { eventCreationLoginPath } from "@/lib/auth/continuation";
+import { eventCreationLoginPath, eventCreationPath, eventProfilePath } from "@/lib/auth/continuation";
+import { hasEventProfile } from "@/lib/auth/event-profile";
 import type { Locale } from "@/lib/i18n/routing";
 
 // Increase serverless function timeout
@@ -57,16 +58,20 @@ export default async function NewEventPage({ params, searchParams }: PageProps) 
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) {
+  if (!user || user.is_anonymous) {
     redirect(eventCreationLoginPath(locale, copyFrom, tribe));
   }
 
   // Fetch user profile to get role
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, display_name, username")
     .eq("id", user.id)
     .single();
+
+  if (!hasEventProfile(profile)) {
+    redirect(eventProfilePath(locale, eventCreationPath(locale, copyFrom, tribe)));
+  }
 
   // If copying from another event, fetch its data
   let copyFromData: CopyFromData | null = null;

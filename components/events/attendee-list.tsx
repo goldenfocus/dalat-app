@@ -2,6 +2,7 @@
 
 import { Link } from "@/lib/i18n/routing";
 import { useTranslations } from "next-intl";
+import { publicEventName } from "@/lib/auth/event-profile";
 import { Card, CardContent } from "@/components/ui/card";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import type { Rsvp, Profile } from "@/lib/types";
@@ -25,6 +26,8 @@ function AttendeeChip({
   variant?: "default" | "waitlist" | "interested";
   isFollowed?: boolean;
 }) {
+  const t = useTranslations("people");
+  const name = publicEventName(rsvp.profiles?.display_name) ?? publicEventName(rsvp.profiles?.username);
   const isSecondary = variant === "waitlist" || variant === "interested";
 
   return (
@@ -45,7 +48,7 @@ function AttendeeChip({
         fallbackClassName={isSecondary ? "bg-muted-foreground/20" : undefined}
       />
       <span className="truncate max-w-[100px]">
-        {rsvp.profiles?.display_name || rsvp.profiles?.username}
+        {name ?? t("emptyName")}
       </span>
       {rsvp.plus_ones > 0 && (
         <span className="text-muted-foreground">+{rsvp.plus_ones}</span>
