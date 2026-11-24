@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, X, Check, Navigation, PenLine } from "lucide-react";
+import { MapPin, Loader2, X, Check, Navigation, PenLine, ArrowUpRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
+import { getLocationMapLinks } from "@/lib/events/location";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { normalizeVenueSearchText, normalizeVenueStreet } from "@/lib/venues/search";
 import type { VenueType } from "@/lib/types";
@@ -553,6 +554,15 @@ export function LocationPicker({
   const canOfferCustom = isCustomLocationCandidate(query) && !detectedCoords;
   const matchedLocation = addressAssistEnabled && exactAddress?.query === query ? exactAddress.location : null;
   const locationFields = buildLocationFieldValues(selectedLocation ?? matchedLocation, query);
+  const { latitude, longitude, google_maps_url, ...locationText } = locationFields;
+  const mapLinks = getLocationMapLinks({
+    ...locationText,
+    latitude: latitude ? Number(latitude) : null,
+    longitude: longitude ? Number(longitude) : null,
+    // A linked venue's pin takes precedence over its saved link on the event page.
+    google_maps_url: selectedVenueId && latitude && longitude ? null : google_maps_url,
+  });
+  const previewHref = mapLinks.directions ?? mapLinks.map;
 
   useEffect(() => {
     if (!addressAssistEnabled) {
@@ -597,7 +607,20 @@ export function LocationPicker({
 
   return (
     <div ref={containerRef} className="relative space-y-2">
-      <Label htmlFor="location">{t("location")}</Label>
+      <div className="flex items-center justify-between gap-2">
+        <Label htmlFor="location">{t("location")}</Label>
+        {previewHref && (
+          <a
+            href={previewHref}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-8 items-center gap-1 rounded-sm px-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {t("locationPreviewMap")}
+            <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+          </a>
+        )}
+      </div>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <Input

@@ -614,6 +614,7 @@
     "time": "Masa",
     "timeRequired": "Masa * (Đà Lạt)",
     "location": "Lokasi",
+    "locationPreviewMap": "Pratonton peta",
     "locationRequired": "Lokasi *",
     "locationPlaceholder": "Cari tempat, tampal koordinat atau pautan Google Maps...",
     "locationVenuesSection": "Tempat",

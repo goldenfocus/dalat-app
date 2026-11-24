@@ -614,6 +614,7 @@
     "time": "Giờ",
     "timeRequired": "Giờ * (Đà Lạt)",
     "location": "Địa điểm",
+    "locationPreviewMap": "Xem trước bản đồ",
     "locationRequired": "Địa điểm *",
     "locationPlaceholder": "Tìm địa điểm, dán tọa độ hoặc link Google Maps...",
     "locationVenuesSection": "Địa điểm",

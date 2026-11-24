@@ -614,6 +614,7 @@
     "time": "Время",
     "timeRequired": "Время * (Далат)",
     "location": "Место",
+    "locationPreviewMap": "Предпросмотр карты",
     "locationRequired": "Место *",
     "locationPlaceholder": "Поиск площадок, вставка координат или ссылки Google Maps...",
     "locationVenuesSection": "Площадки",

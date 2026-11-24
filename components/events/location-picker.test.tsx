@@ -42,7 +42,11 @@ describe("LocationPicker free-text fallback", () => {
     );
     render(<LocationPicker />);
 
+    expect(screen.queryByRole("link", { name: "locationPreviewMap" })).toBeNull();
     await typeQuery(TYPED);
+    expect(screen.getByRole("link", { name: "locationPreviewMap" })).toHaveAttribute(
+      "href", "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(TYPED),
+    );
 
     expect(hiddenInput("location_name").value).toBe(TYPED);
     expect(hiddenInput("address").value).toBe(TYPED);
@@ -60,6 +64,7 @@ describe("LocationPicker free-text fallback", () => {
     await act(async () => { await vi.advanceTimersByTimeAsync(500); });
     expect(hiddenInput("google_maps_url").value).toBe(url);
     expect(hiddenInput("latitude").value).toBe("");
+    expect(screen.getByRole("link", { name: "locationPreviewMap" })).toHaveAttribute("href", url);
   });
 
   it("saves the only exact numbered address match without requiring a dropdown click", async () => {
@@ -73,6 +78,9 @@ describe("LocationPicker free-text fallback", () => {
     expect(hiddenInput("longitude").value).toBe("108.44");
     expect(hiddenInput("google_maps_url").value).toBe("https://maps.google.com/?cid=123");
     expect(screen.getByRole("textbox")).toHaveValue(TYPED);
+    expect(screen.getByRole("link", { name: "locationPreviewMap" })).toHaveAttribute(
+      "href", "https://www.google.com/maps/dir/?api=1&destination=11.94,108.44",
+    );
   });
 
   it("offers a 'use as typed' row that selects the text as a custom location", async () => {
