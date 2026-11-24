@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Search, X, Loader2, Sparkles } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,28 +10,26 @@ import type { MomentWithEvent } from "@/lib/types";
 
 interface MomentsSearchProps {
   onResults: (results: MomentWithEvent[] | null, query: string) => void;
-  onSearching: (isSearching: boolean) => void;
   className?: string;
 }
 
-export function MomentsSearch({ onResults, onSearching, className }: MomentsSearchProps) {
+export function MomentsSearch({ onResults, className }: MomentsSearchProps) {
   const t = useTranslations("moments");
+  const tCommon = useTranslations("common");
   const [query, setQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
+  const requestRef = useRef<AbortController | null>(null);
 
   const search = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) {
-      onResults(null, "");
-      return;
-    }
-
+    const request = new AbortController();
+    requestRef.current = request;
     setIsSearching(true);
-    onSearching(true);
 
     try {
       const response = await fetch(
-        `/api/moments/search?q=${encodeURIComponent(searchQuery.trim())}&limit=30`
+        `/api/moments/search?q=${encodeURIComponent(searchQuery.trim())}&limit=30`,
+        { signal: request.signal }
       );
 
       if (!response.ok) {
@@ -39,18 +37,20 @@ export function MomentsSearch({ onResults, onSearching, className }: MomentsSear
       }
 
       const data = await response.json();
-      onResults(data.results || [], searchQuery);
+      if (!request.signal.aborted) onResults(data.results || [], searchQuery);
     } catch (error) {
+      if (request.signal.aborted) return;
       console.error("Search error:", error);
       onResults([], searchQuery);
     } finally {
-      setIsSearching(false);
-      onSearching(false);
+      if (!request.signal.aborted) setIsSearching(false);
     }
-  }, [onResults, onSearching]);
+  }, [onResults]);
 
   const handleChange = useCallback((value: string) => {
     setQuery(value);
+    requestRef.current?.abort();
+    setIsSearching(false);
 
     // Clear previous debounce
     if (debounceRef.current) {
@@ -69,17 +69,10 @@ export function MomentsSearch({ onResults, onSearching, className }: MomentsSear
     }, 400);
   }, [search, onResults]);
 
-  const handleClear = useCallback(() => {
-    setQuery("");
-    onResults(null, "");
-    if (debounceRef.current) {
-      clearTimeout(debounceRef.current);
-    }
-  }, [onResults]);
-
   // Cleanup on unmount
   useEffect(() => {
     return () => {
+      requestRef.current?.abort();
       if (debounceRef.current) {
         clearTimeout(debounceRef.current);
       }
@@ -95,7 +88,8 @@ export function MomentsSearch({ onResults, onSearching, className }: MomentsSear
           value={query}
           onChange={(e) => handleChange(e.target.value)}
           placeholder={t("searchPlaceholder")}
-          className="pl-9 pr-20 h-10"
+          aria-label={t("searchMoments")}
+          className="pl-9 pr-14 h-11"
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
           {isSearching && (
@@ -105,21 +99,15 @@ export function MomentsSearch({ onResults, onSearching, className }: MomentsSear
             <Button
               variant="ghost"
               size="sm"
-              className="h-6 w-6 p-0"
-              onClick={handleClear}
+              className="size-10 p-0"
+              aria-label={tCommon("close")}
+              onClick={() => handleChange("")}
             >
               <X className="w-3 h-3" />
             </Button>
           )}
-          <Sparkles className="w-4 h-4 text-primary/50" />
         </div>
       </div>
-      {query && !isSearching && (
-        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-          <Sparkles className="w-3 h-3" />
-          {t("searchHint")}
-        </p>
-      )}
     </div>
   );
 }

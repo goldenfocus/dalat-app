@@ -47,6 +47,8 @@ interface MomentCardProps {
   commentCount?: number;
   /** Click handler for lightbox mode. When provided, opens lightbox instead of navigating. */
   onLightboxOpen?: () => void;
+  /** Number of additional items, when this tile links to the full event gallery. */
+  galleryOverflow?: number;
   /** Selection mode: when true, card acts as a selectable checkbox */
   selectMode?: boolean;
   /** Whether this specific card is selected */
@@ -110,6 +112,7 @@ export function MomentCard({
   from,
   commentCount,
   onLightboxOpen,
+  galleryOverflow,
   selectMode,
   isSelected,
   isSelectable,
@@ -320,8 +323,14 @@ export function MomentCard({
         </div>
       )}
 
+      {galleryOverflow && (
+        <div className="absolute inset-0 grid place-items-center bg-black/60 text-3xl font-semibold text-white transition-colors group-hover:bg-black/50" aria-hidden="true">
+          +{galleryOverflow}
+        </div>
+      )}
+
       {/* Comment count badge */}
-      {commentCount != null && commentCount > 0 && (
+      {!galleryOverflow && commentCount != null && commentCount > 0 && (
         <div
           className="absolute bottom-2 right-2 flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-black/60 backdrop-blur-sm text-white text-xs pointer-events-none"
           aria-label={`${commentCount} ${commentCount === 1 ? "comment" : "comments"}`}
@@ -438,6 +447,19 @@ export function MomentCard({
       >
         {cardContent}
       </a>,
+    );
+  }
+
+  if (galleryOverflow && eventSlug) {
+    return (
+      <Link
+        href={`/events/${eventSlug}/moments`}
+        aria-label={t("viewMoreMoments", { count: galleryOverflow })}
+        className="block touch-manipulation"
+        onClick={() => triggerHaptic("selection")}
+      >
+        {cardContent}
+      </Link>
     );
   }
 

@@ -1,14 +1,20 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/i18n/routing", () => ({ Link: ({ children, ...props }: React.ComponentProps<"a">) => <a {...props}>{children}</a> }));
 import german from "@/messages/de.json";
 import { CinemaEndCard } from "./cinema-mode/cinema-end-card";
-import { ImmersiveMomentView } from "./immersive-moment-view";
-import { MediaTypeFilterToggle } from "./media-type-filter";
-import { ViewModeSwitcher } from "./view-mode-switcher";
-import { FloatingViewModeSwitcher } from "./floating-view-mode-switcher";
+import { EventGalleryHeading } from "./event-gallery-heading";
+import { MomentsViewContainer } from "./moments-view-container";
 import type { MomentWithProfile } from "@/lib/types";
+vi.mock("./infinite-moment-grid", () => ({
+  InfiniteMomentGrid: () => <div data-testid="gallery-grid" />,
+}));
+vi.mock("next/dynamic", () => ({
+  default: () => ({ onClose }: { onClose: () => void }) => (
+    <div role="dialog"><button onClick={onClose}>Kino schließen</button></div>
+  ),
+}));
 const mocks = vi.hoisted(() => ({ share: vi.fn() }));
 vi.mock("@/lib/hooks/use-share", () => ({
   useShare: () => ({ share: mocks.share, copied: false }),
@@ -21,40 +27,17 @@ vi.mock("@/lib/supabase/client", () => ({
     auth: { getUser: async () => ({ data: { user: null } }) },
   }),
 }));
-vi.mock("@/components/ui/translated-content", () => ({
-  TranslatedContent: ({ original }: { original: string }) => (
-    <span>{original}</span>
-  ),
+vi.mock("./moment-download-button", () => ({
+  AlbumDownloadButton: () => null,
+  InAppBrowserDownloadHint: () => null,
 }));
 vi.mock("@/components/ui/user-avatar", () => ({
   UserAvatar: ({ alt }: { alt: string }) => <span>{alt}</span>,
-}));
-vi.mock("./moment-video-player", () => ({ MomentVideoPlayer: () => null }));
-vi.mock("./moment-watermark", () => ({ MomentWatermark: () => null }));
-vi.mock("./related-events-section", () => ({
-  RelatedEventsSection: () => null,
-}));
-vi.mock("./moment-actions-menu", () => ({ MomentActionsMenu: () => null }));
-vi.mock("./moment-download-button", () => ({
-  MomentDownloadButton: () => null,
-  InAppBrowserDownloadHint: () => null,
-}));
-vi.mock("@/components/comments/comments-sheet", () => ({
-  CommentsSheet: () => null,
-}));
-vi.mock("@/components/comments/immersive-comments-panel", () => ({
-  ImmersiveCommentsPanel: () => null,
-}));
-vi.mock("@/components/reactions/reaction-bar", () => ({
-  ReactionBar: () => null,
 }));
 const messages = {
   ...german,
   moments: {
     ...german.moments,
-    viewModeLabel: "Ansicht",
-    viewGrid: "Raster",
-    viewImmersive: "Immersiv",
     viewCinema: "Kino",
     filterMediaType: "Medientyp filtern",
     filterAll: "Alle",
@@ -65,9 +48,6 @@ const messages = {
       "{count, plural, one {# Moment} other {# Momente}} · {contributors, plural, one {# Mitwirkender} other {# Mitwirkende}}",
     albumContributors:
       "{count, plural, one {# Mitwirkender} other {# Mitwirkende}}",
-    albumComplete: "Album vollständig!",
-    albumCompleteHint:
-      "Erinnerungen erneut ansehen oder einen eigenen Moment hinzufügen.",
     shareAlbum: "Dieses Album teilen",
     replay: "Erneut ansehen",
     madeWith: "Erstellt mit",
@@ -132,59 +112,52 @@ describe("localized album journey", () => {
     expect(replay).toHaveBeenCalledOnce();
     expect(screen.queryByText("Share this album")).toBeNull();
   });
-  it("localizes the immersive end screen and counts contributors beyond the avatar display cap", async () => {
-    const moments = Array.from({ length: 10 }, (_, index) => ({
-      id: `moment-${index}`,
-      user_id: `user-${index}`,
-      content_type: "text",
-      text_content: "Source caption",
-      media_url: null,
-      created_at: "2026-10-28T00:00:00Z",
-      display_name: `Author ${index}`,
-      username: null,
-      avatar_url: null,
-    })) as MomentWithProfile[];
+  it("shows the grid even with a saved Cinema preference, and opens Cinema on request", async () => {
+    vi.stubGlobal("localStorage", { getItem: (key: string) => key === "dalat-moments-view-mode" ? "cinema" : null });
+    const moments = [
+      { id: "photo", content_type: "photo", media_url: "/photo.jpg" },
+      { id: "video", content_type: "video", media_url: "/video.mp4", video_status: "ready" },
+    ] as MomentWithProfile[];
     localized(
-      <ImmersiveMomentView
-        moments={moments}
-        initialIndex={9}
+      <MomentsViewContainer
         eventId="event"
         eventSlug="language-night"
-        onClose={vi.fn()}
-        totalCount={18}
+        initialMoments={moments}
+        initialHasMore={false}
+        totalCount={2}
       />,
     );
-    fireEvent.keyDown(document, { key: "ArrowDown" });
-    expect(await screen.findByText("Album vollständig!")).toBeTruthy();
-    expect(screen.getByText("10 Mitwirkende")).toBeTruthy();
-    expect(screen.getByText("18 Momente")).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Erneut ansehen" })).toBeTruthy();
-    expect(screen.queryByText(/contributors made this happen/)).toBeNull();
+    expect(screen.getByTestId("gallery-grid")).toBeVisible();
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByRole("group", { name: "Medientyp filtern" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Fotos" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "Immersiv" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Kino" }));
+    const cinema = await screen.findByRole("dialog");
+    fireEvent.click(within(cinema).getByRole("button", { name: "Kino schließen" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByTestId("gallery-grid")).toBeVisible();
   });
-  it("localizes media filters and view-mode accessible names", () => {
+
+  it("shows a localized event link and keeps original text outside it", () => {
     localized(
-      <>
-        <MediaTypeFilterToggle value="all" onChange={vi.fn()} />
-        <ViewModeSwitcher viewMode="grid" onViewModeChange={vi.fn()} />
-        <FloatingViewModeSwitcher
-          viewMode="cinema"
-          onViewModeChange={vi.fn()}
-          onClose={vi.fn()}
-        />
-      </>,
+      <EventGalleryHeading
+        slug="language-night"
+        title="Language Night"
+        translatedTitle="Sprachaustausch"
+        description="A night of **conversation**."
+        translatedDescription="Ein Abend voller **Gespräche**."
+        date="2026-10-28T20:00:00Z"
+        dateLabel="29. Okt. 2026"
+        imageUrl={null}
+        locationName={null}
+      />,
     );
-    expect(
-      screen.getByRole("radiogroup", { name: "Medientyp filtern" }),
-    ).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Fotos" })).toBeTruthy();
-    expect(screen.getByRole("radiogroup", { name: "Ansicht" })).toBeTruthy();
-    expect(screen.getByRole("radio", { name: "Kino" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Kino" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-    expect(
-      screen.queryByRole("radiogroup", { name: "Filter by media type" }),
-    ).toBeNull();
+    const eventLink = screen.getByRole("link", { name: /Sprachaustausch/ });
+    expect(eventLink).toHaveAttribute("href", "/events/language-night");
+    expect(screen.getByText("Ein Abend voller Gespräche.")).toBeVisible();
+    expect(screen.getByText("Language Night A night of **conversation**.", { exact: false }).closest("details"))
+      .not.toBeNull();
+    expect(eventLink.querySelector("summary")).toBeNull();
   });
 });

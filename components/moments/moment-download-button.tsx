@@ -183,8 +183,6 @@ export function MomentDownloadButton({
 
 interface AlbumDownloadButtonProps {
   eventSlug: string;
-  /** Photo count, shown inline — doubles as a "there are that many?" nudge. */
-  count?: number;
 }
 
 /**
@@ -195,7 +193,7 @@ interface AlbumDownloadButtonProps {
  * survives navigation, shows native download progress, and works in any
  * browser that can download at all — no blob, no memory ceiling, no CORS.
  */
-export function AlbumDownloadButton({ eventSlug, count }: AlbumDownloadButtonProps) {
+export function AlbumDownloadButton({ eventSlug }: AlbumDownloadButtonProps) {
   const t = useTranslations("moments");
   const [started, setStarted] = useState(false);
 
@@ -213,14 +211,16 @@ export function AlbumDownloadButton({ eventSlug, count }: AlbumDownloadButtonPro
         toast(t("download.albumStarted"));
         setTimeout(() => setStarted(false), 4000);
       }}
-      className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
+      aria-label={t("download.album")}
+      title={t("download.album")}
+      className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-lg text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:px-3"
     >
       {started ? (
         <Loader2 className="w-4 h-4 animate-spin" />
       ) : (
         <Download className="w-4 h-4" />
       )}
-      {count ? t("download.albumWithCount", { count }) : t("download.album")}
+      <span className="hidden sm:inline">{t("download.album")}</span>
     </a>
   );
 }

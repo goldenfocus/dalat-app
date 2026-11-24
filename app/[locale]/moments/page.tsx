@@ -1,78 +1,31 @@
-import { withVenueCredits, withGroupVenueCredits } from "@/lib/moments/venue-credit";
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { createStaticClient } from "@/lib/supabase/server";
-import {
-  MomentsDiscoveryDesktop,
-  MomentsDiscoveryFilters,
-  MomentsDiscoveryMobile,
-} from "@/components/moments/moments-discovery";
+import { MomentsDiscovery } from "@/components/moments/moments-discovery";
 import { generateMomentsDiscoveryMetadata } from "@/lib/metadata";
 import { JsonLd, generateBreadcrumbSchema, generateMomentsDiscoverySchema } from "@/lib/structured-data";
+import { DISCOVERY_EVENTS_PER_PAGE, getDiscoveryGalleries } from "@/lib/moments/discovery-galleries";
 import type { Locale } from "@/lib/i18n/routing";
-import type { MomentWithEvent, DiscoveryEventMomentsGroup } from "@/lib/types";
 
-// ISR: Revalidate every 60 seconds (auth state is derived client-side)
 export const revalidate = 60;
-
-const INITIAL_PAGE_SIZE = 12;
-const INITIAL_EVENTS = 5;
-const MOMENTS_PER_EVENT = 6;
 
 interface PageProps {
   params: Promise<{ locale: Locale }>;
 }
 
-// Flat moments for mobile TikTok-style feed
-async function getMoments(): Promise<MomentWithEvent[]> {
+async function getGalleries(locale: Locale) {
   const supabase = createStaticClient();
   if (!supabase) {
-    console.error("[moments] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty feed");
-    return [];
+    console.error("[moments] Public database client unavailable");
+    return { groups: [], failed: true };
   }
 
-  const { data, error } = await supabase.rpc("get_feed_moments", {
-    p_limit: INITIAL_PAGE_SIZE,
-    p_offset: 0,
-    p_content_types: ["photo", "video"],
-  });
-
-  if (error) {
-    console.error("Failed to fetch moments:", error);
-    return [];
+  try {
+    return { groups: await getDiscoveryGalleries(supabase, locale), failed: false };
+  } catch (error) {
+    console.error("[moments] Failed to fetch event galleries:", error);
+    return { groups: [], failed: true };
   }
-
-  return withVenueCredits(supabase, (data ?? []) as MomentWithEvent[]);
-}
-
-// Grouped moments for desktop discovery feed
-async function getMomentsGrouped(): Promise<{
-  groups: DiscoveryEventMomentsGroup[];
-  hasMore: boolean;
-}> {
-  const supabase = createStaticClient();
-  if (!supabase) {
-    console.error("[moments] createStaticClient returned null — NEXT_PUBLIC_SUPABASE_* env missing; rendering empty feed");
-    return { groups: [], hasMore: false };
-  }
-
-  const { data, error } = await supabase.rpc("get_feed_moments_grouped", {
-    p_event_limit: INITIAL_EVENTS,
-    p_moments_per_event: MOMENTS_PER_EVENT,
-    p_event_offset: 0,
-    p_content_types: ["photo", "video"],
-  });
-
-  if (error) {
-    console.error("Failed to fetch grouped moments:", error);
-    return { groups: [], hasMore: false };
-  }
-
-  const groups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroup[]);
-  return {
-    groups,
-    hasMore: groups.length >= INITIAL_EVENTS,
-  };
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -89,16 +42,12 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
 
-  // Fetch both flat (mobile) and grouped (desktop) data in parallel
-  const [moments, groupedData, t] = await Promise.all([
-    getMoments(),
-    getMomentsGrouped(),
+  const [{ groups, failed }, t] = await Promise.all([
+    getGalleries(locale),
     getTranslations({ locale, namespace: "moments" }),
   ]);
 
-  const mobileHasMore = moments.length === INITIAL_PAGE_SIZE;
-
-  const discoverySchema = generateMomentsDiscoverySchema(moments, locale);
+  const discoverySchema = generateMomentsDiscoverySchema(groups.flatMap((group) => group.moments), locale);
   const breadcrumbSchema = generateBreadcrumbSchema(
     [
       { name: "Home", url: "/" },
@@ -108,27 +57,12 @@ export default async function MomentsDiscoveryPage({ params }: PageProps) {
   );
 
   return (
-    <>
+    <div className="mx-auto w-full max-w-5xl px-4 py-5 sm:py-8">
       <JsonLd data={[discoverySchema, breadcrumbSchema]} />
-      <MomentsDiscoveryFilters>
-        {/* Mobile: TikTok-style immersive feed with floating filter bar */}
-        <div className="lg:hidden">
-          <MomentsDiscoveryMobile
-            initialMoments={moments}
-            initialHasMore={mobileHasMore}
-          />
-        </div>
-
-        {/* Desktop: Event-grouped feed */}
-        <main className="hidden lg:flex min-h-screen flex-col">
-          <div className="flex-1 container max-w-5xl mx-auto px-4 py-8">
-            <MomentsDiscoveryDesktop
-              initialGroups={groupedData.groups}
-              initialHasMore={groupedData.hasMore}
-            />
-          </div>
-        </main>
-      </MomentsDiscoveryFilters>
-    </>
+      <MomentsDiscovery
+        initialGroups={groups}
+        initialHasMore={failed || groups.length >= DISCOVERY_EVENTS_PER_PAGE}
+      />
+    </div>
   );
 }

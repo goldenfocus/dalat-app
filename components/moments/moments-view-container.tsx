@@ -1,16 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useTranslations, useLocale } from "next-intl";
-import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { CheckSquare, Trash2, X, Loader2, Download, CheckCheck, Film, Music } from "lucide-react";
 import { AlbumDownloadButton, InAppBrowserDownloadHint } from "@/components/moments/moment-download-button";
 import { toast } from "sonner";
-import { useMomentsViewMode } from "@/lib/hooks/use-moments-view-mode";
-import { ViewModeSwitcher } from "./view-mode-switcher";
-import { FloatingViewModeSwitcher } from "./floating-view-mode-switcher";
+import { HistoryControls } from "@/components/navigation/history-controls";
 import { MediaTypeFilterToggle, type MediaTypeFilter } from "./media-type-filter";
 import { InfiniteMomentGrid, type InfiniteMomentGridHandle } from "./infinite-moment-grid";
-import { ImmersiveMomentView } from "./immersive-moment-view";
 import dynamic from "next/dynamic";
 
 // Cinema mode is opt-in and heavy — code-split out of the default moments view
@@ -22,7 +19,6 @@ const CinemaSlideshow = dynamic(
 import { useCinemaModeStore } from "@/lib/stores/cinema-mode-store";
 import { useAudioPlayerStore, type AudioTrack, type PlaylistInfo } from "@/lib/stores/audio-player-store";
 import { createClient } from "@/lib/supabase/client";
-import { fetchLyricsTranslationsMap } from "@/lib/karaoke/lyrics-translations-client";
 import { triggerHaptic } from "@/lib/haptics";
 import { hasRoleLevel, type UserRole } from "@/lib/types";
 import type { MomentWithProfile } from "@/lib/types";
@@ -48,48 +44,35 @@ interface MomentsViewContainerProps {
   eventSlug: string;
   initialMoments: MomentWithProfile[];
   initialHasMore: boolean;
-  /** Total number of moments for this event (for showing "X / total" in immersive view) */
+  /** Total number of moments for this event (used by Cinema) */
   totalCount: number;
-  /** Force a specific view on initial load (e.g., from ?view=cinema) */
-  initialView?: "immersive" | "cinema";
+  openCinemaInitially?: boolean;
   /** Event metadata for cinema end card */
   eventMeta?: CinemaEventMeta;
-  /** Pre-fetched playlist data (server-side) — skips the client-side RPC call */
+  /** The event soundtrack, played when requested. */
   initialPlaylist?: { tracks: AudioTrack[]; playlistInfo: PlaylistInfo } | null;
   /** Event creator id — event owners can moderate their own event's moments (matches remove_moment RPC) */
   eventCreatedBy?: string | null;
 }
 
-/**
- * Container that manages view mode switching between grid and immersive views.
- * Persists user preference in localStorage.
- */
 export function MomentsViewContainer({
   eventId,
   eventSlug,
   initialMoments,
   initialHasMore,
   totalCount,
-  initialView,
+  openCinemaInitially,
   eventMeta,
   initialPlaylist,
   eventCreatedBy,
 }: MomentsViewContainerProps) {
   const t = useTranslations("moments");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
-  const { viewMode, setViewMode, isLoaded } = useMomentsViewMode("grid");
-  const [showImmersive, setShowImmersive] = useState(false);
+  const tPlaylist = useTranslations("playlist");
   const [showCinema, setShowCinema] = useState(false);
-  const [immersiveStartIndex, setImmersiveStartIndex] = useState(0);
-  const hasAutoOpenedRef = useRef(false);
-  const hasAutoPlayedRef = useRef(false);
-  // Whether music was already playing when this page was opened, before our own autoplay.
-  const musicBeforeLandingRef = useRef<boolean | null>(null);
+  const openedFromLink = useRef(false);
+  const cinemaButtonRef = useRef<HTMLButtonElement>(null);
   const gridRef = useRef<InfiniteMomentGridHandle>(null);
-
-  // Audio player store for auto-play
-  const setPlaylist = useAudioPlayerStore((state) => state.setPlaylist);
 
   // --- Selection mode state ---
   const [selectMode, setSelectMode] = useState(false);
@@ -127,7 +110,7 @@ export function MomentsViewContainer({
     fetchPermissions();
   }, [eventCreatedBy]);
 
-  // Track moments loaded so far (for immersive view to access all loaded moments)
+  // Share the loaded gallery pages with Cinema and the selection actions.
   const [allMoments, setAllMoments] = useState<MomentWithProfile[]>(initialMoments);
   const [hasMoreMoments, setHasMoreMoments] = useState(initialHasMore);
 
@@ -143,158 +126,58 @@ export function MomentsViewContainer({
     [allMoments]
   );
 
-  // Photos available to the album zip. Counted from loaded moments, so on a
-  // paginated album this undercounts — the server zips the full album either
-  // way, so the label is a floor, never an overpromise.
-  const photoCount = useMemo(
-    () =>
-      allMoments.filter(
-        (m) =>
-          (m.content_type === "photo" || m.content_type === "image") && m.media_url
-      ).length,
-    [allMoments]
+  const hasPhotos = allMoments.some(
+    (m) => (m.content_type === "photo" || m.content_type === "image") && m.media_url,
   );
-  const hasPhotos = photoCount > 0;
 
-  // Filter moments for immersive view
-  const filteredMoments = useMemo(() => {
-    if (mediaTypeFilter === "all") return allMoments;
-    return allMoments.filter((m) => m.content_type === mediaTypeFilter);
-  }, [allMoments, mediaTypeFilter]);
+  // Cinema plays the album in chronological order, independently of the gallery filter.
+  const cinemaMoments = useMemo(
+    () => allMoments.filter((moment) => {
+      if (moment.content_type === "photo") return Boolean(moment.media_url);
+      return moment.content_type === "video"
+        && (!moment.video_status || moment.video_status === "ready")
+        && Boolean(moment.media_url || moment.cf_playback_url || moment.cf_video_uid);
+    }),
+    [allMoments],
+  );
 
   const handleMomentsUpdate = useCallback((moments: MomentWithProfile[], hasMore: boolean) => {
     setAllMoments(moments);
     setHasMoreMoments(hasMore);
   }, []);
 
-  // Load more moments when cinema or immersive playback nears the end.
   const handleLoadMore = useCallback(async () => {
     await gridRef.current?.loadMore();
   }, []);
 
-  // Auto-open cinema mode by default (or immersive if specified via URL)
-  useEffect(() => {
-    if (isLoaded && !hasAutoOpenedRef.current && allMoments.length > 0) {
-      hasAutoOpenedRef.current = true;
-
-      if (initialView === "immersive") {
-        setViewMode("immersive");
-        setShowImmersive(true);
-      } else {
-        // Default to cinema mode for the "slideshow" experience.
-        // The page's own autoplay can start the soundtrack before cinema records its
-        // baseline, so pin the baseline to what was playing before this visit:
-        // closing cinema then stops music the visitor never started.
-        useCinemaModeStore.setState({
-          musicBaseline:
-            musicBeforeLandingRef.current ?? useAudioPlayerStore.getState().isPlaying,
-        });
-        musicBeforeLandingRef.current = null;
-        setViewMode("cinema");
-        setShowCinema(true);
-      }
-    }
-  }, [initialView, isLoaded, allMoments.length, setViewMode]);
-
-  // Auto-play event playlist when landing on moments page.
-  // Uses server-side pre-fetched data when available (instant), falls back to client RPC.
-  useEffect(() => {
-    if (hasAutoPlayedRef.current) return;
-    hasAutoPlayedRef.current = true;
+  const playEventMusic = useCallback(() => {
+    if (!initialPlaylist) return;
     const audio = useAudioPlayerStore.getState();
-    musicBeforeLandingRef.current = audio.isPlaying;
-
-    if (audio.playlist?.eventSlug === eventSlug) {
-      if (!audio.isPlaying) {
-        audio.show();
-        void audio.play();
-      }
-      return;
-    }
-
-    // Use pre-fetched playlist (no client RPC delay)
-    if (initialPlaylist) {
-      setPlaylist(initialPlaylist.tracks, initialPlaylist.playlistInfo, 0);
-      return;
-    }
-
-    // Fallback: fetch client-side (for cases where initialPlaylist wasn't provided)
-    async function fetchAndPlayPlaylist() {
-      const supabase = createClient();
-      const { data, error } = await supabase.rpc("get_event_playlist", {
-        p_event_slug: eventSlug,
-      });
-
-      if (error || !data || data.length === 0) return;
-
-      const firstRow = data[0];
-      const tracks: AudioTrack[] = data
-        .filter((row: any) => row.track_id !== null)
-        .map((row: any) => ({
-          id: row.track_id,
-          file_url: row.track_file_url,
-          title: row.track_title,
-          artist: row.track_artist,
-          album: row.track_album,
-          thumbnail_url: row.track_thumbnail_url,
-          duration_seconds: row.track_duration_seconds,
-          lyrics_lrc: row.track_lyrics_lrc,
-          timing_offset: row.track_timing_offset || 0,
-        }));
-
-      if (tracks.length === 0) return;
-
-      // Attach user-locale lyric translations for the karaoke dual-line display
-      const lyricsTranslations = await fetchLyricsTranslationsMap(
-        tracks.map((tr) => tr.id),
-        locale
-      );
-      for (const tr of tracks) {
-        tr.lyrics_translated = lyricsTranslations[tr.id] ?? null;
-      }
-
-      setPlaylist(tracks, {
-        eventSlug,
-        eventTitle: firstRow.event_title,
-        eventImageUrl: firstRow.event_image_url,
-      }, 0);
-    }
-
-    fetchAndPlayPlaylist();
-  }, [eventSlug, setPlaylist, initialPlaylist, locale]);
-
-  // Open immersive view starting from a specific moment
-  const openImmersive = (index: number = 0) => {
-    setImmersiveStartIndex(index);
-    setShowImmersive(true);
-    setShowCinema(false);
-  };
-
-  // Open cinema view — resume music if it was paused (e.g., user closed mini-player)
-  const openCinema = () => {
-    setShowCinema(true);
-    setShowImmersive(false);
-
-    // Remember whether music was already on, so closing cinema can restore it.
-    useCinemaModeStore.getState().captureMusicBaseline();
-    const audio = useAudioPlayerStore.getState();
-    if (audio.tracks.length > 0 && !audio.isPlaying) {
+    if (audio.playlist?.eventSlug !== eventSlug) {
+      audio.setPlaylist(initialPlaylist.tracks, initialPlaylist.playlistInfo);
+    } else if (!audio.isPlaying) {
       audio.show();
-      audio.play();
+      void audio.play();
     }
-  };
+  }, [eventSlug, initialPlaylist]);
 
-  // Close immersive view
-  const closeImmersive = () => {
-    setShowImmersive(false);
-  };
+  const openCinema = useCallback(() => {
+    useCinemaModeStore.getState().captureMusicBaseline();
+    playEventMusic();
+    setShowCinema(true);
+  }, [playEventMusic]);
 
-  // Close cinema view
+  useEffect(() => {
+    if (!openCinemaInitially || openedFromLink.current || cinemaMoments.length === 0) return;
+    openedFromLink.current = true;
+    openCinema();
+  }, [openCinemaInitially, cinemaMoments.length, openCinema]);
+
   const closeCinema = () => {
     setShowCinema(false);
+    requestAnimationFrame(() => cinemaButtonRef.current?.focus({ preventScroll: true }));
   };
 
-  // Handle moment deletion from immersive view
   const handleMomentDeleted = useCallback((momentId: string) => {
     setAllMoments((prev) => prev.filter((m) => m.id !== momentId));
     // The grid keeps its own moments state — drop it there too, or the tile lingers.
@@ -349,9 +232,6 @@ export function MomentsViewContainer({
   const enterSelectMode = useCallback(() => {
     setSelectMode(true);
     setSelectedIds(new Set());
-    // Force grid view for selection
-    setShowImmersive(false);
-    setShowCinema(false);
     triggerHaptic("selection");
   }, []);
 
@@ -515,165 +395,131 @@ export function MomentsViewContainer({
     setIsDownloading(false);
   }, [selectedIds, allMoments, eventSlug, t]);
 
-  // Switch from immersive/cinema to grid (and remember preference)
-  const switchToGrid = () => {
-    setViewMode("grid");
-    setShowImmersive(false);
-    setShowCinema(false);
-  };
-
-  // Gallery button in cinema: back to the grid, scrolled to the moment being watched
   const showGridAtMoment = (momentId?: string) => {
-    switchToGrid();
+    setMediaTypeFilter("all");
+    closeCinema();
     if (!momentId) return;
-    // Wait two frames: the grid is un-hidden by the state change above.
     requestAnimationFrame(() => requestAnimationFrame(() => {
       const tile = document.querySelector(`a[href*="/moments/${CSS.escape(momentId)}"]`);
       tile?.scrollIntoView({ block: "center" });
     }));
   };
 
-  // Switch to immersive view from cinema
-  const _switchToImmersive = () => {
-    setViewMode("immersive");
-    setShowCinema(false);
-    setShowImmersive(true);
-    setImmersiveStartIndex(0);
-  };
-
-  // Switch to cinema view from immersive
-  const _switchToCinema = () => {
-    setViewMode("cinema");
-    setShowImmersive(false);
-    setShowCinema(true);
-  };
-
-  // Handle view mode change from switcher
-  const handleViewModeChange = (mode: "grid" | "immersive" | "cinema") => {
-    setViewMode(mode);
-    if (mode === "immersive" && allMoments.length > 0) {
-      openImmersive(0);
-    } else if (mode === "cinema" && allMoments.length > 0) {
-      openCinema();
-    } else if (mode === "grid") {
-      setShowImmersive(false);
-      setShowCinema(false);
-    }
-  };
-
-  // The grid is server-rendered (real <img> tags in the first HTML for crawlers
-  // and LCP). Only the view-mode switcher depends on the stored preference, so
-  // it alone waits for `isLoaded`; its placeholder keeps the toolbar height.
-
   return (
     <>
-      {/* Selection mode: Google Photos-style top bar */}
-      {selectMode ? (
-        <div className="sticky top-0 z-40 -mx-4 px-4 py-3 bg-primary text-primary-foreground mb-4 animate-in slide-in-from-top-2 duration-200">
-          <div className="flex items-center justify-between gap-2">
-            {/* Left: close + count */}
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={exitSelectMode}
-                className="p-2 -ml-2 rounded-full hover:bg-white/10 active:scale-95 transition-all"
-                aria-label={tCommon("cancel")}
-              >
-                <X className="w-5 h-5" />
-              </button>
-              <span className="text-sm font-semibold tabular-nums">
-                {t("selection.selected", { count: selectedIds.size })}
-              </span>
-            </div>
+      <div inert={showCinema}>
+        {selectMode ? (
+          <div className="sticky top-0 z-40 -mx-4 px-4 py-3 bg-primary text-primary-foreground mb-4 animate-in slide-in-from-top-2 duration-200">
+            <div className="flex items-center justify-between gap-2">
+              {/* Left: close + count */}
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={exitSelectMode}
+                  className="p-2 -ml-2 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                  aria-label={tCommon("cancel")}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <span className="text-sm font-semibold tabular-nums">
+                  {t("selection.selected", { count: selectedIds.size })}
+                </span>
+              </div>
 
-            {/* Right: actions */}
-            <div className="flex items-center gap-1">
-              {/* Select all / deselect all */}
-              <button
-                type="button"
-                onClick={toggleSelectAll}
-                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all"
-                aria-label={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
-                title={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
-              >
-                <CheckCheck className={`w-5 h-5 ${allSelected ? "opacity-100" : "opacity-60"}`} />
-              </button>
+              {/* Right: actions */}
+              <div className="flex items-center gap-1">
+                {/* Select all / deselect all */}
+                <button
+                  type="button"
+                  onClick={toggleSelectAll}
+                  className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all"
+                  aria-label={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
+                  title={allSelected ? t("selection.deselectAll") : t("selection.selectAll")}
+                >
+                  <CheckCheck className={`w-5 h-5 ${allSelected ? "opacity-100" : "opacity-60"}`} />
+                </button>
 
-              {/* Download */}
-              <button
-                type="button"
-                onClick={handleBulkDownload}
-                disabled={selectedIds.size === 0 || isDownloading}
-                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
-                aria-label={t("selection.download")}
-                title={t("selection.download")}
-              >
-                {isDownloading ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <Download className="w-5 h-5" />
-                )}
-              </button>
+                {/* Download */}
+                <button
+                  type="button"
+                  onClick={handleBulkDownload}
+                  disabled={selectedIds.size === 0 || isDownloading}
+                  className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
+                  aria-label={t("selection.download")}
+                  title={t("selection.download")}
+                >
+                  {isDownloading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
+                </button>
 
-              {/* Delete */}
-              <button
-                type="button"
-                onClick={() => {
-                  triggerHaptic("selection");
-                  setShowDeleteConfirm(true);
-                }}
-                disabled={selectedIds.size === 0}
-                className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
-                aria-label={t("selection.deleteSelected")}
-                title={t("selection.deleteSelected")}
-              >
-                <Trash2 className="w-5 h-5" />
-              </button>
+                {/* Delete */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    triggerHaptic("selection");
+                    setShowDeleteConfirm(true);
+                  }}
+                  disabled={selectedIds.size === 0}
+                  className="p-2.5 rounded-full hover:bg-white/10 active:scale-95 transition-all disabled:opacity-30"
+                  aria-label={t("selection.deleteSelected")}
+                  title={t("selection.deleteSelected")}
+                >
+                  <Trash2 className="w-5 h-5" />
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        /* Normal mode: view switcher + select button */
-        <div className="flex items-center justify-end gap-2 mb-4">
-          {/* Public album download — no auth, one tap, always visible */}
-          {hasPhotos && (
-            <AlbumDownloadButton eventSlug={eventSlug} count={photoCount} />
-          )}
-          {canSelect && (
-            <button
-              type="button"
-              onClick={enterSelectMode}
-              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
-            >
-              <CheckSquare className="w-4 h-4" />
-              {t("selection.select")}
-            </button>
-          )}
-          <MediaTypeFilterToggle
-            value={mediaTypeFilter}
-            onChange={setMediaTypeFilter}
-            hasVideos={hasVideos}
-          />
-          {isLoaded ? (
-            <ViewModeSwitcher
-              viewMode={viewMode}
-              onViewModeChange={handleViewModeChange}
+        ) : (
+          <div className="mb-3 flex flex-wrap items-center justify-end gap-1.5">
+            <MediaTypeFilterToggle
+              value={mediaTypeFilter}
+              onChange={setMediaTypeFilter}
+              hasVideos={hasVideos}
+              className="mr-auto"
             />
-          ) : (
-            <div className="h-9 w-32 rounded-lg bg-muted animate-pulse" aria-hidden="true" />
-          )}
-        </div>
-      )}
+            {hasPhotos && (
+              <AlbumDownloadButton eventSlug={eventSlug} />
+            )}
+            {canSelect && (
+              <button
+                type="button"
+                onClick={enterSelectMode}
+                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-lg hover:bg-muted active:scale-95"
+              >
+                <CheckSquare className="w-4 h-4" />
+                {t("selection.select")}
+              </button>
+            )}
+            {initialPlaylist && !initialPlaylist.playlistInfo.isHouse && (
+              <Button
+                type="button"
+                size="icon"
+                variant="ghost"
+                className="size-11"
+                onClick={playEventMusic}
+                aria-label={tPlaylist("listenAsPlaylist")}
+                title={tPlaylist("listenAsPlaylist")}
+              >
+                <Music className="size-4" aria-hidden="true" />
+              </Button>
+            )}
+            {cinemaMoments.length > 0 && (
+              <Button ref={cinemaButtonRef} type="button" variant="outline" className="min-h-11 px-3" onClick={openCinema}>
+                <Film className="size-4" aria-hidden="true" />
+                {t("viewCinema")}
+              </Button>
+            )}
+          </div>
+        )}
 
-      {/* Standing note for in-app browsers. Renders nothing elsewhere. */}
-      {!selectMode && (
-        <InAppBrowserDownloadHint className="text-right -mt-2 mb-4" />
-      )}
+        {/* Standing note for in-app browsers. Renders nothing elsewhere. */}
+        {!selectMode && (
+          <InAppBrowserDownloadHint className="text-right -mt-2 mb-4" />
+        )}
 
-      {/* Grid view (always rendered to maintain scroll position and loaded data).
-          Grid clicks navigate to the moment detail page (SEO surface) — cinematic
-          playback lives in the immersive/cinema view modes, not the grid. */}
-      <div className={(viewMode === "immersive" && showImmersive) || (viewMode === "cinema" && showCinema) ? "hidden" : ""}>
         <InfiniteMomentGrid
           ref={gridRef}
           eventId={eventId}
@@ -681,7 +527,6 @@ export function MomentsViewContainer({
           initialMoments={initialMoments}
           initialHasMore={initialHasMore}
           enableLightbox={false}
-          onMomentClick={viewMode === "immersive" && !selectMode ? openImmersive : undefined}
           onMomentsUpdate={handleMomentsUpdate}
           mediaTypeFilter={mediaTypeFilter}
           selectMode={selectMode}
@@ -690,47 +535,27 @@ export function MomentsViewContainer({
           currentUserId={currentUserId}
           canModerate={canModerate}
           onDeleteMoment={setPendingDeleteId}
-          onMomentDeleted={handleMomentDeleted}
         />
       </div>
 
-      {/* Immersive view (modal overlay) */}
-      {showImmersive && (
-        <ImmersiveMomentView
-          moments={filteredMoments}
-          initialIndex={immersiveStartIndex}
-          eventId={eventId}
-          eventSlug={eventSlug}
-          onClose={closeImmersive}
-          onSwitchToGrid={switchToGrid}
-          onLoadMore={handleLoadMore}
-          hasMore={hasMoreMoments}
-          totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
-          onMomentDeleted={handleMomentDeleted}
-        />
-      )}
-
-      {/* Cinema mode (auto-playing slideshow) */}
-      {showCinema && filteredMoments.length > 0 && (
-        <CinemaSlideshow
-          moments={filteredMoments}
-          eventSlug={eventSlug}
-          eventMeta={eventMeta}
-          totalCount={mediaTypeFilter === "all" ? totalCount : filteredMoments.length}
-          hasMore={hasMoreMoments}
-          onClose={closeCinema}
-          onShowGrid={showGridAtMoment}
-          onLoadMore={handleLoadMore}
-        />
-      )}
-
-      {/* Persistent floating view mode switcher — always visible in fullscreen modes */}
-      {(showCinema || showImmersive) && (
-        <FloatingViewModeSwitcher
-          viewMode={viewMode}
-          onViewModeChange={handleViewModeChange}
-          onClose={switchToGrid}
-        />
+      {showCinema && cinemaMoments.length > 0 && (
+        <>
+          <CinemaSlideshow
+            moments={cinemaMoments}
+            eventSlug={eventSlug}
+            eventMeta={eventMeta}
+            totalCount={hasMoreMoments ? totalCount : cinemaMoments.length}
+            hasMore={hasMoreMoments}
+            onClose={closeCinema}
+            onShowGrid={showGridAtMoment}
+            onLoadMore={handleLoadMore}
+          />
+          <HistoryControls
+            className="fixed left-4 top-[calc(max(1rem,env(safe-area-inset-top))+3.5rem)] z-[61] flex gap-1"
+            overlay
+            onBackFallback={closeCinema}
+          />
+        </>
       )}
 
       {/* Single moment delete confirmation (X on a grid tile) */}

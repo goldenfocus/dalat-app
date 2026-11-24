@@ -131,10 +131,9 @@ export function MobileBottomNav({ rentalsLabel }: { rentalsLabel: string }) {
   const tNav = useTranslations("nav");
   const normalizedPath = normalizePath(pathname ?? "/");
   const navRef = useRef<HTMLElement>(null);
-  const hidden = normalizedPath === "/moments" || isExperienceEditorPath(pathname ?? "");
+  const hidden = isExperienceEditorPath(pathname ?? "");
   useViewportBottom(navRef, !hidden);
 
-  // Hide nav on moments (fullscreen experience)
   if (hidden) {
     return null;
   }

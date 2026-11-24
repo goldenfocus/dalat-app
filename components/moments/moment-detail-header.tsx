@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
-import { ArrowLeft, Grid3X3, Smartphone, Share2, Check } from "lucide-react";
+import { ArrowLeft, Grid3X3, Share2, Check } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useShare } from "@/lib/hooks/use-share";
 import { MomentDownloadButton } from "@/components/moments/moment-download-button";
@@ -10,7 +10,6 @@ interface MomentDetailHeaderProps {
   eventSlug: string;
   eventTitle: string;
   momentId: string;
-  from?: string;
   /** Media fields for the download control; omit for text-only moments. */
   mediaUrl?: string | null;
   contentType?: string;
@@ -18,19 +17,10 @@ interface MomentDetailHeaderProps {
   mimeType?: string | null;
 }
 
-function getBackUrl(eventSlug: string, from?: string): string {
-  const basePath = `/events/${eventSlug}/moments`;
-  if (from === "immersive") {
-    return `${basePath}?view=immersive`;
-  }
-  return basePath;
-}
-
 export function MomentDetailHeader({
   eventSlug,
   eventTitle,
   momentId,
-  from,
   mediaUrl,
   contentType,
   originalFilename,
@@ -38,8 +28,6 @@ export function MomentDetailHeader({
 }: MomentDetailHeaderProps) {
   const t = useTranslations("moments");
   const tc = useTranslations("common");
-  const backUrl = getBackUrl(eventSlug, from);
-  const isFromImmersive = from === "immersive";
   const { share, copied } = useShare();
 
   const momentUrl =
@@ -55,7 +43,7 @@ export function MomentDetailHeader({
       <div className="container max-w-4xl mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <Link
-            href={backUrl}
+            href={`/events/${eventSlug}/moments`}
             className="-ml-3 flex items-center gap-2 text-muted-foreground hover:text-foreground active:text-foreground active:scale-95 transition-all px-3 py-2 rounded-lg"
           >
             <ArrowLeft className="w-5 h-5" />
@@ -91,11 +79,7 @@ export function MomentDetailHeader({
             </button>
 
             <div className="flex items-center gap-1 text-muted-foreground">
-              {isFromImmersive ? (
-                <Smartphone className="w-4 h-4" />
-              ) : (
-                <Grid3X3 className="w-4 h-4" />
-              )}
+              <Grid3X3 className="w-4 h-4" aria-hidden="true" />
               <span className="text-xs hidden sm:inline">{t("viewAll")}</span>
             </div>
           </div>
