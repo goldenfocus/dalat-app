@@ -1,11 +1,13 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { withGroupVenueCredits } from "@/lib/moments/venue-credit";
-import type { DiscoveryEventMomentsGroup, MomentContentType } from "@/lib/types";
+import { formatInDaLatAsync } from "@/lib/timezone";
+import type { DiscoveryEventMomentsGroup, Locale, MomentContentType } from "@/lib/types";
 
 export const DISCOVERY_EVENTS_PER_PAGE = 5;
 export const DISCOVERY_MEDIA_TYPES: MomentContentType[] = ["photo", "video"];
 
 export type DiscoveryGallery = DiscoveryEventMomentsGroup & {
+  dateLabel: string;
   description?: string;
   translatedTitle?: string;
   translatedDescription?: string;
@@ -13,7 +15,7 @@ export type DiscoveryGallery = DiscoveryEventMomentsGroup & {
 
 export async function getDiscoveryGalleries(
   db: SupabaseClient,
-  locale: string,
+  locale: Locale,
   contentTypes = DISCOVERY_MEDIA_TYPES,
   offset = 0,
 ): Promise<DiscoveryGallery[]> {
@@ -29,7 +31,7 @@ export async function getDiscoveryGalleries(
   if (groups.length === 0) return [];
 
   const ids = groups.map((group) => group.event_id);
-  const [credited, { data: events }, { data: translations }] = await Promise.all([
+  const [credited, { data: events }, { data: translations }, dates] = await Promise.all([
     withGroupVenueCredits(db, groups),
     db.from("events").select("id,description").in("id", ids).eq("status", "published"),
     db.from("content_translations")
@@ -38,6 +40,7 @@ export async function getDiscoveryGalleries(
       .eq("target_locale", locale)
       .in("content_id", ids)
       .in("field_name", ["title", "description"]),
+    Promise.all(groups.map((group) => formatInDaLatAsync(group.event_starts_at, "PP", locale))),
   ]);
 
   const descriptions = new Map(events?.map((event) => [event.id, event.description]));
@@ -46,8 +49,9 @@ export async function getDiscoveryGalleries(
     row.translated_text,
   ]));
 
-  return credited.map((group) => ({
+  return credited.map((group, index) => ({
     ...group,
+    dateLabel: dates[index],
     description: descriptions.get(group.event_id) || undefined,
     translatedTitle: localized.get(`${group.event_id}:title`),
     translatedDescription: localized.get(`${group.event_id}:description`),

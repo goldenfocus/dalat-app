@@ -1,12 +1,12 @@
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
-import { OriginalText } from "@/components/ui/original-text";
+import { EventGalleryHeading } from "@/components/moments/event-gallery-heading";
 import { translatedRecords } from "@/lib/translations/public-content";
 import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
 import Image from "next/image";
-import { ChevronLeft, ChevronRight, Calendar, MapPin, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { UserAvatar } from "@/components/ui/user-avatar";
 import { formatDistanceToNow } from "date-fns";
@@ -543,38 +543,16 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
               {/* Event card */}
               <Card>
                 <CardContent className="p-4">
-                  <Link
-                    href={`/events/${event.slug}`}
-                    className="block group"
-                  >
-                    {event.image_url && (
-                      <div className="relative aspect-video rounded-lg overflow-hidden mb-3">
-                        <Image
-                          src={event.image_url}
-                          alt={eventTitle}
-                          fill
-                          className="object-cover group-hover:scale-105 transition-transform"
-                          sizes="320px"
-                        />
-                      </div>
-                    )}
-                    <h3 className="font-semibold group-hover:underline line-clamp-2">
-                      {eventTitle}
-                    </h3>
-                    <div className="mt-2 space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        <span>{eventDate}</span>
-                      </div>
-                      {event.location_name && (
-                        <div className="flex items-center gap-2">
-                          <MapPin className="w-4 h-4" />
-                          <span className="truncate">{event.location_name}</span>
-                        </div>
-                      )}
-                    </div>
-                  </Link>
-                  {eventTitle !== event.title && <OriginalText text={event.title} />}
+                  <EventGalleryHeading
+                    slug={event.slug}
+                    title={event.title}
+                    translatedTitle={eventTitle}
+                    imageUrl={event.image_url}
+                    fallbackPhoto={moment.content_type === "photo" ? { media_url: moment.media_url, thumbnail_url: moment.thumbnail_url } : undefined}
+                    date={event.starts_at}
+                    dateLabel={eventDate}
+                    locationName={event.location_name}
+                  />
                 </CardContent>
               </Card>
 

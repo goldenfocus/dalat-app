@@ -18,6 +18,7 @@ import type { Locale } from "@/lib/i18n/routing";
 import type { Event, MomentContentType, MomentWithProfile, EventSettings } from "@/lib/types";
 import type { AudioTrack, PlaylistInfo } from "@/lib/stores/audio-player-store";
 
+import { formatInDaLatAsync } from "@/lib/timezone";
 import { loadHouseSoundtrack } from "@/lib/cinema/load-house-soundtrack";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
 
@@ -413,12 +414,13 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
 
   const [t, nav] = await Promise.all([getTranslations("moments"), getTranslations("nav")]);
 
-  const [{ moments, hasMore, totalCount }, canPost, playlist, eventFields] = await Promise.all([
+  const [{ moments, hasMore, totalCount }, canPost, playlist, eventFields, dateLabel] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
     getEventPlaylist(event.slug, event.title, event.image_url).then(async (own) =>
       own ?? loadHouseSoundtrack(await createClient(), event)),
     translatedFields("event", event.id, locale),
+    formatInDaLatAsync(event.starts_at, "PP", locale as Locale),
   ]);
   const eventTitle = eventFields.get("title") || event.title;
   if (playlist) playlist.playlistInfo.eventTitle = eventTitle;
@@ -466,7 +468,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             fallbackPhoto={coverPhoto && { media_url: coverPhoto.media_url, thumbnail_url: coverPhoto.thumbnail_url }}
             date={event.starts_at}
             locationName={event.location_name}
-            locale={locale}
+            dateLabel={dateLabel}
           />
           {(event.tribes || (canPost && moments.length > 0)) && (
             <div className="mt-2 flex flex-wrap items-center gap-2">

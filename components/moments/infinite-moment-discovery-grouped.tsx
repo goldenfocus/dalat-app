@@ -11,7 +11,7 @@ import {
   getDiscoveryGalleries,
   type DiscoveryGallery,
 } from "@/lib/moments/discovery-galleries";
-import type { MomentContentType } from "@/lib/types";
+import type { Locale, MomentContentType } from "@/lib/types";
 
 interface InfiniteMomentDiscoveryGroupedProps {
   initialGroups: DiscoveryGallery[];
@@ -25,7 +25,7 @@ export function InfiniteMomentDiscoveryGrouped({
   contentTypes,
 }: InfiniteMomentDiscoveryGroupedProps) {
   const t = useTranslations("moments");
-  const locale = useLocale();
+  const locale = useLocale() as Locale;
   const [groups, setGroups] = useState(initialGroups);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);

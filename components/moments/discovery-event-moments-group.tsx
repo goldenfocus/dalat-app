@@ -1,7 +1,7 @@
 "use client";
 
 import { Link } from "@/lib/i18n/routing";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { ChevronRight } from "lucide-react";
 import { EventGalleryHeading } from "./event-gallery-heading";
 import { MomentCard } from "./moment-card";
@@ -37,7 +37,6 @@ function DiscoveryGalleryPreview({ group, commentCounts }: DiscoveryEventMoments
 
 export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEventMomentsGroupProps) {
   const t = useTranslations("moments");
-  const locale = useLocale();
   const lightboxMoments: LightboxMoment[] = group.moments.map((moment) => ({
     ...moment,
     video_status: moment.video_status as LightboxMoment["video_status"],
@@ -55,7 +54,7 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
         fallbackPhoto={group.moments.find((moment) => moment.content_type === "photo" && moment.media_url)}
         date={group.event_starts_at}
         locationName={group.event_location_name}
-        locale={locale}
+        dateLabel={group.dateLabel}
       />
       <MomentsLightboxProvider moments={lightboxMoments} eventSlug={group.event_slug} autoplayPlaylist={false}>
         <DiscoveryGalleryPreview group={group} commentCounts={commentCounts} />

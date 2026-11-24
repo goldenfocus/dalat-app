@@ -142,13 +142,13 @@ describe("localized album journey", () => {
   it("shows a localized event link and keeps original text outside it", () => {
     localized(
       <EventGalleryHeading
-        locale="de"
         slug="language-night"
         title="Language Night"
         translatedTitle="Sprachaustausch"
         description="A night of **conversation**."
         translatedDescription="Ein Abend voller **Gespräche**."
         date="2026-10-28T20:00:00Z"
+        dateLabel="29. Okt. 2026"
         imageUrl={null}
         locationName={null}
       />,

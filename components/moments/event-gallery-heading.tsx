@@ -19,7 +19,7 @@ interface EventGalleryHeadingProps {
   fallbackPhoto?: Pick<MomentForCard, "media_url" | "thumbnail_url">;
   date: string;
   locationName: string | null;
-  locale: string;
+  dateLabel: string;
   heading?: "h1" | "h2";
 }
 
@@ -33,7 +33,7 @@ export function EventGalleryHeading({
   fallbackPhoto,
   date,
   locationName,
-  locale,
+  dateLabel,
   heading: Heading = "h2",
 }: EventGalleryHeadingProps) {
   const [failedImages, setFailedImages] = useState<string[]>([]);
@@ -45,10 +45,6 @@ export function EventGalleryHeading({
     displayTitle !== title ? title : null,
     translatedDescription && translatedDescription !== description ? description : null,
   ].filter(Boolean).join("\n\n");
-  const dateLabel = new Intl.DateTimeFormat(locale, {
-    dateStyle: "medium",
-    timeZone: "Asia/Ho_Chi_Minh",
-  }).format(new Date(date));
 
   return (
     <header className="min-w-0">
