@@ -33,3 +33,27 @@ export function venueMatchesSearch(venue: SearchableVenue, query: string): boole
     );
   });
 }
+
+/** Compare the numbered street line independently of its district and city. */
+export function normalizeVenueStreet(value: string | null | undefined): string {
+  return normalizeVenueSearchText((value ?? "").split(",")[0])
+    .replace(/^(?:d|duong|street) /, "")
+    .replace(/^(\d+) ?(bis|[a-ce-z])(?= )/, "$1$2")
+    .replace(/^0+(?=\d)/, "")
+    .replace(/^(\d+[a-z]*) (?:d|duong|street|st) /, "$1 ");
+}
+
+export function rankVenueSearchMatch(venue: SearchableVenue, query: string): number {
+  const name = normalizeVenueSearchText(venue.name);
+  const term = normalizeVenueSearchText(query);
+  const street = normalizeVenueStreet(query);
+  const address = normalizeVenueStreet(venue.address);
+
+  if (name === term || normalizeVenueSearchText(venue.slug ?? "") === term) return 4;
+  if (/^\d+\p{L}* \p{L}/u.test(street)) {
+    if (street === address) return 3;
+    if (address.startsWith(street)) return 2;
+  }
+  if (name.startsWith(term)) return 2;
+  return term.length >= 3 && name.includes(term) ? 1 : 0;
+}

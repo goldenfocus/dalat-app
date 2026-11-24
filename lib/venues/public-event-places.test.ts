@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { matchPublicEventPlace, searchPublicEventPlaces } from "./public-event-places";
+import { matchPublicEventPlace, matchVenueAtEventLocation, searchPublicEventPlaces } from "./public-event-places";
 
 const { house, neighbor } = vi.hoisted(() => ({
   house: { id: "node/1", name: "Cà Phê Trên Đồi", address: "55 Ngô Thì Sỹ",
@@ -33,6 +33,24 @@ describe("public event venues", () => {
   it("does not substitute a different location when the supplied pin is far away", () => {
     expect(matchPublicEventPlace({
       name: house.address, address: house.address, latitude: 12.5, longitude: 108.9,
+    })).toBeNull();
+  });
+});
+
+describe("directory venue matching", () => {
+  const cafe = { ...house, address: "063Bis Đường Ba Tháng Hai" };
+  const otherBranch = { ...cafe, address: "63 Đường Ba Tháng Hai" };
+
+  it("handles a typed house-number suffix and rejects a neighboring branch", () => {
+    const address = "63 Bis D. Ba Thang Hai, Da Lat";
+    expect(matchVenueAtEventLocation([cafe, otherBranch], {
+      name: address, address, latitude: null, longitude: null,
+    })).toBe(cafe);
+  });
+
+  it("rejects a venue with a different known street number despite its name and nearby pin", () => {
+    expect(matchVenueAtEventLocation([otherBranch], {
+      name: cafe.name, address: cafe.address, latitude: cafe.latitude, longitude: cafe.longitude,
     })).toBeNull();
   });
 });

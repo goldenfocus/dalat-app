@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { POST } from "./route";
 
-const { client, admin, matchPlace, revalidate } = vi.hoisted(() => ({
-  client: vi.fn(), admin: vi.fn(), matchPlace: vi.fn(), revalidate: vi.fn(),
+const { client, admin, directory, matchPlace, revalidate } = vi.hoisted(() => ({
+  client: vi.fn(), admin: vi.fn(), directory: vi.fn(), matchPlace: vi.fn(), revalidate: vi.fn(),
 }));
 vi.mock("next/cache", () => ({ revalidateTag: revalidate }));
 vi.mock("@/lib/cache/server-cache", () => ({ CACHE_TAGS: { events: "events" } }));
@@ -11,7 +11,11 @@ vi.mock("@/lib/experiences/server", () => ({
   safeMutation: () => true,
 }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: client }));
-vi.mock("@/lib/venues/public-event-places", () => ({ matchPublicEventPlace: matchPlace }));
+vi.mock("@/lib/venues/directory-search", () => ({ getVenueSearchDirectory: directory }));
+vi.mock("@/lib/venues/public-event-places", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/venues/public-event-places")>(),
+  matchPublicEventPlace: matchPlace,
+}));
 
 const eventId = "eb413733-29a3-4800-89ef-a4645b277866";
 const place = {
@@ -47,7 +51,10 @@ function signedIn(...queries: ReturnType<typeof query>[]) {
 }
 
 describe("published event venue linking", () => {
-  beforeEach(() => vi.resetAllMocks());
+  beforeEach(() => {
+    vi.resetAllMocks();
+    directory.mockResolvedValue([]);
+  });
 
   it("leaves an unpublished, private, online, or other creator's event outside venue discovery", async () => {
     const read = query();
@@ -65,6 +72,18 @@ describe("published event venue linking", () => {
   it("shares an existing unclaimed venue without creating another", async () => {
     signedIn(query({ ...published, venue_id: "venue" }), query({ slug: "old-cafe", owner_id: null }));
     expect(await (await POST(request())).json()).toEqual({ eventSlug: published.slug, claimSlug: "old-cafe" });
+    expect(admin).not.toHaveBeenCalled();
+  });
+
+  it("links a typed address to an existing claimable venue without an OSM entry", async () => {
+    const canonical = { ...place, id: "venue", slug: "public-cafe", owner_id: null };
+    directory.mockResolvedValue([canonical]);
+    const update = vi.fn(() => query({ id: eventId }));
+    const { from } = signedIn(query({ ...published, location_name: place.address }), query(canonical));
+    from.mockReturnValueOnce({ update });
+
+    expect(await (await POST(request())).json()).toEqual({ eventSlug: published.slug, claimSlug: canonical.slug });
+    expect(update).toHaveBeenCalledWith({ venue_id: canonical.id });
     expect(admin).not.toHaveBeenCalled();
   });
 

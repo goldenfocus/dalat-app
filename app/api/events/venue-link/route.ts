@@ -7,12 +7,12 @@ import { experienceAdmin, safeMutation } from "@/lib/experiences/server";
 import { createClient } from "@/lib/supabase/server";
 import { googleMapsSearchUrl } from "@/lib/geo/location-form-values";
 import { slugify } from "@/lib/utils";
-import { matchPublicEventPlace } from "@/lib/venues/public-event-places";
-import { normalizeVenueSearchText } from "@/lib/venues/search";
+import { getVenueSearchDirectory } from "@/lib/venues/directory-search";
+import { matchPublicEventPlace, matchVenueAtEventLocation } from "@/lib/venues/public-event-places";
 
 const bodySchema = z.object({ eventId: z.string().uuid() });
 const venueColumns = "id,slug,owner_id";
-const namedVenueColumns = "id,slug,owner_id,name";
+const nearbyVenueColumns = "id,slug,owner_id,name,address,latitude,longitude";
 
 function osmVenueId(osmId: string) {
   const hex = createHash("sha256").update("dalat.app/osm/" + osmId).digest("hex");
@@ -56,41 +56,53 @@ export async function POST(request: Request) {
   });
   if (rateError || !quota?.allowed) return result(null);
 
-  const place = matchPublicEventPlace({
+  const location = {
     name: event.location_name,
     address: event.address,
     latitude: event.latitude,
     longitude: event.longitude,
+  };
+  const directory = await getVenueSearchDirectory().catch((error) => {
+    console.error("Event venue directory error:", error);
+    return [];
   });
-  if (!place) return result(null);
+  const canonical = matchVenueAtEventLocation(directory, location);
+  let venue: { id: string; slug: string; owner_id: string | null } | null = null;
+  if (canonical) {
+    const { data } = await db.from("venues").select(venueColumns).eq("id", canonical.id).maybeSingle();
+    venue = data;
+    if (!venue) return result(null);
+  } else {
+    const place = matchPublicEventPlace(location);
+    if (!place) return result(null);
 
-  const admin = experienceAdmin();
-  const { data: nearby, error: nearbyError } = await admin.from("venues")
-    .select(namedVenueColumns)
-    .gte("latitude", place.latitude - 0.001)
-    .lte("latitude", place.latitude + 0.001)
-    .gte("longitude", place.longitude - 0.001)
-    .lte("longitude", place.longitude + 0.001)
-    .limit(75);
-  if (nearbyError) return result(null);
+    const admin = experienceAdmin();
+    const { data: nearby, error: nearbyError } = await admin.from("venues")
+      .select(nearbyVenueColumns)
+      .gte("latitude", place.latitude - 0.001)
+      .lte("latitude", place.latitude + 0.001)
+      .gte("longitude", place.longitude - 0.001)
+      .lte("longitude", place.longitude + 0.001)
+      .limit(75);
+    if (nearbyError) return result(null);
 
-  const placeName = normalizeVenueSearchText(place.name);
-  let venue = nearby?.find((candidate) => normalizeVenueSearchText(candidate.name) === placeName) ?? null;
-  if (!venue) {
-    const id = osmVenueId(place.id);
-    const stem = slugify(place.name).slice(0, 56).replace(/-+$/, "") || "venue";
-    const slug = stem + "-osm-" + place.id.replace("/", "-");
-    const { error: insertError } = await admin.from("venues").upsert({
-      id, slug, name: place.name, address: place.address,
-      latitude: place.latitude, longitude: place.longitude, venue_type: place.venueType,
-      google_maps_url: googleMapsSearchUrl([place.name, place.address, "Đà Lạt"].filter(Boolean).join(", ")),
-      geocode_source: "osm_event_venue",
-      source_locale: "vi",
-    }, { onConflict: "id", ignoreDuplicates: true });
-    if (insertError) return result(null);
+    venue = matchVenueAtEventLocation(nearby ?? [], place);
+    if (!venue) {
+      const id = osmVenueId(place.id);
+      const stem = slugify(place.name).slice(0, 56).replace(/-+$/, "") || "venue";
+      const slug = stem + "-osm-" + place.id.replace("/", "-");
+      const { error: insertError } = await admin.from("venues").upsert({
+        id, slug, name: place.name, address: place.address,
+        latitude: place.latitude, longitude: place.longitude, venue_type: place.venueType,
+        google_maps_url: googleMapsSearchUrl([place.name, place.address, "Đà Lạt"].filter(Boolean).join(", ")),
+        geocode_source: "osm_event_venue",
+        source_locale: "vi",
+      }, { onConflict: "id", ignoreDuplicates: true });
+      if (insertError) return result(null);
 
-    const { data: saved } = await admin.from("venues").select(namedVenueColumns).eq("id", id).maybeSingle();
-    venue = saved;
+      const { data: saved } = await admin.from("venues").select(venueColumns).eq("id", id).maybeSingle();
+      venue = saved;
+    }
   }
   if (!venue) return result(null);
 
