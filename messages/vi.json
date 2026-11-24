@@ -3254,7 +3254,9 @@
     "skipForNow": "Xong",
     "viewEvent": "Xem sự kiện của bạn",
     "copyLink": "Sao chép link",
-    "copied": "Đã sao chép!"
+    "copied": "Đã sao chép!",
+    "shareVenueClaim": "Chia sẻ với chủ địa điểm",
+    "shareVenueClaimHelp": "Chủ địa điểm có thể xác nhận quyền quản lý và cập nhật thông tin."
   },
   "playlist": {
     "title": "Danh sách phát",

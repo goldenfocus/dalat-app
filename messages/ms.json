@@ -3254,7 +3254,9 @@
     "skipForNow": "Selesai",
     "viewEvent": "Lihat acara anda secara langsung",
     "copyLink": "Salin pautan",
-    "copied": "Disalin!"
+    "copied": "Disalin!",
+    "shareVenueClaim": "Kongsi dengan pemilik tempat",
+    "shareVenueClaimHelp": "Pemilik boleh menuntut tempat ini dan mengemas kini maklumatnya."
   },
   "playlist": {
     "title": "Senarai Main",

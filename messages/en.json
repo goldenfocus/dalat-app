@@ -1837,7 +1837,9 @@
     "skipForNow": "Done",
     "viewEvent": "See your event live",
     "copyLink": "Copy link",
-    "copied": "Copied!"
+    "copied": "Copied!",
+    "shareVenueClaim": "Share with the venue owner",
+    "shareVenueClaimHelp": "They can claim this venue and keep its details up to date."
   },
   "moments": {
     "moments": "Moments",

@@ -3254,7 +3254,9 @@
     "skipForNow": "完成",
     "viewEvent": "查看活动",
     "copyLink": "复制链接",
-    "copied": "已复制！"
+    "copied": "已复制！",
+    "shareVenueClaim": "分享给场所所有者",
+    "shareVenueClaimHelp": "所有者可以认领该场所并更新相关信息。"
   },
   "playlist": {
     "title": "播放列表",

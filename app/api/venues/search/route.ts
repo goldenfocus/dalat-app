@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { searchPublicEventPlaces } from "@/lib/venues/public-event-places";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -71,10 +72,14 @@ export async function GET(request: NextRequest) {
 
   const { data: venues, error } = await venueQuery;
 
-  if (error) {
-    console.error("Venue search error:", error);
-    return NextResponse.json({ venues: [] });
-  }
+  if (error) console.error("Venue search error:", error);
+
+  const publicPlaces = !venues?.length && query && query.length <= 160 &&
+    !popular && !lat && !lng && searchParams.get("publicPlaces") === "true"
+      ? searchPublicEventPlaces(query).map((place) => ({
+          ...place, googleMapsUrl: null, isVerified: false, isPublicMapPlace: true,
+        }))
+      : [];
 
   // Popular venues change infrequently - cache longer
   // Query-based searches are more dynamic - shorter cache
@@ -83,7 +88,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(
     {
       venues:
-        venues?.map((v) => ({
+        (venues?.length ? venues : null)?.map((v) => ({
           id: v.id,
           name: v.name,
           venueType: v.venue_type,
@@ -92,7 +97,7 @@ export async function GET(request: NextRequest) {
           longitude: v.longitude,
           googleMapsUrl: v.google_maps_url,
           isVerified: v.is_verified,
-        })) || [],
+        })) ?? publicPlaces,
     },
     {
       headers: {

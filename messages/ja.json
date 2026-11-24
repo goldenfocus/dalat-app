@@ -3254,7 +3254,9 @@
     "skipForNow": "完了",
     "viewEvent": "イベントを確認",
     "copyLink": "リンクをコピー",
-    "copied": "コピーしました！"
+    "copied": "コピーしました！",
+    "shareVenueClaim": "施設オーナーに共有",
+    "shareVenueClaimHelp": "オーナーは施設の管理権限を申請し、情報を更新できます。"
   },
   "playlist": {
     "title": "プレイリスト",

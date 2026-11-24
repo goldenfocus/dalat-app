@@ -3254,7 +3254,9 @@
     "skipForNow": "완료",
     "viewEvent": "이벤트 보기",
     "copyLink": "링크 복사",
-    "copied": "복사됨!"
+    "copied": "복사됨!",
+    "shareVenueClaim": "장소 소유자에게 공유",
+    "shareVenueClaimHelp": "소유자가 장소를 등록하고 정보를 최신 상태로 유지할 수 있습니다."
   },
   "playlist": {
     "title": "재생목록",

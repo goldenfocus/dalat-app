@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { MapPin, Loader2, X, Check, Navigation, PenLine, Sparkles } from "lucide-react";
+import { MapPin, Loader2, X, Check, Navigation, PenLine } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
@@ -32,6 +32,7 @@ interface VenueResult {
   longitude: number;
   googleMapsUrl: string | null;
   isVerified: boolean;
+  isPublicMapPlace?: boolean;
 }
 
 // Selected location data (venue, Google Place, or free-form address)
@@ -51,6 +52,7 @@ interface LocationPickerProps {
   onVenueIdChange?: (venueId: string | null) => void;
   defaultValue?: SelectedLocation | null;
   defaultVenueId?: string | null;
+  addressAssistEnabled?: boolean;
 }
 
 const DEBOUNCE_MS = 300;
@@ -61,6 +63,7 @@ export function LocationPicker({
   onVenueIdChange,
   defaultValue,
   defaultVenueId,
+  addressAssistEnabled = true,
 }: LocationPickerProps) {
   const t = useTranslations("eventForm");
 
@@ -83,11 +86,7 @@ export function LocationPicker({
   // True when a search backend failed — the typed text still saves as a custom address
   const [searchDegraded, setSearchDegraded] = useState(false);
 
-  const [addressAssist, setAddressAssist] = useState<{
-    pending?: boolean;
-    suggestion?: string;
-    unavailable?: boolean;
-  }>({});
+  const [addressAssist, setAddressAssist] = useState<"idle" | "pending" | "done">("idle");
 
   // Smart detection state for coordinates/URLs
   const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
@@ -98,6 +97,8 @@ export function LocationPicker({
   const sessionToken =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const searchSeq = useRef(0);
+  const assistRequest = useRef<AbortController | null>(null);
+  const [completedSearch, setCompletedSearch] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -145,6 +146,12 @@ export function LocationPicker({
     script.async = true;
     script.defer = true;
 
+    const releaseLoader = setTimeout(() => setIsLoadingScript(false), 5000);
+    script.onerror = () => {
+      clearTimeout(releaseLoader);
+      setIsLoadingScript(false);
+      setSearchDegraded(true);
+    };
     script.onload = () => {
       const checkReady = setInterval(() => {
         if (typeof google !== "undefined" && google.maps?.places) {
@@ -152,6 +159,7 @@ export function LocationPicker({
           sessionToken.current =
             new google.maps.places.AutocompleteSessionToken();
           setIsGoogleReady(true);
+          clearTimeout(releaseLoader);
           setIsLoadingScript(false);
         }
       }, 100);
@@ -167,6 +175,7 @@ export function LocationPicker({
   // Cleanup debounce timer
   useEffect(() => {
     return () => {
+      assistRequest.current?.abort();
       if (debounceTimer.current) {
         clearTimeout(debounceTimer.current);
       }
@@ -214,7 +223,7 @@ export function LocationPicker({
     setIsLoadingVenues(true);
     try {
       const response = await fetch(
-        `/api/venues/search?q=${encodeURIComponent(searchQuery)}`
+        `/api/venues/search?q=${encodeURIComponent(searchQuery)}${addressAssistEnabled ? "&publicPlaces=true" : ""}`
       );
       const data = await response.json();
       if (!response.ok) throw new Error("Venue search failed");
@@ -228,7 +237,7 @@ export function LocationPicker({
     } finally {
       setIsLoadingVenues(false);
     }
-  }, []);
+  }, [addressAssistEnabled]);
 
   // Resolve short Google Maps URL via API
   const resolveShortUrl = useCallback(async (url: string) => {
@@ -409,7 +418,9 @@ export function LocationPicker({
   }, [isGoogleReady, searchPlaces]);
 
   const updateQuery = (value: string) => {
-    setAddressAssist({});
+    assistRequest.current?.abort();
+    setAddressAssist("idle");
+    setCompletedSearch(null);
     setQuery(value);
     const seq = ++searchSeq.current;
 
@@ -444,9 +455,9 @@ export function LocationPicker({
         }
 
         // Not coordinates/URL - proceed with normal search
-        searchVenues(value, seq);
-        searchPlaces(value, seq);
         setIsOpen(true);
+        await Promise.all([searchVenues(value, seq), searchPlaces(value, seq)]);
+        if (seq === searchSeq.current) setCompletedSearch(value);
       }, DEBOUNCE_MS);
     } else if (value.length === 0) {
       // Show popular venues when cleared
@@ -457,24 +468,6 @@ export function LocationPicker({
       setVenues([]);
       setPlaceSuggestions([]);
       setIsOpen(false);
-    }
-  };
-
-  const searchWithAddressAssist = async () => {
-    const seq = searchSeq.current;
-    setAddressAssist({ pending: true });
-    try {
-      const response = await fetch("/api/events/address-assist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: query.trim() }),
-      });
-      if (!response.ok) throw new Error("Address assistant unavailable");
-      const data = await response.json() as { suggestion: string | null };
-      if (seq !== searchSeq.current) return;
-      setAddressAssist(data.suggestion ? { suggestion: data.suggestion } : { unavailable: true });
-    } catch {
-      if (seq === searchSeq.current) setAddressAssist({ unavailable: true });
     }
   };
 
@@ -494,10 +487,10 @@ export function LocationPicker({
 
   const handleSelectVenue = (venue: VenueResult) => {
     const location: SelectedLocation = {
-      type: "venue",
-      venueId: venue.id,
+      type: venue.isPublicMapPlace ? "place" : "venue",
+      venueId: venue.isPublicMapPlace ? undefined : venue.id,
       name: venue.name,
-      address: venue.address || "",
+      address: venue.address || (venue.isPublicMapPlace ? "Đà Lạt, Lâm Đồng" : ""),
       latitude: venue.latitude,
       longitude: venue.longitude,
       googleMapsUrl:
@@ -505,12 +498,14 @@ export function LocationPicker({
         googleMapsSearchUrl(`${venue.latitude},${venue.longitude}`),
     };
 
+    assistRequest.current?.abort();
+    searchSeq.current++;
     setQuery(venue.name);
     setSelectedLocation(location);
-    setSelectedVenueId(venue.id);
+    setSelectedVenueId(location.venueId ?? null);
     setIsOpen(false);
     onLocationSelect?.(location);
-    onVenueIdChange?.(venue.id);
+    onVenueIdChange?.(location.venueId ?? null);
   };
 
   const handleSelectPlace = async (
@@ -518,6 +513,8 @@ export function LocationPicker({
   ) => {
     if (!suggestion.placePrediction) return;
 
+    assistRequest.current?.abort();
+    const seq = ++searchSeq.current;
     setIsLoading(true);
     setIsOpen(false);
 
@@ -530,6 +527,7 @@ export function LocationPicker({
         fields: ["displayName", "formattedAddress", "googleMapsURI", "location"],
       });
 
+      if (seq !== searchSeq.current) return;
       sessionToken.current = new google.maps.places.AutocompleteSessionToken();
 
       const location: SelectedLocation = {
@@ -568,6 +566,8 @@ export function LocationPicker({
       ...makeCustomLocation(query),
     };
 
+    assistRequest.current?.abort();
+    searchSeq.current++;
     setQuery(location.name);
     setSelectedLocation(location);
     setSelectedVenueId(null);
@@ -577,6 +577,7 @@ export function LocationPicker({
   };
 
   const handleClear = () => {
+    assistRequest.current?.abort();
     searchSeq.current++;
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     setQuery("");
@@ -587,17 +588,59 @@ export function LocationPicker({
     setDetectedCoords(null);
     setUrlResolveError(null);
     setSearchDegraded(false);
-    setAddressAssist({});
+    setAddressAssist("idle");
     onLocationSelect?.(null);
     onVenueIdChange?.(null);
     inputRef.current?.focus();
   };
 
-  const hasResults = venues.length > 0 || placeSuggestions.length > 0;
+  const visibleVenues = addressAssistEnabled ? venues : venues.filter((venue) => !venue.isPublicMapPlace);
+  const hasResults = visibleVenues.length > 0 || placeSuggestions.length > 0;
   const showLoading = isLoading || isLoadingVenues || isLoadingScript || isResolvingUrl;
   const customText = query.trim();
   const canOfferCustom = isCustomLocationCandidate(query) && !detectedCoords;
   const locationFields = buildLocationFieldValues(selectedLocation, query);
+
+  useEffect(() => {
+    if (!addressAssistEnabled) {
+      assistRequest.current?.abort();
+      setAddressAssist("idle");
+    }
+  }, [addressAssistEnabled]);
+
+  useEffect(() => {
+    if (
+      !addressAssistEnabled || !isOpen || selectedLocation || hasResults || showLoading ||
+      !canOfferCustom || completedSearch !== query || customText.length < 5 || customText.length > 160 ||
+      addressAssist !== "idle"
+    ) return;
+
+    const seq = searchSeq.current;
+    const timer = setTimeout(async () => {
+      if (seq !== searchSeq.current) return;
+      const controller = new AbortController();
+      assistRequest.current = controller;
+      setAddressAssist("pending");
+      try {
+        const response = await fetch("/api/events/address-assist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query: customText }),
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("Address assistant unavailable");
+        const { suggestion } = await response.json() as { suggestion: string | null };
+        if (seq !== searchSeq.current || controller.signal.aborted) return;
+        if (suggestion) await Promise.all([searchVenues(suggestion, seq), searchPlaces(suggestion, seq)]);
+      } catch {
+        // The address as typed stays available if the assistant is unavailable.
+      } finally {
+        if (seq === searchSeq.current && !controller.signal.aborted) setAddressAssist("done");
+      }
+    }, 850);
+    return () => clearTimeout(timer);
+  }, [addressAssist, addressAssistEnabled, canOfferCustom, completedSearch, customText, hasResults, isOpen, query, searchPlaces, searchVenues, selectedLocation, showLoading]);
+
 
   return (
     <div ref={containerRef} className="relative space-y-2">
@@ -679,12 +722,12 @@ export function LocationPicker({
       {isOpen && (hasResults || canOfferCustom) && (
         <ul className="absolute z-50 w-full mt-1 bg-background border rounded-md shadow-lg max-h-72 overflow-auto">
           {/* Venues section */}
-          {venues.length > 0 && (
+          {visibleVenues.length > 0 && (
             <>
               <li className="px-3 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wide bg-muted/50">
                 {t("locationVenuesSection") || "Venues"}
               </li>
-              {venues.map((venue) => {
+              {visibleVenues.map((venue) => {
                 const typeConfig = getVenueTypeConfig(venue.venueType);
                 const TypeIcon = typeConfig.icon;
 
@@ -719,11 +762,18 @@ export function LocationPicker({
                   </li>
                 );
               })}
+              {visibleVenues.some((venue) => venue.isPublicMapPlace) && addressAssistEnabled && (
+                <li className="px-3 py-1 text-xs text-muted-foreground">
+                  <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">
+                    © OpenStreetMap contributors
+                  </a>
+                </li>
+              )}
             </>
           )}
 
           {/* Separator */}
-          {venues.length > 0 && placeSuggestions.length > 0 && (
+          {visibleVenues.length > 0 && placeSuggestions.length > 0 && (
             <li className="border-t my-1" />
           )}
 
@@ -776,34 +826,10 @@ export function LocationPicker({
             </li>
           )}
 
-          {canOfferCustom && !hasResults && !showLoading && customText.length >= 4 && customText.length <= 160 && (
-            <li>
-              {addressAssist.suggestion ? (
-                <button
-                  type="button"
-                  onClick={() => updateQuery(addressAssist.suggestion!)}
-                  className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted"
-                >
-                  <MapPin className="size-4 shrink-0" aria-hidden="true" />
-                  {t("addressAssistSuggestion", { address: addressAssist.suggestion })}
-                </button>
-              ) : addressAssist.unavailable ? (
-                <p role="status" className="px-3 py-2 text-xs text-muted-foreground">
-                  {t("addressAssistUnavailable")}
-                </p>
-              ) : (
-                <button
-                  type="button"
-                  onClick={searchWithAddressAssist}
-                  disabled={addressAssist.pending}
-                  className="flex min-h-11 w-full items-center gap-2 px-3 py-2 text-left text-sm font-medium text-primary hover:bg-muted disabled:opacity-60"
-                >
-                  {addressAssist.pending
-                    ? <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                    : <Sparkles className="size-4" aria-hidden="true" />}
-                  {t(addressAssist.pending ? "locationLookingUp" : "addressAssist")}
-                </button>
-              )}
+          {addressAssistEnabled && canOfferCustom && !hasResults && addressAssist === "pending" && (
+            <li role="status" className="flex items-center gap-2 px-3 py-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+              {t("locationLookingUp")}
             </li>
           )}
 
