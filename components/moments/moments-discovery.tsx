@@ -150,7 +150,6 @@ export function MomentsDiscovery({
           contentTypes={activeConfig.contentTypes}
         />
       )}
-
     </div>
   );
 }

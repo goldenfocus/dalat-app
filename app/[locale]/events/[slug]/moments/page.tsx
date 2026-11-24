@@ -422,6 +422,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
   ]);
   const eventTitle = eventFields.get("title") || event.title;
   if (playlist) playlist.playlistInfo.eventTitle = eventTitle;
+  const coverPhoto = moments.find((moment) => moment.content_type === "photo" && moment.media_url);
 
   // Schema copies use localized AI prose; the UI retains exact author sources.
   const momentFields = await translatedRecords("moment", moments.map((moment) => moment.id), locale);
@@ -462,6 +463,7 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
             description={event.description}
             translatedDescription={eventFields.get("description")}
             imageUrl={event.image_url}
+            fallbackPhoto={coverPhoto && { media_url: coverPhoto.media_url, thumbnail_url: coverPhoto.thumbnail_url }}
             date={event.starts_at}
             locationName={event.location_name}
             locale={locale}

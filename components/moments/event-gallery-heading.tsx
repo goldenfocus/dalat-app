@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import { ChevronRight } from "lucide-react";
 import { Link } from "@/lib/i18n/routing";
 import { OriginalText } from "@/components/ui/original-text";
 import { markdownToPlainText } from "@/lib/blog/strip-markdown";
 import { decodeUnicodeEscapes } from "@/lib/utils";
+import type { MomentForCard } from "./moment-card";
 
 interface EventGalleryHeadingProps {
   slug: string;
@@ -12,6 +16,7 @@ interface EventGalleryHeadingProps {
   description?: string | null;
   translatedDescription?: string;
   imageUrl: string | null;
+  fallbackPhoto?: Pick<MomentForCard, "media_url" | "thumbnail_url">;
   date: string;
   locationName: string | null;
   locale: string;
@@ -25,11 +30,15 @@ export function EventGalleryHeading({
   description,
   translatedDescription,
   imageUrl,
+  fallbackPhoto,
   date,
   locationName,
   locale,
   heading: Heading = "h2",
 }: EventGalleryHeadingProps) {
+  const [failedImages, setFailedImages] = useState<string[]>([]);
+  const poster = [imageUrl, fallbackPhoto?.thumbnail_url, fallbackPhoto?.media_url]
+    .find((url): url is string => Boolean(url && !failedImages.includes(url)));
   const displayTitle = translatedTitle || title;
   const displayDescription = markdownToPlainText(translatedDescription || description || "");
   const original = [
@@ -47,9 +56,18 @@ export function EventGalleryHeading({
         href={`/events/${slug}`}
         className="group flex min-h-11 items-center gap-3 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
       >
-        {imageUrl && (
+        {poster && (
           <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-muted sm:size-16">
-            <Image src={imageUrl} alt="" fill sizes="64px" unoptimized className="object-cover" />
+            <Image
+              key={poster}
+              src={poster}
+              alt=""
+              fill
+              sizes="64px"
+              unoptimized
+              className="object-cover"
+              onError={() => setFailedImages((failed) => [...failed, poster])}
+            />
           </div>
         )}
         <div className="min-w-0 flex-1">

@@ -473,7 +473,7 @@ export function MomentsViewContainer({
             </div>
           </div>
         ) : (
-          <div className="mb-3 flex flex-wrap items-center justify-end gap-2">
+          <div className="mb-3 flex flex-wrap items-center justify-end gap-1.5">
             <MediaTypeFilterToggle
               value={mediaTypeFilter}
               onChange={setMediaTypeFilter}
@@ -507,7 +507,7 @@ export function MomentsViewContainer({
               </Button>
             )}
             {cinemaMoments.length > 0 && (
-              <Button ref={cinemaButtonRef} type="button" variant="outline" className="min-h-11" onClick={openCinema}>
+              <Button ref={cinemaButtonRef} type="button" variant="outline" className="min-h-11 px-3" onClick={openCinema}>
                 <Film className="size-4" aria-hidden="true" />
                 {t("viewCinema")}
               </Button>

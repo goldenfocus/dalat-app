@@ -52,6 +52,7 @@ export function DiscoveryEventMomentsGroup({ group, commentCounts }: DiscoveryEv
         description={group.description}
         translatedDescription={group.translatedDescription}
         imageUrl={group.event_image_url}
+        fallbackPhoto={group.moments.find((moment) => moment.content_type === "photo" && moment.media_url)}
         date={group.event_starts_at}
         locationName={group.event_location_name}
         locale={locale}
