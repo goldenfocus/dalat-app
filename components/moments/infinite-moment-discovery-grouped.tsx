@@ -1,19 +1,20 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Loader2, Camera } from "lucide-react";
-import { withGroupVenueCredits } from "@/lib/moments/venue-credit";
 import { createClient } from "@/lib/supabase/client";
 import { DiscoveryEventMomentsGroup } from "./discovery-event-moments-group";
 import { useMomentCommentCounts } from "@/lib/hooks/use-comment-counts";
-import type { DiscoveryEventMomentsGroup as DiscoveryEventMomentsGroupType, MomentContentType } from "@/lib/types";
-
-const EVENTS_PER_PAGE = 5;
-const MOMENTS_PER_EVENT = 6;
+import {
+  DISCOVERY_EVENTS_PER_PAGE,
+  getDiscoveryGalleries,
+  type DiscoveryGallery,
+} from "@/lib/moments/discovery-galleries";
+import type { MomentContentType } from "@/lib/types";
 
 interface InfiniteMomentDiscoveryGroupedProps {
-  initialGroups: DiscoveryEventMomentsGroupType[];
+  initialGroups: DiscoveryGallery[];
   initialHasMore: boolean;
   contentTypes: MomentContentType[];
 }
@@ -24,131 +25,73 @@ export function InfiniteMomentDiscoveryGrouped({
   contentTypes,
 }: InfiniteMomentDiscoveryGroupedProps) {
   const t = useTranslations("moments");
-
-  const [groups, setGroups] = useState<DiscoveryEventMomentsGroupType[]>(initialGroups);
+  const locale = useLocale();
+  const [groups, setGroups] = useState(initialGroups);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [isLoading, setIsLoading] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [offset, setOffset] = useState(initialGroups.length);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef(false);
 
-  // Memoize content types as a string for dependency tracking
-  const contentKey = useMemo(() => contentTypes.join(","), [contentTypes]);
-
-  // Collect all moment IDs from all groups for batch comment count fetch
-  const allMomentIds = useMemo(() => {
-    return groups.flatMap(group => group.moments.map(m => m.id));
-  }, [groups]);
+  const allMomentIds = useMemo(() => groups.flatMap((group) => group.moments.map((m) => m.id)), [groups]);
   const { counts: commentCounts } = useMomentCommentCounts(allMomentIds);
 
   const loadMore = useCallback(async () => {
-    if (isLoading || !hasMore) return;
-
+    if (loadingRef.current || !hasMore) return;
+    loadingRef.current = true;
     setIsLoading(true);
+    setFailed(false);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_feed_moments_grouped", {
-      p_event_limit: EVENTS_PER_PAGE,
-      p_moments_per_event: MOMENTS_PER_EVENT,
-      p_event_offset: offset,
-      p_content_types: contentTypes,
-    });
-
-    if (error) {
-      console.error("Failed to load more moments:", error);
+    try {
+      const next = await getDiscoveryGalleries(createClient(), locale, contentTypes, offset);
+      setGroups((previous) => {
+        const seen = new Set(previous.map((group) => group.event_id));
+        return [...previous, ...next.filter((group) => !seen.has(group.event_id))];
+      });
+      setOffset(offset + next.length);
+      setHasMore(next.length === DISCOVERY_EVENTS_PER_PAGE);
+    } catch (error) {
+      console.error("Failed to load event galleries:", error);
+      setFailed(true);
+    } finally {
+      loadingRef.current = false;
       setIsLoading(false);
-      return;
     }
+  }, [contentTypes, hasMore, locale, offset]);
 
-    const newGroups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroupType[]);
-
-    if (newGroups.length < EVENTS_PER_PAGE) {
-      setHasMore(false);
-    }
-
-    setGroups((prev) => [...prev, ...newGroups]);
-    setOffset((prev) => prev + newGroups.length);
-    setIsLoading(false);
-  }, [offset, isLoading, hasMore, contentTypes]);
-
-  // Refetch when content types change
-  const refetchWithFilter = useCallback(async () => {
-    setIsLoading(true);
-    setGroups([]);
-    setOffset(0);
-    setHasMore(true);
-
-    const supabase = createClient();
-    const { data, error } = await supabase.rpc("get_feed_moments_grouped", {
-      p_event_limit: EVENTS_PER_PAGE,
-      p_moments_per_event: MOMENTS_PER_EVENT,
-      p_event_offset: 0,
-      p_content_types: contentTypes,
-    });
-
-    if (error) {
-      console.error("Failed to load moments:", error);
-      setIsLoading(false);
-      return;
-    }
-
-    const newGroups = await withGroupVenueCredits(supabase, (data ?? []) as DiscoveryEventMomentsGroupType[]);
-    setGroups(newGroups);
-    setOffset(newGroups.length);
-    setHasMore(newGroups.length >= EVENTS_PER_PAGE);
-    setIsLoading(false);
-  }, [contentTypes]);
-
-  // React to content type changes (skip initial render)
-  const isFirstRender = useRef(true);
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false;
-      return;
-    }
-    refetchWithFilter();
-  }, [contentKey, refetchWithFilter]);
-
-  // Intersection Observer for infinite scroll
-  useEffect(() => {
+    const loader = loaderRef.current;
+    if (!loader || !hasMore || isLoading || failed) return;
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoading) {
-          loadMore();
-        }
+      ([entry]) => {
+        if (entry.isIntersecting) void loadMore();
       },
-      { threshold: 0.1, rootMargin: "120px" }
+      { rootMargin: "240px" },
     );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
+    observer.observe(loader);
     return () => observer.disconnect();
-  }, [loadMore, hasMore, isLoading]);
+  }, [loadMore, hasMore, isLoading, failed]);
 
   return (
-    <div className="space-y-8">
-      {/* Event groups */}
-      {groups.length === 0 && !isLoading ? (
-        <div className="text-center py-12">
-          <Camera className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-          <h3 className="font-medium text-lg mb-2">{t("noMoments")}</h3>
-          <p className="text-muted-foreground text-sm">{t("beFirst")}</p>
+    <div>
+      {groups.length === 0 && !hasMore && (
+        <div className="py-12 text-center text-muted-foreground">
+          <Camera className="mx-auto mb-4 size-10" aria-hidden="true" />
+          <p>{t("noMoments")}</p>
         </div>
-      ) : (
-        groups.map((group) => (
-          <DiscoveryEventMomentsGroup
-            key={group.event_id}
-            group={group}
-            commentCounts={commentCounts}
-          />
-        ))
       )}
-
-      {/* Loading indicator / Intersection Observer target */}
+      <div className="grid grid-cols-1 items-start gap-5 md:grid-cols-2">
+        {groups.map((group) => (
+          <DiscoveryEventMomentsGroup key={group.event_id} group={group} commentCounts={commentCounts} />
+        ))}
+      </div>
       <div ref={loaderRef} className="flex justify-center py-4">
-        {isLoading && (
-          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+        {isLoading && <Loader2 className="size-6 animate-spin text-muted-foreground" aria-hidden="true" />}
+        {failed && (
+          <button type="button" className="min-h-11 rounded-lg px-4 text-sm hover:bg-muted" onClick={loadMore}>
+            {t("retry")}
+          </button>
         )}
       </div>
     </div>

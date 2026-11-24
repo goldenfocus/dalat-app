@@ -52,19 +52,18 @@ export function MediaTypeFilterToggle({
         "inline-flex items-center rounded-lg bg-muted/50 p-0.5 gap-0.5",
         className,
       )}
-      role="radiogroup"
+      role="group"
       aria-label={t("filterMediaType")}
     >
       {options.map(({ key, icon, label }) => (
         <button
           key={key}
           type="button"
-          role="radio"
-          aria-checked={value === key}
+          aria-pressed={value === key}
           aria-label={label}
           onClick={() => onChange(key)}
           className={cn(
-            "p-1.5 rounded-md transition-all",
+            "grid size-11 place-items-center rounded-md transition-all",
             value === key
               ? "bg-background text-foreground shadow-sm"
               : "text-muted-foreground/60 hover:text-muted-foreground",

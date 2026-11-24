@@ -28,8 +28,6 @@ interface InfiniteMomentGridProps {
   initialHasMore: boolean;
   /** Enable lightbox mode (modal instead of page navigation) */
   enableLightbox?: boolean;
-  /** Callback when a moment card is clicked (for immersive mode) */
-  onMomentClick?: (index: number) => void;
   /** Callback when moments array is updated (for parent to track all loaded moments) */
   onMomentsUpdate?: (moments: MomentWithProfile[], hasMore: boolean) => void;
   /** Filter by media type (all, photo, video) */
@@ -111,7 +109,6 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
   initialMoments,
   initialHasMore,
   enableLightbox = false,
-  onMomentClick,
   onMomentsUpdate,
   mediaTypeFilter = "all",
   selectMode,
@@ -335,7 +332,6 @@ export const InfiniteMomentGrid = forwardRef<InfiniteMomentGridHandle, InfiniteM
               eventSlug={eventSlug}
               from="event"
               commentCount={commentCounts.get(moment.id)}
-              onLightboxOpen={onMomentClick ? () => onMomentClick(index) : undefined}
               selectMode={selectMode}
               isSelected={selectedIds?.has(moment.id)}
               isSelectable={canModerate || moment.user_id === currentUserId}

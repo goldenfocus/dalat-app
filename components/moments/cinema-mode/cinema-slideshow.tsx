@@ -327,7 +327,7 @@ export function CinemaSlideshow({
 
   if (!currentMoment && !isEnded) {
     return (
-      <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+      <div className="fixed inset-0 z-[55] bg-black flex items-center justify-center">
         <div className="w-16 h-16 rounded-full bg-white/5 animate-pulse" />
       </div>
     );
@@ -339,7 +339,7 @@ export function CinemaSlideshow({
       role="dialog"
       aria-label={t("dialogLabel")}
       tabIndex={-1}
-      className="fixed inset-0 z-50 bg-black outline-none"
+      className="fixed inset-0 z-[55] bg-black outline-none"
       onClickCapture={handleClickCapture}
       onClick={handleClick}
       onTouchStart={handleTouchStart}

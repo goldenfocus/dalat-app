@@ -20,6 +20,7 @@ interface MomentsLightboxProviderProps {
   children: ReactNode;
   moments: LightboxMoment[];
   eventSlug?: string;
+  autoplayPlaylist?: boolean;
   /** Called after a moment is deleted from inside the lightbox, so the grid can drop the tile */
   onMomentDeleted?: (momentId: string) => void;
   /**
@@ -105,6 +106,7 @@ export function MomentsLightboxProvider({
   children,
   moments,
   eventSlug,
+  autoplayPlaylist = true,
   onMomentDeleted,
   currentUserId,
 }: MomentsLightboxProviderProps) {
@@ -150,7 +152,7 @@ export function MomentsLightboxProvider({
 
   // Auto-play event playlist when lightbox opens
   useEffect(() => {
-    if (!isOpen || !eventSlug || hasTriggeredAutoPlay.current) {
+    if (!autoplayPlaylist || !isOpen || !eventSlug || hasTriggeredAutoPlay.current) {
       return;
     }
 
@@ -159,7 +161,7 @@ export function MomentsLightboxProvider({
 
     // Fetch and play the event's playlist
     fetchAndPlayEventPlaylist(eventSlug, setPlaylist, currentPlaylist?.eventSlug, locale);
-  }, [isOpen, eventSlug, setPlaylist, currentPlaylist?.eventSlug, locale]);
+  }, [autoplayPlaylist, isOpen, eventSlug, setPlaylist, currentPlaylist?.eventSlug, locale]);
 
   // Reset auto-play flag when lightbox closes (so it can trigger again next time)
   useEffect(() => {

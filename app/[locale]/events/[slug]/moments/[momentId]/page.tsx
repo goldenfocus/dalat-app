@@ -308,7 +308,6 @@ export default async function MomentDetailPage({ params, searchParams }: PagePro
           eventSlug={event.slug}
           eventTitle={eventTitle}
           momentId={moment.id}
-          from={from}
           mediaUrl={moment.media_url}
           contentType={moment.content_type}
           originalFilename={moment.original_filename}

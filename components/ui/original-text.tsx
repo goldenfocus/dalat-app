@@ -9,10 +9,12 @@ export function OriginalText({
   text,
   className,
   sourceLocale,
+  iconOnly = false,
 }: {
   text: string;
   className?: string;
   sourceLocale?: string;
+  iconOnly?: boolean;
 }) {
   const t = useTranslations("translations");
   return (
@@ -21,9 +23,15 @@ export function OriginalText({
       onKeyDown={(event) => event.stopPropagation()}
       className={cn("group text-sm text-muted-foreground", className)}
     >
-      <summary className="inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden">
+      <summary
+        title={iconOnly ? t("showOriginal") : undefined}
+        className={cn(
+          "inline-flex min-h-11 cursor-pointer list-none items-center gap-1.5 rounded-md px-2 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [&::-webkit-details-marker]:hidden",
+          iconOnly && "absolute right-0 top-0 min-w-11 justify-center",
+        )}
+      >
         <Languages className="h-4 w-4" aria-hidden="true" />
-        <span>{t("showOriginal")}</span>
+        <span className={iconOnly ? "sr-only" : undefined}>{t("showOriginal")}</span>
       </summary>
       <div
         lang={sourceLocale}

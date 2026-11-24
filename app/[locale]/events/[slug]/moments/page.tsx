@@ -1,7 +1,6 @@
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { getEventTranslationsBatch } from "@/lib/translations";
-import { translatedRecords } from "@/lib/translations/public-content";
-import { OriginalText } from "@/components/ui/original-text";
+import { translatedFields, translatedRecords } from "@/lib/translations/public-content";
 import { notFound, redirect } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
 import type { Metadata } from "next";
@@ -10,7 +9,7 @@ import { getTranslations } from "next-intl/server";
 import { createClient, createStaticClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { MomentsViewContainer } from "@/components/moments/moments-view-container";
-import { MusicPlayButton } from "@/components/audio/music-play-button";
+import { EventGalleryHeading } from "@/components/moments/event-gallery-heading";
 import { JsonLd, generateCinemaAlbumSchema } from "@/lib/structured-data";
 import { TribeChip, type ChipTribe } from "@/components/tribes/tribe-chip";
 import { buildAlternates, localeUrl } from "@/lib/metadata";
@@ -405,22 +404,23 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
   }
 
   if (result.type === "redirect") {
-    const queryString = view ? `?view=${encodeURIComponent(view)}` : "";
+    const queryString = view === "cinema" ? "?view=cinema" : "";
     redirect(`/${locale}/events/${result.newSlug}/moments${queryString}`);
   }
 
   const event = result.event;
+  if (view === "immersive") redirect(`/${locale}/events/${event.slug}/moments`);
 
   const [t, nav] = await Promise.all([getTranslations("moments"), getTranslations("nav")]);
 
-  const [{ moments, hasMore, totalCount }, canPost, playlist, titles] = await Promise.all([
+  const [{ moments, hasMore, totalCount }, canPost, playlist, eventFields] = await Promise.all([
     getMoments(event.id),
     canUserPost(event.id),
     getEventPlaylist(event.slug, event.title, event.image_url).then(async (own) =>
       own ?? loadHouseSoundtrack(await createClient(), event)),
-    getEventTranslationsBatch([event.id], locale as Locale),
+    translatedFields("event", event.id, locale),
   ]);
-  const eventTitle = titles.get(event.id)?.title || event.title;
+  const eventTitle = eventFields.get("title") || event.title;
   if (playlist) playlist.playlistInfo.eventTitle = eventTitle;
 
   // Schema copies use localized AI prose; the UI retains exact author sources.
@@ -429,14 +429,9 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
     ...moment,
     ai_description: momentFields.get(moment.id)?.get("ai_description") || (moment as MomentWithProfile & { ai_description?: string }).ai_description,
   }));
-  const firstTrackUrl = playlist?.tracks[0]?.file_url;
 
   return (
-    <main className="min-h-screen">
-      {/* Preload first audio track so playback starts instantly */}
-      {firstTrackUrl && (
-        <link rel="preload" href={firstTrackUrl} as="fetch" crossOrigin="anonymous" />
-      )}
+    <>
       <JsonLd
         data={generateCinemaAlbumSchema(
           { ...event, title: eventTitle },
@@ -454,46 +449,46 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         <Breadcrumbs
           parents={[
             { label: nav("events"), href: "/events/upcoming" },
-            { label: eventTitle, href: `/events/${event.slug}` },
           ]}
           current={t("moments")}
-          className="mb-2"
+          className="mb-3"
         />
-        {/* Title */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold">{t("moments")}</h1>
-            <MusicPlayButton />
-            {canPost && (
-              <Link href={`/events/${event.slug}/moments/new`} className="ml-auto">
-                <Button size="sm" variant="outline" className="active:scale-95 transition-transform">
-                  <Plus className="w-4 h-4 mr-1" />
-                  {t("addMoment")}
+        <div className="mb-4 rounded-2xl border border-border/70 bg-card p-4 sm:p-5">
+          <EventGalleryHeading
+            heading="h1"
+            slug={event.slug}
+            title={event.title}
+            translatedTitle={eventFields.get("title")}
+            description={event.description}
+            translatedDescription={eventFields.get("description")}
+            imageUrl={event.image_url}
+            date={event.starts_at}
+            locationName={event.location_name}
+            locale={locale}
+          />
+          {(event.tribes || (canPost && moments.length > 0)) && (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {event.tribes && <TribeChip tribe={event.tribes} />}
+              {canPost && moments.length > 0 && (
+                <Button asChild size="sm" variant="outline" className="ml-auto min-h-11">
+                  <Link href={`/events/${event.slug}/moments/new`}>
+                    <Plus className="size-4" aria-hidden="true" />
+                    {t("addMoment")}
+                  </Link>
                 </Button>
-              </Link>
-            )}
-          </div>
-          {eventTitle !== event.title && <OriginalText text={event.title} />}
-          {/* Moments inherit their tribe from the event — no moments.tribe_id */}
-          {event.tribes && (
-            <div className="mt-3">
-              <TribeChip tribe={event.tribes} />
+              )}
             </div>
           )}
         </div>
 
-        {/* Moments view with grid/immersive toggle */}
         <MomentsViewContainer
+          key={event.id}
           eventId={event.id}
           eventSlug={event.slug}
           initialMoments={moments}
           initialHasMore={hasMore}
           totalCount={totalCount}
-          initialView={
-            view === "immersive" ? "immersive" :
-            view === "cinema" ? "cinema" :
-            undefined
-          }
+          openCinemaInitially={view === "cinema"}
           eventMeta={{
             title: eventTitle,
             date: event.starts_at,
@@ -507,15 +502,15 @@ export default async function EventMomentsPage({ params, searchParams }: PagePro
         {/* CTA for users who can post but haven't yet */}
         {moments.length === 0 && canPost && (
           <div className="mt-6 text-center">
-            <Link href={`/events/${event.slug}/moments/new`}>
-              <Button size="lg" className="active:scale-95 transition-transform">
-                <Plus className="w-5 h-5 mr-2" />
+            <Button asChild size="lg" className="active:scale-95 transition-transform">
+              <Link href={`/events/${event.slug}/moments/new`}>
+                <Plus className="size-5" aria-hidden="true" />
                 {t("shareYourMoment")}
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         )}
       </div>
-    </main>
+    </>
   );
 }
