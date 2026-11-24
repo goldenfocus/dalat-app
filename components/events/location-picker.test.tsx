@@ -51,6 +51,30 @@ describe("LocationPicker free-text fallback", () => {
     );
   });
 
+  it("keeps a pasted Maps link when lookup is slow or unsuccessful", async () => {
+    const url = "https://maps.app.goo.gl/example";
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({}, { status: 422 })));
+    render(<LocationPicker />);
+    fireEvent.change(screen.getByRole("textbox"), { target: { value: url } });
+    expect(hiddenInput("google_maps_url").value).toBe(url);
+    await act(async () => { await vi.advanceTimersByTimeAsync(500); });
+    expect(hiddenInput("google_maps_url").value).toBe(url);
+    expect(hiddenInput("latitude").value).toBe("");
+  });
+
+  it("saves the only exact numbered address match without requiring a dropdown click", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json({ venues: [{
+      id: "known-venue", name: "Known venue", address: "20 Đường Sương Nguyệt Anh, Đà Lạt",
+      latitude: 11.94, longitude: 108.44, googleMapsUrl: "https://maps.google.com/?cid=123",
+    }] })));
+    render(<LocationPicker />);
+    await typeQuery(TYPED);
+    expect(hiddenInput("latitude").value).toBe("11.94");
+    expect(hiddenInput("longitude").value).toBe("108.44");
+    expect(hiddenInput("google_maps_url").value).toBe("https://maps.google.com/?cid=123");
+    expect(screen.getByRole("textbox")).toHaveValue(TYPED);
+  });
+
   it("offers a 'use as typed' row that selects the text as a custom location", async () => {
     const onLocationSelect = vi.fn();
     vi.stubGlobal(

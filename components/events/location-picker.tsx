@@ -6,20 +6,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
+import { normalizeVenueSearchText, normalizeVenueStreet } from "@/lib/venues/search";
 import type { VenueType } from "@/lib/types";
 import {
-  parseLocationInput,
-  isGoogleMapsUrl,
   isShortGoogleMapsUrl,
-  generateGoogleMapsUrl,
+  isGoogleMapsUrl,
   formatCoordinates,
-  type ParsedCoordinates,
 } from "@/lib/geo/parse-location";
 import {
   buildLocationFieldValues,
   googleMapsSearchUrl,
   isCustomLocationCandidate,
   makeCustomLocation,
+  makeMapsLocation,
 } from "@/lib/geo/location-form-values";
 
 // Venue result from our API
@@ -28,8 +27,8 @@ interface VenueResult {
   name: string;
   venueType: VenueType | null;
   address: string | null;
-  latitude: number;
-  longitude: number;
+  latitude: number | null;
+  longitude: number | null;
   googleMapsUrl: string | null;
   isVerified: boolean;
   isPublicMapPlace?: boolean;
@@ -57,6 +56,23 @@ interface LocationPickerProps {
 
 const DEBOUNCE_MS = 300;
 const MIN_CHARS = 3;
+
+function venueLocation(venue: VenueResult, linkVenue: boolean): SelectedLocation {
+  const address = venue.address || (venue.isPublicMapPlace ? "Đà Lạt, Lâm Đồng" : "");
+  const canLink = linkVenue && !venue.isPublicMapPlace;
+  const hasPin = venue.latitude !== null && venue.longitude !== null;
+  return {
+    type: canLink ? "venue" : "place",
+    venueId: canLink ? venue.id : undefined,
+    name: venue.name,
+    address,
+    latitude: venue.latitude,
+    longitude: venue.longitude,
+    googleMapsUrl: venue.googleMapsUrl || googleMapsSearchUrl(
+      hasPin ? `${venue.latitude},${venue.longitude}` : [venue.name, address].filter(Boolean).join(", "),
+    ),
+  };
+}
 
 export function LocationPicker({
   onLocationSelect,
@@ -89,15 +105,15 @@ export function LocationPicker({
   const [addressAssist, setAddressAssist] = useState<"idle" | "pending" | "done">("idle");
 
   // Smart detection state for coordinates/URLs
-  const [detectedCoords, setDetectedCoords] = useState<ParsedCoordinates | null>(null);
+  const [detectedCoords, setDetectedCoords] = useState(false);
   const [isResolvingUrl, setIsResolvingUrl] = useState(false);
   const [isReverseGeocoding, setIsReverseGeocoding] = useState(false);
-  const [urlResolveError, setUrlResolveError] = useState<string | null>(null);
 
   const sessionToken =
     useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const searchSeq = useRef(0);
   const assistRequest = useRef<AbortController | null>(null);
+  const [exactAddress, setExactAddress] = useState<{ query: string; location: SelectedLocation } | null>(null);
   const [completedSearch, setCompletedSearch] = useState<string | null>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -227,7 +243,22 @@ export function LocationPicker({
       );
       const data = await response.json();
       if (!response.ok) throw new Error("Venue search failed");
-      if (seq === searchSeq.current) setVenues(data.venues || []);
+      if (seq === searchSeq.current) {
+        const results: VenueResult[] = data.venues ?? [];
+        setVenues(results);
+        if (addressAssistEnabled && searchQuery === inputRef.current?.value) {
+          const street = normalizeVenueStreet(searchQuery);
+          const locality = normalizeVenueSearchText(searchQuery.split(",").slice(1).join(" "));
+          const matches = results.filter((venue) =>
+            /^\d+[a-z]* /.test(street) && street === normalizeVenueStreet(venue.address) &&
+            (!locality || /^(?:da lat|da lat lam dong)(?: vietnam| viet nam)?$/.test(locality) ||
+              locality === normalizeVenueSearchText(venue.address?.split(",").slice(1).join(" ") ?? ""))
+          );
+          if (matches.length === 1 && matches[0].latitude !== null && matches[0].longitude !== null) {
+            setExactAddress({ query: searchQuery, location: venueLocation(matches[0], false) });
+          }
+        }
+      }
     } catch (error) {
       console.error("Venue search error:", error);
       if (seq === searchSeq.current) {
@@ -239,38 +270,17 @@ export function LocationPicker({
     }
   }, [addressAssistEnabled]);
 
-  // Resolve short Google Maps URL via API
-  const resolveShortUrl = useCallback(async (url: string) => {
-    setIsResolvingUrl(true);
-    setUrlResolveError(null);
-
-    try {
-      const response = await fetch("/api/resolve-maps-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok || data.error) {
-        setUrlResolveError(data.error || "Failed to resolve URL");
-        return null;
-      }
-
-      return {
-        latitude: data.latitude,
-        longitude: data.longitude,
-        source: "short-url" as const,
-      };
-    } catch (error) {
-      console.error("Error resolving short URL:", error);
-      setUrlResolveError("Failed to resolve URL");
-      return null;
-    } finally {
-      setIsResolvingUrl(false);
-    }
-  }, []);
+  const resolveShortUrl = async (url: string) => {
+    const response = await fetch("/api/resolve-maps-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+      signal: AbortSignal.timeout(7000),
+    });
+    if (!response.ok) return null;
+    const { resolvedUrl } = await response.json() as { resolvedUrl?: string };
+    return resolvedUrl ? makeMapsLocation(resolvedUrl) : null;
+  };
 
   // Reverse geocode to get place name from coordinates
   const reverseGeocode = useCallback(async (lat: number, lng: number) => {
@@ -291,88 +301,36 @@ export function LocationPicker({
     }
   }, []);
 
-  // Apply detected coordinates as the selected location
-  const applyDetectedCoordinates = useCallback(
-    async (coords: ParsedCoordinates, _rawInput: string) => {
-      const formattedCoords = formatCoordinates(coords.latitude, coords.longitude);
-
-      // Set location immediately with coordinates (quick feedback)
-      const initialLocation: SelectedLocation = {
-        type: "place",
-        name: formattedCoords,
-        address: formattedCoords,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
-      };
-
-      setSelectedLocation(initialLocation);
-      setSelectedVenueId(null);
-      setDetectedCoords(coords);
-      setIsOpen(false);
-      onLocationSelect?.(initialLocation);
-      onVenueIdChange?.(null);
-
-      // Then reverse geocode to get the actual place name (async)
-      setIsReverseGeocoding(true);
-      const placeInfo = await reverseGeocode(coords.latitude, coords.longitude);
-      setIsReverseGeocoding(false);
-
-      if (placeInfo?.name) {
-        // Update with the real place name
-        const enrichedLocation: SelectedLocation = {
-          type: "place",
-          name: placeInfo.name,
-          address: placeInfo.address || formattedCoords,
-          latitude: coords.latitude,
-          longitude: coords.longitude,
-          googleMapsUrl: generateGoogleMapsUrl(coords.latitude, coords.longitude),
-        };
-
-        setSelectedLocation(enrichedLocation);
-        setQuery(placeInfo.name); // Update the input to show the place name
-        onLocationSelect?.(enrichedLocation);
-      }
-    },
-    [onLocationSelect, onVenueIdChange, reverseGeocode]
-  );
-
-  // Detect and handle coordinate/URL input
-  const handleSmartDetection = useCallback(
-    async (value: string) => {
-      // Reset detection state
-      setDetectedCoords(null);
-      setUrlResolveError(null);
-
-      // Check for direct coordinates first
-      const parsed = parseLocationInput(value);
-      if (parsed) {
-        applyDetectedCoordinates(parsed, value);
-        return true;
-      }
-
-      // Check for short Google Maps URLs (need API resolution)
-      if (isShortGoogleMapsUrl(value)) {
-        const resolved = await resolveShortUrl(value);
+  const enrichMapsLocation = async (url: string, initial: SelectedLocation, seq: number) => {
+    let location = initial;
+    if (isShortGoogleMapsUrl(url)) {
+      setIsResolvingUrl(true);
+      try {
+        const resolved = await resolveShortUrl(url);
+        if (seq !== searchSeq.current) return;
         if (resolved) {
-          applyDetectedCoordinates(resolved, value);
-          return true;
+          location = { ...initial, ...resolved, googleMapsUrl: initial.googleMapsUrl };
+          setSelectedLocation(location);
+          setDetectedCoords(location.latitude !== null);
+          onLocationSelect?.(location);
         }
-        // If resolution failed, let user continue typing or clear
-        return false;
+      } catch {
+        // The original link is already saved in the form.
+      } finally {
+        if (seq === searchSeq.current) setIsResolvingUrl(false);
       }
-
-      // Check for full Google Maps URLs that parseLocationInput didn't catch
-      if (isGoogleMapsUrl(value) && !parsed) {
-        // URL format not recognized - could be a place URL without coords
-        // Fall through to normal search
-        return false;
-      }
-
-      return false;
-    },
-    [applyDetectedCoordinates, resolveShortUrl]
-  );
+    }
+    if (seq !== searchSeq.current || location.latitude === null || location.longitude === null) return;
+    if (location.name !== formatCoordinates(location.latitude, location.longitude)) return;
+    setIsReverseGeocoding(true);
+    const place = await reverseGeocode(location.latitude, location.longitude);
+    if (seq !== searchSeq.current) return;
+    setIsReverseGeocoding(false);
+    if (!place) return;
+    const enriched = { ...location, name: place.name, address: place.address || location.address };
+    setSelectedLocation(enriched);
+    onLocationSelect?.(enriched);
+  };
 
   // Search Google Places
   const searchPlaces = useCallback(
@@ -421,6 +379,7 @@ export function LocationPicker({
     assistRequest.current?.abort();
     setAddressAssist("idle");
     setCompletedSearch(null);
+    setExactAddress(null);
     setQuery(value);
     const seq = ++searchSeq.current;
 
@@ -432,29 +391,31 @@ export function LocationPicker({
       onVenueIdChange?.(null);
     }
 
-    // Reset detection state when typing
-    setDetectedCoords(null);
-    setUrlResolveError(null);
+    setDetectedCoords(false);
+    setIsResolvingUrl(false);
+    setIsReverseGeocoding(false);
 
-    // Debounce the search
+    // Debounce text search, but save a pasted destination immediately.
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
 
-    if (value.length >= MIN_CHARS) {
+    const map = makeMapsLocation(value);
+    if (map) {
+      const location: SelectedLocation = { type: "place", ...map };
+      setSelectedLocation(location);
+      setSelectedVenueId(null);
+      setDetectedCoords(location.latitude !== null);
+      setIsOpen(false);
+      setVenues([]);
+      setPlaceSuggestions([]);
+      onLocationSelect?.(location);
+      onVenueIdChange?.(null);
+      void enrichMapsLocation(value, location, seq);
+    } else if (value.length >= MIN_CHARS) {
       debounceTimer.current = setTimeout(async () => {
         setSearchDegraded(false);
-        // Try smart detection first (coordinates or URLs)
-        const detected = await handleSmartDetection(value);
         if (seq !== searchSeq.current) return;
-        if (detected) {
-          // Coordinates/URL detected and applied - don't search
-          setVenues([]);
-          setPlaceSuggestions([]);
-          return;
-        }
-
-        // Not coordinates/URL - proceed with normal search
         setIsOpen(true);
         await Promise.all([searchVenues(value, seq), searchPlaces(value, seq)]);
         if (seq === searchSeq.current) setCompletedSearch(value);
@@ -463,7 +424,7 @@ export function LocationPicker({
       // Show popular venues when cleared
       fetchPopularVenues();
       setPlaceSuggestions([]);
-      setDetectedCoords(null);
+      setDetectedCoords(false);
     } else {
       setVenues([]);
       setPlaceSuggestions([]);
@@ -486,17 +447,7 @@ export function LocationPicker({
   };
 
   const handleSelectVenue = (venue: VenueResult) => {
-    const location: SelectedLocation = {
-      type: venue.isPublicMapPlace ? "place" : "venue",
-      venueId: venue.isPublicMapPlace ? undefined : venue.id,
-      name: venue.name,
-      address: venue.address || (venue.isPublicMapPlace ? "Đà Lạt, Lâm Đồng" : ""),
-      latitude: venue.latitude,
-      longitude: venue.longitude,
-      googleMapsUrl:
-        venue.googleMapsUrl ||
-        googleMapsSearchUrl(`${venue.latitude},${venue.longitude}`),
-    };
+    const location = venueLocation(venue, true);
 
     assistRequest.current?.abort();
     searchSeq.current++;
@@ -585,8 +536,9 @@ export function LocationPicker({
     setSelectedVenueId(null);
     setVenues([]);
     setPlaceSuggestions([]);
-    setDetectedCoords(null);
-    setUrlResolveError(null);
+    setDetectedCoords(false);
+    setIsResolvingUrl(false);
+    setIsReverseGeocoding(false);
     setSearchDegraded(false);
     setAddressAssist("idle");
     onLocationSelect?.(null);
@@ -599,7 +551,8 @@ export function LocationPicker({
   const showLoading = isLoading || isLoadingVenues || isLoadingScript || isResolvingUrl;
   const customText = query.trim();
   const canOfferCustom = isCustomLocationCandidate(query) && !detectedCoords;
-  const locationFields = buildLocationFieldValues(selectedLocation, query);
+  const matchedLocation = addressAssistEnabled && exactAddress?.query === query ? exactAddress.location : null;
+  const locationFields = buildLocationFieldValues(selectedLocation ?? matchedLocation, query);
 
   useEffect(() => {
     if (!addressAssistEnabled) {
@@ -700,13 +653,6 @@ export function LocationPicker({
           ) : (
             selectedLocation.address
           )}
-        </p>
-      )}
-
-      {/* URL resolution error */}
-      {urlResolveError && (
-        <p className="text-sm text-amber-600 flex items-center gap-1">
-          {t("locationUrlError") || "Could not extract location from URL. Try pasting coordinates directly."}
         </p>
       )}
 
@@ -875,6 +821,7 @@ export function LocationPicker({
         name="google_maps_url"
         value={locationFields.google_maps_url}
       />
+      <input type="hidden" name="pasted_map" value={isGoogleMapsUrl(query) ? "true" : ""} />
       <input type="hidden" name="latitude" value={locationFields.latitude} />
       <input type="hidden" name="longitude" value={locationFields.longitude} />
     </div>

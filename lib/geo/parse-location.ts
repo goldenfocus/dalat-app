@@ -74,8 +74,8 @@ export function isGoogleMapsUrl(input: string): boolean {
     if (url.protocol !== "https:" || url.username || url.password || url.port) return false;
     return (url.hostname === "maps.app.goo.gl")
       || (url.hostname === "goo.gl" && url.pathname.startsWith("/maps/"))
-      || (url.hostname === "maps.google.com")
-      || ((url.hostname === "google.com" || url.hostname === "www.google.com") && url.pathname.startsWith("/maps"));
+      || (url.hostname === "maps.google.com" || url.hostname === "maps.google.com.vn")
+      || (["google.com", "www.google.com", "google.com.vn", "www.google.com.vn"].includes(url.hostname) && /^\/maps(?:\/|$)/.test(url.pathname));
   } catch { return false; }
 }
 
@@ -112,8 +112,17 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
       ? { latitude, longitude, source: "google-maps-url" } : null;
   };
 
-  // A place's pin is authoritative. @lat,lng describes only the camera view,
-  // which may be kilometres away after the user pans or zooms before sharing.
+  // For a directions link the first pin in the payload may be the origin.
+  const isDirections = /\/maps\/dir(?:\/|$)/.test(url.pathname);
+  const destination = url.searchParams.get("destination");
+  const directionPath = isDirections && url.pathname.split("/")[4];
+  const directionCoords = destination || (directionPath ? decodeURIComponent(directionPath) : "");
+  if (isDirections) {
+    const coordinates = parseCoordinates(directionCoords);
+    return coordinates ? { ...coordinates, source: "google-maps-url" } : null;
+  }
+
+  // A place's pin takes priority over its viewport center.
   const pin = point(text.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/));
   if (pin) return pin;
   for (const key of ["destination", "query", "q", "ll"]) {
@@ -123,7 +132,11 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
   }
   const search = point(text.match(/\/search\/(-?\d+\.?\d*)[, +]+(-?\d+\.?\d*)/));
   if (search) return search;
-  return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
+  // Explicit map-view links may use their center; place and search URLs may not.
+  if (/^\/maps\/@/.test(url.pathname)) {
+    return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
+  }
+  return null;
 }
 
 /**

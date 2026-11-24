@@ -1,3 +1,6 @@
+import { generateGoogleMapsUrl, isGoogleMapsUrl, parseGoogleMapsUrl } from "@/lib/geo/parse-location";
+import { googleMapsSearchUrl } from "@/lib/geo/location-form-values";
+
 /** Public location fields shared by events, recurring series and venues. */
 export interface EventLocation {
   location_name?: string | null;
@@ -29,21 +32,30 @@ export function hasCoordinates(location: EventLocation): boolean {
     && Math.abs(location.longitude) <= 180;
 }
 
-/** Coordinates take precedence over address searches, matching the venue map. */
+function getLocationPin(location: EventLocation) {
+  if (location.latitude == null || location.longitude == null || !hasCoordinates(location)) return null;
+  return (location.google_maps_url && parseGoogleMapsUrl(location.google_maps_url)) || {
+    latitude: location.latitude,
+    longitude: location.longitude,
+  };
+}
+
+/** Use the saved map for opening a place and its precise pin for directions. */
 export function getLocationMapLinks(location: EventLocation) {
   if (location.is_online || (location.has_private_details && !location.address && !location.google_maps_url)) {
     return { map: null, directions: null };
   }
-  const coordinates = hasCoordinates(location)
-    ? `${location.latitude},${location.longitude}` : null;
-  const query = [location.location_name, location.address].filter(Boolean).join(", ");
+  const rawUrl = location.google_maps_url?.trim();
+  const savedMap = rawUrl && isGoogleMapsUrl(rawUrl) ? rawUrl : null;
+  const legacyMap = rawUrl && /^https?:\/\//i.test(rawUrl) ? rawUrl : null;
+  const coordinates = getLocationPin(location);
+  const query = Array.from(new Set([location.location_name, location.address].filter(Boolean))).join(", ");
   return {
-    map: coordinates
-      ? `https://www.google.com/maps/search/?api=1&query=${coordinates}`
-      : location.google_maps_url || (query
-        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}` : null),
+    map: savedMap || (coordinates
+      ? generateGoogleMapsUrl(coordinates.latitude, coordinates.longitude)
+      : (legacyMap || (query ? googleMapsSearchUrl(query) : null))),
     directions: coordinates
-      ? `https://www.google.com/maps/dir/?api=1&destination=${coordinates}` : null,
+      ? `https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}` : null,
   };
 }
 
@@ -66,7 +78,9 @@ export function resolveEventLocation<T extends EventLocation>(
     longitude: approximate ? null : venue.longitude,
     google_maps_url: venue.google_maps_url,
   };
-  return { ...location, google_maps_url: getLocationMapLinks(location).map };
+  const venuePin = !approximate && venue.latitude !== null && venue.longitude !== null && hasCoordinates(location)
+    ? generateGoogleMapsUrl(venue.latitude, venue.longitude) : null;
+  return { ...location, google_maps_url: venuePin || getLocationMapLinks(location).map };
 }
 
 /**
@@ -80,9 +94,10 @@ export function getCalendarLocation(location: EventLocation) {
     (part, i, all): part is string => !!part && all.indexOf(part) === i,
   );
   const text = parts.join(", ") || (location.google_maps_url ?? "");
+  const pin = getLocationPin(location);
   return {
     text,
     mapUrl: getLocationMapLinks(location).map,
-    geo: hasCoordinates(location) ? `${location.latitude};${location.longitude}` : null,
+    geo: pin ? `${pin.latitude};${pin.longitude}` : null,
   };
 }

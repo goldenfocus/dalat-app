@@ -646,6 +646,7 @@ export function EventForm({
     const locationName = formData.get("location_name") as string;
     const address = formData.get("address") as string;
     const googleMapsUrl = formData.get("google_maps_url") as string;
+    const pastedMap = formData.get("pasted_map") === "true";
     const latitudeStr = formData.get("latitude") as string;
     const longitudeStr = formData.get("longitude") as string;
     const latitude = latitudeStr ? parseFloat(latitudeStr) : null;
@@ -800,7 +801,7 @@ export function EventForm({
 
     const mayLinkVenue = !isOnline && !secretAddress && (!tribeId || tribeVisibility === "public");
     const linkPublishedVenue = async (id: string) => {
-      if (!mayLinkVenue) return null;
+      if (!mayLinkVenue || pastedMap) return null;
       try {
         const response = await fetch("/api/events/venue-link", {
           method: "POST",
@@ -1310,6 +1311,7 @@ export function EventForm({
           {/* Location - unified venue + address picker (hidden for online events) */}
           {!isOnline && (
             <LocationPicker
+              addressAssistEnabled={!secretAddress}
               defaultValue={
                 event?.location_name || initialPrivateDetails
                   ? {

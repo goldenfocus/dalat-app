@@ -17,7 +17,7 @@ export function EventLocation({ location, directionsLabel, mapLabel, children }:
     <MapPin className="mt-0.5 h-5 w-5 shrink-0 text-primary/80" aria-hidden />
     <span className="min-w-0 flex-1 space-y-1">
       {location.location_name && <span className="block font-medium text-foreground">{decodeUnicodeEscapes(location.location_name)}</span>}
-      {location.address && <span className="block text-sm leading-relaxed text-muted-foreground">{decodeUnicodeEscapes(location.address)}</span>}
+      {location.address && location.address !== location.location_name && <span className="block text-sm leading-relaxed text-muted-foreground">{decodeUnicodeEscapes(location.address)}</span>}
     </span>
   </>;
 

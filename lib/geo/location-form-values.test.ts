@@ -63,9 +63,11 @@ describe("buildLocationFieldValues", () => {
     expect(buildLocationFieldValues(null, "Da").location_name).toBe("");
   });
 
-  it("does not fall back for URL-shaped input (unresolved Maps links)", () => {
+  it("preserves Google Maps links immediately and excludes other URLs", () => {
     const url = "https://maps.app.goo.gl/xyz123";
-    expect(buildLocationFieldValues(null, url).location_name).toBe("");
+    expect(buildLocationFieldValues(null, url)).toMatchObject({
+      location_name: "Google Maps", google_maps_url: url, latitude: "", longitude: "",
+    });
     expect(buildLocationFieldValues(null, ` HTTP://example.com `).location_name).toBe("");
   });
 });

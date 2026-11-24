@@ -2,7 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createStaticClient } from "@/lib/supabase/server";
 
 export const venueDirectoryColumns =
-  "id,slug,name,venue_type,address,latitude,longitude,google_maps_url,is_verified,priority_score";
+  "id,slug,name,venue_type,address,latitude,longitude,google_maps_url,is_verified,priority_score,geocode_source";
 
 export const getVenueSearchDirectory = unstable_cache(
   async () => {

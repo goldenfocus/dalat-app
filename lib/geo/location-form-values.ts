@@ -1,3 +1,5 @@
+import { formatCoordinates, isGoogleMapsUrl, parseGoogleMapsUrl, parseCoordinates, generateGoogleMapsUrl } from "./parse-location";
+
 /**
  * Values for the hidden location inputs submitted by LocationPicker.
  *
@@ -28,8 +30,7 @@ export function googleMapsSearchUrl(text: string): string {
 /**
  * Single eligibility rule for treating typed text as a free-form address.
  * Both the visible "Use as typed" row and the silent submit fallback use it —
- * text the UI never offered must never be persisted. URLs are excluded so an
- * unresolved pasted Maps link is dropped rather than saved as a venue name.
+ * Maps links have a separate path that preserves the shared destination.
  */
 export function isCustomLocationCandidate(text: string): boolean {
   const trimmed = text.trim();
@@ -53,17 +54,47 @@ export function makeCustomLocation(text: string): {
   };
 }
 
+export function makeMapsLocation(input: string): SelectedLocationFields | null {
+  const value = input.trim();
+  const isMapsLink = isGoogleMapsUrl(value);
+  const coordinates = isMapsLink ? parseGoogleMapsUrl(value) : parseCoordinates(value);
+  if (!isMapsLink && !coordinates) return null;
+
+  let label = coordinates ? formatCoordinates(coordinates.latitude, coordinates.longitude) : "Google Maps";
+  if (isMapsLink) {
+    const url = new URL(value);
+    const pathLabel = url.pathname.match(/\/maps\/(?:place|search)\/([^/@]+)/)?.[1];
+    const textLabel = url.searchParams.get("destination") || url.searchParams.get("query") || url.searchParams.get("q");
+    try {
+      const namedPlace = textLabel || (pathLabel && decodeURIComponent(pathLabel.replace(/\+/g, " ")));
+      if (namedPlace && namedPlace.length >= 3 && namedPlace.length <= 200 && !parseCoordinates(namedPlace) && !namedPlace.startsWith("place_id:")) {
+        label = namedPlace;
+      }
+    } catch {
+      // Preserve the map link even when its display text cannot be decoded.
+    }
+  }
+  return {
+    name: label,
+    address: label.length >= 8 ? label : "Google Maps",
+    googleMapsUrl: !isMapsLink && coordinates ? generateGoogleMapsUrl(coordinates.latitude, coordinates.longitude) : value,
+    latitude: coordinates?.latitude ?? null,
+    longitude: coordinates?.longitude ?? null,
+  };
+}
+
 export function buildLocationFieldValues(
   selected: SelectedLocationFields | null,
   query: string
 ): LocationFieldValues {
-  if (selected) {
+  const location = selected ?? makeMapsLocation(query);
+  if (location) {
     return {
-      location_name: selected.name,
-      address: selected.address,
-      google_maps_url: selected.googleMapsUrl,
-      latitude: selected.latitude?.toString() ?? "",
-      longitude: selected.longitude?.toString() ?? "",
+      location_name: location.name,
+      address: location.address,
+      google_maps_url: location.googleMapsUrl,
+      latitude: location.latitude?.toString() ?? "",
+      longitude: location.longitude?.toString() ?? "",
     };
   }
 
