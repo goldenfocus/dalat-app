@@ -153,6 +153,8 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
             location_name: locationName || null,
             address: address || null,
             google_maps_url: googleMapsUrl || null,
+            latitude,
+            longitude,
             external_chat_url: safePrimary || null,
             additional_links: safeAdditionalLinks,
             contact_link_names: normalizeEventLinkNames(contactLinkNames),

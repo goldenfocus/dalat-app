@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { hasEventMeetingPin } from "@/lib/events/location";
 import { LocationPicker } from "@/components/events/location-picker";
 import { VenueLinker } from "@/components/events/venue-linker";
 import { EventMediaUpload } from "@/components/events/event-media-upload";
@@ -361,6 +362,8 @@ export function EventForm({
       locationName: copyFromEvent.location_name || "",
       address: copyFromEvent.address || "",
       googleMapsUrl: copyFromEvent.google_maps_url || "",
+      latitude: copyFromEvent.latitude ?? null,
+      longitude: copyFromEvent.longitude ?? null,
       // Clear external URL - each event typically has its own FB event
       externalChatUrl: "",
       capacity: copyFromEvent.capacity,
@@ -817,7 +820,8 @@ export function EventForm({
       return privateError;
     };
 
-    const mayLinkVenue = !isOnline && !secretAddress && (!tribeId || tribeVisibility === "public");
+    const mayLinkVenue = !isOnline && !secretAddress && (!tribeId || tribeVisibility === "public") &&
+      (venueIdToSave || !hasEventMeetingPin({ latitude, longitude, google_maps_url: googleMapsUrl }));
     const linkPublishedVenue = async (id: string) => {
       if (!mayLinkVenue || pastedMap) return null;
       try {
@@ -1342,6 +1346,7 @@ export function EventForm({
           {!isOnline && (
             <LocationPicker
               addressAssistEnabled={!secretAddress}
+              linkedVenueId={venueId}
               defaultValue={
                 event?.location_name || initialPrivateDetails
                   ? {
@@ -1377,8 +1382,8 @@ export function EventForm({
                         name: copyDefaults.locationName,
                         address: copyDefaults.address,
                         googleMapsUrl: copyDefaults.googleMapsUrl,
-                        latitude: null,
-                        longitude: null,
+                        latitude: copyDefaults.latitude,
+                        longitude: copyDefaults.longitude,
                       }
                     : null
               }

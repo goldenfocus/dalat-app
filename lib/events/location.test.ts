@@ -21,6 +21,15 @@ describe("canonical venue locations", () => {
     });
     expect(stale.address).toBe("Old address");
   });
+  it("keeps a dropped meeting pin for guest maps and calendars even if the venue moves", () => {
+    const directions = "https://www.google.com/maps/dir/?api=1&destination=11.947,108.4345";
+    const event = { ...stale, location_name: venue.name, address: venue.address,
+      latitude: 11.947, longitude: 108.4345, google_maps_url: directions };
+    const result = resolveEventLocation(event, { ...venue, latitude: 12, longitude: 109 });
+
+    expect(getLocationMapLinks(result).directions).toBe(directions);
+    expect(getCalendarLocation(result)).toMatchObject({ mapUrl: directions, geo: "11.947;108.4345" });
+  });
   it("automatically follows venue edits for the series and every occurrence", () => {
     const moved = { ...venue, address: "New entrance", latitude: 12, longitude: 109 };
     for (const record of [{ ...stale, id: "series" }, { ...stale, id: "today" }, { ...stale, id: "next-month" }]) {
