@@ -114,11 +114,13 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
 
   // For a directions link the first pin in the payload may be the origin.
   const isDirections = /\/maps\/dir(?:\/|$)/.test(url.pathname);
-  const destination = url.searchParams.get("destination");
-  const directionPath = isDirections && url.pathname.split("/")[4];
-  const directionCoords = destination || (directionPath ? decodeURIComponent(directionPath) : "");
   if (isDirections) {
-    const coordinates = parseCoordinates(directionCoords);
+    const segments = url.pathname.split("/").slice(3);
+    const metadata = segments.findIndex((segment) => segment.startsWith("@") || segment.startsWith("data="));
+    const stops = metadata === -1 ? segments : segments.slice(0, metadata);
+    const lastStop = stops[0] ? stops.filter(Boolean).slice(1).at(-1) : stops.slice(1).filter(Boolean).at(-1);
+    const destination = url.searchParams.get("destination") ?? (lastStop ? decodeURIComponent(lastStop) : "");
+    const coordinates = parseCoordinates(destination);
     return coordinates ? { ...coordinates, source: "google-maps-url" } : null;
   }
 

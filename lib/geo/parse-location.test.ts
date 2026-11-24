@@ -27,5 +27,8 @@ it("does not use the camera or route origin as the destination", () => {
   expect(parseLocationInput("https://maps.google.com/?q=Socialhouse&ll=11.99,108.49")).toBeNull();
   const route = "https://www.google.com/maps/dir/11.99,108.49/11.9467648,108.4341887/@11.98,108.47,15z";
   expect(parseLocationInput(route)).toMatchObject({ latitude: 11.9467648, longitude: 108.4341887 });
+  expect(parseLocationInput("https://www.google.com/maps/dir/11.99,108.49/11.95,108.45/11.9467648,108.4341887/@11.98,108.47,15z"))
+    .toMatchObject({ latitude: 11.9467648, longitude: 108.4341887 });
+  expect(parseLocationInput("https://www.google.com/maps/dir/11.99,108.49/11.95,108.45/Final+Stop/@11.98,108.47,15z")).toBeNull();
   expect(parseLocationInput("https://www.google.com/maps/dir/Socialhouse/Named+Destination/@11,108,15z/data=!3d11.1!4d108.1")).toBeNull();
 });
