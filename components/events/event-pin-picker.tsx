@@ -75,7 +75,7 @@ export function EventPinPicker({ initialPin, onConfirm }: {
       <DialogTitle>{t("locationDropPin")}</DialogTitle>
       <DialogDescription>{t("locationPinHint")}</DialogDescription>
       <div className="relative h-[min(48dvh,24rem)] min-h-40 overflow-hidden rounded-lg bg-muted">
-        <div ref={container} role="region" aria-label={t("locationDropPin")} className="absolute inset-0" />
+        <div ref={container} role="region" aria-label={t("locationDropPin")} className="size-full" />
         {status === "ready" ? (
           <MapPin aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 size-8 -translate-x-1/2 -translate-y-full fill-primary text-primary-foreground drop-shadow-md" />
         ) : (

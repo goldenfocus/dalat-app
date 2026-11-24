@@ -362,6 +362,8 @@ export function EventForm({
       locationName: copyFromEvent.location_name || "",
       address: copyFromEvent.address || "",
       googleMapsUrl: copyFromEvent.google_maps_url || "",
+      latitude: copyFromEvent.latitude ?? null,
+      longitude: copyFromEvent.longitude ?? null,
       // Clear external URL - each event typically has its own FB event
       externalChatUrl: "",
       capacity: copyFromEvent.capacity,
@@ -1380,8 +1382,8 @@ export function EventForm({
                         name: copyDefaults.locationName,
                         address: copyDefaults.address,
                         googleMapsUrl: copyDefaults.googleMapsUrl,
-                        latitude: null,
-                        longitude: null,
+                        latitude: copyDefaults.latitude,
+                        longitude: copyDefaults.longitude,
                       }
                     : null
               }
