@@ -4,7 +4,9 @@ import { POST as sendInterestedNotifications } from '@/app/api/notifications/int
 import { POST as sendRsvpNotifications } from '@/app/api/notifications/rsvp/route';
 import { cookies } from 'next/headers';
 import { createClient } from '@/lib/supabase/server';
-import { safeReturnPath, localizedPath } from '@/lib/auth/continuation';
+import { safeReturnPath, localizedPath, eventProfilePath } from '@/lib/auth/continuation';
+import { EVENT_PROFILE_REQUIRED } from '@/lib/auth/event-profile';
+import { locales } from '@/lib/i18n/locales';
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const intent = url.searchParams.get('intent');
@@ -14,7 +16,7 @@ export async function GET(request: Request) {
   const cookieStore = await cookies();
   const secret = intent && /^[0-9a-f-]{36}$/i.test(intent) ? cookieStore.get(`dalat-intent-${intent}`)?.value : null;
   const continuation = intent ? `/auth/continue?intent=${encodeURIComponent(intent)}` : `/auth/continue?next=${encodeURIComponent(next)}`;
-  if (!user) {
+  if (!user || user.is_anonymous) {
     const login = new URL('/auth/login', url.origin);
     if (intent) login.searchParams.set('intent', intent);
     else login.searchParams.set('next', next);
@@ -28,6 +30,12 @@ export async function GET(request: Request) {
   if (!intent) return NextResponse.redirect(new URL(localizedPath(next, locale), url.origin));
   if (!secret) return NextResponse.redirect(new URL(localizedPath('/auth/error?error=Please%20open%20the%20community%20or%20event%20link%20again%20in%20this%20browser.',locale),url.origin));
   const { data, error } = await supabase.rpc('complete_signup_intent', { p_id: intent, p_token_hash: createHash('sha256').update(secret).digest('hex') });
+  if (error?.message === EVENT_PROFILE_REQUIRED) {
+    const intentLocale = locales.find(locale => locale === error.details) ?? locale;
+    const response = NextResponse.redirect(new URL(eventProfilePath(intentLocale, continuation), url.origin));
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
+  }
   if (error) return NextResponse.redirect(new URL(localizedPath('/auth/error?error=Your%20sign-in%20worked.%20Please%20open%20the%20original%20link%20again%20to%20continue.',locale),url.origin));
   if (data.just_completed && data.rsvp_status === 'going' && data.event_id) {
     after(async () => {
@@ -44,7 +52,8 @@ export async function GET(request: Request) {
       }));
     });
   }
-  const destination = new URL(localizedPath(safeReturnPath(data.next_path),locale),url.origin);
+  const intentLocale = locales.find(locale => locale === data.locale) ?? locale;
+  const destination = new URL(localizedPath(safeReturnPath(data.next_path), intentLocale), url.origin);
   if (data.just_completed && data.community_status) destination.searchParams.set('communityStatus',data.community_status);
   if (data.rsvp_pending) destination.searchParams.set('resumeRsvp','1');
   if (data.just_completed && data.rsvp_status) destination.searchParams.set('rsvpStatus',data.rsvp_status);

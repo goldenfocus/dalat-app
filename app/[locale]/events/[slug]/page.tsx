@@ -1,3 +1,4 @@
+import { hasEventProfile, publicEventName } from "@/lib/auth/event-profile";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
 import { canEditEvent } from "@/lib/events/editor-access";
@@ -541,7 +542,7 @@ async function getCurrentUserId(): Promise<string | null> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  return user?.id ?? null;
+  return user && !user.is_anonymous ? user.id : null;
 }
 
 /**
@@ -564,17 +565,15 @@ async function isInTribe(
   return !!data;
 }
 
-async function getCurrentUserRole(
-  userId: string | null,
-): Promise<UserRole | null> {
+async function getCurrentUserProfile(userId: string | null) {
   if (!userId) return null;
   const supabase = await createClient();
   const { data } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, display_name, username")
     .eq("id", userId)
     .single();
-  return (data?.role as UserRole) ?? null;
+  return data;
 }
 
 async function getMomentsPreview(
@@ -1058,9 +1057,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
     typeof activityMediaMetadata?.activity_media_source_url === "string"
       ? activityMediaMetadata.activity_media_source_url
       : undefined;
-  const [t, tCommon, tPlaylist, tTribes, tNavigation, tVenues] = await Promise.all([
+  const [t, tPlaylist, tTribes, tNavigation, tVenues] = await Promise.all([
     getTranslations("events"),
-    getTranslations("common"),
     getTranslations("playlist"),
     getTranslations("tribes"),
     getTranslations("nav"),
@@ -1069,7 +1067,13 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
   const tRecap = await getTranslations("recap");
   const currentUserId = await getCurrentUserId();
-  const currentUserRole = await getCurrentUserRole(currentUserId);
+  const currentUserProfile = await getCurrentUserProfile(currentUserId);
+  const currentUserRole = currentUserProfile?.role as UserRole | undefined;
+  const organizerName = publicEventName(event.organizers?.name) ??
+    publicEventName(event.organizers?.owner?.display_name) ??
+    ((!event.source_platform || event.source_platform === "manual")
+      ? publicEventName(event.profiles?.display_name) ?? publicEventName(event.profiles?.username)
+      : null);
 
   // Optimized: Combined RSVP fetch (3 queries -> 1), plus other parallel fetches
   const [
@@ -1399,6 +1403,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
             goingSpots={counts?.going_spots ?? 0}
             currentRsvp={currentRsvp}
             isLoggedIn={isLoggedIn}
+            needsEventProfile={!hasEventProfile(currentUserProfile)}
             waitlistPosition={waitlistPosition}
             startsAt={event.starts_at}
             endsAt={event.ends_at}
@@ -1898,7 +1903,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
               {isPast && attendanceCard}
 
               {/* Organizer */}
-              <Card>
+              {organizerName && <Card>
                 <CardContent className="p-4">
                   <p className="text-sm text-muted-foreground mb-2">
                     {t("organizedBy")}
@@ -1941,16 +1946,10 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-primary/20" />
                     )}
-                    <span className="font-medium">
-                      {event.organizers?.name ||
-                        event.organizers?.owner?.display_name ||
-                        event.profiles?.display_name ||
-                        event.profiles?.username ||
-                        tCommon("anonymous")}
-                    </span>
+                    <span className="font-medium">{organizerName}</span>
                   </Link>
                 </CardContent>
-              </Card>
+              </Card>}
 
               {/* Hosting tribe — the read side of events.tribe_id. Safe to show
                 whenever set: members_only events are already hidden from

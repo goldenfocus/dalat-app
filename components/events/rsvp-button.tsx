@@ -6,6 +6,7 @@ import { prepareCelebrationAudio } from "@/lib/communities/celebration-audio";
 
 import { currentCommunityVisit } from "@/lib/communities/activity";
 import { startSignupIntent } from "@/lib/auth/start-intent";
+import { EVENT_PROFILE_REQUIRED } from "@/lib/auth/event-profile";
 import { useCommunityRsvp, CommunityRsvpChoice } from "./community-rsvp";
 import { useState, useTransition, createContext, useContext, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
@@ -93,6 +94,7 @@ interface RsvpButtonProps {
   goingSpots: number;
   currentRsvp: Rsvp | null;
   isLoggedIn: boolean;
+  needsEventProfile?: boolean;
   waitlistPosition: number | null;
   startsAt: string;
   endsAt: string | null;
@@ -127,9 +129,11 @@ export function useRsvpActions(
   onShowQuestionnaire?: () => void,
   currentStatus?: Rsvp["status"] | null,
   arrivalSlug?: string,
-  prepareRegistration = false
+  prepareRegistration = false,
+  needsEventProfile = false,
 ) {
   const router = useRouter();
+  const auth = useTranslations("auth");
   const { beforeRsvp, languageSheet, languagePending } = useRsvpLanguages(arrivalSlug);
   const communityContext = useCommunityRsvp();
   const [transitionPending, startTransition] = useTransition();
@@ -158,15 +162,28 @@ export function useRsvpActions(
   const hasActiveQuestionnaire = questionnaire?.is_enabled &&
     questionnaire.questions.length > 0;
 
+  async function continueEventIntent(eventAction: "going" | "interested") {
+    setSignupPending(true);
+    setError(null);
+    try {
+      await startSignupIntent({
+        kind: "event",
+        slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!,
+        ...(eventAction === "interested" && { eventAction }),
+        joinCommunity: communityContext.join,
+        communitySlug: communityContext.community?.slug,
+      });
+    } catch {
+      setError(auth("somethingWentWrong"));
+    } finally {
+      setSignupPending(false);
+    }
+  }
+
   async function handleRsvp() {
     prepareCelebrationAudio();
-    if (!isLoggedIn) {
-      if (isPending) return;
-      setSignupPending(true);
-      setError(null);
-      try { await startSignupIntent({ kind: "event", slug: communityContext.eventSlug || window.location.pathname.split("/").pop()!, joinCommunity: communityContext.join, communitySlug: communityContext.community?.slug }); }
-      catch { setError("Could not continue. Please try again."); }
-      finally { setSignupPending(false); }
+    if (!isLoggedIn || needsEventProfile) {
+      if (!isPending) await continueEventIntent("going");
       return;
     }
 
@@ -215,7 +232,8 @@ export function useRsvpActions(
         });
 
         if (rpcError) {
-          setError(rpcError.message);
+          if (rpcError.message === EVENT_PROFILE_REQUIRED) await continueEventIntent("going");
+          else setError(rpcError.message);
           resolve({ success: false });
           return;
         }
@@ -261,9 +279,8 @@ export function useRsvpActions(
     setError(null);
     prepareCelebrationAudio();
     try {
-      if (!isLoggedIn) {
-        try { await startSignupIntent({kind:"event",slug:communityContext.eventSlug || window.location.pathname.split("/").pop()!,eventAction:"interested",joinCommunity:communityContext.join,communitySlug:communityContext.community?.slug}); }
-        catch { setError("Could not continue. Please try again."); }
+      if (!isLoggedIn || needsEventProfile) {
+        await continueEventIntent("interested");
         return;
       }
 
@@ -272,7 +289,8 @@ export function useRsvpActions(
       });
 
       if (rpcError) {
-        setError(rpcError.message);
+        if (rpcError.message === EVENT_PROFILE_REQUIRED) await continueEventIntent("interested");
+        else setError(rpcError.message);
         return;
       }
 
@@ -366,6 +384,7 @@ export function RsvpButton({
   goingSpots,
   currentRsvp,
   isLoggedIn,
+  needsEventProfile,
   waitlistPosition,
   startsAt,
   endsAt,
@@ -394,7 +413,7 @@ export function RsvpButton({
   }, []);
 
   const { isPending, languageSheet, interestedPending, confirmedStatus, error, handleRsvp, handleInterested, handleCancel, performRsvp, hasActiveQuestionnaire } =
-    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status, arrivalEnabled ? eventSlug : undefined, prepareRegistration);
+    useRsvpActions(eventId, isLoggedIn, handleCelebrationTrigger, questionnaire, handleShowQuestionnaire, currentRsvp?.status, arrivalEnabled ? eventSlug : undefined, prepareRegistration, needsEventProfile);
 
   const resumeRsvp = useRef(handleRsvp);
   useEffect(() => { resumeRsvp.current = handleRsvp; }, [handleRsvp]);

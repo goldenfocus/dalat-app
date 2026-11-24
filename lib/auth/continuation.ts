@@ -14,13 +14,18 @@ export function localizedPath(path: string, locale: string): string {
   if (locales.includes(first as typeof locales[number])) return safe;
   return locale === 'en' ? safe : `/${locale}${safe}`;
 }
-export function eventCreationLoginPath(locale: string, copyFrom?: string | null, tribe?: string | null): string {
+export function eventCreationPath(locale: string, copyFrom?: string | null, tribe?: string | null): string {
   const eventPath = localizedPath('/events/new', locale);
   const query = new URLSearchParams();
   if (copyFrom) query.set('copyFrom', copyFrom);
   if (tribe) query.set('tribe', tribe);
-  const next = query.size ? eventPath + '?' + query : eventPath;
-  return localizedPath('/auth/login?' + new URLSearchParams({ next }), locale);
+  return query.size ? eventPath + '?' + query : eventPath;
+}
+export function eventCreationLoginPath(locale: string, copyFrom?: string | null, tribe?: string | null): string {
+  return localizedPath('/auth/login?' + new URLSearchParams({ next: eventCreationPath(locale, copyFrom, tribe) }), locale);
+}
+export function eventProfilePath(locale: string, next: string): string {
+  return localizedPath('/onboarding/event-profile?' + new URLSearchParams({ next: safeReturnPath(next) }), locale);
 }
 export function authContinuation(search: URLSearchParams): string {
   const intent = search.get('intent');

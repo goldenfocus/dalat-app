@@ -32,6 +32,17 @@ describe('guest event joining', () => {
     expect(screen.queryByText('imGoing')).toBeNull();
     expect(screen.queryByText('community choice')).toBeNull();
   });
+  it.each([['imGoing', undefined], ['interested', 'interested']])(
+    'preserves %s intent when a signed-in member still needs a display name',
+    async (button, eventAction) => {
+      render(<RsvpButton {...props} isLoggedIn needsEventProfile />);
+      fireEvent.click(screen.getByRole('button', { name: button }));
+      await waitFor(() => expect(startSignupIntent).toHaveBeenCalledWith(
+        expect.objectContaining({ kind: 'event', slug: 'exchange', ...(eventAction && { eventAction }) }),
+      ));
+      expect(rpc).not.toHaveBeenCalled();
+    },
+  );
   it('retains RSVP and interested choices for signed-in visitors', () => {
     render(<RsvpButton {...props} isLoggedIn />);
     expect(screen.getByRole('button', { name: 'imGoing' })).toBeVisible();

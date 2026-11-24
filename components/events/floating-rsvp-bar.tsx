@@ -32,6 +32,7 @@ interface FloatingRsvpBarProps {
   goingSpots: number;
   currentRsvp: Rsvp | null;
   isLoggedIn: boolean;
+  needsEventProfile?: boolean;
   waitlistPosition: number | null;
   startsAt: string;
   endsAt: string | null;
@@ -54,6 +55,7 @@ export function FloatingRsvpBar({
   goingSpots,
   currentRsvp,
   isLoggedIn,
+  needsEventProfile,
   waitlistPosition,
   startsAt,
   endsAt,
@@ -89,7 +91,8 @@ export function FloatingRsvpBar({
     handleShowQuestionnaire,
     currentRsvp?.status,
     arrivalEnabled ? eventSlug : undefined,
-    prepareRegistration
+    prepareRegistration,
+    needsEventProfile,
   );
 
   // Handle questionnaire submission
