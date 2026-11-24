@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchPublicEventPlaces } from "@/lib/venues/public-event-places";
+import { getVenueSearchDirectory, venueDirectoryColumns } from "@/lib/venues/directory-search";
+import { normalizeVenueStreet, rankVenueSearchMatch } from "@/lib/venues/search";
 import { createClient } from "@/lib/supabase/server";
 
 /**
@@ -32,9 +34,7 @@ export async function GET(request: NextRequest) {
   // Base query - select only fields needed for the picker
   let venueQuery = supabase
     .from("venues")
-    .select(
-      "id, name, venue_type, address, latitude, longitude, google_maps_url, is_verified"
-    );
+    .select(venueDirectoryColumns);
 
   if (lat && lng) {
     // Nearby search using bounding box
@@ -70,11 +70,30 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ venues: [] });
   }
 
-  const { data: venues, error } = await venueQuery;
+  const { data, error } = await venueQuery;
+  let venues = data ?? [];
 
   if (error) console.error("Venue search error:", error);
 
-  const publicPlaces = !venues?.length && query && query.length <= 160 &&
+  if (query && query.length >= 2 && query.length <= 160 && !popular && !lat && !lng) {
+    const numberedStreet = /^\d+\p{L}* \p{L}/u.test(normalizeVenueStreet(query));
+    if (numberedStreet || !venues.length) {
+      try {
+        const directory = await getVenueSearchDirectory();
+        venues = directory.map((venue) => ({ venue, score: rankVenueSearchMatch(venue, query) }))
+          .filter(({ score }) => score >= (numberedStreet ? 2 : 1))
+          .sort((a, b) => b.score - a.score ||
+            Number(b.venue.is_verified) - Number(a.venue.is_verified) ||
+            (b.venue.priority_score ?? 0) - (a.venue.priority_score ?? 0))
+          .slice(0, 5).map(({ venue }) => venue);
+      } catch (directoryError) {
+        console.error("Venue directory search error:", directoryError);
+        if (numberedStreet) venues = venues.filter((venue) => rankVenueSearchMatch(venue, query) >= 2);
+      }
+    }
+  }
+
+  const publicPlaces = !venues.length && query && query.length <= 160 &&
     !popular && !lat && !lng && searchParams.get("publicPlaces") === "true"
       ? searchPublicEventPlaces(query).map((place) => ({
           ...place, googleMapsUrl: null, isVerified: false, isPublicMapPlace: true,
@@ -88,7 +107,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(
     {
       venues:
-        (venues?.length ? venues : null)?.map((v) => ({
+        (venues.length ? venues : null)?.map((v) => ({
           id: v.id,
           name: v.name,
           venueType: v.venue_type,
