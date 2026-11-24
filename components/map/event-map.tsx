@@ -16,7 +16,7 @@ import { VenuePopupCard } from "./venue-popup-card";
 import { EventPopupCard } from "./event-popup-card";
 import { MapLegend } from "./map-legend";
 import { VENUE_MARKER_COLORS } from "@/lib/constants/venue-types";
-import { loadMapLibre } from "./load-maplibre";
+import { loadMapLibre, type MapLibre } from "./load-maplibre";
 import { DALAT_CENTER, DEFAULT_ZOOM, MAP_STYLE_URLS, MARKER_COLORS } from "./map-styles";
 import { MapFilterBar, type DatePreset } from "./map-filter-bar";
 import { triggerHaptic } from "@/lib/haptics";
