@@ -614,6 +614,7 @@
     "time": "時間",
     "timeRequired": "時間 *（ダラット）",
     "location": "場所",
+    "locationPreviewMap": "地図をプレビュー",
     "locationRequired": "場所 *",
     "locationPlaceholder": "会場検索、座標またはGoogle Mapsリンクを貼り付け...",
     "locationVenuesSection": "会場",

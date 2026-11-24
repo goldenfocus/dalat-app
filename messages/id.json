@@ -614,6 +614,7 @@
     "time": "Waktu",
     "timeRequired": "Waktu * (Đà Lạt)",
     "location": "Lokasi",
+    "locationPreviewMap": "Pratinjau peta",
     "locationRequired": "Lokasi *",
     "locationPlaceholder": "Cari tempat, tempel koordinat atau tautan Google Maps...",
     "locationVenuesSection": "Tempat",

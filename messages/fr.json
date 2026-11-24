@@ -628,6 +628,7 @@
     "time": "Heure",
     "timeRequired": "Heure * (Đà Lạt)",
     "location": "Lieu",
+    "locationPreviewMap": "Aperçu de la carte",
     "locationRequired": "Lieu *",
     "locationPlaceholder": "Rechercher, coller coordonnées ou lien Google Maps...",
     "locationVenuesSection": "Lieux",

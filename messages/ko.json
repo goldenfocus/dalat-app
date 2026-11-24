@@ -614,6 +614,7 @@
     "time": "시간",
     "timeRequired": "시간 * (달랏)",
     "location": "장소",
+    "locationPreviewMap": "지도 미리 보기",
     "locationRequired": "장소 *",
     "locationPlaceholder": "장소 검색, 좌표 또는 Google Maps 링크 붙여넣기...",
     "locationVenuesSection": "장소",

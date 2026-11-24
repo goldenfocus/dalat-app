@@ -614,6 +614,7 @@
     "time": "Zeit",
     "timeRequired": "Zeit * (Đà Lạt)",
     "location": "Ort",
+    "locationPreviewMap": "Kartenvorschau",
     "locationRequired": "Ort *",
     "locationPlaceholder": "Orte suchen, Koordinaten oder Google Maps-Link einfügen...",
     "locationVenuesSection": "Veranstaltungsorte",

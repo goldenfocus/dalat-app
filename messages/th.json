@@ -614,6 +614,7 @@
     "time": "เวลา",
     "timeRequired": "เวลา * (ดาลัด)",
     "location": "สถานที่",
+    "locationPreviewMap": "ดูตัวอย่างแผนที่",
     "locationRequired": "สถานที่ *",
     "locationPlaceholder": "ค้นหาสถานที่ วางพิกัด หรือลิงก์ Google Maps...",
     "locationVenuesSection": "สถานที่",

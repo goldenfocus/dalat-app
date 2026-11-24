@@ -614,6 +614,7 @@
     "time": "时间",
     "timeRequired": "时间 *（大叻）",
     "location": "地点",
+    "locationPreviewMap": "预览地图",
     "locationRequired": "地点 *",
     "locationPlaceholder": "搜索场地、粘贴坐标或Google Maps链接...",
     "locationVenuesSection": "场地",
