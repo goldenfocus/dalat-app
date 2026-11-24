@@ -26,11 +26,23 @@ INSERT INTO event_coverage_venues VALUES
     11.9518607, 108.4552715, '2006484746538021288', NULL, 'nhất niệm trà'),
   ('beeppub', 'Beeppub', 'bar', '11A Nguyễn Chí Thanh, Đà Lạt, Lâm Đồng', '11a nguyễn chí thanh',
     11.9411551, 108.4366887, '2341970295074658830', 'https://beepitupdalat.wixsite.com/beeppub', 'beeppub'),
-  ('dalat-university', 'Trường Đại học Đà Lạt', 'other', '1 Phù Đổng Thiên Vương, Lâm Viên, Đà Lạt, Lâm Đồng',
+  ('dalat-university-campus', 'Trường Đại học Đà Lạt (Dalat University)', 'other', '1 Phù Đổng Thiên Vương, Lâm Viên, Đà Lạt, Lâm Đồng',
     '1 phù đổng thiên vương', 11.9545604, 108.4442049, '11269900663778399994', 'https://www.dlu.edu.vn/', 'dalat university'),
   ('om-sua-160-nguyen-cong-tru', 'Ốm Sữa - 160 Nguyễn Công Trứ', 'cafe',
     '160 Nguyễn Công Trứ, Lâm Viên, Đà Lạt, Lâm Đồng', '160 nguyễn công trứ', 11.9566539, 108.4376483,
     '15388556931758619991', 'https://omsua.vn/', 'ốm sữa - 160 nguyễn công trứ');
+
+-- The organizer already holds /dalat-university. Correct the first seed's
+-- venue slug in place so linked event IDs and the organizer route both survive.
+UPDATE public.venues AS venue
+SET slug = coverage.slug, name = coverage.name
+FROM event_coverage_venues AS coverage
+WHERE coverage.slug = 'dalat-university-campus'
+  AND venue.slug = 'dalat-university'
+  AND venue.name = 'Trường Đại học Đà Lạt'
+  AND venue.owner_id IS NULL
+  AND venue.google_maps_url = 'https://maps.google.com/?cid=' || coverage.maps_cid
+  AND NOT EXISTS (SELECT 1 FROM public.unified_slugs WHERE slug = coverage.slug);
 
 INSERT INTO public.venues
   (slug, name, venue_type, address, latitude, longitude, google_maps_url, website_url, geocode_source, source_locale)
@@ -43,6 +55,7 @@ WHERE NOT EXISTS (
     OR (lower(trim(venue.name)) = lower(coverage.name)
       AND lower(trim(split_part(venue.address, ',', 1))) = coverage.street)
 )
+AND NOT EXISTS (SELECT 1 FROM public.unified_slugs WHERE slug = coverage.slug)
 ON CONFLICT (slug) DO NOTHING;
 
 -- Only link known public occurrences with both the same Maps entity and street.
