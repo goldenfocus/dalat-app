@@ -1,3 +1,4 @@
+import { normalizeAdditionalEventLinks, normalizeEventLinkNames, normalizeEventLinkImages } from "@/lib/events/contact-links";
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
@@ -27,6 +28,9 @@ interface CreateSeriesRequest {
   latitude?: number;
   longitude?: number;
   external_chat_url?: string;
+  additional_links?: string[];
+  contact_link_names?: Record<string,string>;
+  contact_link_images?: Record<string,string>;
   is_online?: boolean;
   online_link?: string;
   title_position?: "top" | "middle" | "bottom";
@@ -86,6 +90,11 @@ export async function POST(request: Request) {
   }
 
   const body: CreateSeriesRequest = await request.json();
+  let additionalLinks: string[];
+  let contactLinkNames: Record<string,string>;
+  let contactLinkImages: Record<string,string>;
+  try { additionalLinks = normalizeAdditionalEventLinks(body.additional_links); contactLinkNames = normalizeEventLinkNames(body.contact_link_names); contactLinkImages = normalizeEventLinkImages(body.contact_link_images); }
+  catch { return NextResponse.json({ error: "Invalid event links" }, { status: 400 }); }
 
   // Validation
   if (!body.title?.trim()) {
@@ -173,6 +182,9 @@ export async function POST(request: Request) {
         latitude: body.latitude ?? null,
         longitude: body.longitude ?? null,
         external_chat_url: body.external_chat_url || null,
+        additional_links: additionalLinks,
+        contact_link_names: contactLinkNames,
+        contact_link_images: contactLinkImages,
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
         title_position: body.title_position || "bottom",
@@ -269,6 +281,9 @@ export async function POST(request: Request) {
         latitude: body.latitude ?? null,
         longitude: body.longitude ?? null,
         external_chat_url: body.external_chat_url || null,
+        additional_links: additionalLinks,
+        contact_link_names: contactLinkNames,
+        contact_link_images: contactLinkImages,
         is_online: body.is_online || false,
         online_link: body.is_online ? (body.online_link || null) : null,
         title_position: body.title_position || "bottom",

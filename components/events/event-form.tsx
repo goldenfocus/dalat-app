@@ -92,6 +92,8 @@ import type {
   TribeMemberRole,
 } from "@/lib/types";
 import { hasRoleLevel } from "@/lib/types";
+import { EventLinksInput } from "@/components/events/event-links-input";
+import { normalizeAdditionalEventLinks, normalizeEventLinkNames, normalizeEventLinkImages } from "@/lib/events/contact-links";
 import { normalizeEventContactLink } from "@/lib/events/contact-link";
 import { finalizeSlug } from "@/lib/utils";
 import {
@@ -631,6 +633,10 @@ export function EventForm({
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    if (e.currentTarget.querySelector('[data-event-link-uploading="true"]')) {
+      setError(t("linkImageUploading"));
+      return;
+    }
 
     const formData = new FormData(e.currentTarget);
     const description = formData.get("description") as string;
@@ -655,6 +661,18 @@ export function EventForm({
     const externalChatUrl = externalInput === event?.external_chat_url
       ? event.external_chat_url
       : normalizeEventContactLink(externalInput);
+    let additionalLinks: string[];
+    let contactLinkNames: Record<string,string>;
+    let contactLinkImages: Record<string,string>;
+    try {
+      additionalLinks = normalizeAdditionalEventLinks(formData.getAll("additional_links"));
+      const urls = [externalInput, ...formData.getAll("additional_links").map(String)];
+      const labels = formData.getAll("contact_link_name").map(String);
+      const images = formData.getAll("contact_link_image").map(String);
+      contactLinkImages = normalizeEventLinkImages(Object.fromEntries(urls.map((url,i)=>[url,images[i]||""]).filter(([url,image])=>url&&image)));
+      contactLinkNames = normalizeEventLinkNames(Object.fromEntries(urls.map((url,i) => [url, labels[i] || ""]).filter(([url,name]) => url && name.trim())));
+    }
+    catch { setError(t("externalLinkInvalid")); return; }
     const capacityStr = formData.get("capacity") as string;
     // Use state-managed venueId (set by LocationPicker or VenueLinker)
     const venueIdToSave = venueId;
@@ -856,6 +874,9 @@ export function EventForm({
                 address: address || null,
                 google_maps_url: googleMapsUrl || null,
                 external_chat_url: externalChatUrl || null,
+                additional_links: additionalLinks,
+                contact_link_names: contactLinkNames,
+                contact_link_images: contactLinkImages,
                 capacity,
                 update_scope: seriesEditScope, // "future" or "all"
                 from_event_id: event.id,
@@ -916,6 +937,9 @@ export function EventForm({
               longitude: isSecret ? null : longitude,
               has_private_details: isSecret,
               external_chat_url: externalChatUrl || null,
+                additional_links: additionalLinks,
+                contact_link_names: contactLinkNames,
+                contact_link_images: contactLinkImages,
               is_online: isOnline,
               online_link: isOnline ? normalizedOnlineLink : null,
               title_position: "bottom",
@@ -1009,6 +1033,9 @@ export function EventForm({
                 latitude,
                 longitude,
                 external_chat_url: externalChatUrl || null,
+                additional_links: additionalLinks,
+                contact_link_names: contactLinkNames,
+                contact_link_images: contactLinkImages,
                 is_online: isOnline,
                 online_link: isOnline ? normalizedOnlineLink : null,
                 title_position: "bottom",
@@ -1136,6 +1163,9 @@ export function EventForm({
                 longitude: isSecret ? null : longitude,
                 has_private_details: isSecret,
                 external_chat_url: externalChatUrl || null,
+                additional_links: additionalLinks,
+                contact_link_names: contactLinkNames,
+                contact_link_images: contactLinkImages,
                 is_online: isOnline,
                 online_link: isOnline ? normalizedOnlineLink : null,
                 title_position: "bottom",
@@ -1390,30 +1420,7 @@ export function EventForm({
                 </p>
               </div>
 
-              {/* External link */}
-              <div className="space-y-2">
-                <Label htmlFor="external_chat_url">{t("externalLink")}</Label>
-                <Input
-                  id="external_chat_url"
-                  name="external_chat_url"
-                  type="text"
-                  inputMode="url"
-                  autoCapitalize="none"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  aria-describedby="event-contact-help"
-                  placeholder={t("externalLinkPlaceholder")}
-                  defaultValue={event?.external_chat_url ?? ""}
-                />
-                <p id="event-contact-help" className="text-xs text-muted-foreground">
-                  {t("externalLinkHelp")}
-                </p>
-                {isCopying && (
-                  <p className="text-xs text-muted-foreground">
-                    {t("externalLinkNotCopied")}
-                  </p>
-                )}
-              </div>
+              <EventLinksInput primary={event?.external_chat_url} additional={event?.additional_links} names={event?.contact_link_names} images={event?.contact_link_images} copying={isCopying} />
 
               {/* Series Edit Scope (only shown when editing a series event) */}
               {isEditing && isSeriesEvent && (

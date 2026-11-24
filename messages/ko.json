@@ -744,7 +744,27 @@
     "descriptionAutoFill": "{title} 행사에 초대합니다. 행사 시간과 집합 장소 또는 온라인 참여 방법은 이 페이지의 세부 정보를 확인해 주세요. 참석할 예정이라면 주최자가 미리 준비할 수 있도록 이 페이지에서 참석 여부를 알려 주세요.",
     "addressAssist": "AI 주소 검색 시도",
     "addressAssistSuggestion": "{address} 검색",
-    "addressAssistUnavailable": "다른 검색어 제안이 없습니다. 입력한 주소를 그대로 저장할 수 있습니다."
+    "addressAssistUnavailable": "다른 검색어 제안이 없습니다. 입력한 주소를 그대로 저장할 수 있습니다.",
+    "contactLinksTitle": "연락처 및 예약 링크 (선택 사항)",
+    "addContactLink": "링크 추가",
+    "contactLinkNumber": "링크 {number}",
+    "removeContactLink": "링크 {number} 삭제",
+    "contactLinksHelp": "그룹 초대, 소셜 프로필, 예약 페이지 또는 웹사이트를 추가하세요. 플랫폼이 자동으로 감지됩니다.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "웹사이트"
+    },
+    "contactLinkName": "커뮤니티 또는 링크 이름 (선택 사항)",
+    "addLinkImage": "로고 또는 이미지 추가",
+    "changeLinkImage": "이미지 변경",
+    "linkImageUploading": "이미지 업로드 중…",
+    "linkImageError": "5 MB 미만의 JPG, PNG, WebP 또는 GIF를 사용하세요. 업로드에 실패하면 다시 시도하세요."
   },
   "eventActions": {
     "eventOptions": "이벤트 옵션",

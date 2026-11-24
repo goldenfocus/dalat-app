@@ -744,7 +744,27 @@
     "descriptionAutoFill": "欢迎参加「{title}」。出发前，请在本页面查看活动的开始时间、集合地点或线上参加方式，并以页面上的活动详情为准。如果你计划参加，请提前在这里确认出席，方便主办方做好活动当天的安排。",
     "addressAssist": "尝试用 AI 搜索地址",
     "addressAssistSuggestion": "搜索 {address}",
-    "addressAssistUnavailable": "助手暂无其他搜索建议，你仍可保存输入的地址。"
+    "addressAssistUnavailable": "助手暂无其他搜索建议，你仍可保存输入的地址。",
+    "contactLinksTitle": "联系与预订链接（可选）",
+    "addContactLink": "添加其他链接",
+    "contactLinkNumber": "链接 {number}",
+    "removeContactLink": "删除链接 {number}",
+    "contactLinksHelp": "添加群组邀请、社交主页、预订页面或网站。系统会自动识别平台。",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "网站"
+    },
+    "contactLinkName": "社区或链接名称（可选）",
+    "addLinkImage": "添加标志或图片",
+    "changeLinkImage": "更换图片",
+    "linkImageUploading": "正在上传图片…",
+    "linkImageError": "请使用小于5 MB的JPG、PNG、WebP或GIF文件。上传失败时请重试。"
   },
   "eventActions": {
     "eventOptions": "活动选项",

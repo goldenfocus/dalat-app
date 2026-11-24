@@ -744,7 +744,27 @@
     "descriptionAutoFill": "Ikuti acara {title}. Lihat waktu acara dan cara bergabung di halaman ini.",
     "addressAssist": "Coba pencarian alamat dengan AI",
     "addressAssistSuggestion": "Cari {address}",
-    "addressAssistUnavailable": "Asisten tidak punya saran pencarian lain. Anda masih dapat menyimpan alamat yang diketik."
+    "addressAssistUnavailable": "Asisten tidak punya saran pencarian lain. Anda masih dapat menyimpan alamat yang diketik.",
+    "contactLinksTitle": "Tautan kontak dan pemesanan (opsional)",
+    "addContactLink": "Tambah tautan lain",
+    "contactLinkNumber": "Tautan {number}",
+    "removeContactLink": "Hapus tautan {number}",
+    "contactLinksHelp": "Tambahkan undangan grup, profil sosial, halaman pemesanan, atau situs web. Platform dikenali secara otomatis.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Situs web"
+    },
+    "contactLinkName": "Nama komunitas atau tautan (opsional)",
+    "addLinkImage": "Tambahkan logo atau gambar",
+    "changeLinkImage": "Ganti gambar",
+    "linkImageUploading": "Mengunggah gambar…",
+    "linkImageError": "Gunakan JPG, PNG, WebP, atau GIF di bawah 5 MB. Coba lagi jika unggahan gagal."
   },
   "eventActions": {
     "eventOptions": "Opsi acara",

@@ -7,7 +7,7 @@ vi.mock("@/lib/i18n/routing", () => ({
     href,
     children,
     ...props
-  }: { href: string; children: unknown } & Record<string, unknown>) => (
+  }: { href: string; children: React.ReactNode } & Record<string, unknown>) => (
     <a href={href} {...props}>
       {children}
     </a>

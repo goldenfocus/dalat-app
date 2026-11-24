@@ -744,7 +744,27 @@
     "descriptionAutoFill": "Ven a {title}. En esta página encontrarás la hora y la información para participar.",
     "addressAssist": "Probar la búsqueda de direcciones con IA",
     "addressAssistSuggestion": "Buscar {address}",
-    "addressAssistUnavailable": "El asistente no tiene otra búsqueda que sugerir. Puedes guardar la dirección que escribiste."
+    "addressAssistUnavailable": "El asistente no tiene otra búsqueda que sugerir. Puedes guardar la dirección que escribiste.",
+    "contactLinksTitle": "Enlaces de contacto y reserva (opcional)",
+    "addContactLink": "Añadir otro enlace",
+    "contactLinkNumber": "Enlace {number}",
+    "removeContactLink": "Eliminar enlace {number}",
+    "contactLinksHelp": "Añade invitaciones a grupos, perfiles sociales, páginas de reservas o sitios web. Detectamos la plataforma automáticamente.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Sitio web"
+    },
+    "contactLinkName": "Nombre de la comunidad o del enlace (opcional)",
+    "addLinkImage": "Añadir logo o imagen",
+    "changeLinkImage": "Cambiar imagen",
+    "linkImageUploading": "Subiendo imagen…",
+    "linkImageError": "Usa un JPG, PNG, WebP o GIF de menos de 5 MB. Inténtalo de nuevo si falla la subida."
   },
   "eventActions": {
     "eventOptions": "Opciones del evento",

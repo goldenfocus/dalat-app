@@ -744,7 +744,27 @@
     "descriptionAutoFill": "มาร่วมกิจกรรม {title} กับเรา ดูเวลาและวิธีเข้าร่วมได้ในหน้านี้",
     "addressAssist": "ลองค้นหาที่อยู่ด้วย AI",
     "addressAssistSuggestion": "ค้นหา {address}",
-    "addressAssistUnavailable": "ผู้ช่วยไม่มีคำค้นอื่นแนะนำ คุณยังบันทึกที่อยู่ตามที่พิมพ์ไว้ได้"
+    "addressAssistUnavailable": "ผู้ช่วยไม่มีคำค้นอื่นแนะนำ คุณยังบันทึกที่อยู่ตามที่พิมพ์ไว้ได้",
+    "contactLinksTitle": "ลิงก์ติดต่อและจอง (ไม่บังคับ)",
+    "addContactLink": "เพิ่มลิงก์อื่น",
+    "contactLinkNumber": "ลิงก์ {number}",
+    "removeContactLink": "ลบลิงก์ {number}",
+    "contactLinksHelp": "เพิ่มคำเชิญเข้ากลุ่ม โปรไฟล์โซเชียล หน้าจอง หรือเว็บไซต์ ระบบจะตรวจจับแพลตฟอร์มโดยอัตโนมัติ",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "เว็บไซต์"
+    },
+    "contactLinkName": "ชื่อชุมชนหรือลิงก์ (ไม่บังคับ)",
+    "addLinkImage": "เพิ่มโลโก้หรือรูปภาพ",
+    "changeLinkImage": "เปลี่ยนรูปภาพ",
+    "linkImageUploading": "กำลังอัปโหลดรูปภาพ…",
+    "linkImageError": "ใช้ไฟล์ JPG, PNG, WebP หรือ GIF ขนาดไม่เกิน 5 MB หากอัปโหลดไม่สำเร็จ ให้ลองอีกครั้ง"
   },
   "eventActions": {
     "eventOptions": "ตัวเลือกกิจกรรม",

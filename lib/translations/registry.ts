@@ -1,3 +1,5 @@
+// Event contact_link_names are community/link proper names keyed by URL, like venue and organizer names: preserve verbatim.
+// Contact-link controls and detected platform labels use the 12-locale eventForm catalog.
 // Friends of Friends is public, versioned editorial UI in the 12 friendsCommunity catalogs.
 // No user-submitted fields or database rows: source edits and all locales ship atomically in Git.
 import { metadataLabels } from "./metadata-labels";

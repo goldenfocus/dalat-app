@@ -1,3 +1,4 @@
+import { normalizeAdditionalEventLinks, normalizeEventLinkNames, normalizeEventLinkImages } from "@/lib/events/contact-links";
 import { canEditSeries } from "@/lib/events/editor-access";
 import { NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
@@ -141,6 +142,18 @@ export async function PATCH(request: Request, { params }: Params) {
 
   const body = await request.json();
   const { update_scope, from_event_id, ...updateData } = body;
+  if ("additional_links" in updateData) {
+    try { updateData.additional_links = normalizeAdditionalEventLinks(updateData.additional_links); }
+    catch { return NextResponse.json({ error: "Invalid event links" }, { status: 400 }); }
+  }
+  if ("contact_link_names" in updateData) {
+    try { updateData.contact_link_names = normalizeEventLinkNames(updateData.contact_link_names); }
+    catch { return NextResponse.json({ error: "Invalid link names" }, { status: 400 }); }
+  }
+  if ("contact_link_images" in updateData) {
+    try { updateData.contact_link_images = normalizeEventLinkImages(updateData.contact_link_images); }
+    catch { return NextResponse.json({ error: "Invalid link images" }, { status: 400 }); }
+  }
   let scopeStart = new Date().toISOString();
   if (from_event_id) {
     const { data: anchor } = await supabase.from("events").select("starts_at")
@@ -168,6 +181,9 @@ export async function PATCH(request: Request, { params }: Params) {
     "address",
     "google_maps_url",
     "external_chat_url",
+    "additional_links",
+    "contact_link_names",
+    "contact_link_images",
     "capacity",
     "rrule",
     "starts_at_time",
@@ -209,6 +225,9 @@ export async function PATCH(request: Request, { params }: Params) {
       "address",
       "google_maps_url",
       "external_chat_url",
+    "additional_links",
+    "contact_link_names",
+    "contact_link_images",
       "capacity", "is_online", "online_link", "title_position", "image_fit", "focal_point",
       "latitude", "longitude", "price_type", "ticket_tiers", "organizer_id", "ai_tags",
     ];

@@ -744,7 +744,27 @@
     "descriptionAutoFill": "Sertai kami untuk {title}. Lihat masa acara dan cara menyertai di halaman ini.",
     "addressAssist": "Cuba carian alamat dengan AI",
     "addressAssistSuggestion": "Cari {address}",
-    "addressAssistUnavailable": "Pembantu tiada cadangan carian lain. Anda masih boleh menyimpan alamat yang ditaip."
+    "addressAssistUnavailable": "Pembantu tiada cadangan carian lain. Anda masih boleh menyimpan alamat yang ditaip.",
+    "contactLinksTitle": "Pautan hubungan dan tempahan (pilihan)",
+    "addContactLink": "Tambah pautan lain",
+    "contactLinkNumber": "Pautan {number}",
+    "removeContactLink": "Buang pautan {number}",
+    "contactLinksHelp": "Tambah jemputan kumpulan, profil sosial, halaman tempahan atau laman web. Platform dikenal pasti secara automatik.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Laman web"
+    },
+    "contactLinkName": "Nama komuniti atau pautan (pilihan)",
+    "addLinkImage": "Tambah logo atau imej",
+    "changeLinkImage": "Tukar imej",
+    "linkImageUploading": "Memuat naik imej…",
+    "linkImageError": "Gunakan JPG, PNG, WebP atau GIF di bawah 5 MB. Cuba lagi jika muat naik gagal."
   },
   "eventActions": {
     "eventOptions": "Pilihan acara",

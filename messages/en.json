@@ -758,7 +758,27 @@
     "descriptionAutoFill": "Join us for {title}. Check this page for the event time and how to join.",
     "addressAssist": "Try AI address search",
     "addressAssistSuggestion": "Search for {address}",
-    "addressAssistUnavailable": "The assistant has no other search to suggest. You can still save the address you typed."
+    "addressAssistUnavailable": "The assistant has no other search to suggest. You can still save the address you typed.",
+    "contactLinksTitle": "Contact & booking links (optional)",
+    "addContactLink": "Add another link",
+    "contactLinkNumber": "Link {number}",
+    "removeContactLink": "Remove link {number}",
+    "contactLinksHelp": "Add group invites, social profiles, booking pages, or websites. We recognize the platform automatically.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Website"
+    },
+    "contactLinkName": "Community or link name (optional)",
+    "addLinkImage": "Add logo or image",
+    "changeLinkImage": "Change image",
+    "linkImageUploading": "Uploading image…",
+    "linkImageError": "Use a JPG, PNG, WebP or GIF under 5 MB. Try again if the upload failed."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",

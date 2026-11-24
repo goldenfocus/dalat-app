@@ -744,7 +744,27 @@
     "descriptionAutoFill": "Приглашаем на событие «{title}». Время и условия участия указаны на этой странице.",
     "addressAssist": "Попробовать поиск адреса с ИИ",
     "addressAssistSuggestion": "Искать {address}",
-    "addressAssistUnavailable": "Других вариантов поиска нет. Можно сохранить введённый адрес."
+    "addressAssistUnavailable": "Других вариантов поиска нет. Можно сохранить введённый адрес.",
+    "contactLinksTitle": "Ссылки для связи и бронирования (необязательно)",
+    "addContactLink": "Добавить ссылку",
+    "contactLinkNumber": "Ссылка {number}",
+    "removeContactLink": "Удалить ссылку {number}",
+    "contactLinksHelp": "Добавьте приглашения в группы, профили соцсетей, страницы бронирования или сайты. Платформа определяется автоматически.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Сайт"
+    },
+    "contactLinkName": "Название сообщества или ссылки (необязательно)",
+    "addLinkImage": "Добавить логотип или изображение",
+    "changeLinkImage": "Изменить изображение",
+    "linkImageUploading": "Загрузка изображения…",
+    "linkImageError": "Используйте JPG, PNG, WebP или GIF размером до 5 МБ. При ошибке повторите загрузку."
   },
   "eventActions": {
     "eventOptions": "Опции события",

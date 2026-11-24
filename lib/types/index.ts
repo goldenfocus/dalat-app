@@ -571,6 +571,10 @@ export interface Event {
   // the real address lives in event_private_details (RLS-gated)
   has_private_details: boolean;
   external_chat_url: string | null;
+  additional_links?: string[];
+  /** Community/platform proper names keyed by normalized URL. */
+  contact_link_names?: Record<string, string>;
+  contact_link_images?: Record<string, string>;
   starts_at: string;
   ends_at: string | null;
   timezone: string;
@@ -1408,6 +1412,10 @@ export interface EventSeries {
   latitude: number | null;
   longitude: number | null;
   external_chat_url: string | null;
+  additional_links?: string[];
+  /** Community/platform proper names keyed by normalized URL. */
+  contact_link_names?: Record<string, string>;
+  contact_link_images?: Record<string, string>;
   timezone: string;
   capacity: number | null;
   // Online event support

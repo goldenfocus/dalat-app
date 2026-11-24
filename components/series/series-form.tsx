@@ -31,6 +31,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { EventLinksInput } from "@/components/events/event-links-input";
+import { normalizeAdditionalEventLinks, normalizeEventLinkNames, normalizeEventLinkImages } from "@/lib/events/contact-links";
+import { normalizeEventContactLink } from "@/lib/events/contact-link";
 import { describeRRule } from "@/lib/recurrence";
 import type { EventSeries, Organizer } from "@/lib/types";
 
@@ -61,6 +64,9 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
   const [externalChatUrl, setExternalChatUrl] = useState(
     series.external_chat_url || ""
   );
+  const [contactLinkImages, setContactLinkImages] = useState(series.contact_link_images || {});
+  const [contactLinkNames, setContactLinkNames] = useState(series.contact_link_names || {});
+  const [additionalLinks, setAdditionalLinks] = useState(series.additional_links || []);
   const [capacity, setCapacity] = useState(series.capacity?.toString() || "");
   const [hasCapacityLimit, setHasCapacityLimit] = useState(!!series.capacity);
 
@@ -116,6 +122,16 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+    if (e.currentTarget.querySelector('[data-event-link-uploading="true"]')) {
+      setError(tEventForm("linkImageUploading"));
+      return;
+    }
+
+    let safeAdditionalLinks: string[];
+    const safePrimary = externalChatUrl === series.external_chat_url ? externalChatUrl : normalizeEventContactLink(externalChatUrl);
+    try { safeAdditionalLinks = normalizeAdditionalEventLinks(additionalLinks); normalizeEventLinkNames(contactLinkNames); normalizeEventLinkImages(contactLinkImages); }
+    catch { setError(tEventForm("externalLinkInvalid")); return; }
+    if (externalChatUrl.trim() && !safePrimary) { setError(tEventForm("externalLinkInvalid")); return; }
 
     // Validation
     if (!title.trim()) {
@@ -137,7 +153,10 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
             location_name: locationName || null,
             address: address || null,
             google_maps_url: googleMapsUrl || null,
-            external_chat_url: externalChatUrl || null,
+            external_chat_url: safePrimary || null,
+            additional_links: safeAdditionalLinks,
+            contact_link_names: normalizeEventLinkNames(contactLinkNames),
+            contact_link_images: normalizeEventLinkImages(contactLinkImages),
             capacity: hasCapacityLimit && capacity ? parseInt(capacity, 10) : null,
             organizer_id: organizerId,
             // Include update_scope to propagate changes
@@ -316,17 +335,8 @@ export function SeriesForm({ series, userId: _userId }: SeriesFormProps) {
           <input type="hidden" name="latitude" value={latitude?.toString() || ""} />
           <input type="hidden" name="longitude" value={longitude?.toString() || ""} />
 
-          {/* External Link */}
-          <div className="space-y-2">
-            <Label htmlFor="externalChatUrl">{tEventForm("externalLink")}</Label>
-            <Input
-              id="externalChatUrl"
-              type="url"
-              value={externalChatUrl}
-              onChange={(e) => setExternalChatUrl(e.target.value)}
-              placeholder={tEventForm("externalLinkPlaceholder")}
-            />
-          </div>
+          <EventLinksInput primary={series.external_chat_url} additional={series.additional_links} names={series.contact_link_names} images={series.contact_link_images}
+            onChange={(primary, additional, names, images) => { setExternalChatUrl(primary); setAdditionalLinks(additional); setContactLinkNames(names); setContactLinkImages(images); }} />
 
           {/* Capacity */}
           <div className="space-y-2">

@@ -1,3 +1,5 @@
+import { isWhatsAppSourced } from "@/lib/events/whatsapp-source";
+import { EventContactLinks } from "@/components/events/event-contact-links";
 import { eventImageAlt } from "@/lib/events/image-alt";
 import { notFound } from "next/navigation";
 import { Link } from "@/lib/i18n/routing";
@@ -362,18 +364,8 @@ export default async function SeriesPage({ params }: PageProps) {
                 </div>
               )}
 
-              {/* External Link */}
-              {series.external_chat_url && (
-                <a
-                  href={series.external_chat_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 text-primary hover:underline"
-                >
-                  <ExternalLink className="w-4 h-4" />
-                  {t("events.moreInfo")}
-                </a>
-              )}
+              <EventContactLinks primary={series.external_chat_url} additional={series.additional_links} names={series.contact_link_names} images={series.contact_link_images}
+                hidePrimary={isWhatsAppSourced(series.source_platform)} />
             </div>
           </CardContent>
         </Card>

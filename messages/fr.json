@@ -758,7 +758,27 @@
     "descriptionAutoFill": "Participez à {title}. Consultez cette page pour connaître l’horaire et savoir comment nous rejoindre.",
     "addressAssist": "Essayer la recherche d’adresse par IA",
     "addressAssistSuggestion": "Rechercher {address}",
-    "addressAssistUnavailable": "L’assistant n’a pas d’autre recherche à proposer. Vous pouvez enregistrer votre saisie."
+    "addressAssistUnavailable": "L’assistant n’a pas d’autre recherche à proposer. Vous pouvez enregistrer votre saisie.",
+    "contactLinksTitle": "Liens de contact et de réservation (facultatif)",
+    "addContactLink": "Ajouter un lien",
+    "contactLinkNumber": "Lien {number}",
+    "removeContactLink": "Supprimer le lien {number}",
+    "contactLinksHelp": "Ajoutez des invitations de groupe, profils sociaux, pages de réservation ou sites web. La plateforme est reconnue automatiquement.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Site web"
+    },
+    "contactLinkName": "Nom de la communauté ou du lien (facultatif)",
+    "addLinkImage": "Ajouter un logo ou une image",
+    "changeLinkImage": "Changer l’image",
+    "linkImageUploading": "Envoi de l’image…",
+    "linkImageError": "Utilisez un fichier JPG, PNG, WebP ou GIF de moins de 5 Mo. Réessayez si l’envoi a échoué."
   },
   "eventActions": {
     "eventOptions": "Options de l'événement",

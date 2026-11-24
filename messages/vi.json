@@ -744,7 +744,27 @@
     "descriptionAutoFill": "Mời bạn tham gia sự kiện {title}. Hãy xem giờ và cách tham gia trên trang này. Nếu có thể đến, bạn hãy xác nhận tham dự để người tổ chức chuẩn bị nhé.",
     "addressAssist": "Thử tìm địa chỉ bằng AI",
     "addressAssistSuggestion": "Tìm {address}",
-    "addressAssistUnavailable": "Trợ lý chưa có cách tìm khác. Bạn vẫn có thể lưu địa chỉ đã nhập."
+    "addressAssistUnavailable": "Trợ lý chưa có cách tìm khác. Bạn vẫn có thể lưu địa chỉ đã nhập.",
+    "contactLinksTitle": "Liên kết liên hệ và đặt chỗ (không bắt buộc)",
+    "addContactLink": "Thêm liên kết",
+    "contactLinkNumber": "Liên kết {number}",
+    "removeContactLink": "Xóa liên kết {number}",
+    "contactLinksHelp": "Thêm lời mời nhóm, trang mạng xã hội, trang đặt chỗ hoặc website. Nền tảng được nhận diện tự động.",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "Trang web"
+    },
+    "contactLinkName": "Tên cộng đồng hoặc liên kết (không bắt buộc)",
+    "addLinkImage": "Thêm logo hoặc hình ảnh",
+    "changeLinkImage": "Đổi hình ảnh",
+    "linkImageUploading": "Đang tải ảnh lên…",
+    "linkImageError": "Dùng ảnh JPG, PNG, WebP hoặc GIF dưới 5 MB. Thử lại nếu tải lên thất bại."
   },
   "eventActions": {
     "eventOptions": "Tùy chọn sự kiện",

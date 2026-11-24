@@ -1,3 +1,4 @@
+import { EventContactLinks } from "@/components/events/event-contact-links";
 import { hasEventProfile, publicEventName } from "@/lib/auth/event-profile";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { withVenueCredits } from "@/lib/moments/venue-credit";
@@ -1364,20 +1365,8 @@ export default async function EventPage({ params, searchParams }: PageProps) {
           </div>
         ) : null}
 
-        {/* External link — never for WhatsApp-sourced events: their
-            external_chat_url points at the raw group message. */}
-        {event.external_chat_url && !isWhatsAppSourced(event.source_platform) && (
-          <a
-            href={event.external_chat_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 text-sm text-primary hover:underline"
-          >
-            <Link2 className="w-4 h-4" />
-            {t("moreInfo")}
-            <ExternalLink className="w-3 h-3" />
-          </a>
-        )}
+        <EventContactLinks primary={event.external_chat_url} additional={event.additional_links} names={event.contact_link_names} images={event.contact_link_images}
+          hidePrimary={isWhatsAppSourced(event.source_platform)} />
 
         <hr />
 

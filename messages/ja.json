@@ -744,7 +744,27 @@
     "descriptionAutoFill": "「{title}」にぜひご参加ください。開催時間や集合場所、オンラインでの参加方法などは、このページのイベント詳細をご確認ください。参加予定の方は、主催者が当日の準備をできるよう、こちらで参加登録をお願いします。",
     "addressAssist": "AIで住所を検索",
     "addressAssistSuggestion": "{address} を検索",
-    "addressAssistUnavailable": "別の検索候補がありません。入力した住所はそのまま保存できます。"
+    "addressAssistUnavailable": "別の検索候補がありません。入力した住所はそのまま保存できます。",
+    "contactLinksTitle": "連絡先・予約リンク（任意）",
+    "addContactLink": "リンクを追加",
+    "contactLinkNumber": "リンク {number}",
+    "removeContactLink": "リンク {number} を削除",
+    "contactLinksHelp": "グループ招待、SNSプロフィール、予約ページ、ウェブサイトを追加できます。プラットフォームは自動で判別されます。",
+    "linkPlatforms": {
+      "zalo": "Zalo",
+      "whatsapp": "WhatsApp",
+      "telegram": "Telegram",
+      "facebook": "Facebook",
+      "instagram": "Instagram",
+      "youtube": "YouTube",
+      "tiktok": "TikTok",
+      "website": "ウェブサイト"
+    },
+    "contactLinkName": "コミュニティ名またはリンク名（任意）",
+    "addLinkImage": "ロゴまたは画像を追加",
+    "changeLinkImage": "画像を変更",
+    "linkImageUploading": "画像をアップロード中…",
+    "linkImageError": "5 MB未満のJPG、PNG、WebP、GIFを使用してください。失敗した場合は再試行してください。"
   },
   "eventActions": {
     "eventOptions": "イベントオプション",
