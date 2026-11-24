@@ -125,13 +125,19 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
   // A place's pin takes priority over its viewport center.
   const pin = point(text.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/));
   if (pin) return pin;
-  for (const key of ["destination", "query", "q", "ll"]) {
+  for (const key of ["destination", "query", "q"]) {
     const value = url.searchParams.get(key);
     const coordinates = value && parseCoordinates(value);
     if (coordinates) return { ...coordinates, source: "google-maps-url" };
   }
   const search = point(text.match(/\/search\/(-?\d+\.?\d*)[, +]+(-?\d+\.?\d*)/));
   if (search) return search;
+  const hasLocation = ["destination", "query", "q", "cid", "query_place_id"].some((key) => url.searchParams.has(key))
+    || /\/maps\/(?:place|search)\/[^/]/.test(url.pathname);
+  if (!hasLocation) {
+    const center = parseCoordinates(url.searchParams.get("ll") ?? "");
+    if (center) return { ...center, source: "google-maps-url" };
+  }
   // Explicit map-view links may use their center; place and search URLs may not.
   if (/^\/maps\/@/.test(url.pathname)) {
     return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
