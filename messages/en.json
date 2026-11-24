@@ -754,7 +754,10 @@
     "advancedSettings": "Advanced settings",
     "externalLinkInvalid": "Add a valid link, such as zalo.me/g/… or chat.whatsapp.com/…",
     "descriptionAutoHelp": "We start the description from your event title. You can edit it anytime.",
-    "descriptionAutoFill": "Join us for {title}. Check this page for the event time and how to join."
+    "descriptionAutoFill": "Join us for {title}. Check this page for the event time and how to join.",
+    "addressAssist": "Try AI address search",
+    "addressAssistSuggestion": "Search for {address}",
+    "addressAssistUnavailable": "The assistant has no other search to suggest. You can still save the address you typed."
   },
   "flyerBuilder": {
     "imagesOnly": "Images only",

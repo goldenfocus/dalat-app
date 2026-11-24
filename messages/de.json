@@ -740,7 +740,10 @@
     "advancedSettings": "Erweiterte Einstellungen",
     "externalLinkInvalid": "Füge einen gültigen Link ein, etwa zalo.me/g/… oder chat.whatsapp.com/…",
     "descriptionAutoHelp": "Die Beschreibung wird anhand des Veranstaltungstitels vorausgefüllt. Du kannst sie jederzeit bearbeiten.",
-    "descriptionAutoFill": "Sei bei {title} dabei. Auf dieser Seite findest du die Uhrzeit und erfährst, wie du teilnehmen kannst. Sag bitte zu, wenn du kommen möchtest, damit das Team planen kann."
+    "descriptionAutoFill": "Sei bei {title} dabei. Auf dieser Seite findest du die Uhrzeit und erfährst, wie du teilnehmen kannst. Sag bitte zu, wenn du kommen möchtest, damit das Team planen kann.",
+    "addressAssist": "Adresssuche mit KI versuchen",
+    "addressAssistSuggestion": "Nach {address} suchen",
+    "addressAssistUnavailable": "Der Assistent hat keinen weiteren Suchvorschlag. Du kannst die eingegebene Adresse speichern."
   },
   "eventActions": {
     "eventOptions": "Event-Optionen",
