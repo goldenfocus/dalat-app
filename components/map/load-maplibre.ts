@@ -1,4 +1,4 @@
-type MapLibre = typeof import("maplibre-gl");
+export type MapLibre = typeof import("maplibre-gl");
 
 // MapLibre builds its web worker from its own source text, so it has to run
 // exactly as published: bundled and re-minified by the app build, the worker
