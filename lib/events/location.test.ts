@@ -71,6 +71,13 @@ describe("canonical venue locations", () => {
     const result = resolveEventLocation(stale, { ...venue, latitude: null, longitude: null, google_maps_url: null });
     expect(result.google_maps_url).toContain(encodeURIComponent(`${venue.name}, ${venue.address}`));
   });
+  it("opens the shared listing and takes directions from the destination instead of a stale pin", () => {
+    const url = "https://www.google.com/maps/place/Meeting+point/@11.99,108.49,15z/data=!3d11.94!4d108.43";
+    expect(getLocationMapLinks({ google_maps_url: url, latitude: 11.99, longitude: 108.49 }))
+      .toEqual({ map: url, directions: "https://www.google.com/maps/dir/?api=1&destination=11.94,108.43" });
+    expect(getLocationMapLinks({ google_maps_url: "https://maps.app.goo.gl/example" }))
+      .toEqual({ map: "https://maps.app.goo.gl/example", directions: null });
+  });
   it("accepts zero coordinates and rejects invalid coordinate pairs", () => {
     expect(getLocationMapLinks({ latitude: 0, longitude: 0 }).directions).toContain("destination=0,0");
     for (const latitude of [NaN, Infinity, 91]) expect(getLocationMapLinks({ latitude, longitude: 108 }).directions).toBeNull();

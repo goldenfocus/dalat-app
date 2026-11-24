@@ -74,8 +74,8 @@ export function isGoogleMapsUrl(input: string): boolean {
     if (url.protocol !== "https:" || url.username || url.password || url.port) return false;
     return (url.hostname === "maps.app.goo.gl")
       || (url.hostname === "goo.gl" && url.pathname.startsWith("/maps/"))
-      || (url.hostname === "maps.google.com")
-      || ((url.hostname === "google.com" || url.hostname === "www.google.com") && url.pathname.startsWith("/maps"));
+      || (url.hostname === "maps.google.com" || url.hostname === "maps.google.com.vn")
+      || (["google.com", "www.google.com", "google.com.vn", "www.google.com.vn"].includes(url.hostname) && /^\/maps(?:\/|$)/.test(url.pathname));
   } catch { return false; }
 }
 
@@ -112,18 +112,39 @@ export function parseGoogleMapsUrl(input: string): ParsedCoordinates | null {
       ? { latitude, longitude, source: "google-maps-url" } : null;
   };
 
-  // A place's pin is authoritative. @lat,lng describes only the camera view,
-  // which may be kilometres away after the user pans or zooms before sharing.
+  // For a directions link the first pin in the payload may be the origin.
+  const isDirections = /\/maps\/dir(?:\/|$)/.test(url.pathname);
+  if (isDirections) {
+    const segments = url.pathname.split("/").slice(3);
+    const metadata = segments.findIndex((segment) => segment.startsWith("@") || segment.startsWith("data="));
+    const stops = metadata === -1 ? segments : segments.slice(0, metadata);
+    const lastStop = stops[0] ? stops.filter(Boolean).slice(1).at(-1) : stops.slice(1).filter(Boolean).at(-1);
+    const destination = url.searchParams.get("destination") ?? (lastStop ? decodeURIComponent(lastStop) : "");
+    const coordinates = parseCoordinates(destination);
+    return coordinates ? { ...coordinates, source: "google-maps-url" } : null;
+  }
+
+  // A place's pin takes priority over its viewport center.
   const pin = point(text.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/));
   if (pin) return pin;
-  for (const key of ["destination", "query", "q", "ll"]) {
+  for (const key of ["destination", "query", "q"]) {
     const value = url.searchParams.get(key);
     const coordinates = value && parseCoordinates(value);
     if (coordinates) return { ...coordinates, source: "google-maps-url" };
   }
   const search = point(text.match(/\/search\/(-?\d+\.?\d*)[, +]+(-?\d+\.?\d*)/));
   if (search) return search;
-  return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
+  const hasLocation = ["destination", "query", "q", "cid", "query_place_id"].some((key) => url.searchParams.has(key))
+    || /\/maps\/(?:place|search)\/[^/]/.test(url.pathname);
+  if (!hasLocation) {
+    const center = parseCoordinates(url.searchParams.get("ll") ?? "");
+    if (center) return { ...center, source: "google-maps-url" };
+  }
+  // Explicit map-view links may use their center; place and search URLs may not.
+  if (/^\/maps\/@/.test(url.pathname)) {
+    return point(text.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/));
+  }
+  return null;
 }
 
 /**
