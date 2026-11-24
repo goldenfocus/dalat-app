@@ -86,7 +86,7 @@ export async function generateMetadata({
   const { data: row } = await supabase
     .from("event_series")
     .select(
-      `id, slug, title, description, image_url, location_name, address, is_online, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name), venues(${LOCATION_VENUE_FIELDS})`,
+      `id, slug, title, description, image_url, location_name, address, google_maps_url, latitude, longitude, is_online, rrule, starts_at_time, duration_minutes, reservation_requirement, source_metadata, source_platform, organizers:organizer_id(name), venues(${LOCATION_VENUE_FIELDS})`,
     )
     .eq("slug", slug)
     .single();

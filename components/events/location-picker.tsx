@@ -5,7 +5,9 @@ import { MapPin, Loader2, X, Check, Navigation, PenLine, ArrowUpRight } from "lu
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useTranslations } from "next-intl";
-import { getLocationMapLinks } from "@/lib/events/location";
+import { getLocationMapLinks, googleMapsDirectionsUrl, hasCoordinates } from "@/lib/events/location";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { EventPinPicker } from "@/components/events/event-pin-picker";
 import { getVenueTypeConfig } from "@/lib/constants/venue-types";
 import { normalizeVenueSearchText, normalizeVenueStreet } from "@/lib/venues/search";
 import type { VenueType } from "@/lib/types";
@@ -52,6 +54,7 @@ interface LocationPickerProps {
   onVenueIdChange?: (venueId: string | null) => void;
   defaultValue?: SelectedLocation | null;
   defaultVenueId?: string | null;
+  linkedVenueId?: string | null;
   addressAssistEnabled?: boolean;
 }
 
@@ -80,6 +83,7 @@ export function LocationPicker({
   onVenueIdChange,
   defaultValue,
   defaultVenueId,
+  linkedVenueId,
   addressAssistEnabled = true,
 }: LocationPickerProps) {
   const t = useTranslations("eventForm");
@@ -92,6 +96,7 @@ export function LocationPicker({
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingVenues, setIsLoadingVenues] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isPinPickerOpen, setIsPinPickerOpen] = useState(false);
   const [selectedLocation, setSelectedLocation] =
     useState<SelectedLocation | null>(defaultValue || null);
   const [selectedVenueId, setSelectedVenueId] = useState<string | null>(
@@ -555,14 +560,45 @@ export function LocationPicker({
   const matchedLocation = addressAssistEnabled && exactAddress?.query === query ? exactAddress.location : null;
   const locationFields = buildLocationFieldValues(selectedLocation ?? matchedLocation, query);
   const { latitude, longitude, google_maps_url, ...locationText } = locationFields;
-  const mapLinks = getLocationMapLinks({
-    ...locationText,
+  const currentPin = {
     latitude: latitude ? Number(latitude) : null,
     longitude: longitude ? Number(longitude) : null,
+  };
+  const initialPin = currentPin.latitude !== null && currentPin.longitude !== null && hasCoordinates(currentPin)
+    ? { latitude: currentPin.latitude, longitude: currentPin.longitude } : null;
+  const mapLinks = getLocationMapLinks({
+    ...locationText,
+    ...currentPin,
     // A linked venue's pin takes precedence over its saved link on the event page.
     google_maps_url: selectedVenueId && latitude && longitude ? null : google_maps_url,
   });
   const previewHref = mapLinks.directions ?? mapLinks.map;
+
+  function confirmPin(pin: { latitude: number; longitude: number }) {
+    assistRequest.current?.abort();
+    searchSeq.current++;
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    const venueId = (linkedVenueId === undefined ? selectedVenueId : linkedVenueId) ?? undefined;
+    const point = formatCoordinates(pin.latitude, pin.longitude);
+    const location: SelectedLocation = {
+      type: venueId ? "venue" : "place",
+      venueId,
+      name: locationText.location_name || t("locationMeetingPoint"),
+      address: locationText.address || point,
+      googleMapsUrl: googleMapsDirectionsUrl(pin.latitude, pin.longitude),
+      ...pin,
+    };
+    setSelectedLocation(location);
+    setSelectedVenueId(venueId ?? null);
+    setQuery(location.name);
+    setIsOpen(false);
+    setDetectedCoords(false);
+    setIsResolvingUrl(false);
+    setIsReverseGeocoding(false);
+    setIsPinPickerOpen(false);
+    onLocationSelect?.(location);
+    onVenueIdChange?.(venueId ?? null);
+  }
 
   useEffect(() => {
     if (!addressAssistEnabled) {
@@ -609,17 +645,31 @@ export function LocationPicker({
     <div ref={containerRef} className="relative space-y-2">
       <div className="flex items-center justify-between gap-2">
         <Label htmlFor="location">{t("location")}</Label>
-        {previewHref && (
-          <a
-            href={previewHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-8 items-center gap-1 rounded-sm px-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            {t("locationPreviewMap")}
-            <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
-          </a>
-        )}
+        <div className="flex flex-wrap items-center justify-end gap-x-2">
+          {previewHref && (
+            <a
+              href={previewHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-8 items-center gap-1 rounded-sm px-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {t("locationPreviewMap")}
+              <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />
+            </a>
+          )}
+          <Dialog open={isPinPickerOpen} onOpenChange={(open) => {
+            setIsPinPickerOpen(open);
+            if (open) setIsOpen(false);
+          }}>
+            <DialogTrigger asChild>
+              <button type="button" className="inline-flex min-h-8 items-center gap-1 rounded-sm px-1 text-sm font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <MapPin aria-hidden="true" className="size-3.5 shrink-0" />
+                {t("locationDropPin")}
+              </button>
+            </DialogTrigger>
+            {isPinPickerOpen && <EventPinPicker initialPin={initialPin} onConfirm={confirmPin} />}
+          </Dialog>
+        </div>
       </div>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />

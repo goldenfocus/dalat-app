@@ -2,6 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import { LocationPicker } from "@/components/events/location-picker";
 
+const { mapHandlers, buildMap } = vi.hoisted(() => ({
+  mapHandlers: new Map<string, (event?: unknown) => void>(),
+  buildMap: vi.fn(),
+}));
+vi.mock("@/components/map/load-maplibre", () => ({
+  loadMapLibre: async () => ({
+    Map: class { constructor(options: unknown) { return buildMap(options); } },
+    NavigationControl: class {},
+  }),
+}));
+
 vi.mock("next-intl", () => ({
   useTranslations:
     () =>
@@ -144,4 +155,43 @@ describe("LocationPicker free-text fallback", () => {
     expect(request).toHaveBeenCalledExactlyOnceWith("/api/venues/search?q=" + encodeURIComponent(TYPED));
     expect(hiddenInput("address").value).toBe(TYPED);
   });
+});
+
+it("moves a venue's saved directions to the dropped pin and keeps its venue link", async () => {
+  const venue = {
+    type: "venue" as const,
+    venueId: "venue-1",
+    name: "Socialhouse",
+    address: "184 Tô Ngọc Vân",
+    latitude: 11.946765,
+    longitude: 108.434189,
+    googleMapsUrl: "https://maps.google.com/?cid=123",
+  };
+  const pin = { lat: 11.947, lng: 108.4345, wrap() { return this; } };
+  mapHandlers.clear();
+  buildMap.mockReturnValue({
+    touchZoomRotate: { disableRotation: vi.fn() },
+    addControl: vi.fn(),
+    once: (name: string, handler: () => void) => mapHandlers.set(name, handler),
+    on: (name: string, handler: () => void) => mapHandlers.set(name, handler),
+    jumpTo: () => mapHandlers.get("moveend")?.(),
+    getCenter: () => pin,
+    remove: vi.fn(),
+  });
+  const select = vi.fn();
+  render(<LocationPicker defaultValue={venue} onLocationSelect={select} />);
+  await act(async () => { fireEvent.click(screen.getByRole("button", { name: "locationDropPin" })); });
+  expect(buildMap).toHaveBeenLastCalledWith(expect.objectContaining({ center: [venue.longitude, venue.latitude] }));
+  act(() => { mapHandlers.get("load")?.(); });
+  act(() => { mapHandlers.get("click")?.({ lngLat: pin }); });
+  fireEvent.click(screen.getByRole("button", { name: "locationUsePin" }));
+
+  const directions = "https://www.google.com/maps/dir/?api=1&destination=11.947,108.4345";
+  expect(hiddenInput("venue_id").value).toBe(venue.venueId);
+  expect(hiddenInput("location_name").value).toBe(venue.name);
+  expect(hiddenInput("google_maps_url").value).toBe(directions);
+  expect(screen.getByRole("link", { name: "locationPreviewMap" })).toHaveAttribute("href", directions);
+  expect(select).toHaveBeenCalledWith(expect.objectContaining({
+    venueId: venue.venueId, latitude: pin.lat, longitude: pin.lng,
+  }));
 });

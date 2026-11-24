@@ -141,7 +141,7 @@ export async function generateMetadata({
   const { data: rows } = await supabase
     .from("events")
     .select(
-      `id, title, description, location_name, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, is_online, tribe_id, tribe_visibility, venue_id, venues(${LOCATION_VENUE_FIELDS}), event_series(venues(${LOCATION_VENUE_FIELDS}))`,
+      `id, title, description, location_name, address, google_maps_url, latitude, longitude, starts_at, source_locale, source_metadata, updated_at, ends_at, status, has_private_details, is_online, tribe_id, tribe_visibility, venue_id, venues(${LOCATION_VENUE_FIELDS}), event_series(venues(${LOCATION_VENUE_FIELDS}))`,
     )
     .eq("slug", canonicalSlug)
     .limit(1);

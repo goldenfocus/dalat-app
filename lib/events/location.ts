@@ -32,6 +32,17 @@ export function hasCoordinates(location: EventLocation): boolean {
     && Math.abs(location.longitude) <= 180;
 }
 
+export function googleMapsDirectionsUrl(latitude: number, longitude: number): string {
+  return `https://www.google.com/maps/dir/?api=1&destination=${latitude},${longitude}`;
+}
+
+/** A matching directions URL records an event-specific pin in the existing location fields. */
+export function hasEventMeetingPin(location: EventLocation): boolean {
+  const { latitude, longitude, google_maps_url } = location;
+  return latitude != null && longitude != null && hasCoordinates(location)
+    && google_maps_url === googleMapsDirectionsUrl(latitude, longitude);
+}
+
 function getLocationPin(location: EventLocation) {
   if (location.latitude == null || location.longitude == null || !hasCoordinates(location)) return null;
   return (location.google_maps_url && parseGoogleMapsUrl(location.google_maps_url)) || {
@@ -55,7 +66,7 @@ export function getLocationMapLinks(location: EventLocation) {
       ? generateGoogleMapsUrl(coordinates.latitude, coordinates.longitude)
       : (legacyMap || (query ? googleMapsSearchUrl(query) : null))),
     directions: coordinates
-      ? `https://www.google.com/maps/dir/?api=1&destination=${coordinates.latitude},${coordinates.longitude}` : null,
+      ? googleMapsDirectionsUrl(coordinates.latitude, coordinates.longitude) : null,
   };
 }
 
@@ -68,7 +79,7 @@ export function resolveEventLocation<T extends EventLocation>(
   event: T,
   venue: LocationVenue | null | undefined,
 ): T {
-  if (!venue || event.has_private_details || event.is_online) return event;
+  if (!venue || event.has_private_details || event.is_online || hasEventMeetingPin(event)) return event;
   const approximate = venue.geocode_source === "osm_street";
   const location = {
     ...event,
