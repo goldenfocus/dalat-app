@@ -3254,7 +3254,9 @@
     "skipForNow": "Selesai",
     "viewEvent": "Lihat acara Anda",
     "copyLink": "Salin tautan",
-    "copied": "Disalin!"
+    "copied": "Disalin!",
+    "shareVenueClaim": "Bagikan kepada pemilik tempat",
+    "shareVenueClaimHelp": "Pemilik dapat mengklaim tempat ini dan memperbarui informasinya."
   },
   "playlist": {
     "title": "Daftar Putar",

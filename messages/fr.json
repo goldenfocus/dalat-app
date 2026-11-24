@@ -3254,7 +3254,9 @@
     "skipForNow": "Terminé",
     "viewEvent": "Voir votre événement en direct",
     "copyLink": "Copier le lien",
-    "copied": "Copié !"
+    "copied": "Copié !",
+    "shareVenueClaim": "Partager avec le propriétaire du lieu",
+    "shareVenueClaimHelp": "Il pourra revendiquer ce lieu et tenir ses informations à jour."
   },
   "playlist": {
     "title": "Liste de lecture",

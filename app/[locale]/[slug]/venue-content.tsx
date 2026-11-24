@@ -908,6 +908,12 @@ export async function VenueContent({ venueId, locale }: VenueContentProps) {
               directionsLabel={t("getDirections")}
               viewOnMapLabel={t("viewOnMap")}
             />
+            {venue.geocode_source === "osm_event_venue" && (
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer"
+                className="mt-2 inline-block text-xs text-muted-foreground underline">
+                © OpenStreetMap contributors
+              </a>
+            )}
           </section>
         )}
 

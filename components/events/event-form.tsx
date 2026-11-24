@@ -317,6 +317,9 @@ export function EventForm({
   // Celebration modal state (for new events)
   const [showCelebration, setShowCelebration] = useState(false);
   const [createdEvent, setCreatedEvent] = useState<{
+    id: string;
+    viewHref?: string;
+    venueClaimSlug?: string;
     slug: string;
     title: string;
     description: string | null;
@@ -795,6 +798,23 @@ export function EventForm({
       return privateError;
     };
 
+    const mayLinkVenue = !isOnline && !secretAddress && (!tribeId || tribeVisibility === "public");
+    const linkPublishedVenue = async (id: string) => {
+      if (!mayLinkVenue) return null;
+      try {
+        const response = await fetch("/api/events/venue-link", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId: id }),
+          keepalive: true,
+        });
+        if (!response.ok) return null;
+        return await response.json() as { eventSlug?: string; claimSlug?: string | null };
+      } catch {
+        return null;
+      }
+    };
+
     startTransition(async () => {
       try {
         if (isEditing) {
@@ -1020,6 +1040,10 @@ export function EventForm({
 
             const seriesData = await response.json();
 
+            const seriesVenue = seriesData.first_event_id
+              ? linkPublishedVenue(seriesData.first_event_id)
+              : null;
+
             // Create sponsors for the first event in the series
             if (draftSponsors.length > 0 && seriesData.first_event_id) {
               await createSponsorsForEvent(
@@ -1075,7 +1099,23 @@ export function EventForm({
               triggerAIProcessing(seriesData.first_event_id);
             }
 
-            router.push(`/series/${seriesData.slug}`);
+            const seriesHref = `/series/${seriesData.slug}`;
+            const linkedVenue = await seriesVenue;
+            if (linkedVenue?.claimSlug && linkedVenue.eventSlug) {
+              setCreatedEvent({
+                id: seriesData.first_event_id,
+                slug: linkedVenue.eventSlug,
+                viewHref: seriesHref,
+                venueClaimSlug: linkedVenue.claimSlug,
+                title: title.trim(),
+                description: normalizedDescription,
+                startsAt,
+                imageUrl: seriesCover,
+              });
+              setShowCelebration(true);
+            } else {
+              router.push(seriesHref);
+            }
           } else {
             // Single event - direct insert
             const { data, error: insertError } = await supabase
@@ -1129,6 +1169,8 @@ export function EventForm({
               }
             }
 
+            const venueLink = linkPublishedVenue(data.id);
+
             // Upload image if we have one (file, base64, or URL)
             let eventImageUrl: string | null = null;
             try {
@@ -1180,6 +1222,7 @@ export function EventForm({
 
             // Show celebration modal instead of immediate redirect
             setCreatedEvent({
+              id: data.id,
               slug: data.slug,
               title: title.trim(),
               description: normalizedDescription,
@@ -1187,6 +1230,12 @@ export function EventForm({
               imageUrl: eventImageUrl,
             });
             setShowCelebration(true);
+            void venueLink.then((linked) => {
+              const slug = linked?.claimSlug;
+              if (slug) setCreatedEvent((current) => current && current.id === data.id
+                ? { ...current, venueClaimSlug: slug }
+                : current);
+            });
           }
         }
       } catch (err) {
@@ -1984,6 +2033,8 @@ export function EventForm({
           isOpen={showCelebration}
           onClose={() => setShowCelebration(false)}
           eventSlug={createdEvent.slug}
+          viewHref={createdEvent.viewHref}
+          venueClaimSlug={createdEvent.venueClaimSlug}
           eventTitle={createdEvent.title}
           eventDescription={createdEvent.description}
           startsAt={createdEvent.startsAt}

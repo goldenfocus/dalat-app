@@ -38,7 +38,7 @@ describe("LocationPicker free-text fallback", () => {
   it("submits the typed text as the location even without selecting a suggestion", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ json: () => Promise.resolve({ venues: [] }) })
+      vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ venues: [] }) })
     );
     render(<LocationPicker />);
 
@@ -55,7 +55,7 @@ describe("LocationPicker free-text fallback", () => {
     const onLocationSelect = vi.fn();
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ json: () => Promise.resolve({ venues: [] }) })
+      vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve({ venues: [] }) })
     );
     render(<LocationPicker onLocationSelect={onLocationSelect} />);
 
@@ -78,5 +78,38 @@ describe("LocationPicker free-text fallback", () => {
     expect(screen.queryByText("locationNoResults")).not.toBeInTheDocument();
     // The fallback row is still offered — never a dead end
     expect(screen.getByRole("button", { name: /locationUseAsTyped/ })).toBeInTheDocument();
+  });
+  it("automatically retries an unmatched query and keeps the typed address until selection", async () => {
+    const request = vi.fn()
+      .mockResolvedValueOnce(Response.json({ venues: [] }))
+      .mockResolvedValueOnce(Response.json({ suggestion: "20 Duong Suong Nguyet Anh Da Lat" }))
+      .mockResolvedValueOnce(Response.json({ venues: [{
+        id: "node/4321", name: "Example Coffee", address: "20 Duong Suong Nguyet Anh",
+        venueType: "cafe", latitude: 11.94, longitude: 108.44, isPublicMapPlace: true,
+      }] }));
+    vi.stubGlobal("fetch", request);
+    const select = vi.fn();
+    render(<LocationPicker onLocationSelect={select} />);
+    await typeQuery(TYPED);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+
+    expect(request).toHaveBeenNthCalledWith(2, "/api/events/address-assist", expect.objectContaining({
+      method: "POST", body: JSON.stringify({ query: TYPED }),
+    }));
+    expect(request.mock.calls[2][0]).toContain("20%20Duong%20Suong");
+    expect(hiddenInput("address").value).toBe(TYPED);
+    fireEvent.click(screen.getByRole("button", { name: /Example Coffee/ }));
+    expect(select).toHaveBeenLastCalledWith(expect.objectContaining({ type: "place", name: "Example Coffee" }));
+    expect(hiddenInput("venue_id").value).toBe("");
+  });
+
+  it("keeps private searches away from the address assistant and new public-map suggestions", async () => {
+    const request = vi.fn().mockResolvedValue(Response.json({ venues: [] }));
+    vi.stubGlobal("fetch", request);
+    render(<LocationPicker addressAssistEnabled={false} />);
+    await typeQuery(TYPED);
+    await act(async () => { await vi.advanceTimersByTimeAsync(1500); });
+    expect(request).toHaveBeenCalledExactlyOnceWith("/api/venues/search?q=" + encodeURIComponent(TYPED));
+    expect(hiddenInput("address").value).toBe(TYPED);
   });
 });

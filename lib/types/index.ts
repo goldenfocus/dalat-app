@@ -309,7 +309,7 @@ export interface Venue {
   address: string | null;
   google_maps_url: string | null;
   google_place_id: string | null;
-  geocode_source?: "google" | "google_maps_link" | "osm" | "osm_street" | null;
+  geocode_source?: "google" | "google_maps_link" | "osm" | "osm_street" | "osm_event_venue" | null;
 
   // Contact
   website_url: string | null;

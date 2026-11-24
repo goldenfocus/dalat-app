@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import confetti from "canvas-confetti";
 import {
   PartyPopper,
@@ -12,6 +12,9 @@ import {
   Check,
   ChevronDown,
 } from "lucide-react";
+import { localeUrl } from "@/lib/i18n/locale-url";
+import type { Locale } from "@/lib/i18n/routing";
+import { VenueShareButton } from "@/components/venues/venue-share-button";
 import { ShareButtons } from "./share-buttons";
 import {
   Dialog,
@@ -28,6 +31,8 @@ interface PostCreationCelebrationProps {
   isOpen: boolean;
   onClose: () => void;
   eventSlug: string;
+  viewHref?: string;
+  venueClaimSlug?: string;
   eventTitle: string;
   eventDescription: string | null;
   startsAt: string;
@@ -44,11 +49,14 @@ export function PostCreationCelebration({
   isOpen,
   onClose,
   eventSlug,
+  viewHref,
+  venueClaimSlug,
   eventTitle,
   eventDescription,
   startsAt,
 }: PostCreationCelebrationProps) {
   const router = useRouter();
+  const locale = useLocale() as Locale;
   const t = useTranslations("celebration");
   const tInvite = useTranslations("invite");
   const [confettiFired, setConfettiFired] = useState(false);
@@ -176,7 +184,7 @@ export function PostCreationCelebration({
     setInvitees([]);
     setResults([]);
     setError(null);
-    router.push(`/events/${eventSlug}`);
+    router.push(viewHref ?? `/events/${eventSlug}`);
     router.refresh();
   };
 
@@ -209,6 +217,16 @@ export function PostCreationCelebration({
               showWhatsApp
             />
           </div>
+
+          {venueClaimSlug && (
+            <div className="space-y-2 rounded-lg border p-3">
+              <p className="text-sm text-muted-foreground">{t("shareVenueClaimHelp")}</p>
+              <VenueShareButton
+                url={localeUrl(locale, `/venues/${venueClaimSlug}/claim`)}
+                label={t("shareVenueClaim")}
+              />
+            </div>
+          )}
 
           {/* Collapsible Email Invites Section */}
           <details className="group border rounded-lg">
