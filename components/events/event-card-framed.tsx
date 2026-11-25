@@ -75,9 +75,11 @@ export const EventCardFramed = memo(function EventCardFramed({
       className="block touch-manipulation"
       prefetch={false}
     >
+      {/* contain:layout keeps the badges' z-10 and the inline default-image
+          lightbox (position: fixed) scoped to the card */}
       <Card
         className={cn(
-          "overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
+          "[contain:layout] overflow-hidden rounded-xl transition-all duration-200 active:scale-[0.98] active:opacity-90",
           isSponsored
             ? "border-2 border-amber-400/80 shadow-[0_0_20px_rgba(251,191,36,0.3)] hover:shadow-[0_0_30px_rgba(251,191,36,0.4)] hover:border-amber-400"
             : "border-border/50 hover:border-foreground/20 hover:shadow-lg",

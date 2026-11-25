@@ -246,7 +246,7 @@ Google Maps API loading is already optimized:
 
 ### Performance Patterns Already in Place
 
-1. **GPU Acceleration**: `will-change: transform` on animated elements
+1. **GPU Acceleration**: no blanket `will-change` on transition/animation utilities (it pinned a compositor layer per element); only continuously animating elements such as `.cinema-ken-burns` opt in
 2. **Below-fold optimization**: `content-visibility: auto` on footer
 3. **Paint containment**: `contain: layout style` on fixed elements
 
