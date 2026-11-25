@@ -24,6 +24,7 @@ import { PracticePerson } from "./practice-person";
 import { PracticeGuest } from "./practice-guest";
 import { PracticeTicket } from "./practice-ticket";
 import { PracticeSettings } from "./practice-settings";
+const roundControl = "h-auto min-h-14 flex-col gap-1 whitespace-normal px-2 py-2 text-center text-xs leading-tight";
 type Props = {
   ticket?: (id: string) => Promise<string>;
   view: PracticeView;
@@ -65,141 +66,143 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
     setSelected(selected === id ? null : id);
   }
 
-  const selectedActions = person ? (<div className="mt-4 flex items-center gap-2">
-
-          {ticket && (
-            <Button
-              variant="ghost"
-              size="icon"
-              aria-label={t("code")}
-              onClick={() => setTicketPerson(person.id)}
-            >
-              <QrCode aria-hidden />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("previewGuest")}
-            onClick={() => setPreview(person.id)}
-          >
-            <Eye aria-hidden />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={busy}
-            aria-label={t("confirmPresent", { name: person.name })}
-            onClick={() =>
-              void act({
-                action: "presence",
-                participantId: person.id,
-                status: "present",
-              })
-            }
-          >
-            <Check aria-hidden />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            disabled={busy}
-            aria-label={t("markAbsent", { name: person.name })}
-            onClick={() =>
-              void act({
-                action: "presence",
-                participantId: person.id,
-                status: "absent",
-              })
-            }
-          >
-            <UserX aria-hidden />
-          </Button>
-        </div>) : null;
+  const selectedActions = person ? (
+    <div className="mt-3 flex flex-wrap gap-2">
+      <Button
+        variant="outline"
+        className="min-h-11"
+        disabled={busy}
+        aria-label={t("confirmPresent", { name: person.name })}
+        onClick={() =>
+          void act({
+            action: "presence",
+            participantId: person.id,
+            status: "present",
+          })
+        }
+      >
+        <Check aria-hidden />
+        {t("present")}
+      </Button>
+      <Button
+        variant="outline"
+        className="min-h-11"
+        disabled={busy}
+        aria-label={t("markAbsent", { name: person.name })}
+        onClick={() =>
+          void act({
+            action: "presence",
+            participantId: person.id,
+            status: "absent",
+          })
+        }
+      >
+        <UserX aria-hidden />
+        {t("absent")}
+      </Button>
+      <Button
+        variant="outline"
+        className="min-h-11"
+        onClick={() => setPreview(person.id)}
+      >
+        <Eye aria-hidden />
+        {t("previewGuest")}
+      </Button>
+      {ticket && (
+        <Button
+          variant="outline"
+          className="min-h-11"
+          onClick={() => setTicketPerson(person.id)}
+        >
+          <QrCode aria-hidden />
+          {t("code")}
+        </Button>
+      )}
+    </div>
+  ) : null;
+  const canStartRound = view.count >= 2 && !!view.assignments?.length;
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between gap-2">
-        <p
-          className="text-sm tabular-nums text-muted-foreground"
-          aria-label={t("rollCallProgress", {
-            checked: view.count,
-            total: players.length,
-          })}
-        >
-          {view.count}/{players.length}
+      <div className="mb-4 flex items-center justify-between gap-2">
+        <p className="text-sm tabular-nums text-muted-foreground" role="status">
+          {t("rollCallProgress", { checked: view.count, total: players.length })}
         </p>
-        <div className="flex items-center gap-1">
-          {active && (
+        <Button
+          variant="ghost"
+          className="min-h-11"
+          onClick={() => setSettings(true)}
+        >
+          <Settings2 aria-hidden />
+          {t("settings")}
+        </Button>
+      </div>
+      {active ? (
+        <div className="mb-6 space-y-3">
+          <p className="text-center">
+            <span className="block text-sm text-muted-foreground">
+              {t("round", { number: view.round!.number })}
+            </span>
             <span
               role="timer"
               aria-label={t("timer")}
-              className="mr-2 text-xs tabular-nums text-muted-foreground"
+              className="block text-4xl font-medium tabular-nums"
             >
-              {view.round?.pausedAt
+              {view.round!.pausedAt
                 ? t("paused")
                 : `${Math.floor(remaining / 60)}:${String(remaining % 60).padStart(2, "0")}`}
             </span>
-          )}
-          {active ? (
-            <>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={busy}
-                aria-label={t(view.round!.pausedAt ? "resume" : "pause")}
-                onClick={() =>
-                  void act({
-                    action: view.round!.pausedAt ? "resume" : "pause",
-                  })
-                }
-              >
-                {view.round!.pausedAt ? (
-                  <Play aria-hidden />
-                ) : (
-                  <Pause aria-hidden />
-                )}
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={busy}
-                aria-label={t("extend")}
-                onClick={() => void act({ action: "extend", seconds: 120 })}
-              >
-                <Plus aria-hidden />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                disabled={busy}
-                aria-label={t("end")}
-                onClick={() => void act({ action: "end" })}
-              >
-                <Square aria-hidden />
-              </Button>
-            </>
-          ) : (
+          </p>
+          <div className="grid grid-cols-3 gap-2">
             <Button
-              size="icon"
-              className="practice-primary h-12 w-12"
-              disabled={busy || view.count < 2 || !view.assignments?.length}
-              aria-label={t("startGame")}
-              onClick={() => void act({ action: "startGame", minutes: 20 })}
+              variant="outline"
+              className={roundControl}
+              disabled={busy}
+              onClick={() =>
+                void act({ action: view.round!.pausedAt ? "resume" : "pause" })
+              }
             >
-              <Play aria-hidden />
+              {view.round!.pausedAt ? <Play aria-hidden /> : <Pause aria-hidden />}
+              {t(view.round!.pausedAt ? "resume" : "pause")}
             </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("settings")}
-            onClick={() => setSettings(true)}
-          >
-            <Settings2 aria-hidden />
-          </Button>
+            <Button
+              variant="outline"
+              className={roundControl}
+              disabled={busy}
+              onClick={() => void act({ action: "extend", seconds: 120 })}
+            >
+              <Plus aria-hidden />
+              {t("extend")}
+            </Button>
+            <Button
+              variant="outline"
+              className={roundControl}
+              disabled={busy}
+              onClick={() => void act({ action: "end" })}
+            >
+              <Square aria-hidden />
+              {t("end")}
+            </Button>
+          </div>
+          <p className="text-center text-xs text-muted-foreground">{t("extendHint")}</p>
         </div>
-      </div>
+      ) : (
+        <div className="mb-6 space-y-2">
+          <Button
+            className="practice-primary min-h-14 w-full text-base"
+            disabled={busy || !canStartRound}
+            onClick={() => void act({ action: "startGame", minutes: 20 })}
+          >
+            <Play aria-hidden />
+            {t("startGame")}
+          </Button>
+          {view.count > 0 && (
+            <p className="text-center text-xs text-muted-foreground">
+              {t(canStartRound ? "presenceHint" : view.count < 2 ? "needTwo" : "waitingPartner")}
+            </p>
+          )}
+        </div>
+      )}
       {view.count === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("noCheckedIn")}</p>}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {view.groups.map((group, index) => {
@@ -227,13 +230,15 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                 });
               }}
             >
-              <h3 className="mb-4 flex items-baseline gap-3">
+              <h3 className="mb-4 flex items-baseline gap-2">
                 <strong className="text-xl font-medium">
-                  {table ? table.tableNumber : t("waitingList")}
+                  {table ? t("table", { number: table.tableNumber }) : t("waitingList")}
                 </strong>
-                <span className="text-xs text-muted-foreground">
-                  {table ? table.floor === "upstairs" ? "↑2" : "↓1" : ""}
-                </span>
+                {table && (
+                  <span className="text-sm text-muted-foreground">
+                    {t(table.floor)}
+                  </span>
+                )}
               </h3>
               <div className="space-y-2">
                 {visibleGroup.map((member) => (
@@ -263,12 +268,11 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                     <PracticePerson person={member} showSpeaks={selected === member.id} />
                   </button>{selected === member.id && selectedActions}</div>
                 ))}
-                {group.length < 4 && table && (
+                {group.length < 4 && table && selected && !group.some((member) => member.id === selected) && (
                   <Button
-                    variant="ghost"
+                    variant="outline"
                     className="min-h-11 w-full"
-                    disabled={busy || !selected}
-                    aria-label={t("moveToTable", { number: table.tableNumber })}
+                    disabled={busy}
                     onClick={() => {
                       void act({
                         action: "moveToTable",
@@ -279,6 +283,7 @@ export function PracticeHost({ view, busy, act, remaining, ticket }: Props) {
                     }}
                   >
                     <Plus aria-hidden className="h-4 w-4" />
+                    {t("moveToTable", { number: table.tableNumber })}
                   </Button>
                 )}
               </div>
