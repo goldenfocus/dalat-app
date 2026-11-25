@@ -14,7 +14,8 @@ const cloudflareConfig = defineCloudflareConfig({
 
 export default {
   ...cloudflareConfig,
-  // The repository keeps a bun.lock for local users, but production builds
-  // run in environments where only Node/npm is guaranteed to be installed.
+  // npm is the package manager of record (package-lock.json is the only
+  // lockfile): production builds run in environments where only Node/npm is
+  // guaranteed to be installed.
   buildCommand: "npm run build",
 };
