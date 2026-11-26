@@ -20,6 +20,7 @@ type clockHit struct {
 	ambiguous    bool // 8-11 without am/pm and no morning/evening hint
 	meridian     bool // am/pm (or an evening/morning word) was written next to the clock
 	paddedHour   bool // "07:30" is already 24-hour; do not shift to 19:30
+	hostArrival  bool // "I will be there from 09:30", setup, host doors — not the invite time
 }
 
 const clockPart = `(\d{1,2})(?:(:)([0-5]\d)|([hH])([0-5]\d)?)?\s*(am\b|pm\b|a\.m\.|p\.m\.)?`
@@ -207,10 +208,16 @@ func findClock(text string) (clockHit, bool) {
 	for i := range hits {
 		hits[i].rank = lineRank(text, hits[i].pos)
 		applyBareClock(&hits[i], lineAt(text, hits[i].pos))
+		hits[i].hostArrival = isHostArrivalClock(text, hits[i].pos)
 	}
-	// Prefer a firm clock over an ambiguous one, a labeled Time:/When: line
-	// over prose, a range over a later single agenda time, then earlier text.
+	// Host arrival / setup never beats the invite time, even when the
+	// arrival clock is firmer ("09:30") than a bare "at 10:00". Then prefer
+	// a firm clock over an ambiguous one, a labeled Time:/When: line over
+	// prose, a range over a later single agenda time, then earlier text.
 	sort.SliceStable(hits, func(i, j int) bool {
+		if hits[i].hostArrival != hits[j].hostArrival {
+			return !hits[i].hostArrival
+		}
 		if hits[i].ambiguous != hits[j].ambiguous {
 			return !hits[i].ambiguous
 		}
@@ -319,6 +326,56 @@ func applyBareClock(c *clockHit, line string) {
 			c.ambiguous = c.ambiguous || eamb
 		}
 	}
+}
+
+// hostArrivalRe matches first-person arrival or setup copy, not the invite
+// time ("I invite you at 10:00"). "doors" alone is already ancillary.
+var hostArrivalRe = regexp.MustCompile(`(?i)\b(?:i(?:'m|'ll| am| will)\s+(?:be\s+there|arrive|be\s+arriving|get\s+there|come\s+early)|i\s+will\s+be\s+there|i'll\s+be\s+there|setup\s+at|set\s+up\s+at|setting\s+up\s+at|doors?\s+for\s+(?:the\s+)?host|host\s+(?:arrives?|arrival|setup))\b`)
+
+func isHostArrivalLine(line string) bool {
+	low := strings.ToLower(strings.NewReplacer("’", "'", "‘", "'").Replace(line))
+	return hostArrivalRe.MatchString(low)
+}
+
+// isHostArrivalClock looks at the sentence holding the clock, not the whole
+// line, so "I invite you at 10:00. I will be there from 09:30." keeps 10:00
+// as the invite time.
+func isHostArrivalClock(text string, pos int) bool {
+	line := lineAt(text, pos)
+	rel := pos
+	if ls := strings.LastIndexByte(text[:min(pos, len(text))], '\n'); ls >= 0 {
+		rel = pos - (ls + 1)
+	}
+	if rel < 0 {
+		rel = 0
+	}
+	if rel > len(line) {
+		rel = len(line)
+	}
+	start := 0
+	for i, r := range line {
+		if i >= rel {
+			break
+		}
+		if r == '.' || r == '!' || r == '?' {
+			start = i + 1
+		}
+	}
+	end := len(line)
+	for i, r := range line[rel:] {
+		if r == '.' || r == '!' || r == '?' {
+			end = rel + i
+			break
+		}
+	}
+	return isHostArrivalLine(line[start:end])
+}
+
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
 }
 
 func hasMorningHint(low string) bool {
@@ -442,19 +499,23 @@ func extractStartTime(text string, loc *time.Location, ref time.Time) (time.Time
 // start is midnight and flagged as inferred.
 func extractSchedule(sources []string, loc *time.Location, ref time.Time) (time.Time, *time.Time, bool, error) {
 	ref = ref.In(loc)
-	var clock *clockHit
-	ambiguous := false
+	var clock, ambiguousClock *clockHit
 	for _, src := range sources {
 		if c, ok := findClock(src); ok {
+			cc := c
 			if c.ambiguous {
-				ambiguous = true
+				if ambiguousClock == nil {
+					ambiguousClock = &cc
+				}
 				continue
 			}
-			clock = &c
+			clock = &cc
 			break
 		}
 	}
-	_ = ambiguous
+	if clock == nil {
+		clock = ambiguousClock
+	}
 
 	// "Wednesday, 7pm" in the caption and "7PM–9PM" on the flyer: keep the
 	// caption's start and take the end from a range that starts at the same time.

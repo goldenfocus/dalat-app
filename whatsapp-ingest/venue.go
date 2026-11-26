@@ -40,6 +40,9 @@ var (
 	// right after the preposition. Lower-case words end the name, so prose like
 	// "look at several traditional forms" never becomes a venue.
 	atVenueRe = regexp.MustCompile(`(?:^|[\s(,])(?:at|At|AT|tại|Tại|TẠI)\s+(?:(?:the|The|THE)\s+)?(\p{Lu}[\p{L}\p{N}'’&.\-]*(?:[ \t]+(?:\p{Lu}[\p{L}\p{N}'’&.\-]*|&|of|de|du|la|le|và))*)`)
+	// "@ Rừng Na Ui" / "@Rừng Na Ui" is the usual invite pin, distinct from "at".
+	atSignVenueRe  = regexp.MustCompile(`(?:^|[\s(,])@\s*(\p{Lu}[\p{L}\p{N}'’&.\-]*(?:[ \t]+(?:\p{Lu}[\p{L}\p{N}'’&.\-]*|&|of|de|du|la|le|và))*)`)
+	itineraryCueRe = regexp.MustCompile(`(?i)\b(lunch|dinner|brunch|afterwards?|after(?:\s+that)?|then|later|ăn trưa|bữa trưa|sau đó|rồi)\b`)
 )
 
 // Capitalised words that end or disqualify an "at …" name.
@@ -340,34 +343,128 @@ func labeledVenue(text string) (venueCandidate, bool) {
 	return found, ok
 }
 
-// atVenue returns the first capitalised name after "at" / "tại".
-func atVenue(text string) string {
-	for _, m := range atVenueRe.FindAllStringSubmatch(text, -1) {
-		words := strings.Fields(m[1])
-		kept := words[:0:0]
-		for _, w := range words {
-			if atStopWords[strings.ToLower(strings.Trim(w, ".,'’"))] {
-				break
-			}
-			kept = append(kept, w)
-		}
-		for len(kept) > 0 {
-			last := strings.ToLower(kept[len(kept)-1])
-			if last == "&" || last == "of" || last == "de" || last == "du" || last == "la" || last == "le" || last == "và" {
-				kept = kept[:len(kept)-1]
-				continue
-			}
+type atVenueMention struct {
+	name   string
+	pos    int
+	atSign bool
+}
+
+func venueNameFromPhrase(raw string) string {
+	words := strings.Fields(raw)
+	kept := words[:0:0]
+	for _, w := range words {
+		if atStopWords[strings.ToLower(strings.Trim(w, ".,'’"))] {
 			break
 		}
-		if len(kept) == 0 {
+		kept = append(kept, w)
+	}
+	for len(kept) > 0 {
+		last := strings.ToLower(kept[len(kept)-1])
+		if last == "&" || last == "of" || last == "de" || last == "du" || last == "la" || last == "le" || last == "và" {
+			kept = kept[:len(kept)-1]
 			continue
 		}
-		name := normalizeVenueName(strings.Join(kept, " "))
-		if plausibleVenueName(name) {
-			return name
-		}
+		break
+	}
+	if len(kept) == 0 {
+		return ""
+	}
+	name := normalizeVenueName(strings.Join(kept, " "))
+	if plausibleVenueName(name) {
+		return name
 	}
 	return ""
+}
+
+func collectAtVenueMentions(text string) []atVenueMention {
+	var out []atVenueMention
+	add := func(matches [][]int, atSign bool) {
+		for _, m := range matches {
+			if len(m) < 4 {
+				continue
+			}
+			name := venueNameFromPhrase(text[m[2]:m[3]])
+			if name == "" {
+				continue
+			}
+			out = append(out, atVenueMention{name: name, pos: m[0], atSign: atSign})
+		}
+	}
+	add(atSignVenueRe.FindAllStringSubmatchIndex(text, -1), true)
+	add(atVenueRe.FindAllStringSubmatchIndex(text, -1), false)
+	return out
+}
+
+func mentionWindow(text string, pos int) string {
+	line := lineAt(text, pos)
+	// The clause leading up to the mention, so "then at 12:30 … lunch at X"
+	// is visible when scoring X.
+	if i := strings.LastIndexAny(line, ".!?"); i >= 0 && i < len(line)-1 {
+		line = line[i+1:]
+	}
+	return line
+}
+
+func mentionTiedToStart(text string, m atVenueMention, start clockHit) bool {
+	if start.pos < 0 {
+		return false
+	}
+	if lineAt(text, m.pos) == lineAt(text, start.pos) {
+		return true
+	}
+	// "at 10:00 @ Rừng Na Ui" on one wrapped sentence.
+	if m.pos >= start.pos && m.pos-start.pos <= 48 {
+		return true
+	}
+	return false
+}
+
+func isItineraryMention(text string, m atVenueMention, start clockHit, hasStart bool) bool {
+	window := mentionWindow(text, m.pos)
+	if itineraryCueRe.MatchString(window) {
+		return true
+	}
+	if !hasStart || (hasStart && mentionTiedToStart(text, m, start)) {
+		return false
+	}
+	if c, ok := findClock(window); ok {
+		later := c.hour > start.hour || (c.hour == start.hour && c.minute > start.minute)
+		if later && c.pos != start.pos {
+			return true
+		}
+	}
+	return false
+}
+
+// atVenue prefers "@ <place>" or a place on the start-time line, then the
+// first named place, over later itinerary stops (lunch / after / then, or a
+// later clock on the same clause).
+func atVenue(text string) string {
+	mentions := collectAtVenueMentions(text)
+	if len(mentions) == 0 {
+		return ""
+	}
+	start, hasStart := findClock(text)
+	best, bestScore := -1, -1000
+	for i, m := range mentions {
+		score := 100 - i // first mention beats later ones of equal kind
+		if m.atSign {
+			score += 30
+		}
+		if hasStart && mentionTiedToStart(text, m, start) {
+			score += 20
+		}
+		if isItineraryMention(text, m, start, hasStart) {
+			score -= 50
+		}
+		if score > bestScore {
+			bestScore, best = score, i
+		}
+	}
+	if best < 0 {
+		return ""
+	}
+	return mentions[best].name
 }
 
 // streetAddressIn finds a stand-alone street address line in text.

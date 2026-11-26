@@ -583,6 +583,14 @@ function isGreetingOpener(core: string): boolean {
   return true;
 }
 
+/** "Saturday's Coffee Meetup" → "Saturday Coffee Meetup". */
+export function normalizePossessiveWeekday(title: string): string {
+  return title.replace(
+    /\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)['’]s\b/gi,
+    "$1",
+  );
+}
+
 export function isChatSentenceTitle(title: string): boolean {
   const core = title
     .replace(/[\u200b-\u200d\u2060\ufeff]/g, "")
@@ -590,10 +598,12 @@ export function isChatSentenceTitle(title: string): boolean {
     .replace(/^[^\p{L}\p{N}]+/u, "")
     .trim();
   if (!core) return false;
-  const low = core.toLowerCase().replace(/[’‘]/g, "'");
+  const low = normalizePossessiveWeekday(
+    core.toLowerCase().replace(/[’‘]/g, "'"),
+  );
   if (CHAT_CLAUSE_CUES.some((cue) => low.includes(cue))) return true;
   if (
-    /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow|tonight|this weekend|the weekend)('s|\s+is)\b/.test(
+    /^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow|tonight|this weekend|the weekend)\s+is\b/.test(
       low,
     )
   ) {
