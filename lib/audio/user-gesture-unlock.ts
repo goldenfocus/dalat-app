@@ -52,3 +52,11 @@ export async function primeAudioForLaterPlayback(
     }
   }
 }
+
+
+export function isMediaAutoplayBlocked(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  if ("name" in error && error.name === "NotAllowedError") return true;
+  return "message" in error && typeof error.message === "string" &&
+    error.message.includes("user didn't interact");
+}
