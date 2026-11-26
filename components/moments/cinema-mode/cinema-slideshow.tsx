@@ -335,12 +335,6 @@ export function CinemaSlideshow({
     play();
   }, [goTo, play]);
 
-  const handleVideoPlayRequest = useCallback(() => {
-    play();
-    showFlash("play");
-    revealChrome();
-  }, [play, revealChrome, showFlash]);
-
   const handleAddMoment = useCallback(() => {
     triggerHaptic("selection");
     exit();
@@ -361,7 +355,7 @@ export function CinemaSlideshow({
       role="dialog"
       aria-label={t("dialogLabel")}
       tabIndex={-1}
-      className="fixed inset-0 z-[55] bg-black outline-none"
+      className="fixed inset-0 z-[55] bg-black outline-none touch-manipulation"
       onClickCapture={handleClickCapture}
       onClick={handleClick}
       onTouchStart={handleTouchStart}
@@ -386,7 +380,6 @@ export function CinemaSlideshow({
               isActive={!isEnded}
               isTransitioning={isTransitioning}
               isPaused={isPaused}
-              onRequestPlay={handleVideoPlayRequest}
               onSoundBlocked={setBlockedVideoId}
               onEnded={onVideoEnded}
               onTimeUpdate={onVideoTimeUpdate}
