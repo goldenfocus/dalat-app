@@ -1,3 +1,4 @@
+import { isMediaAutoplayBlocked } from "@/lib/audio/user-gesture-unlock";
 import { create } from "zustand";
 
 import type { Locale } from "@/lib/types";
@@ -253,10 +254,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     } catch (error) {
       if (attempt !== playAttempt) return;
       console.warn('[AudioPlayer] Autoplay blocked (will retry on user interaction):', (error as Error).name);
-      // Check if this is an autoplay block (NotAllowedError)
-      const isAutoplayBlocked = error instanceof Error &&
-        (error.name === 'NotAllowedError' || error.message.includes('user didn\'t interact'));
-      set({ isPlaying: false, isLoading: false, autoplayBlocked: isAutoplayBlocked });
+      set({ isPlaying: false, isLoading: false, autoplayBlocked: isMediaAutoplayBlocked(error) });
     }
   },
 

@@ -11,7 +11,7 @@ import {
   LayoutGrid,
   X,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { triggerHaptic } from "@/lib/haptics";
 import { useShare } from "@/lib/hooks/use-share";
@@ -58,6 +58,7 @@ export function CinemaControls({
   focusFallbackRef,
 }: CinemaControlsProps) {
   const t = useTranslations("moments.cinemaControls");
+  const locale = useLocale();
   const currentIndex = useCinemaCurrentIndex();
   const total = useCinemaTotalCount();
   const playbackState = useCinemaPlaybackState();
@@ -80,12 +81,10 @@ export function CinemaControls({
 
   const handleShare = useCallback((e: React.MouseEvent) => {
     e.stopPropagation();
-    const momentId = currentMoment?.id;
-    const shareUrl = momentId
-      ? `${window.location.origin}/events/${eventSlug}/moments/${momentId}`
-      : `${window.location.origin}/events/${eventSlug}/moments?view=cinema`;
-    nativeShare({ title: eventTitle ?? "Moment", url: shareUrl });
-  }, [eventSlug, eventTitle, currentMoment, nativeShare]);
+    const localePath = locale === "en" ? "" : `/${locale}`;
+    const url = `${window.location.origin}${localePath}/events/${eventSlug}/moments?view=cinema`;
+    nativeShare({ title: eventTitle ?? t("dialogLabel"), url });
+  }, [eventSlug, eventTitle, locale, nativeShare, t]);
 
   // Any press inside the chrome restarts the auto-hide countdown.
   const keepAlive = useCallback(() => {

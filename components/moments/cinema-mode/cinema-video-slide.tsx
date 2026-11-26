@@ -19,6 +19,7 @@ interface CinemaVideoSlideProps {
   isTransitioning: boolean;
   isPaused: boolean;
   onRequestPlay: () => void;
+  onSoundBlocked: (momentId: string | null) => void;
   onEnded: () => void;
   onTimeUpdate: (currentTime: number, duration: number) => void;
 }
@@ -29,6 +30,7 @@ export function CinemaVideoSlide({
   isTransitioning,
   isPaused,
   onRequestPlay,
+  onSoundBlocked,
   onEnded,
   onTimeUpdate,
 }: CinemaVideoSlideProps) {
@@ -49,6 +51,18 @@ export function CinemaVideoSlide({
     const video = videoRef.current;
     if (!video || !isActive) return;
 
+    let starting = false;
+    let cancelled = false;
+    const startPlayback = async () => {
+      if (starting || !video.paused) return;
+      starting = true;
+      const started = await requestVideoPlayback(video, soundOn, true);
+      starting = false;
+      if (cancelled) return;
+      setPlaybackFailed(!started);
+      onSoundBlocked(started && soundOn && video.muted ? moment.id : null);
+    };
+
     const handleTimeUpdate = () => {
       onTimeUpdate(video.currentTime, video.duration || 0);
     };
@@ -64,11 +78,7 @@ export function CinemaVideoSlide({
     const handleCanPlay = () => {
       setIsBuffering(false);
       setIsMediaReady(true);
-      if (!isPaused) {
-        void requestVideoPlayback(video, soundOn).then((started) => {
-          setPlaybackFailed(!started);
-        });
-      }
+      if (!isPaused) void startPlayback();
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
@@ -84,14 +94,13 @@ export function CinemaVideoSlide({
         hasStartedRef.current = true;
         video.currentTime = 0;
       }
-      void requestVideoPlayback(video, soundOn).then((started) => {
-        setPlaybackFailed(!started);
-      });
+      void startPlayback();
     } else {
       video.pause();
     }
 
     return () => {
+      cancelled = true;
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("waiting", handleWaiting);
       video.removeEventListener("playing", handlePlaying);
@@ -104,6 +113,7 @@ export function CinemaVideoSlide({
     moment.id,
     moment.video_status,
     onTimeUpdate,
+    onSoundBlocked,
     soundOn,
   ]);
 

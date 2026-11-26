@@ -25,6 +25,34 @@ describe("requestVideoPlayback", () => {
     expect(video.play).toHaveBeenCalledOnce();
   });
 
+  it("keeps the slide moving silently after audible autoplay is blocked", async () => {
+    const video = {
+      muted: false,
+      play: vi.fn()
+        .mockRejectedValueOnce(new DOMException("Blocked", "NotAllowedError"))
+        .mockResolvedValueOnce(undefined)
+        .mockResolvedValueOnce(undefined),
+    } as unknown as HTMLVideoElement;
+
+    await expect(requestVideoPlayback(video, true, true)).resolves.toBe(true);
+    expect(video.muted).toBe(true);
+    expect(video.play).toHaveBeenCalledTimes(2);
+
+    await expect(requestVideoPlayback(video, true, true)).resolves.toBe(true);
+    expect(video.muted).toBe(false);
+  });
+
+  it("does not hide a broken media source behind muted autoplay", async () => {
+    const video = {
+      muted: false,
+      play: vi.fn().mockRejectedValue(new DOMException("Unavailable", "NotSupportedError")),
+    } as unknown as HTMLVideoElement;
+
+    await expect(requestVideoPlayback(video, true, true)).resolves.toBe(false);
+    expect(video.muted).toBe(false);
+    expect(video.play).toHaveBeenCalledOnce();
+  });
+
   it("keeps the retry control visible when playback still fails", async () => {
     const video = {
       muted: true,

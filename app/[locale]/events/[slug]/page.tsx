@@ -706,7 +706,7 @@ async function getEventMaterials(eventId: string): Promise<EventMaterial[]> {
 
 interface PlaylistSummary {
   trackCount: number;
-  totalDuration: number;
+  previewTracks: { id: string; title: string }[];
 }
 
 async function getEventPlaylistSummary(
@@ -726,16 +726,16 @@ async function getEventPlaylistSummary(
   // Get track count and total duration
   const { data: tracks } = await supabase
     .from("playlist_tracks")
-    .select("duration_seconds")
-    .eq("playlist_id", playlist.id);
+    .select("id,title")
+    .eq("playlist_id", playlist.id)
+    .order("sort_order");
 
   if (!tracks || tracks.length === 0) return null;
 
   return {
     trackCount: tracks.length,
-    totalDuration: tracks.reduce(
-      (acc, t) => acc + (t.duration_seconds || 0),
-      0,
+    previewTracks: tracks.slice(0, 3).flatMap((track) =>
+      track.title ? [{ id: track.id, title: track.title }] : [],
     ),
   };
 }
@@ -1222,6 +1222,40 @@ export default async function EventPage({ params, searchParams }: PageProps) {
   );
   const timeTbd = hasLamVienTbdSchedule(event.source_metadata);
 
+  const playlistHref = `/events/${event.slug}/playlist`;
+  const playlistPreview = playlistSummary && (
+    <div className="mb-4 rounded-xl border bg-card">
+      <Link
+        href={playlistHref}
+        className="group flex min-h-11 items-center gap-3 rounded-t-xl px-4 py-3 hover:bg-accent"
+      >
+        <Music className="size-5 shrink-0 text-primary" aria-hidden="true" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-medium">{tPlaylist("listenAsPlaylist")}</span>
+          <span className="block text-sm text-muted-foreground">
+            {tPlaylist("tracks", { count: playlistSummary.trackCount })}
+          </span>
+        </span>
+        <Play className="size-4 shrink-0 text-muted-foreground group-hover:text-foreground" aria-hidden="true" />
+      </Link>
+      {playlistSummary.previewTracks.length > 0 && (
+        <ul className="border-t px-4 py-1">
+          {playlistSummary.previewTracks.map((track) => (
+            <li key={track.id}>
+              <Link
+                href={`${playlistHref}?track=${track.id}`}
+                prefetch={false}
+                className="flex min-h-11 items-center rounded-md px-2 text-sm hover:bg-accent"
+              >
+                {track.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
   const locationSummary = (
     <EventLocation
       location={{
@@ -1578,6 +1612,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
 
                       </Link>
                     )}
+                    {playlistPreview}
                     {locationSummary}
                     {/* Translation indicator */}
                     {eventTranslations.isTranslated && (
@@ -1614,31 +1649,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                           : null
                       }
                     />
-                  )}
-
-                  {/* Playlist link - right after moments for past events */}
-                  {playlistSummary && (
-                    <Link
-                      href={`/events/${event.slug}/playlist`}
-                      className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
-                    >
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <Music className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">
-                          {tPlaylist("listenAsPlaylist")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {tPlaylist("tracks", {
-                            count: playlistSummary.trackCount,
-                          })}
-                          {playlistSummary.totalDuration > 0 &&
-                            ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
-                        </p>
-                      </div>
-                      <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </Link>
                   )}
 
                   {/* Event flyer - shown after moments for past events */}
@@ -1700,6 +1710,7 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                         {eventTranslations.originalTitle}
                       </p>
                     )}
+                    {playlistPreview}
                     {locationSummary}
                     {!isPast && <div className="mb-5">{attendanceCard}</div>}
                     {/* Show translation indicator with original */}
@@ -1781,30 +1792,6 @@ export default async function EventPage({ params, searchParams }: PageProps) {
                     />
                   )}
 
-                  {/* Playlist link - right after moments */}
-                  {playlistSummary && (
-                    <Link
-                      href={`/events/${event.slug}/playlist`}
-                      className="flex items-center gap-4 p-4 rounded-xl border bg-card hover:bg-accent transition-colors group"
-                    >
-                      <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                        <Music className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">
-                          {tPlaylist("listenAsPlaylist")}
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          {tPlaylist("tracks", {
-                            count: playlistSummary.trackCount,
-                          })}
-                          {playlistSummary.totalDuration > 0 &&
-                            ` · ${Math.round(playlistSummary.totalDuration / 60)} min`}
-                        </p>
-                      </div>
-                      <Play className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
-                    </Link>
-                  )}
                 </>
               )}
 

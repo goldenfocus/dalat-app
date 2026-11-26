@@ -110,6 +110,12 @@ async function getEventPlaylist(slug: string, staticClient?: ReturnType<typeof c
   };
 }
 
+function resolveTrackIndex(tracks: { id: string }[], track?: string): number | undefined {
+  if (!track) return undefined;
+  const index = /^\d+$/.test(track) ? Number(track) : tracks.findIndex(({ id }) => id === track);
+  return index >= 0 && index < tracks.length ? index : undefined;
+}
+
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { slug, locale } = await params;
   const { karaoke, track } = await searchParams;
@@ -127,7 +133,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
 
   // Karaoke-specific metadata for SEO
   const isKaraokeMode = karaoke === "theater" || karaoke === "hero";
-  const trackIndex = track ? parseInt(track, 10) : 0;
+  const trackIndex = resolveTrackIndex(tracks, track) ?? 0;
   const currentTrack = tracks[trackIndex] || tracks[0];
 
   const t = await getTranslations({ locale, namespace: "playlist" });
@@ -243,7 +249,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
 
   // Parse karaoke mode from URL (theater=2, hero=3)
   const karaokeLevel = karaoke === "hero" ? 3 : karaoke === "theater" ? 2 : undefined;
-  const startTrack = track ? parseInt(track, 10) : undefined;
+  const startTrack = resolveTrackIndex(tracks, track);
 
   // Build playlist URL for sharing
   const playlistUrl = `https://dalat.app/${locale}/events/${event.slug}/playlist`;
@@ -352,7 +358,7 @@ export default async function PlaylistPage({ params, searchParams }: PageProps) 
           eventTitle={event.title}
           eventImageUrl={event.image_url}
           eventId={event.id}
-          autoPlay={karaokeLevel !== undefined}
+          autoPlay={karaokeLevel !== undefined || startTrack !== undefined}
           autoKaraokeLevel={karaokeLevel}
           autoStartTrack={startTrack}
         />

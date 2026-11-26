@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useCallback, useRef, useMemo } from "react";
+import { useEffect, useLayoutEffect, useCallback, useRef, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Play, Pause } from "lucide-react";
+import { Play, Pause, Volume2 } from "lucide-react";
 import { CinemaPhotoSlide } from "./cinema-photo-slide";
 import { CinemaVideoSlide } from "./cinema-video-slide";
 import { CinemaControls } from "./cinema-controls";
@@ -95,7 +95,14 @@ export function CinemaSlideshow({
     (state) => state.playlist?.eventSlug === eventSlug && state.tracks.length > 0,
   );
   const soundOn = useCinemaSoundOn();
+  const autoplayBlocked = useAudioPlayerStore((state) => state.autoplayBlocked);
+  const [blockedVideoId, setBlockedVideoId] = useState<string | null>(null);
   const hasActiveVideo = !isEnded && currentMoment?.content_type === "video";
+
+  const videoSoundBlocked = hasActiveVideo && blockedVideoId === currentMoment?.id;
+  const showUnmute = soundOn && !isPaused && !isEnded && (
+    hasActiveVideo ? videoSoundBlocked : hasSoundtrack && autoplayBlocked
+  );
 
   useLayoutEffect(() => {
     if (!hasSoundtrack || playbackState === "idle") return;
@@ -111,6 +118,18 @@ export function CinemaSlideshow({
     const audio = useAudioPlayerStore.getState();
     if (!audio.isPlaying && !audio.isLoading && !audio.autoplayBlocked) void audio.play();
   }, [eventSlug, hasSoundtrack, hasActiveVideo, isPaused, playbackState, soundOn]);
+
+  const handleUnmute = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    const video = rootRef.current?.querySelector("video");
+    if (video && videoSoundBlocked) {
+      void requestVideoPlayback(video, true, true).then((started) => {
+        if (started && !video.muted) setBlockedVideoId(null);
+      });
+    } else if (!video) {
+      void useAudioPlayerStore.getState().play();
+    }
+  };
 
   const handleToggleSound = useCallback(() => {
     const cinema = useCinemaModeStore.getState();
@@ -366,6 +385,7 @@ export function CinemaSlideshow({
               isTransitioning={isTransitioning}
               isPaused={isPaused}
               onRequestPlay={handleVideoPlayRequest}
+              onSoundBlocked={setBlockedVideoId}
               onEnded={onVideoEnded}
               onTimeUpdate={onVideoTimeUpdate}
             />
@@ -428,12 +448,25 @@ export function CinemaSlideshow({
         />
       )}
 
+      {showUnmute && (
+        <button
+          type="button"
+          data-cinema-audio-control
+          onClick={handleUnmute}
+          onTouchStart={(event) => event.stopPropagation()}
+          className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-50 flex min-h-11 items-center gap-2 rounded-full bg-black/75 px-4 text-sm font-medium text-white backdrop-blur-sm"
+        >
+          <Volume2 className="size-4" aria-hidden="true" />
+          {t("unmute")}
+        </button>
+      )}
+
       {/* Controls overlay (counter + timeline — view mode switcher is persistent/separate) */}
       {!isEnded && (
         <CinemaControls
           eventSlug={eventSlug}
           eventTitle={eventMeta?.title}
-          showSoundControl={hasSoundtrack || hasActiveVideo}
+          showSoundControl={!showUnmute && (hasSoundtrack || hasActiveVideo)}
           onToggleSound={handleToggleSound}
           onExit={handleExit}
           onShowGallery={handleShowGallery}
