@@ -16,8 +16,9 @@ var chatClauseCues = []string{
 }
 
 var (
-	pronounRe   = regexp.MustCompile(`(^|[^\p{L}'])(i|we|us|you|my|our|your|it's|they|everyone)([^\p{L}']|$)`)
-	weekdayIsRe = regexp.MustCompile(`(?i)^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow|tonight|this weekend|the weekend)('s|\s+is)\b`)
+	pronounRe           = regexp.MustCompile(`(^|[^\p{L}'])(i|we|us|you|my|our|your|it's|they|everyone)([^\p{L}']|$)`)
+	weekdayIsRe         = regexp.MustCompile(`(?i)^(monday|tuesday|wednesday|thursday|friday|saturday|sunday|today|tomorrow|tonight|this weekend|the weekend)\s+is\b`)
+	possessiveWeekdayRe = regexp.MustCompile(`(?i)\b(monday|tuesday|wednesday|thursday|friday|saturday|sunday)['’]s\b`)
 	// Words a title never ends on: a sentence was cut ("… to rustle some").
 	danglingEnd = map[string]bool{
 		"and": true, "or": true, "but": true, "so": true, "to": true, "some": true, "the": true,
@@ -29,10 +30,18 @@ var (
 	}
 )
 
+// normalizePossessiveWeekday turns "Saturday's Coffee Meetup" into
+// "Saturday Coffee Meetup" so a possessive weekday prefix is not treated as
+// a sentence and can match a series name.
+func normalizePossessiveWeekday(s string) string {
+	return strings.TrimSpace(possessiveWeekdayRe.ReplaceAllString(s, "$1"))
+}
+
 // isChatSentenceTitle reports a line that reads as chat copy rather than an
 // event name. Such a line must never become a title.
 func isChatSentenceTitle(line string) bool {
 	core := strings.TrimSpace(trimLeadingSymbols(stripEmoji(cleanLine(line))))
+	core = normalizePossessiveWeekday(core)
 	if core == "" {
 		return false
 	}

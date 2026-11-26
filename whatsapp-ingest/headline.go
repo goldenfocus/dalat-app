@@ -420,6 +420,10 @@ func isFragmentTitle(line string) bool {
 // chooseTitle picks the event title: the flyer's own title/headline first,
 // then a short caption first line, then the caption heuristics.
 func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
+	return normalizePossessiveWeekday(pickTitle(caption, llmTitle, readable, flyer))
+}
+
+func pickTitle(caption, llmTitle, readable string, flyer bool) string {
 	llmTitle = cleanLine(llmTitle)
 	if flyer && llmTitle != "" && !isFluffTitle(llmTitle) && !isLabelLine(llmTitle) && !isFragmentTitle(llmTitle) && !isChatSentenceTitle(llmTitle) {
 		return truncateTitle(llmTitle, 100)
@@ -452,6 +456,10 @@ func chooseTitle(caption, llmTitle, readable string, flyer bool) string {
 // Workshop"); a short ALL-CAPS / Title-Case line; any short line; then the first
 // substantive line cut at a word boundary.
 func heuristicTitle(text string) string {
+	return normalizePossessiveWeekday(pickHeuristicTitle(text))
+}
+
+func pickHeuristicTitle(text string) string {
 	var lines []string
 	for line := range strings.Lines(text) {
 		line = cleanLine(line)

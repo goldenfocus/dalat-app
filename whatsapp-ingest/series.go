@@ -135,7 +135,7 @@ func seriesCoreTitle(title string) string {
 // normalizeSeriesText lowercases, drops digits, punctuation and emoji, and
 // folds Vietnamese diacritics so "Vui Vá" == "Vui Va".
 func normalizeSeriesText(s string) string {
-	s = foldDiacritics(strings.ToLower(s))
+	s = foldDiacritics(strings.ToLower(normalizePossessiveWeekday(s)))
 	var b strings.Builder
 	space := true
 	for _, r := range s {

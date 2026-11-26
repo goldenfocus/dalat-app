@@ -17,6 +17,7 @@ import {
   qaReviewEvent,
   rejectReviewEvent,
   isChatSentenceTitle,
+  normalizePossessiveWeekday,
   isGreetingTitle,
   isScheduleLine,
   isSectionHeaderLine,
@@ -276,6 +277,42 @@ describe("evaluateDraftQuality", () => {
     expect(placeholder.map((reason) => reason.code)).toContain(
       "title_sentence_like",
     );
+  });
+
+  it("does not flag a possessive weekday event name as sentence-like", () => {
+    const evidence = `As this week's host of this Saturday's Coffee Meetup, I invite all you coffee and lovely time lovers at 10:00 @ Rừng Na Ui https://maps.app.goo.gl/1SKj3RKN8BmZVbjp8 . A place with great views, a laid back vibe, where you will find one of the best Egg Coffees in Da Lat and for sure the most amazing Egg Cocoa. Also can find Brûlée Egg Coffee and Cocoa.
+
+I will be there from 09:30 to greet you all, and then at 12:30 we will have lunch at Lẩu Gà Rau Lỗ Bình
+https://maps.app.goo.gl/RMxUdzG2ouifUmRN6 (Where we will be serving together delicious Chicken Hot Pot with Lobelia a refreshing wild mountain green native to Vietnam's Northwest and Central Highlands))`;
+    expect(normalizePossessiveWeekday("Saturday's Coffee Meetup")).toBe(
+      "Saturday Coffee Meetup",
+    );
+    expect(isChatSentenceTitle("Saturday's Coffee Meetup")).toBe(false);
+    expect(isChatSentenceTitle("Saturday Coffee Meetup")).toBe(false);
+    expect(isChatSentenceTitle("Saturday is almost here")).toBe(true);
+    for (const title of [
+      "Saturday's Coffee Meetup",
+      "Saturday Coffee Meetup",
+    ]) {
+      const reasons = evaluateDraftQuality(
+        event({
+          source_platform: "whatsapp",
+          title,
+          location_name: "Rừng Na Ui",
+          address: "Đà Lạt, Lâm Đồng",
+          starts_at: "2026-11-28T03:00:00.000Z",
+          source_metadata: {
+            message_id: "3BE9A4851E73B0D30AE8",
+            time_inferred: false,
+            source_text_evidence: evidence,
+          },
+        }),
+        qualityOptions(),
+      );
+      expect(reasons.map((reason) => reason.code)).not.toContain(
+        "title_sentence_like",
+      );
+    }
   });
 
   it("flags section-header titles/venues, URL titles, and ambiguous times", () => {
