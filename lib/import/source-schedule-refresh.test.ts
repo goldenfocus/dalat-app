@@ -319,6 +319,73 @@ describe("published source schedule refresh", () => {
     });
     expect(gone.updates[0].status).toBeUndefined();
   });
+
+  it("does not move a schedule_locked event when the source date changes", async () => {
+    const { client, updates, deletes } = db([
+      event({ source_metadata: { source_url: event().external_chat_url, schedule_locked: true } }),
+    ]);
+    const outcomes = await refreshPublishedSourceSchedules(client, {
+      now: NOW,
+      fetchHtml: async () => ({
+        url: "https://maylangthang.com.vn/shows/tp-2011",
+        text: page("2026-11-22T17:00:00+07:00", "2026-11-22T19:00:00+07:00"),
+      }),
+    });
+    expect(outcomes).toEqual([
+      { eventId: "e1", status: "skipped", reason: "schedule_locked" },
+    ]);
+    expect(updates).toHaveLength(0);
+    expect(deletes).toHaveLength(0);
+  });
+
+  it("flags a locked night whose source is gone instead of unlisting it", async () => {
+    const night = luluNight({
+      source_metadata: {
+        source_url: LULU,
+        schedule_locked: true,
+        source_urls_confirming: [LULU, "https://dantri.com.vn/festival"],
+        source_unavailable_since: "2026-10-30T10:17:11Z",
+      },
+    });
+    const { client, updates } = db([night]);
+    const outcomes = await refreshPublishedSourceSchedules(client, {
+      now: new Date("2026-11-01T00:40:00Z"),
+      fetchHtml: async (url: string) => {
+        if (url.includes("dantri.com.vn")) {
+          return { url, text: "<html>still live</html>" };
+        }
+        return { url: "https://lululola.com.vn/", text: "" };
+      },
+    });
+    expect(outcomes[0].status).toBe("source_removed");
+    expect(updates[0].status).toBeUndefined();
+    expect(updates[0].source_metadata).toMatchObject({
+      post_publish_review: {
+        reason: "locked_source_removed",
+        resolution: "kept_published_schedule_locked",
+      },
+    });
+  });
+
+  it("unlists a locked night only when another confirming source is also gone", async () => {
+    const night = luluNight({
+      source_metadata: {
+        source_url: LULU,
+        schedule_locked: true,
+        source_urls_confirming: [LULU, "https://dantri.com.vn/festival"],
+        source_unavailable_since: "2026-10-30T10:17:11Z",
+      },
+    });
+    const { client, updates } = db([night]);
+    const outcomes = await refreshPublishedSourceSchedules(client, {
+      now: new Date("2026-11-01T00:40:00Z"),
+      fetchHtml: async () => {
+        throw new Error("Source returned HTTP 404");
+      },
+    });
+    expect(outcomes[0].status).toBe("unlisted");
+    expect(updates[0].status).toBe("draft");
+  });
 });
 
 const LULU =

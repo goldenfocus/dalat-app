@@ -3,11 +3,18 @@ import { fetchSourceText, type FetchedSourceDocument } from "./fetch";
 import { extractDuoiTanAcoustic, extractSchemaOrgEvents } from "./parsers";
 import { freshnessScore } from "./scoring";
 import {
+  classifySourcePage,
   httpStatusFromFetchError,
   isGoneHttpStatus,
   isHomepageRedirect,
   SOURCE_REMOVED_UNLIST_WINDOW_HOURS,
+  type SourcePageState,
 } from "./source-removal";
+import {
+  hasLockedSchedule,
+  mayUnlistLockedSchedule,
+  otherConfirmingSourceUrls,
+} from "./schedule-lock";
 import type {
   ActivitySource,
   ExtractedActivity,
@@ -225,6 +232,7 @@ export async function confirmOrExpireStaleCandidates(
     sourceId?: string;
     sources?: ActivitySource[];
     ingestActivity: IngestVerifiedActivity;
+    probeConfirmingSource?: (url: string) => Promise<SourcePageState>;
   },
 ): Promise<StaleConfirmResult> {
   const result = emptyResult();
@@ -350,9 +358,10 @@ export async function confirmOrExpireStaleCandidates(
     if (decision.type === "unlist") {
       await unlistConfirmedGoneCandidate(
         supabase,
-        candidate.id,
+        candidate,
         now,
         decision.reason,
+        options.probeConfirmingSource,
       );
       result.unlisted++;
       continue;
@@ -390,19 +399,112 @@ async function resetPublishedCandidateFreshness(
   }
 }
 
-async function unlistConfirmedGoneCandidate(
+export async function probeConfirmingSourcePage(
+  url: string,
+  timeoutMs: number = STALE_CONFIRM_TIMEOUT_MS,
+): Promise<SourcePageState> {
+  try {
+    const origin = new URL(url).origin;
+    const document = await fetchSourceText(
+      { canonical_url: origin } as ActivitySource,
+      url,
+      { timeoutMs },
+    );
+    return classifySourcePage(url, { ok: true, finalUrl: document.url });
+  } catch (error) {
+    return classifySourcePage(url, { ok: false, error });
+  }
+}
+
+export async function countOtherRemovedConfirmingSources(
+  metadatas: Array<Record<string, unknown> | null | undefined>,
+  knownDeadUrl: string,
+  probe: (url: string) => Promise<SourcePageState> = probeConfirmingSourcePage,
+): Promise<number> {
+  const urls = [
+    ...new Set(
+      metadatas.flatMap((metadata) =>
+        otherConfirmingSourceUrls(metadata, knownDeadUrl),
+      ),
+    ),
+  ];
+  let removed = 0;
+  for (const url of urls) {
+    const state = await probe(url);
+    if (state.state === "removed") removed += 1;
+  }
+  return removed;
+}
+
+async function loadLinkedEventMetadata(
   supabase: SupabaseClient,
   candidateId: string,
+): Promise<Array<Record<string, unknown> | null>> {
+  const { data: links, error: linkError } = await supabase
+    .from("activity_canonical_links")
+    .select("event_id")
+    .eq("candidate_id", candidateId);
+  if (linkError) {
+    throw new Error(
+      `Locked-schedule event link lookup failed: ${linkError.message}`,
+    );
+  }
+  const ids = [
+    ...new Set(
+      (links ?? [])
+        .map((link) => (link as { event_id?: unknown }).event_id)
+        .filter((id): id is string => typeof id === "string"),
+    ),
+  ];
+  let query = supabase
+    .from("events")
+    .select("id, source_metadata")
+    .eq("activity_graph_candidate_id", candidateId);
+  if (ids.length > 0) {
+    query = supabase
+      .from("events")
+      .select("id, source_metadata")
+      .or(`activity_graph_candidate_id.eq.${candidateId},id.in.(${ids.join(",")})`);
+  }
+  const { data: events, error: eventError } = await query;
+  if (eventError) {
+    throw new Error(
+      `Locked-schedule event lookup failed: ${eventError.message}`,
+    );
+  }
+  return (events ?? []).map(
+    (event) =>
+      ((event as { source_metadata?: Record<string, unknown> | null })
+        .source_metadata ?? null),
+  );
+}
+
+async function unlistConfirmedGoneCandidate(
+  supabase: SupabaseClient,
+  candidate: StaleCandidateSnapshot,
   now: Date,
   reason: string,
+  probeConfirmingSource?: (url: string) => Promise<SourcePageState>,
 ): Promise<void> {
+  const metadatas = await loadLinkedEventMetadata(supabase, candidate.id);
+  const locked = metadatas.filter((metadata) => hasLockedSchedule(metadata));
+  let overrideScheduleLock = false;
+  if (locked.length > 0) {
+    const otherRemoved = await countOtherRemovedConfirmingSources(
+      locked,
+      candidate.source_url,
+      probeConfirmingSource ?? probeConfirmingSourcePage,
+    );
+    overrideScheduleLock = mayUnlistLockedSchedule(otherRemoved);
+  }
   const { error } = await supabase.rpc(
     "apply_activity_candidate_system_unlist",
     {
-      p_candidate_ids: [candidateId],
+      p_candidate_ids: [candidate.id],
       p_unlisted_at: now.toISOString(),
       p_reason: reason,
       p_future_events_only: true,
+      p_override_schedule_lock: overrideScheduleLock,
     },
   );
   if (error) {

@@ -360,10 +360,11 @@ describe("confirmOrExpireStaleCandidates", () => {
     const supabase = {
       rpc,
       from: vi.fn((table: string) => {
-        if (table !== "activity_candidates") {
-          throw new Error(`Unexpected table: ${table}`);
+        if (table === "activity_candidates") return thenableQuery([CANDIDATE]);
+        if (table === "activity_canonical_links" || table === "events") {
+          return thenableQuery([]);
         }
-        return thenableQuery([CANDIDATE]);
+        throw new Error(`Unexpected table: ${table}`);
       }),
     } as unknown as SupabaseClient;
 
@@ -380,7 +381,102 @@ describe("confirmOrExpireStaleCandidates", () => {
       p_unlisted_at: "2026-09-08T02:00:00.000Z",
       p_reason: "Automatically unlisted after the source page returned HTTP 404",
       p_future_events_only: true,
+      p_override_schedule_lock: false,
     });
+  });
+
+  it("does not override a schedule lock when only one source 404s", async () => {
+    mocks.fetchSourceText
+      .mockReset()
+      .mockRejectedValue(new Error("Source returned HTTP 404"));
+    const ingestActivity = vi.fn();
+    const rpc = vi.fn().mockResolvedValue({ data: 1, error: null });
+    const probe = vi.fn().mockResolvedValue({ state: "live" });
+    const supabase = {
+      rpc,
+      from: vi.fn((table: string) => {
+        if (table === "activity_candidates") return thenableQuery([CANDIDATE]);
+        if (table === "activity_canonical_links") {
+          return thenableQuery([{ event_id: "event-locked" }]);
+        }
+        if (table === "events") {
+          return thenableQuery([
+            {
+              id: "event-locked",
+              source_metadata: {
+                schedule_locked: true,
+                source_url: CANDIDATE.source_url,
+                source_urls_confirming: [
+                  CANDIDATE.source_url,
+                  "https://dantri.com.vn/festival",
+                ],
+              },
+            },
+          ]);
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    } as unknown as SupabaseClient;
+
+    await expect(
+      confirmOrExpireStaleCandidates(supabase, new Date("2026-09-08T02:00:00.000Z"), {
+        sourceId: SOURCE.id,
+        sources: [SOURCE],
+        ingestActivity,
+        probeConfirmingSource: probe,
+      }),
+    ).resolves.toMatchObject({ unlisted: 1, confirmed: 0 });
+    expect(probe).toHaveBeenCalledWith("https://dantri.com.vn/festival");
+    expect(rpc).toHaveBeenCalledWith(
+      "apply_activity_candidate_system_unlist",
+      expect.objectContaining({ p_override_schedule_lock: false }),
+    );
+  });
+
+  it("overrides a schedule lock when at least one other confirming source is also gone", async () => {
+    mocks.fetchSourceText
+      .mockReset()
+      .mockRejectedValue(new Error("Source returned HTTP 404"));
+    const ingestActivity = vi.fn();
+    const rpc = vi.fn().mockResolvedValue({ data: 1, error: null });
+    const probe = vi.fn().mockResolvedValue({
+      state: "removed",
+      evidence: "HTTP 404",
+    });
+    const supabase = {
+      rpc,
+      from: vi.fn((table: string) => {
+        if (table === "activity_candidates") return thenableQuery([CANDIDATE]);
+        if (table === "activity_canonical_links") {
+          return thenableQuery([{ event_id: "event-locked" }]);
+        }
+        if (table === "events") {
+          return thenableQuery([
+            {
+              id: "event-locked",
+              source_metadata: {
+                schedule_locked: true,
+                source_urls_confirming: ["https://dantri.com.vn/festival"],
+              },
+            },
+          ]);
+        }
+        throw new Error(`Unexpected table: ${table}`);
+      }),
+    } as unknown as SupabaseClient;
+
+    await expect(
+      confirmOrExpireStaleCandidates(supabase, new Date("2026-09-08T02:00:00.000Z"), {
+        sourceId: SOURCE.id,
+        sources: [SOURCE],
+        ingestActivity,
+        probeConfirmingSource: probe,
+      }),
+    ).resolves.toMatchObject({ unlisted: 1, confirmed: 0 });
+    expect(rpc).toHaveBeenCalledWith(
+      "apply_activity_candidate_system_unlist",
+      expect.objectContaining({ p_override_schedule_lock: true }),
+    );
   });
 
   it("does not unlist when the live fetch fails transiently", async () => {
