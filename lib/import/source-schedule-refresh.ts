@@ -8,6 +8,11 @@ import {
   withScheduleChangeLog,
 } from "@/lib/activity-graph/schedule-change";
 import {
+  hasLockedSchedule,
+  mayUnlistLockedSchedule,
+  otherConfirmingSourceUrls,
+} from "@/lib/activity-graph/schedule-lock";
+import {
   classifySourcePage,
   isHomepagePath,
   shouldUnlistForRemovedSource,
@@ -256,6 +261,15 @@ export async function refreshPublishedSourceSchedules(
       continue;
     }
     if (pageState.state === "removed") {
+      let forceFlagOnly = false;
+      if (hasLockedSchedule(event.source_metadata)) {
+        const otherRemoved = await countOtherRemovedConfirmingPages(
+          event.source_metadata,
+          sourceUrl,
+          fetchHtml,
+        );
+        forceFlagOnly = !mayUnlistLockedSchedule(otherRemoved);
+      }
       outcomes.push(
         await handleRemovedSource(
           supabase,
@@ -263,6 +277,7 @@ export async function refreshPublishedSourceSchedules(
           sourceUrl,
           pageState.evidence,
           now,
+          forceFlagOnly,
         ),
       );
       continue;
@@ -293,6 +308,14 @@ export async function refreshPublishedSourceSchedules(
         eventId: event.id,
         status: "skipped",
         reason: plan.skip,
+      });
+      continue;
+    }
+    if (hasLockedSchedule(event.source_metadata)) {
+      outcomes.push({
+        eventId: event.id,
+        status: "skipped",
+        reason: "schedule_locked",
       });
       continue;
     }
@@ -387,12 +410,36 @@ function writePublished(
 }
 
 /** Flag a removed source page; unlist the night only once it is close. */
+async function countOtherRemovedConfirmingPages(
+  metadata: Record<string, unknown> | null,
+  knownDeadUrl: string,
+  fetchHtml: (url: string) => Promise<{ text: string; url: string }>,
+): Promise<number> {
+  let removed = 0;
+  for (const url of otherConfirmingSourceUrls(metadata, knownDeadUrl)) {
+    let observation:
+      | { ok: true; finalUrl: string }
+      | { ok: false; error: unknown };
+    try {
+      const page = await fetchHtml(url);
+      observation = { ok: true, finalUrl: page.url };
+    } catch (error) {
+      observation = { ok: false, error };
+    }
+    if (classifySourcePage(url, observation).state === "removed") {
+      removed += 1;
+    }
+  }
+  return removed;
+}
+
 async function handleRemovedSource(
   supabase: SupabaseClient,
   event: RefreshableEvent,
   sourceUrl: string,
   evidence: string,
   now: Date,
+  forceFlagOnly = false,
 ): Promise<RefreshOutcome> {
   const metadata = event.source_metadata ?? {};
   const nowIso = now.toISOString();
@@ -400,13 +447,33 @@ async function handleRemovedSource(
     typeof metadata[SOURCE_UNAVAILABLE_KEY] === "string"
       ? (metadata[SOURCE_UNAVAILABLE_KEY] as string)
       : null;
-  if (
-    shouldUnlistForRemovedSource({
-      unavailableSince: since,
-      startsAt: event.starts_at,
-      now,
-    })
-  ) {
+  const readyToUnlist = shouldUnlistForRemovedSource({
+    unavailableSince: since,
+    startsAt: event.starts_at,
+    now,
+  });
+  if (forceFlagOnly && readyToUnlist) {
+    const { error } = await writePublished(supabase, event, {
+      source_metadata: {
+        ...metadata,
+        source_unavailable_last_checked_at: nowIso,
+        source_unavailable_evidence: evidence,
+        post_publish_review: {
+          reason: "locked_source_removed",
+          requested_at: nowIso,
+          detector: DETECTOR,
+          source_url: sourceUrl,
+          unavailable_since: since,
+          resolution: "kept_published_schedule_locked",
+        },
+      },
+    });
+    if (error) {
+      return { eventId: event.id, status: "error", reason: error.message };
+    }
+    return { eventId: event.id, status: "source_removed", evidence };
+  }
+  if (!forceFlagOnly && readyToUnlist) {
     const { data, error } = await writePublished(supabase, event, {
       status: "draft",
       source_metadata: {
