@@ -56,6 +56,8 @@ interface AudioPlayerState {
   autoplayBlocked: boolean; // True when browser blocks autoplay
 
   // Volume state
+  cinemaVolumeScale: number;
+  setCinemaVolumeScale: (scale: number) => void;
   volume: number; // 0.0 to 1.0
   isMuted: boolean;
 
@@ -151,6 +153,7 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   autoplayBlocked: false,
 
   // Volume initial state (load from localStorage if available)
+  cinemaVolumeScale: 1,
   volume: getStoredVolume(),
   isMuted: getStoredMuted(),
 
@@ -165,8 +168,8 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   setAudioElement: (element) => {
     if (element) {
       // Apply saved volume settings
-      const { volume, isMuted } = get();
-      element.volume = isMuted ? 0 : volume;
+      const { volume, isMuted, cinemaVolumeScale } = get();
+      element.volume = isMuted ? 0 : volume * cinemaVolumeScale;
     }
     set({ audioElement: element });
     if (element && get().isVisible) void get().play();
@@ -369,13 +372,21 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
     }
   },
 
+  // Cinema mixing is temporary and never changes the saved listening volume.
+  setCinemaVolumeScale: (scale) => {
+    const cinemaVolumeScale = Math.max(0, Math.min(1, scale));
+    const { audioElement, isMuted, volume } = get();
+    if (audioElement) audioElement.volume = isMuted ? 0 : volume * cinemaVolumeScale;
+    set({ cinemaVolumeScale });
+  },
+
   // Volume controls
   setVolume: (volume) => {
-    const { audioElement, isMuted } = get();
+    const { audioElement, isMuted, cinemaVolumeScale } = get();
     const clampedVolume = Math.max(0, Math.min(1, volume));
 
     if (audioElement) {
-      audioElement.volume = isMuted ? 0 : clampedVolume;
+      audioElement.volume = isMuted ? 0 : clampedVolume * cinemaVolumeScale;
     }
 
     // Persist to localStorage
@@ -387,11 +398,11 @@ export const useAudioPlayerStore = create<AudioPlayerState>((set, get) => ({
   },
 
   toggleMute: () => {
-    const { audioElement, isMuted, volume } = get();
+    const { audioElement, isMuted, volume, cinemaVolumeScale } = get();
     const newMuted = !isMuted;
 
     if (audioElement) {
-      audioElement.volume = newMuted ? 0 : volume;
+      audioElement.volume = newMuted ? 0 : volume * cinemaVolumeScale;
     }
 
     // Persist to localStorage

@@ -27,7 +27,7 @@ function isInteractiveTarget(target: EventTarget | null): boolean {
 /**
  * Cinema input model: tap, swipe and keyboard.
  *  - Chrome hidden: one tap reveals everything and does nothing else.
- *  - Chrome visible: left/right thirds go previous/next, center toggles play.
+ *  - A double tap in either outer third navigates; a single tap reveals controls.
  *  - Horizontal swipe navigates any time; swipe down exits.
  *  - Keys: arrows, space, escape (Tab also reveals the chrome).
  */
@@ -36,6 +36,7 @@ export function useCinemaInput(onExit: () => void, eventSlug: string) {
   const flashTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
   const didSwipeRef = useRef(false);
+  const lastTapRef = useRef<{ zone: TapZone; time: number } | null>(null);
   const onExitRef = useRef(onExit);
   useEffect(() => {
     onExitRef.current = onExit;
@@ -60,26 +61,17 @@ export function useCinemaInput(onExit: () => void, eventSlug: string) {
 
   const handleTap = useCallback((clientX: number) => {
     const state = useCinemaModeStore.getState();
-
-    if (!state.showControls) {
-      triggerHaptic("selection");
-      state.revealChrome();
-      return;
-    }
-
     const zone = getTapZone(clientX, window.innerWidth);
-    if (zone === "left") {
-      triggerHaptic("selection");
-      state.previous();
-    } else if (zone === "right") {
-      triggerHaptic("selection");
-      state.next();
-    } else {
-      toggleTransport();
-    }
-    // Interaction keeps the chrome up (a no-op timer reset while paused).
-    useCinemaModeStore.getState().revealChrome();
-  }, [toggleTransport]);
+    const now = performance.now();
+    const previous = lastTapRef.current;
+    const doubleTap = previous?.zone === zone && now - previous.time < 350;
+    lastTapRef.current = doubleTap ? null : { zone, time: now };
+    state.revealChrome();
+    if (!doubleTap || zone === "center") return;
+    triggerHaptic("selection");
+    if (zone === "left") state.previous();
+    else state.next();
+  }, []);
 
   const handleClickCapture = useCallback((e: React.MouseEvent) => {
     const target = e.target;
@@ -113,6 +105,7 @@ export function useCinemaInput(onExit: () => void, eventSlug: string) {
       didSwipeRef.current = false;
       return;
     }
+    if (isInteractiveTarget(e.target)) return;
     handleTap(e.clientX);
   }, [handleTap]);
 
@@ -132,11 +125,13 @@ export function useCinemaInput(onExit: () => void, eventSlug: string) {
 
     if (Math.abs(deltaX) > SWIPE_MIN_PX && Math.abs(deltaX) > Math.abs(deltaY)) {
       didSwipeRef.current = true;
+      lastTapRef.current = null;
       triggerHaptic("selection");
       if (deltaX > 0) previous();
       else next();
     } else if (deltaY > SWIPE_DOWN_EXIT_PX && Math.abs(deltaY) > Math.abs(deltaX)) {
       didSwipeRef.current = true;
+      lastTapRef.current = null;
       triggerHaptic("selection");
       onExitRef.current();
     }

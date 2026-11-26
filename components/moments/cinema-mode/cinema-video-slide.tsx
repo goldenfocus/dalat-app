@@ -3,7 +3,7 @@ import { useTranslations } from "next-intl";
 import { useVideoStatus } from "@/lib/hooks/use-video-status";
 
 import { useRef, useEffect, useState } from "react";
-import { Loader2, Play, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 import { MomentVideoPlayer } from "../moment-video-player";
 import { getCfStreamPlaybackUrl } from "@/lib/media-utils";
 import { requestVideoPlayback } from "@/lib/cinema/video-playback";
@@ -18,7 +18,6 @@ interface CinemaVideoSlideProps {
   isActive: boolean;
   isTransitioning: boolean;
   isPaused: boolean;
-  onRequestPlay: () => void;
   onSoundBlocked: (momentId: string | null) => void;
   onEnded: () => void;
   onTimeUpdate: (currentTime: number, duration: number) => void;
@@ -29,7 +28,6 @@ export function CinemaVideoSlide({
   isActive,
   isTransitioning,
   isPaused,
-  onRequestPlay,
   onSoundBlocked,
   onEnded,
   onTimeUpdate,
@@ -38,11 +36,13 @@ export function CinemaVideoSlide({
   const moment = useVideoStatus(initialMoment, isActive);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [isMediaReady, setIsMediaReady] = useState(false);
-  const [isMediaPlaying, setIsMediaPlaying] = useState(false);
-  const [playbackFailed, setPlaybackFailed] = useState(false);
   const hasStartedRef = useRef(false);
   const soundOn = useCinemaSoundOn();
+
+  useEffect(() => {
+    hasStartedRef.current = false;
+    setIsBuffering(false);
+  }, [moment.id]);
 
   // Track time updates and control playback in a single effect.
   // Including moment.id in deps ensures we re-run when transitioning between videos
@@ -51,40 +51,52 @@ export function CinemaVideoSlide({
     const video = videoRef.current;
     if (!video || !isActive) return;
 
+    video.volume = 0.5;
     let starting = false;
+    let retryWhenReady = false;
+    let advanced = false;
+    const finishVideo = () => {
+      if (advanced || isPaused || cancelled) return;
+      advanced = true;
+      onEnded();
+    };
     let cancelled = false;
     const startPlayback = async () => {
-      if (starting || !video.paused) return;
+      if (starting) { retryWhenReady = true; return; }
+      if (!video.paused) return;
       starting = true;
       const started = await requestVideoPlayback(video, soundOn, true);
       starting = false;
       if (cancelled) return;
-      setPlaybackFailed(!started);
+      if (!started && retryWhenReady && video.readyState >= 2) {
+        retryWhenReady = false;
+        void startPlayback();
+        return;
+      }
+      if (!started && video.readyState >= 2) finishVideo();
       onSoundBlocked(started && soundOn && video.muted ? moment.id : null);
     };
 
     const handleTimeUpdate = () => {
       onTimeUpdate(video.currentTime, video.duration || 0);
+      if (video.ended || (Number.isFinite(video.duration) && video.duration > 0 &&
+          video.currentTime >= video.duration - 0.05)) finishVideo();
     };
     const handleWaiting = () => setIsBuffering(true);
     const handlePlaying = () => {
       setIsBuffering(false);
-      setIsMediaPlaying(true);
-      setPlaybackFailed(false);
-    };
-    const handlePause = () => setIsMediaPlaying(false);
+      };
 
     // When the video source is ready (HLS.js loads async), retry play
     const handleCanPlay = () => {
       setIsBuffering(false);
-      setIsMediaReady(true);
       if (!isPaused) void startPlayback();
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
+    video.addEventListener("ended", finishVideo);
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("playing", handlePlaying);
-    video.addEventListener("pause", handlePause);
     video.addEventListener("canplay", handleCanPlay);
 
     // Control playback: pause/resume without restarting
@@ -102,9 +114,9 @@ export function CinemaVideoSlide({
     return () => {
       cancelled = true;
       video.removeEventListener("timeupdate", handleTimeUpdate);
+      video.removeEventListener("ended", finishVideo);
       video.removeEventListener("waiting", handleWaiting);
       video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("pause", handlePause);
       video.removeEventListener("canplay", handleCanPlay);
     };
   }, [
@@ -113,20 +125,10 @@ export function CinemaVideoSlide({
     moment.id,
     moment.video_status,
     onTimeUpdate,
+    onEnded,
     onSoundBlocked,
     soundOn,
   ]);
-
-  const handleManualPlay = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    const video = videoRef.current;
-    if (!video) return;
-
-    onRequestPlay();
-    void requestVideoPlayback(video, soundOn).then((started) => {
-      setPlaybackFailed(!started);
-    });
-  };
 
   // Show video processing state
   if (
@@ -178,7 +180,6 @@ export function CinemaVideoSlide({
         muted={!soundOn}
         loop={false}
         className="w-full h-full"
-        onEnded={onEnded}
         hideControls
         hideMuteButton
       />
@@ -195,22 +196,6 @@ export function CinemaVideoSlide({
           <Loader2 className="w-8 h-8 text-white/70 animate-spin" />
         </div>
       )}
-
-      {/* A real media control: only hide it after the video confirms playback. */}
-      {(isPaused || playbackFailed || (!isMediaPlaying && isMediaReady)) &&
-        !isBuffering && (
-          <button
-            type="button"
-            onClick={handleManualPlay}
-            onTouchStart={(event) => event.stopPropagation()}
-            className="absolute inset-0 z-30 flex items-center justify-center bg-transparent"
-            aria-label="Play video"
-          >
-            <span className="rounded-full bg-black/55 p-5 text-white shadow-xl backdrop-blur-sm transition-transform active:scale-95">
-              <Play className="h-10 w-10 translate-x-0.5 fill-current" />
-            </span>
-          </button>
-        )}
 
       {/* Caption — film-subtitle style */}
       {moment.text_content && (

@@ -92,11 +92,11 @@ type StoreGet = () => CinemaModeState;
 type StoreSet = (partial: Partial<CinemaModeState>) => void;
 
 function resumeMusicIfTransportPaused(get: StoreGet, set: StoreSet) {
-  const { musicPausedByTransport, soundOn, moments, currentIndex } = get();
+  const { musicPausedByTransport, soundOn } = get();
   if (!musicPausedByTransport) return;
   set({ musicPausedByTransport: false });
   const audio = useAudioPlayerStore.getState();
-  if (soundOn && moments[currentIndex]?.content_type !== "video" && !audio.isPlaying) {
+  if (soundOn && !audio.isPlaying) {
     void audio.play();
   }
 }

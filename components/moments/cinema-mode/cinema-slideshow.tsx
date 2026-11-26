@@ -106,7 +106,7 @@ export function CinemaSlideshow({
 
   useLayoutEffect(() => {
     if (!hasSoundtrack || playbackState === "idle") return;
-    if (hasActiveVideo || isPaused || !soundOn) {
+    if (isPaused || !soundOn) {
       const pauseSoundtrack = (audio: ReturnType<typeof useAudioPlayerStore.getState>) => {
         if (audio.playlist?.eventSlug === eventSlug &&
             (audio.isPlaying || audio.isLoading || audio.autoplayBlocked)) audio.pause();
@@ -116,12 +116,15 @@ export function CinemaSlideshow({
     }
 
     const audio = useAudioPlayerStore.getState();
+    audio.setCinemaVolumeScale(hasActiveVideo ? 0.5 : 1);
     if (!audio.isPlaying && !audio.isLoading && !audio.autoplayBlocked) void audio.play();
+    return () => useAudioPlayerStore.getState().setCinemaVolumeScale(1);
   }, [eventSlug, hasSoundtrack, hasActiveVideo, isPaused, playbackState, soundOn]);
 
   const handleUnmute = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     const video = rootRef.current?.querySelector("video");
+    if (useAudioPlayerStore.getState().autoplayBlocked) void useAudioPlayerStore.getState().play();
     if (video && videoSoundBlocked) {
       void requestVideoPlayback(video, true, true).then((started) => {
         if (started && !video.muted) setBlockedVideoId(null);
@@ -332,12 +335,6 @@ export function CinemaSlideshow({
     play();
   }, [goTo, play]);
 
-  const handleVideoPlayRequest = useCallback(() => {
-    play();
-    showFlash("play");
-    revealChrome();
-  }, [play, revealChrome, showFlash]);
-
   const handleAddMoment = useCallback(() => {
     triggerHaptic("selection");
     exit();
@@ -358,7 +355,7 @@ export function CinemaSlideshow({
       role="dialog"
       aria-label={t("dialogLabel")}
       tabIndex={-1}
-      className="fixed inset-0 z-[55] bg-black outline-none"
+      className="fixed inset-0 z-[55] bg-black outline-none touch-manipulation"
       onClickCapture={handleClickCapture}
       onClick={handleClick}
       onTouchStart={handleTouchStart}
@@ -379,12 +376,10 @@ export function CinemaSlideshow({
 
           {currentMoment.content_type === "video" && (
             <CinemaVideoSlide
-              key={currentMoment.id}
               moment={currentMoment}
               isActive={!isEnded}
               isTransitioning={isTransitioning}
               isPaused={isPaused}
-              onRequestPlay={handleVideoPlayRequest}
               onSoundBlocked={setBlockedVideoId}
               onEnded={onVideoEnded}
               onTimeUpdate={onVideoTimeUpdate}
