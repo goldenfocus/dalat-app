@@ -119,7 +119,8 @@ export function CinemaSlideshow({
     if (!audio.isPlaying && !audio.isLoading && !audio.autoplayBlocked) void audio.play();
   }, [eventSlug, hasSoundtrack, hasActiveVideo, isPaused, playbackState, soundOn]);
 
-  const handleUnmute = () => {
+  const handleUnmute = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
     const video = rootRef.current?.querySelector("video");
     if (video && videoSoundBlocked) {
       void requestVideoPlayback(video, true, true).then((started) => {
@@ -452,6 +453,7 @@ export function CinemaSlideshow({
           type="button"
           data-cinema-audio-control
           onClick={handleUnmute}
+          onTouchStart={(event) => event.stopPropagation()}
           className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-50 flex min-h-11 items-center gap-2 rounded-full bg-black/75 px-4 text-sm font-medium text-white backdrop-blur-sm"
         >
           <Volume2 className="size-4" aria-hidden="true" />
