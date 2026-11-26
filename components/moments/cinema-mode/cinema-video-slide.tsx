@@ -38,11 +38,15 @@ export function CinemaVideoSlide({
   const moment = useVideoStatus(initialMoment, isActive);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isBuffering, setIsBuffering] = useState(false);
-  const [isMediaReady, setIsMediaReady] = useState(false);
-  const [isMediaPlaying, setIsMediaPlaying] = useState(false);
   const [playbackFailed, setPlaybackFailed] = useState(false);
   const hasStartedRef = useRef(false);
   const soundOn = useCinemaSoundOn();
+
+  useEffect(() => {
+    hasStartedRef.current = false;
+    setPlaybackFailed(false);
+    setIsBuffering(false);
+  }, [moment.id]);
 
   // Track time updates and control playback in a single effect.
   // Including moment.id in deps ensures we re-run when transitioning between videos
@@ -51,15 +55,23 @@ export function CinemaVideoSlide({
     const video = videoRef.current;
     if (!video || !isActive) return;
 
+    video.volume = 0.5;
     let starting = false;
+    let retryWhenReady = false;
     let cancelled = false;
     const startPlayback = async () => {
-      if (starting || !video.paused) return;
+      if (starting) { retryWhenReady = true; return; }
+      if (!video.paused) return;
       starting = true;
       const started = await requestVideoPlayback(video, soundOn, true);
       starting = false;
       if (cancelled) return;
-      setPlaybackFailed(!started);
+      if (!started && retryWhenReady && video.readyState >= 2) {
+        retryWhenReady = false;
+        void startPlayback();
+        return;
+      }
+      setPlaybackFailed(!started && video.readyState >= 2);
       onSoundBlocked(started && soundOn && video.muted ? moment.id : null);
     };
 
@@ -69,22 +81,18 @@ export function CinemaVideoSlide({
     const handleWaiting = () => setIsBuffering(true);
     const handlePlaying = () => {
       setIsBuffering(false);
-      setIsMediaPlaying(true);
       setPlaybackFailed(false);
     };
-    const handlePause = () => setIsMediaPlaying(false);
 
     // When the video source is ready (HLS.js loads async), retry play
     const handleCanPlay = () => {
       setIsBuffering(false);
-      setIsMediaReady(true);
       if (!isPaused) void startPlayback();
     };
 
     video.addEventListener("timeupdate", handleTimeUpdate);
     video.addEventListener("waiting", handleWaiting);
     video.addEventListener("playing", handlePlaying);
-    video.addEventListener("pause", handlePause);
     video.addEventListener("canplay", handleCanPlay);
 
     // Control playback: pause/resume without restarting
@@ -104,7 +112,6 @@ export function CinemaVideoSlide({
       video.removeEventListener("timeupdate", handleTimeUpdate);
       video.removeEventListener("waiting", handleWaiting);
       video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("pause", handlePause);
       video.removeEventListener("canplay", handleCanPlay);
     };
   }, [
@@ -197,7 +204,7 @@ export function CinemaVideoSlide({
       )}
 
       {/* A real media control: only hide it after the video confirms playback. */}
-      {(isPaused || playbackFailed || (!isMediaPlaying && isMediaReady)) &&
+      {(isPaused || playbackFailed) &&
         !isBuffering && (
           <button
             type="button"

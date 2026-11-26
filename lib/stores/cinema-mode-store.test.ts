@@ -92,13 +92,13 @@ describe("transport sync", () => {
     expect(cinema().soundOn).toBe(true);
   });
 
-  it("does not resume background music when continuing a video", () => {
+  it("resumes the soundtrack alongside a video", () => {
     const audio = installFakeAudio(true);
     const clip = { ...photo("video"), content_type: "video" as const };
     cinema().start([clip], "evt");
     cinema().pause();
     cinema().play();
-    expect(audio.play).not.toHaveBeenCalled();
+    expect(audio.play).toHaveBeenCalledOnce();
   });
 });
 
