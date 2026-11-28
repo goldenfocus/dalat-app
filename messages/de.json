@@ -2125,7 +2125,9 @@
       "savedDrafts": "{count} Dateien von zuvor sind gespeichert. Füge sie ohne erneuten Upload zum Album hinzu.",
       "recoverDrafts": "Gespeicherte Dateien hinzufügen",
       "readyNotice": "Deine Fotos und Videos sind bereit",
-      "attentionNotice": "Einige Uploads erfordern deine Aufmerksamkeit"
+      "attentionNotice": "Einige Uploads erfordern deine Aufmerksamkeit",
+      "resumeNotice": "{count, plural, one {Weiter geht’s, wo wir aufgehört haben — noch 1 Upload} other {Weiter geht’s, wo wir aufgehört haben — noch # Uploads}}",
+      "resumeMany": "{events} Alben"
     },
     "albumTitle": "{event} — {count, plural, one {# Moment} other {# Momente}}",
     "albumDescription": "Fotos und Videos, die die Community bei {event} geteilt hat.",

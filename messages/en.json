@@ -2238,7 +2238,9 @@
       "savedDrafts": "{count} uploads from an earlier session are already saved here. Add them to the album without uploading again.",
       "recoverDrafts": "Add saved uploads to album",
       "readyNotice": "Your photos and videos are ready",
-      "attentionNotice": "Some uploads need attention"
+      "attentionNotice": "Some uploads need attention",
+      "resumeNotice": "{count, plural, one {Picking up where we left off — 1 upload to go} other {Picking up where we left off — # uploads to go}}",
+      "resumeMany": "{events} albums"
     },
     "albumTitle": "{event} — {count, plural, one {# moment} other {# moments}}",
     "albumDescription": "Photos and videos shared by the community at {event}.",

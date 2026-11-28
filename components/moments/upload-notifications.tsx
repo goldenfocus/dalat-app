@@ -6,7 +6,10 @@ import { Toaster, toast } from 'sonner';
 import { useRouter } from '@/lib/i18n/routing';
 import { isWorking } from '@/lib/uploads/types';
 import { UploadNoticeTracker } from '@/lib/uploads/notices';
+import { planResume, resumeNoticeDue } from '@/lib/uploads/resume';
 import { useEventUploads } from './event-uploader';
+
+const openedAt = Date.now();
 
 /** Keep the queue running without reserving any space over the page or player. */
 export function UploadNotifications() {
@@ -17,6 +20,7 @@ export function UploadNotifications() {
   const tracker = useRef(new UploadNoticeTracker());
   const userId = useRef(state.userId);
   const noticeIds = useRef(new Set<string>());
+  const resumed = useRef<string | null>(null);
   const uploading = state.staging > 0 || state.jobs.some(job => isWorking(job.phase));
 
   useEffect(() => {
@@ -43,6 +47,19 @@ export function UploadNotifications() {
       userId.current = state.userId;
     }
     if (!state.ready || !state.userId) return;
+    // Opening the app with unfinished uploads: they restart on their own (files
+    // are saved on-device), so say so once. The tracker then reports completion.
+    if (resumed.current !== state.userId) {
+      const plan = planResume(state.jobs, state.userId, openedAt);
+      if (resumeNoticeDue(resumed.current, state.userId, plan)) {
+        resumed.current = state.userId;
+        const id = `upload:${state.userId}:resume`;
+        noticeIds.current.add(id);
+        toast.info(t('resumeNotice', { count: plan.count }), { id, toasterId: 'uploads', className: 'upload-status-toast',
+          description: plan.eventTitle ?? t('resumeMany', { events: plan.events }), duration: 6000, closeButton: true, dismissible: true,
+          ...(plan.eventSlug ? { action: { label: t('openQueue'), onClick: () => router.push(`/events/${plan.eventSlug}/moments/new`) } } : {}) });
+      }
+    }
     for (const notice of tracker.current.update(state.jobs, state.staging)) {
       const id = `upload:${state.userId}:${notice.id}`;
       noticeIds.current.add(id);

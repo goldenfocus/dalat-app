@@ -2125,7 +2125,9 @@
       "savedDrafts": "前回のファイル{count}件が保存されています。再アップロードせずにアルバムへ追加できます。",
       "recoverDrafts": "保存済みファイルを追加",
       "readyNotice": "写真と動画の準備ができました",
-      "attentionNotice": "一部のアップロードに対応が必要です"
+      "attentionNotice": "一部のアップロードに対応が必要です",
+      "resumeNotice": "{count, plural, other {前回の続きから再開します — 残り#件}}",
+      "resumeMany": "{events}件のアルバム"
     },
     "albumTitle": "{event} — {count, plural, other {#の瞬間}}",
     "albumDescription": "{event}でコミュニティがシェアした写真と動画。",

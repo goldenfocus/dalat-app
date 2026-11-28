@@ -2125,7 +2125,9 @@
       "savedDrafts": "之前的 {count} 个文件已保存，无需重新上传即可添加到相册。",
       "recoverDrafts": "将已保存文件添加到相册",
       "readyNotice": "您的照片和视频已就绪",
-      "attentionNotice": "部分上传需要处理"
+      "attentionNotice": "部分上传需要处理",
+      "resumeNotice": "{count, plural, other {从上次中断的地方继续 — 还有 # 个待上传}}",
+      "resumeMany": "{events} 个相册"
     },
     "albumTitle": "{event} — {count, plural, other {# 个瞬间}}",
     "albumDescription": "社区成员在 {event} 分享的照片和视频。",

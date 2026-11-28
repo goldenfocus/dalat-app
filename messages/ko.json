@@ -2125,7 +2125,9 @@
       "savedDrafts": "이전 세션의 파일 {count}개가 저장되어 있어요. 다시 업로드하지 않고 앨범에 추가하세요.",
       "recoverDrafts": "저장된 파일을 앨범에 추가",
       "readyNotice": "사진과 동영상이 준비되었습니다",
-      "attentionNotice": "일부 업로드에 조치가 필요합니다"
+      "attentionNotice": "일부 업로드에 조치가 필요합니다",
+      "resumeNotice": "{count, plural, other {하던 곳에서 이어갑니다 — 업로드 #개 남음}}",
+      "resumeMany": "앨범 {events}개"
     },
     "albumTitle": "{event} — {count, plural, other {#개의 순간}}",
     "albumDescription": "{event}에서 커뮤니티가 공유한 사진과 동영상.",

@@ -2125,7 +2125,9 @@
       "savedDrafts": "{count} file dari sesi sebelumnya sudah disimpan. Tambahkan ke album tanpa mengunggah ulang.",
       "recoverDrafts": "Tambahkan file tersimpan",
       "readyNotice": "Foto dan video Anda sudah siap",
-      "attentionNotice": "Beberapa unggahan perlu ditangani"
+      "attentionNotice": "Beberapa unggahan perlu ditangani",
+      "resumeNotice": "{count, plural, other {Melanjutkan dari tempat terakhir — tinggal # unggahan}}",
+      "resumeMany": "{events} album"
     },
     "albumTitle": "{event} — {count, plural, other {# momen}}",
     "albumDescription": "Foto dan video yang dibagikan oleh komunitas di {event}.",

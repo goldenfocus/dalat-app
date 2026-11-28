@@ -2125,7 +2125,9 @@
       "savedDrafts": "Có {count} tệp từ lần trước đã được lưu. Thêm vào album mà không cần tải lại.",
       "recoverDrafts": "Thêm các tệp đã lưu vào album",
       "readyNotice": "Ảnh và video của bạn đã sẵn sàng",
-      "attentionNotice": "Một số nội dung tải lên cần được xử lý"
+      "attentionNotice": "Một số nội dung tải lên cần được xử lý",
+      "resumeNotice": "{count, plural, other {Tiếp tục từ chỗ đang dở — còn # tệp đang tải lên}}",
+      "resumeMany": "{events} album"
     },
     "albumTitle": "{event} — {count, plural, other {# khoảnh khắc}}",
     "albumDescription": "Ảnh và video được cộng đồng chia sẻ tại {event}.",
