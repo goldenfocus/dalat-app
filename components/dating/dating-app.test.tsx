@@ -68,6 +68,95 @@ beforeEach(() => {
   );
 });
 describe("real dating member journey", () => {
+  it("opens saved preferences directly from an empty discovery list", async () => {
+    enabled = true;
+    vi.mocked(fetch).mockImplementation(async (_url, opts) => {
+      if (opts?.method === "POST") {
+        expect(JSON.parse(String(opts.body))).toMatchObject({
+          operation: "profile",
+          min_age: 22,
+          max_age: 35,
+        });
+        return Response.json({ ok: true });
+      }
+      return Response.json({ ...snapshot(), cards: [] });
+    });
+    render(<DatingApp locale="en" copy={en.dating} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Meet people" }));
+    await screen.findByText(en.dating.emptyBody);
+    fireEvent.click(screen.getByRole("button", { name: "Preferences" }));
+    expect(screen.getByRole("slider", { name: "Minimum age" })).toHaveValue(
+      "25",
+    );
+    fireEvent.change(screen.getByRole("slider", { name: "Minimum age" }), {
+      target: { value: "22" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Save preferences" }));
+    await screen.findByText(en.dating.emptyBody);
+    expect(
+      vi.mocked(fetch).mock.calls.some(([, opts]) => opts?.method === "POST"),
+    ).toBe(true);
+  });
+
+  it("confirms a saved one-way like even if refreshing the cards fails", async () => {
+    enabled = true;
+    let liked = false;
+    vi.mocked(fetch).mockImplementation(async (_url, opts) => {
+      if (opts?.method === "POST") {
+        expect(JSON.parse(String(opts.body))).toMatchObject({
+          operation: "action",
+          target: card.id,
+          action: "like",
+        });
+        liked = true;
+        return Response.json({ ok: true });
+      }
+      if (liked) return Response.json({ code: "error" }, { status: 500 });
+      return Response.json({
+        ...snapshot(),
+        cards: [{ ...card, likes_you: false }],
+      });
+    });
+    render(<DatingApp locale="en" copy={en.dating} />);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Meet people" })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Meet people" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Like Linh" }));
+    expect(await screen.findByText(en.dating.likeSent)).toHaveAttribute(
+      "role",
+      "status",
+    );
+    expect(screen.getByRole("button", { name: "Liked Linh" })).toBeDisabled();
+    expect(
+      screen.queryByRole("button", { name: "Message" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not show discovery cards while incoming likes load", async () => {
+    enabled = true;
+    let finish: (value: Response) => void = () => {};
+    const normal = vi.mocked(fetch).getMockImplementation()!;
+    vi.mocked(fetch).mockImplementation(async (url, opts) => {
+      if (String(url).includes("kind=likes"))
+        return new Promise<Response>((resolve) => {
+          finish = resolve;
+        });
+      return normal(url, opts);
+    });
+    render(<DatingApp locale="en" copy={en.dating} />);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Meet people" })).toBeEnabled(),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Meet people" }));
+    await screen.findByText("Linh");
+    fireEvent.click(screen.getByRole("button", { name: en.dating.likes }));
+    expect(screen.getByText(en.dating.loading)).toBeInTheDocument();
+    expect(screen.queryByText("Linh")).not.toBeInTheDocument();
+    finish(Response.json({ ...snapshot(), cards: [] }));
+    await screen.findByText(en.dating.noLikes);
+  });
+
   it("activates on submit and sends only after a mutual match", async () => {
     render(<DatingApp locale="en" copy={en.dating} />);
     await waitFor(() =>

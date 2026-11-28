@@ -270,6 +270,14 @@
   color: #a73a2b;
   margin-bottom: 16px !important;
 }
+.dd-notice:not(:empty) {
+  color: var(--dd-ink);
+  background: #fff;
+  border: 1px solid var(--dd-line);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  padding: 12px 16px;
+}
 .dd-app {
   max-width: 1112px;
   margin: 0 auto;

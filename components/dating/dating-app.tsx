@@ -22,14 +22,8 @@ import type {
 } from "@/lib/dating/live-types";
 import { safeDatingAvatar } from "@/lib/dating/avatar";
 import "./dating-preview.css";
-type Mode =
-  | "landing"
-  | "setup"
-  | "discover"
-  | "likes"
-  | "matches"
-  | "settings"
-  | "chat";
+type Listing = "discover" | "likes" | "matches";
+type Mode = "landing" | "setup" | Listing | "settings" | "chat";
 type Draft = {
   birth_year: string;
   birth_date: string;
@@ -80,10 +74,10 @@ export function DatingApp({
 }) {
   const systemYear = new Date().getUTCFullYear();
   const [mode, setMode] = useState<Mode>("landing"),
-    [listing, setListing] = useState<"discover" | "likes" | "matches">(
-      "discover",
-    );
-  const [data, setData] = useState<LiveDatingState | null>(null),
+    [listing, setListing] = useState<Listing>("discover");
+  const [data, setData] = useState<
+      (LiveDatingState & { listing: Listing }) | null
+    >(null),
     [signedIn, setSignedIn] = useState<boolean | null>(null),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
@@ -109,11 +103,13 @@ export function DatingApp({
     [hasMore, setHasMore] = useState(false);
   const version = useRef(0),
     chatVersion = useRef(0);
+  const setupBack = useRef<Mode>("landing");
   const heading = useRef<HTMLHeadingElement>(null);
   const showError = (e: unknown) =>
     setError(c[e instanceof ApiError ? e.code : "error"] ?? c.error);
   const go = (next: Mode) => {
     chatVersion.current++;
+    if (next === "setup") setupBack.current = mode;
     setMode(next);
     setSelected(null);
     setPassing(null);
@@ -133,15 +129,16 @@ export function DatingApp({
       if (n !== version.current) return;
       setSignedIn(true);
       setData((p) =>
-        after && p
+        after && p?.listing === kind
           ? {
               ...d,
+              listing: kind,
               cards: [
                 ...p.cards,
                 ...d.cards.filter((x) => !p.cards.some((y) => x.id === y.id)),
               ],
             }
-          : d,
+          : { ...d, listing: kind },
       );
       setHasMore(d.cards.length === 24);
       return d;
@@ -158,7 +155,7 @@ export function DatingApp({
     readApi()
       .then((d: LiveDatingState) => {
         if (!live) return;
-        setData(d);
+        setData({ ...d, listing: "discover" });
         setSignedIn(true);
         setHasMore(d.cards.length === 24);
         if (new URLSearchParams(location.search).get("start") === "1") {
@@ -180,7 +177,7 @@ export function DatingApp({
       version.current++;
     };
   }, []); // Initial session only; mutations refresh explicitly.
-  function populate(d = data) {
+  function populate(d: LiveDatingState | null = data) {
     const p = d?.profile;
     setDraft(
       p
@@ -210,8 +207,43 @@ export function DatingApp({
       setListing("discover");
       void load("discover");
     } else {
-      populate();
-      go("setup");
+      editPreferences();
+    }
+  }
+  function editPreferences() {
+    populate();
+    go("setup");
+  }
+  async function like(person: DatingCard) {
+    const requestVersion = version.current;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      await mutate({
+        operation: "action",
+        target: person.id,
+        action: "like",
+        hide_activity: false,
+      });
+      setData(
+        (current) =>
+          current && {
+            ...current,
+            cards: current.cards.map((card) =>
+              card.id === person.id ? { ...card, liked: true } : card,
+            ),
+          },
+      );
+      if (requestVersion !== version.current) return;
+      setNotice(c.likeSent);
+      const updated = await load(listing);
+      if (updated?.cards.some((card) => card.id === person.id && card.matched))
+        setNotice(c.match);
+    } catch (e) {
+      showError(e);
+    } finally {
+      setBusy(false);
     }
   }
   async function execute(body: unknown, after?: () => void, kind = listing) {
@@ -228,7 +260,7 @@ export function DatingApp({
       setBusy(false);
     }
   }
-  async function tab(next: "discover" | "likes" | "matches" | "settings") {
+  async function tab(next: Listing | "settings") {
     go(next);
     if (next !== "settings") {
       setListing(next);
@@ -247,9 +279,9 @@ export function DatingApp({
       if (requestVersion === chatVersion.current) setMessages(result.messages);
     } catch (e) {
       if (requestVersion !== chatVersion.current) return;
-      showError(e);
-      setSelected(null);
       go("matches");
+      showError(e);
+      setListing("matches");
       await load("matches");
     }
   }
@@ -269,6 +301,7 @@ export function DatingApp({
             showError(e);
             setSelected(null);
             setMode("matches");
+            setListing("matches");
             void load("matches");
           }
         });
@@ -280,6 +313,8 @@ export function DatingApp({
   }, [mode, selected?.id]);
   const login = `/auth/login?next=${encodeURIComponent((locale === "en" ? "" : `/${locale}`) + "/dating?start=1")}`;
   const paused = !!data?.profile && !data.profile.enabled;
+  const cards = data?.listing === mode ? data.cards : null;
+  const emptyDiscovery = mode === "discover" && cards?.length === 0;
   return (
     <div className="dd dd-live">
       {mode === "landing" ? (
@@ -328,13 +363,16 @@ export function DatingApp({
         </main>
       ) : mode === "setup" ? (
         <main className="dd-setup">
-          <button className="dd-text-button" onClick={() => go("landing")}>
+          <button
+            className="dd-text-button"
+            onClick={() => go(setupBack.current)}
+          >
             <ArrowLeft size={16} />
             {c.back}
           </button>
           <div className="dd-setup-title">
             <h1 ref={heading} tabIndex={-1}>
-              {c.about}
+              {data?.profile?.enabled ? c.preferences : c.about}
             </h1>
             <Flower2 className="dd-setup-flower" size={36} />
           </div>
@@ -567,7 +605,9 @@ export function DatingApp({
               {error}
             </p>
           )}
-          {notice && <p role="status">{notice}</p>}
+          <div role="status" className="dd-notice">
+            {notice}
+          </div>
           {data?.suspended ? (
             <div className="dd-empty">
               <h1>{c.suspended}</h1>
@@ -580,10 +620,7 @@ export function DatingApp({
               <button
                 className="dd-button dd-button-light"
                 disabled={busy}
-                onClick={() => {
-                  populate();
-                  go("setup");
-                }}
+                onClick={editPreferences}
               >
                 <Settings2 size={16} />
                 {c.preferences}
@@ -619,7 +656,7 @@ export function DatingApp({
                 disabled={busy}
                 onClick={() =>
                   paused
-                    ? (populate(), go("setup"))
+                    ? editPreferences()
                     : void execute({ operation: "pause" }, () =>
                         setNotice(c.paused),
                       )
@@ -634,13 +671,7 @@ export function DatingApp({
               <LockKeyhole />
               <h1>{c.paused}</h1>
               <p>{c.pausedBody}</p>
-              <button
-                className="dd-button"
-                onClick={() => {
-                  populate();
-                  go("setup");
-                }}
-              >
+              <button className="dd-button" onClick={editPreferences}>
                 {c.resume}
               </button>
             </div>
@@ -862,20 +893,35 @@ export function DatingApp({
                 <h1 ref={heading} tabIndex={-1}>
                   {c[mode]}
                 </h1>
-                <button
-                  className="dd-icon-button"
-                  onClick={() => {
-                    populate();
-                    go("setup");
-                  }}
-                  aria-label={c.preferences}
-                >
-                  <Settings2 size={18} />
-                </button>
+                {!emptyDiscovery && (
+                  <button
+                    className="dd-icon-button"
+                    onClick={editPreferences}
+                    aria-label={c.preferences}
+                  >
+                    <Settings2 size={18} />
+                  </button>
+                )}
               </div>
-              {data?.cards.length ? (
+              {cards === null ? (
+                <div className="dd-empty">
+                  {error ? (
+                    <button
+                      className="dd-button"
+                      onClick={() => {
+                        setError("");
+                        void load(listing);
+                      }}
+                    >
+                      {c.refresh}
+                    </button>
+                  ) : (
+                    <p role="status">{c.loading}</p>
+                  )}
+                </div>
+              ) : cards.length ? (
                 <div className="dd-profile-grid">
-                  {data.cards.map((p) => (
+                  {cards.map((p) => (
                     <article className="dd-card" key={p.id}>
                       <div className="dd-live-avatar">
                         {safeDatingAvatar(p.avatar_url) ? (
@@ -917,15 +963,8 @@ export function DatingApp({
                             <button
                               className="dd-button"
                               disabled={busy || p.liked}
-                              aria-label={`${c.like} ${p.name}`}
-                              onClick={() =>
-                                void execute({
-                                  operation: "action",
-                                  target: p.id,
-                                  action: "like",
-                                  hide_activity: false,
-                                })
-                              }
+                              aria-label={`${p.liked ? c.liked : c.like} ${p.name}`}
+                              onClick={() => void like(p)}
                             >
                               <Heart size={16} />
                               {p.liked ? c.liked : c.like}
@@ -974,17 +1013,25 @@ export function DatingApp({
                       ]
                     }
                   </h2>
-                  <p>{c.emptyBody}</p>
+                  {emptyDiscovery && (
+                    <>
+                      <p>{c.emptyBody}</p>
+                      <button className="dd-button" onClick={editPreferences}>
+                        <Settings2 size={16} />
+                        {c.preferences}
+                      </button>
+                    </>
+                  )}
                 </div>
               )}
-              {hasMore && (
+              {cards?.length && hasMore ? (
                 <button
                   className="dd-button dd-button-light"
-                  onClick={() => void load(listing, data?.cards.at(-1)?.id)}
+                  onClick={() => void load(listing, cards.at(-1)?.id)}
                 >
                   {c.more}
                 </button>
-              )}
+              ) : null}
             </section>
           )}
         </main>
