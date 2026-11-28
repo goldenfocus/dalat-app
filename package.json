@@ -16,7 +16,9 @@
     "check:translations": "node scripts/check-translation-catalogs.mjs",
     "translations:audit": "tsx scripts/translation-worker/worker.ts --audit",
     "translations:worker": "tsx scripts/translation-worker/worker.ts --loop",
-    "check:translation-worker": "tsc -p tsconfig.translation-worker.json --noEmit"
+    "check:translation-worker": "tsc -p tsconfig.translation-worker.json --noEmit",
+    "recap:worker": "tsx scripts/recap-worker/worker.ts --loop",
+    "check:recap-worker": "tsc -p tsconfig.recap-worker.json --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.73.0",
